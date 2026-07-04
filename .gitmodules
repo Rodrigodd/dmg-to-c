@@ -1,0 +1,3 @@
+[submodule "dmg-sim"]
+	path = dmg-sim
+	url = git@github.com:msinger/dmg-sim.git
