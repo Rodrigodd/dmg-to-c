@@ -430,18 +430,22 @@ Acceptance criteria:
 
 ## Current Progress
 
-Last updated after Milestone 3.
+Last updated after Milestone 4.
 
 - Completed Milestone 1 in commit `bd40d33`: CLI harness, lexer, `survey`, and `check --stage lex`.
 - Completed Milestone 2 in commit `d78d8c9`: AST, parser, `parse`, and `check --stage parse`.
 - Completed Milestone 3 in commit `98429a7`: semantic analysis, `analyze`, and `check --stage analyze`.
+- Completed Milestone 4: reference-cell IR/lowering/timing/serialization, `lower`, `convert-file`, and `check --stage lower` for the reference cell.
 - Verified current corpus status:
   - `cargo test` passes.
   - `cargo run -- check ../sv-cells --stage lex` reports `processed=206 failed=0`.
   - `cargo run -- check ../sv-cells --stage parse` reports `processed=206 failed=0`.
   - `cargo run -- check ../sv-cells --stage analyze` reports `processed=206 failed=0`.
-- In progress: Milestone 4, reference-cell lowering/serialization for `sv-cells/sm83/cells/dffs_cc_ee_pch_d_reg_pc_bit.sv`.
-- Pending after Milestone 4: simple combinational conversion, register/latch families, tri-state/precharge families, transistor-heavy cells, then full corpus conversion.
+  - `cargo run -- check ../sv-cells/sm83/cells/dffs_cc_ee_pch_d_reg_pc_bit.sv --stage lower` reports `processed=1 failed=0`.
+  - `cargo run -- convert-file ../sv-cells/sm83/cells/dffs_cc_ee_pch_d_reg_pc_bit.sv /tmp/dffs.cell` produces an exact diff match against `sexpr-cells/sm83/cells/dffs_cc_ee_pch_d_reg_pc_bit.cell`.
+- Current lowerer limitation: lowering intentionally supports only the reference module until the conversion-family milestones expand coverage.
+- Next pending work: Milestone 5, simple combinational cell conversion for continuous boolean assignments.
+- Remaining after Milestone 5: register/latch families, tri-state/precharge families, transistor-heavy cells, then full corpus conversion.
 
 ### Milestone 1: CLI and Lex All Files
 

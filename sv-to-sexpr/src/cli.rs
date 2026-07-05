@@ -1,7 +1,11 @@
 use crate::analyze::analyze_file;
 use crate::diagnostic::Diagnostic;
+use crate::lower::lower_file;
 use crate::parser::parse_file;
-use crate::survey::{check_analyze_dir, check_lex_dir, check_parse_dir, survey_dir};
+use crate::serialize::render_cell;
+use crate::survey::{
+    check_analyze_dir, check_lex_dir, check_lower_dir, check_parse_dir, survey_dir,
+};
 use std::env;
 use std::fs;
 use std::path::{Path, PathBuf};
@@ -64,6 +68,68 @@ pub fn run() -> Result<(), Diagnostic> {
             })?;
             let report = analyze_file(&path, &contents)?;
             print!("{}", report.render());
+            Ok(())
+        }
+        "lower" => {
+            let input = args
+                .next()
+                .ok_or_else(|| usage_error("lower requires <input.sv>"))?;
+            if args.next().is_some() {
+                return Err(usage_error("lower accepts exactly one input path"));
+            }
+            let path = PathBuf::from(input);
+            let contents = fs::read_to_string(&path).map_err(|err| {
+                Diagnostic::new(
+                    crate::diagnostic::Span::new(&path, 1, 1),
+                    format!("failed to read file: {}", err),
+                )
+            })?;
+            let lowered = lower_file(&path, &contents)?;
+            println!("{:#?}", lowered);
+            Ok(())
+        }
+        "convert-file" => {
+            let input = args
+                .next()
+                .ok_or_else(|| usage_error("convert-file requires <input.sv> <output.cell>"))?;
+            let output = args
+                .next()
+                .ok_or_else(|| usage_error("convert-file requires <input.sv> <output.cell>"))?;
+            let mut dry_run = false;
+            while let Some(arg) = args.next() {
+                match arg.as_str() {
+                    "--dry-run" => dry_run = true,
+                    other => return Err(usage_error(&format!("unexpected argument `{}`", other))),
+                }
+            }
+            let input_path = PathBuf::from(&input);
+            let output_path = PathBuf::from(&output);
+            let contents = fs::read_to_string(&input_path).map_err(|err| {
+                Diagnostic::new(
+                    crate::diagnostic::Span::new(&input_path, 1, 1),
+                    format!("failed to read file: {}", err),
+                )
+            })?;
+            let lowered = lower_file(&input_path, &contents)?;
+            let rendered = render_cell(&lowered.cell);
+            if dry_run {
+                print!("{}", rendered);
+            } else {
+                if let Some(parent) = output_path.parent() {
+                    fs::create_dir_all(parent).map_err(|err| {
+                        Diagnostic::new(
+                            crate::diagnostic::Span::new(parent, 1, 1),
+                            format!("failed to create output directory: {}", err),
+                        )
+                    })?;
+                }
+                fs::write(&output_path, rendered).map_err(|err| {
+                    Diagnostic::new(
+                        crate::diagnostic::Span::new(&output_path, 1, 1),
+                        format!("failed to write file: {}", err),
+                    )
+                })?;
+            }
             Ok(())
         }
         "survey" => {
@@ -130,8 +196,20 @@ pub fn run() -> Result<(), Diagnostic> {
                         ))
                     }
                 }
+                Some("lower") => {
+                    let report = check_lower_dir(Path::new(&input))?;
+                    print!("{}", report.render());
+                    if report.failed == 0 {
+                        Ok(())
+                    } else {
+                        Err(Diagnostic::new(
+                            crate::diagnostic::Span::new(&input, 1, 1),
+                            format!("{} files failed lowering", report.failed),
+                        ))
+                    }
+                }
                 Some(other) => Err(usage_error(&format!(
-                    "unsupported stage `{}`; only `lex`, `parse`, and `analyze` are available yet",
+                    "unsupported stage `{}`; only `lex`, `parse`, `analyze`, and `lower` are available yet",
                     other
                 ))),
             }
@@ -144,7 +222,7 @@ fn usage_error(message: &str) -> Diagnostic {
     Diagnostic::new(
         crate::diagnostic::Span::new("<cli>", 1, 1),
         format!(
-            "{}; supported commands: lex, parse, analyze, survey, check --stage lex|parse|analyze",
+            "{}; supported commands: lex, parse, analyze, lower, convert-file, survey, check --stage lex|parse|analyze|lower",
             message
         ),
     )

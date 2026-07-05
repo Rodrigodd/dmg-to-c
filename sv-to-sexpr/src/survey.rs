@@ -1,6 +1,7 @@
 use crate::analyze::analyze_file;
 use crate::diagnostic::Diagnostic;
 use crate::lexer::{Keyword, Operator, Punct, TokenKind, lex_file};
+use crate::lower::lower_file;
 use crate::parser::parse_file;
 use std::collections::BTreeMap;
 use std::fs;
@@ -129,6 +130,36 @@ pub fn check_analyze_dir(path: &Path) -> Result<CheckReport, Diagnostic> {
         report.processed += 1;
         match fs::read_to_string(&file) {
             Ok(contents) => match analyze_file(&file, &contents) {
+                Ok(_) => {}
+                Err(err) => {
+                    report.failed += 1;
+                    report.failures.push(err.to_string());
+                }
+            },
+            Err(err) => {
+                report.failed += 1;
+                report.failures.push(
+                    Diagnostic::new(
+                        crate::diagnostic::Span::new(&file, 1, 1),
+                        format!("failed to read file: {}", err),
+                    )
+                    .to_string(),
+                );
+            }
+        }
+    }
+    Ok(report)
+}
+
+pub fn check_lower_dir(path: &Path) -> Result<CheckReport, Diagnostic> {
+    let mut report = CheckReport {
+        stage: "lower".to_string(),
+        ..Default::default()
+    };
+    for file in collect_sv_files(path)? {
+        report.processed += 1;
+        match fs::read_to_string(&file) {
+            Ok(contents) => match lower_file(&file, &contents) {
                 Ok(_) => {}
                 Err(err) => {
                     report.failed += 1;
