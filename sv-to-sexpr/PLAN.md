@@ -428,6 +428,21 @@ Acceptance criteria:
 
 ## Milestones
 
+## Current Progress
+
+Last updated after Milestone 3.
+
+- Completed Milestone 1 in commit `bd40d33`: CLI harness, lexer, `survey`, and `check --stage lex`.
+- Completed Milestone 2 in commit `d78d8c9`: AST, parser, `parse`, and `check --stage parse`.
+- Completed Milestone 3 in commit `98429a7`: semantic analysis, `analyze`, and `check --stage analyze`.
+- Verified current corpus status:
+  - `cargo test` passes.
+  - `cargo run -- check ../sv-cells --stage lex` reports `processed=206 failed=0`.
+  - `cargo run -- check ../sv-cells --stage parse` reports `processed=206 failed=0`.
+  - `cargo run -- check ../sv-cells --stage analyze` reports `processed=206 failed=0`.
+- In progress: Milestone 4, reference-cell lowering/serialization for `sv-cells/sm83/cells/dffs_cc_ee_pch_d_reg_pc_bit.sv`.
+- Pending after Milestone 4: simple combinational conversion, register/latch families, tri-state/precharge families, transistor-heavy cells, then full corpus conversion.
+
 ### Milestone 1: CLI and Lex All Files
 
 - Implement the CLI harness with `lex`, `survey`, and `check --stage lex`.
