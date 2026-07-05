@@ -2,13 +2,11 @@ use crate::analyze::analyze_design;
 use crate::ast::*;
 use crate::diagnostic::{Diagnostic, Span};
 use crate::ir::{Assignment, Cell, CellItem, Expr, LoweredModule};
-use std::collections::{BTreeMap, HashMap};
+use std::collections::BTreeMap;
 use std::path::Path;
 
 pub type LowerResult<T> = Result<T, Diagnostic>;
 type SvExpr = crate::ast::Expr;
-
-const REFERENCE_MODULE: &str = "sm83_dffs_cc_ee_pch_d_reg_pc_bit";
 
 pub fn lower_file(path: &Path, input: &str) -> LowerResult<LoweredModule> {
     let design = crate::parser::parse_file(path, input)?;
@@ -42,8 +40,6 @@ struct Lowerer<'a> {
     module: &'a Module,
     cell: Cell,
     timing_aliases: BTreeMap<String, Expr>,
-    memo: HashMap<String, String>,
-    next_temp: usize,
 }
 
 impl<'a> Lowerer<'a> {
@@ -58,23 +54,11 @@ impl<'a> Lowerer<'a> {
                 items: Vec::new(),
             },
             timing_aliases: BTreeMap::new(),
-            memo: HashMap::new(),
-            next_temp: 0,
         }
     }
 
     fn lower_module(&mut self) -> LowerResult<LoweredModule> {
         self.collect_timing_aliases()?;
-        if self.module.name != REFERENCE_MODULE {
-            return Err(Diagnostic::new(
-                self.module.span.clone(),
-                format!(
-                    "lowering is only implemented for the reference cell `{}`",
-                    REFERENCE_MODULE
-                ),
-            ));
-        }
-
         for item in &self.module.items {
             self.lower_item(item)?;
         }
@@ -114,122 +98,26 @@ impl<'a> Lowerer<'a> {
 
     fn lower_item(&mut self, item: &Item) -> LowerResult<()> {
         match &item.kind {
-            ItemKind::Initial(_) => Ok(()),
             ItemKind::Assign(assign) => {
                 self.lower_continuous_assign(assign)?;
                 Ok(())
             }
-            ItemKind::AlwaysLatch(always) => self.lower_always_latch(always),
-            ItemKind::Primitive(call) if call.name == "bufif0" => {
-                self.lower_bufif0(call)?;
+            ItemKind::Specify(_) | ItemKind::Decl(_) | ItemKind::Import(_) | ItemKind::Empty => {
                 Ok(())
             }
-            ItemKind::Specify(_) | ItemKind::Decl(_) | ItemKind::Import(_) => Ok(()),
-            ItemKind::Block(block) | ItemKind::Generate(block) => {
-                for child in &block.items {
-                    self.lower_item(child)?;
-                }
-                Ok(())
-            }
-            _ => Err(Diagnostic::new(
+            ItemKind::Initial(_)
+            | ItemKind::AlwaysLatch(_)
+            | ItemKind::Always(_)
+            | ItemKind::ProcAssign(_)
+            | ItemKind::Primitive(_)
+            | ItemKind::Instantiation(_)
+            | ItemKind::Generate(_)
+            | ItemKind::Block(_)
+            | ItemKind::If(_) => Err(Diagnostic::new(
                 item.span.clone(),
                 "unsupported item for lowering",
             )),
         }
-    }
-
-    fn lower_always_latch(&mut self, always: &AlwaysLatch) -> LowerResult<()> {
-        let Some(condition) = &always.condition else {
-            return Err(Diagnostic::new(
-                always.span.clone(),
-                "expected always_latch condition",
-            ));
-        };
-        if self.module.name == REFERENCE_MODULE {
-            if let Some(target) = latch_target_name(&always.body) {
-                match target.as_str() {
-                    "ff1" => {
-                        self.cell.items.push(CellItem::Comment(
-                            "----- ff1 latch enable -----".to_string(),
-                        ));
-                        self.cell.items.push(CellItem::Blank);
-                    }
-                    "ff2" => {
-                        self.cell.items.push(CellItem::Blank);
-                        self.cell
-                            .items
-                            .push(CellItem::Comment("----- ff2 latch -----".to_string()));
-                        self.cell.items.push(CellItem::Blank);
-                    }
-                    "q_n" => {
-                        self.cell.items.push(CellItem::Blank);
-                        self.cell
-                            .items
-                            .push(CellItem::Comment("----- q_n latch -----".to_string()));
-                        self.cell.items.push(CellItem::Blank);
-                    }
-                    _ => {}
-                }
-            }
-        }
-        let enable = self.lower_temporary_expr(condition, false)?;
-        match &always.body.kind {
-            ItemKind::ProcAssign(stmt) => self.emit_latch(stmt, enable),
-            ItemKind::If(stmt) => self.lower_if_latch(stmt, enable),
-            _ => Err(Diagnostic::new(
-                always.body.span.clone(),
-                "unsupported always_latch body",
-            )),
-        }
-    }
-
-    fn lower_if_latch(&mut self, stmt: &IfStmt, enable: Expr) -> LowerResult<()> {
-        let target_stmt = match &stmt.then_branch.kind {
-            ItemKind::ProcAssign(stmt) => stmt,
-            _ => {
-                return Err(Diagnostic::new(
-                    stmt.then_branch.span.clone(),
-                    "unsupported latch if-body",
-                ));
-            }
-        };
-        self.emit_latch(target_stmt, enable)
-    }
-
-    fn emit_latch(&mut self, stmt: &AssignStmt, enable: Expr) -> LowerResult<()> {
-        let target = expr_symbol(&stmt.target).ok_or_else(|| {
-            Diagnostic::new(stmt.target.span.clone(), "expected latch target symbol")
-        })?;
-        if self.module.name == REFERENCE_MODULE && target == "ff1" {
-            self.cell.items.push(CellItem::Blank);
-            self.cell
-                .items
-                .push(CellItem::Comment("ff1 data".to_string()));
-        }
-        if self.module.name == REFERENCE_MODULE && target == "ff2" {
-            self.cell.items.push(CellItem::Blank);
-        }
-        let data = self.lower_temporary_expr(&stmt.value, true)?;
-        if self.module.name == REFERENCE_MODULE && target == "ff2" {
-            self.cell.items.push(CellItem::Blank);
-        }
-        if self.module.name == REFERENCE_MODULE && target == "q_n" {
-            self.cell.items.push(CellItem::Blank);
-        }
-        let delay = self.lower_delay_for_target(&target, DelayContext::Latch)?;
-        let target_expr = self.lower_symbol(&stmt.target)?;
-        if self.module.name == REFERENCE_MODULE && target == "ff1" {
-            self.cell.items.push(CellItem::Blank);
-            self.cell
-                .items
-                .push(CellItem::Comment("latch hold".to_string()));
-        }
-        self.cell.items.push(CellItem::Assignment(Assignment {
-            target,
-            expr: Expr::list(vec![Expr::atom("mux"), enable, data, target_expr]),
-            delay,
-        }));
-        Ok(())
     }
 
     fn lower_continuous_assign(&mut self, assign: &AssignDecl) -> LowerResult<()> {
@@ -239,15 +127,8 @@ impl<'a> Lowerer<'a> {
                 "expected assignment target symbol",
             )
         })?;
-        if self.module.name == REFERENCE_MODULE && target == "q" {
-            self.cell.items.push(CellItem::Blank);
-            self.cell
-                .items
-                .push(CellItem::Comment("----- output inverter -----".to_string()));
-            self.cell.items.push(CellItem::Blank);
-        }
-        let expr = self.lower_inline_expr(&assign.value)?;
-        let delay = self.lower_delay_for_target(&target, DelayContext::Continuous(assign))?;
+        let expr = self.lower_expr(&assign.value)?;
+        let delay = self.lower_delay(assign.delay.as_ref())?;
         self.cell.items.push(CellItem::Assignment(Assignment {
             target,
             expr,
@@ -256,112 +137,7 @@ impl<'a> Lowerer<'a> {
         Ok(())
     }
 
-    fn lower_bufif0(&mut self, call: &PrimitiveCall) -> LowerResult<()> {
-        let target = call
-            .args
-            .first()
-            .and_then(|arg| arg.as_ref())
-            .and_then(expr_symbol)
-            .ok_or_else(|| Diagnostic::new(call.span.clone(), "expected bufif0 target"))?;
-        let control = call
-            .args
-            .get(2)
-            .and_then(|arg| arg.as_ref())
-            .ok_or_else(|| Diagnostic::new(call.span.clone(), "expected bufif0 control"))?;
-        let delay = self.lower_delay_for_target(&target, DelayContext::Primitive(call))?;
-        let control = self.lower_inline_expr(control)?;
-        if self.module.name == REFERENCE_MODULE && target == "d" {
-            self.cell.items.push(CellItem::Blank);
-            self.cell.items.push(CellItem::Comment(
-                "----- precharge transistor -----".to_string(),
-            ));
-            self.cell.items.push(CellItem::Blank);
-        }
-        self.cell.items.push(CellItem::Assignment(Assignment {
-            target,
-            expr: Expr::list(vec![Expr::atom("bufif0"), Expr::atom("1"), control]),
-            delay,
-        }));
-        Ok(())
-    }
-
-    fn lower_delay_for_target(
-        &mut self,
-        target: &str,
-        context: DelayContext<'_>,
-    ) -> LowerResult<Expr> {
-        if self.module.name == REFERENCE_MODULE {
-            match (target, context) {
-                ("d", DelayContext::Primitive(_)) => return self.resolve_timing_alias("T_rise_d"),
-                ("q", DelayContext::Continuous(_)) => {
-                    return Ok(Expr::list(vec![
-                        Expr::atom("elmore"),
-                        Expr::list(vec![Expr::atom("wire"), Expr::atom("L_q")]),
-                        Expr::list(vec![Expr::atom("nmos"), Expr::atom("13")]),
-                    ]));
-                }
-                ("q_n", DelayContext::Latch) => {
-                    return Ok(Expr::list(vec![
-                        Expr::atom("+"),
-                        self.resolve_timing_alias("T_fall_buf1")?,
-                        self.resolve_timing_alias("T_rise_buf2")?,
-                        self.resolve_timing_alias("T_rise_q")?,
-                    ]));
-                }
-                _ => {}
-            }
-        }
-
-        match context {
-            DelayContext::Primitive(call) => {
-                if let Some(delay) = &call.delay {
-                    self.lower_timing_expr_from_delay(delay)
-                } else {
-                    Ok(Expr::atom("0"))
-                }
-            }
-            DelayContext::Continuous(assign) => {
-                if let Some(delay) = &assign.delay {
-                    self.lower_timing_expr_from_delay(delay)
-                } else {
-                    Ok(Expr::atom("0"))
-                }
-            }
-            DelayContext::Latch => Ok(Expr::atom("0")),
-        }
-    }
-
-    fn lower_temporary_expr(&mut self, expr: &SvExpr, force_root_temp: bool) -> LowerResult<Expr> {
-        if is_leaf_expr(expr) {
-            return self.lower_inline_expr(expr);
-        }
-        let key = fingerprint_expr(expr);
-        if !force_root_temp {
-            if let Some(existing) = self.memo.get(&key) {
-                return Ok(Expr::atom(existing.clone()));
-            }
-        }
-        if matches!(
-            &expr.kind,
-            ExprKind::Binary {
-                op: BinaryOp::BitOr | BinaryOp::LogicalOr,
-                ..
-            }
-        ) {
-            return self.lower_or_chain(expr, key);
-        }
-        let lowered = self.lower_inline_expr(expr)?;
-        let temp = self.next_temp();
-        self.cell.items.push(CellItem::Assignment(Assignment {
-            target: temp.clone(),
-            expr: lowered,
-            delay: Expr::atom("0"),
-        }));
-        self.memo.insert(key, temp.clone());
-        Ok(Expr::atom(temp))
-    }
-
-    fn lower_inline_expr(&mut self, expr: &SvExpr) -> LowerResult<Expr> {
+    fn lower_expr(&mut self, expr: &SvExpr) -> LowerResult<Expr> {
         match &expr.kind {
             ExprKind::Path(segments) => Ok(Expr::atom(segments.join("::"))),
             ExprKind::Integer(value) | ExprKind::Real(value) => Ok(Expr::atom(value.clone())),
@@ -371,17 +147,16 @@ impl<'a> Lowerer<'a> {
                 ConstKind::Z => "z",
                 ConstKind::X => "x",
             })),
-            ExprKind::Group(inner) => self.lower_inline_expr(inner),
+            ExprKind::Group(inner) => self.lower_expr(inner),
             ExprKind::Unary { op, expr } => {
                 let label = match op {
-                    UnaryOp::Not | UnaryOp::BitNot => "not",
+                    UnaryOp::Not | UnaryOp::BitNot => {
+                        return self.lower_not_expr(expr);
+                    }
                     UnaryOp::Plus => "plus",
                     UnaryOp::Minus => "minus",
                 };
-                Ok(Expr::list(vec![
-                    Expr::atom(label),
-                    self.lower_child_expr(expr)?,
-                ]))
+                Ok(Expr::list(vec![Expr::atom(label), self.lower_expr(expr)?]))
             }
             ExprKind::Binary { op, left, right } => {
                 let label = match op {
@@ -409,14 +184,25 @@ impl<'a> Lowerer<'a> {
                     let mut items = Vec::with_capacity(operands.len() + 1);
                     items.push(Expr::atom(label));
                     for operand in operands {
-                        items.push(self.lower_and_operand(operand)?);
+                        items.push(self.lower_expr(operand)?);
+                    }
+                    return Ok(Expr::list(items));
+                }
+                if matches!(op, BinaryOp::BitOr | BinaryOp::LogicalOr) {
+                    let mut operands = Vec::new();
+                    collect_or_operands(left, &mut operands);
+                    collect_or_operands(right, &mut operands);
+                    let mut items = Vec::with_capacity(operands.len() + 1);
+                    items.push(Expr::atom(label));
+                    for operand in operands {
+                        items.push(self.lower_expr(operand)?);
                     }
                     return Ok(Expr::list(items));
                 }
                 Ok(Expr::list(vec![
                     Expr::atom(label),
-                    self.lower_child_expr(left)?,
-                    self.lower_child_expr(right)?,
+                    self.lower_expr(left)?,
+                    self.lower_expr(right)?,
                 ]))
             }
             ExprKind::Ternary {
@@ -425,16 +211,16 @@ impl<'a> Lowerer<'a> {
                 else_expr,
             } => Ok(Expr::list(vec![
                 Expr::atom("mux"),
-                self.lower_child_expr(condition)?,
-                self.lower_child_expr(then_expr)?,
-                self.lower_child_expr(else_expr)?,
+                self.lower_expr(condition)?,
+                self.lower_expr(then_expr)?,
+                self.lower_expr(else_expr)?,
             ])),
             ExprKind::Call { callee, args } => {
                 let name = expr_symbol(callee).unwrap_or_else(|| render_call_callee(callee));
                 let mut items = vec![Expr::atom(name)];
                 for arg in args {
                     match arg {
-                        Some(expr) => items.push(self.lower_child_expr(expr)?),
+                        Some(expr) => items.push(self.lower_expr(expr)?),
                         None => items.push(Expr::atom("_")),
                     }
                 }
@@ -443,53 +229,48 @@ impl<'a> Lowerer<'a> {
         }
     }
 
-    fn lower_child_expr(&mut self, expr: &SvExpr) -> LowerResult<Expr> {
-        if is_leaf_expr(expr) {
-            self.lower_inline_expr(expr)
-        } else {
-            self.lower_temporary_expr(expr, false)
-        }
-    }
-
-    fn lower_and_operand(&mut self, expr: &SvExpr) -> LowerResult<Expr> {
-        if let ExprKind::Unary {
-            op: UnaryOp::Not | UnaryOp::BitNot,
-            expr: inner,
-        } = &expr.kind
-        {
-            if let ExprKind::Path(segments) = &inner.kind {
-                if matches!(
-                    segments.last().map(|item| item.as_str()),
-                    Some(name) if name.ends_with("_n")
-                ) {
-                    return Ok(Expr::atom(segments.join("::")));
+    fn lower_not_expr(&mut self, expr: &SvExpr) -> LowerResult<Expr> {
+        match &expr.kind {
+            ExprKind::Group(inner) => self.lower_not_expr(inner),
+            ExprKind::Binary {
+                op: BinaryOp::BitAnd | BinaryOp::LogicalAnd,
+                left,
+                right,
+            } => {
+                let mut operands = Vec::new();
+                collect_and_operands(left, &mut operands);
+                collect_and_operands(right, &mut operands);
+                let mut items = vec![Expr::atom("nand")];
+                for operand in operands {
+                    items.push(self.lower_expr(operand)?);
                 }
+                Ok(Expr::list(items))
             }
+            ExprKind::Binary {
+                op: BinaryOp::BitOr | BinaryOp::LogicalOr,
+                left,
+                right,
+            } => {
+                let mut operands = Vec::new();
+                collect_or_operands(left, &mut operands);
+                collect_or_operands(right, &mut operands);
+                let mut items = vec![Expr::atom("nor")];
+                for operand in operands {
+                    items.push(self.lower_expr(operand)?);
+                }
+                Ok(Expr::list(items))
+            }
+            ExprKind::Binary {
+                op: BinaryOp::BitXor,
+                left,
+                right,
+            } => Ok(Expr::list(vec![
+                Expr::atom("xnor"),
+                self.lower_expr(left)?,
+                self.lower_expr(right)?,
+            ])),
+            _ => Ok(Expr::list(vec![Expr::atom("not"), self.lower_expr(expr)?])),
         }
-        self.lower_child_expr(expr)
-    }
-
-    fn lower_or_chain(&mut self, expr: &SvExpr, key: String) -> LowerResult<Expr> {
-        let mut operands = Vec::new();
-        collect_or_operands(expr, &mut operands);
-        let mut lowered = Vec::with_capacity(operands.len());
-        for operand in operands {
-            lowered.push(self.lower_child_expr(operand)?);
-        }
-        let mut current = lowered.first().cloned().unwrap_or_else(|| Expr::atom("0"));
-        for next in lowered.into_iter().skip(1) {
-            let temp = self.next_temp();
-            self.cell.items.push(CellItem::Assignment(Assignment {
-                target: temp.clone(),
-                expr: Expr::list(vec![Expr::atom("or"), current, next]),
-                delay: Expr::atom("0"),
-            }));
-            current = Expr::atom(temp);
-        }
-        if let Expr::Atom(name) = &current {
-            self.memo.insert(key, name.clone());
-        }
-        Ok(current)
     }
 
     fn lower_timing_expr(&mut self, expr: &SvExpr) -> LowerResult<Expr> {
@@ -557,6 +338,13 @@ impl<'a> Lowerer<'a> {
                 self.lower_timing_expr(else_expr)?,
             ])),
             ExprKind::Call { callee, args } => self.lower_timing_call(callee, args),
+        }
+    }
+
+    fn lower_delay(&mut self, delay: Option<&Delay>) -> LowerResult<Expr> {
+        match delay {
+            Some(delay) => self.lower_timing_expr_from_delay(delay),
+            None => Ok(Expr::atom("0")),
         }
     }
 
@@ -689,33 +477,6 @@ impl<'a> Lowerer<'a> {
             )),
         }
     }
-
-    fn resolve_timing_alias(&self, name: &str) -> LowerResult<Expr> {
-        Ok(self
-            .timing_aliases
-            .get(name)
-            .cloned()
-            .unwrap_or_else(|| Expr::atom(name)))
-    }
-
-    fn lower_symbol(&self, expr: &SvExpr) -> LowerResult<Expr> {
-        expr_symbol(expr)
-            .map(Expr::atom)
-            .ok_or_else(|| Diagnostic::new(expr.span.clone(), "expected symbol"))
-    }
-
-    fn next_temp(&mut self) -> String {
-        let name = format!("t{}", self.next_temp);
-        self.next_temp += 1;
-        name
-    }
-}
-
-#[derive(Clone, Copy)]
-enum DelayContext<'a> {
-    Latch,
-    Continuous(&'a AssignDecl),
-    Primitive(&'a PrimitiveCall),
 }
 
 fn expr_symbol(expr: &SvExpr) -> Option<String> {
@@ -728,52 +489,6 @@ fn expr_symbol(expr: &SvExpr) -> Option<String> {
 
 fn render_call_callee(expr: &SvExpr) -> String {
     expr_symbol(expr).unwrap_or_else(|| "call".to_string())
-}
-
-fn is_leaf_expr(expr: &SvExpr) -> bool {
-    matches!(
-        &expr.kind,
-        ExprKind::Path(_) | ExprKind::Integer(_) | ExprKind::Real(_) | ExprKind::Constant(_)
-    )
-}
-
-fn fingerprint_expr(expr: &SvExpr) -> String {
-    match &expr.kind {
-        ExprKind::Path(segments) => format!("path:{}", segments.join("::")),
-        ExprKind::Integer(value) => format!("int:{}", value),
-        ExprKind::Real(value) => format!("real:{}", value),
-        ExprKind::Constant(kind) => format!("const:{:?}", kind),
-        ExprKind::Group(inner) => format!("group({})", fingerprint_expr(inner)),
-        ExprKind::Unary { op, expr } => format!("u:{:?}({})", op, fingerprint_expr(expr)),
-        ExprKind::Binary { op, left, right } => format!(
-            "b:{:?}({},{})",
-            op,
-            fingerprint_expr(left),
-            fingerprint_expr(right)
-        ),
-        ExprKind::Ternary {
-            condition,
-            then_expr,
-            else_expr,
-        } => format!(
-            "t({},{},{})",
-            fingerprint_expr(condition),
-            fingerprint_expr(then_expr),
-            fingerprint_expr(else_expr)
-        ),
-        ExprKind::Call { callee, args } => {
-            let args = args
-                .iter()
-                .map(|arg| {
-                    arg.as_ref()
-                        .map(fingerprint_expr)
-                        .unwrap_or_else(|| "_".to_string())
-                })
-                .collect::<Vec<_>>()
-                .join(",");
-            format!("c:{}({})", fingerprint_expr(callee), args)
-        }
-    }
 }
 
 fn collect_and_operands<'a>(expr: &'a SvExpr, out: &mut Vec<&'a SvExpr>) {
@@ -816,39 +531,42 @@ fn multiply_unit_factor(left: &SvExpr, right: &SvExpr) -> Option<i64> {
     factor(left).or_else(|| factor(right))
 }
 
-fn latch_target_name(item: &Item) -> Option<String> {
-    match &item.kind {
-        ItemKind::ProcAssign(stmt) => expr_symbol(&stmt.target),
-        ItemKind::If(stmt) => match &stmt.then_branch.kind {
-            ItemKind::ProcAssign(stmt) => expr_symbol(&stmt.target),
-            _ => None,
-        },
-        _ => None,
-    }
-}
-
 #[cfg(test)]
 mod tests {
     use super::*;
     use crate::serialize::render_cell;
     use std::fs;
 
-    fn normalize(text: &str) -> String {
-        text.lines()
-            .map(str::trim_end)
-            .collect::<Vec<_>>()
-            .join("\n")
+    fn lower_render(path: &str) -> String {
+        let path = Path::new(path);
+        let input = fs::read_to_string(path).unwrap();
+        let lowered = lower_file(path, &input).unwrap();
+        render_cell(&lowered.cell)
     }
 
     #[test]
-    fn converts_reference_cell_to_checked_in_output() {
-        let path = Path::new("../sv-cells/sm83/cells/dffs_cc_ee_pch_d_reg_pc_bit.sv");
-        let input = fs::read_to_string(path).unwrap();
-        let lowered = lower_file(path, &input).unwrap();
-        let rendered = render_cell(&lowered.cell);
-        let expected =
-            fs::read_to_string("../sexpr-cells/sm83/cells/dffs_cc_ee_pch_d_reg_pc_bit.cell")
-                .unwrap();
-        assert_eq!(normalize(&rendered), normalize(&expected));
+    fn lowers_and_gate_cells() {
+        let rendered = lower_render("../sv-cells/sm83/cells/and3.sv");
+        assert!(rendered.contains("(and in1 in2 in3)"));
+        let rendered = lower_render("../sv-cells/dmg_cpu_b/cells/and2.sv");
+        assert!(rendered.contains("(and in1 in2)"));
+    }
+
+    #[test]
+    fn lowers_or_and_nor_cells() {
+        let rendered = lower_render("../sv-cells/sm83/cells/or3_b.sv");
+        assert!(rendered.contains("(or in1 in2 in3)"));
+        let rendered = lower_render("../sv-cells/sm83/cells/nor8_alu.sv");
+        assert!(rendered.contains("(nor in1 in2 in3 in4 in5 in6 in7 in8)"));
+    }
+
+    #[test]
+    fn lowers_xor_and_xnor_cells() {
+        let rendered = lower_render("../sv-cells/sm83/cells/xor_idu_l.sv");
+        assert!(rendered.contains("(xor in1 in2)"));
+        let rendered = lower_render("../sv-cells/dmg_cpu_b/cells/xor.sv");
+        assert!(rendered.contains("(xor in1 in2)"));
+        let rendered = lower_render("../sv-cells/dmg_cpu_b/cells/xnor.sv");
+        assert!(rendered.contains("(xnor in1 in2)"));
     }
 }
