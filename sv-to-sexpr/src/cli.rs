@@ -1,6 +1,7 @@
+use crate::analyze::analyze_file;
 use crate::diagnostic::Diagnostic;
 use crate::parser::parse_file;
-use crate::survey::{check_lex_dir, check_parse_dir, survey_dir};
+use crate::survey::{check_analyze_dir, check_lex_dir, check_parse_dir, survey_dir};
 use std::env;
 use std::fs;
 use std::path::{Path, PathBuf};
@@ -45,6 +46,24 @@ pub fn run() -> Result<(), Diagnostic> {
             })?;
             let design = parse_file(&path, &contents)?;
             println!("{:#?}", design);
+            Ok(())
+        }
+        "analyze" => {
+            let input = args
+                .next()
+                .ok_or_else(|| usage_error("analyze requires <input.sv>"))?;
+            if args.next().is_some() {
+                return Err(usage_error("analyze accepts exactly one input path"));
+            }
+            let path = PathBuf::from(input);
+            let contents = fs::read_to_string(&path).map_err(|err| {
+                Diagnostic::new(
+                    crate::diagnostic::Span::new(&path, 1, 1),
+                    format!("failed to read file: {}", err),
+                )
+            })?;
+            let report = analyze_file(&path, &contents)?;
+            print!("{}", report.render());
             Ok(())
         }
         "survey" => {
@@ -99,8 +118,20 @@ pub fn run() -> Result<(), Diagnostic> {
                         ))
                     }
                 }
+                Some("analyze") => {
+                    let report = check_analyze_dir(Path::new(&input))?;
+                    print!("{}", report.render());
+                    if report.failed == 0 {
+                        Ok(())
+                    } else {
+                        Err(Diagnostic::new(
+                            crate::diagnostic::Span::new(&input, 1, 1),
+                            format!("{} files failed analyzing", report.failed),
+                        ))
+                    }
+                }
                 Some(other) => Err(usage_error(&format!(
-                    "unsupported stage `{}`; only `lex` and `parse` are available yet",
+                    "unsupported stage `{}`; only `lex`, `parse`, and `analyze` are available yet",
                     other
                 ))),
             }
@@ -113,7 +144,7 @@ fn usage_error(message: &str) -> Diagnostic {
     Diagnostic::new(
         crate::diagnostic::Span::new("<cli>", 1, 1),
         format!(
-            "{}; supported commands: lex, parse, survey, check --stage lex|parse",
+            "{}; supported commands: lex, parse, analyze, survey, check --stage lex|parse|analyze",
             message
         ),
     )
