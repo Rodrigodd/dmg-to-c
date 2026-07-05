@@ -102,6 +102,7 @@ impl<'a> Lowerer<'a> {
                 self.lower_continuous_assign(assign)?;
                 Ok(())
             }
+            ItemKind::Primitive(call) => self.lower_primitive_call(call),
             ItemKind::Initial(_) => Ok(()),
             ItemKind::AlwaysLatch(always) => {
                 let condition = always
@@ -124,7 +125,6 @@ impl<'a> Lowerer<'a> {
                 Ok(())
             }
             ItemKind::ProcAssign(_)
-            | ItemKind::Primitive(_)
             | ItemKind::Instantiation(_)
             | ItemKind::Generate(_)
             | ItemKind::Block(_)
@@ -304,12 +304,21 @@ impl<'a> Lowerer<'a> {
                 condition,
                 then_expr,
                 else_expr,
-            } => Ok(Expr::list(vec![
-                Expr::atom("mux"),
-                self.lower_expr(condition)?,
-                self.lower_expr(then_expr)?,
-                self.lower_expr(else_expr)?,
-            ])),
+            } => {
+                if let Some(expr) = self.lower_tristate_ternary(
+                    condition.as_ref(),
+                    then_expr.as_ref(),
+                    else_expr.as_ref(),
+                )? {
+                    return Ok(expr);
+                }
+                Ok(Expr::list(vec![
+                    Expr::atom("mux"),
+                    self.lower_expr(condition)?,
+                    self.lower_expr(then_expr)?,
+                    self.lower_expr(else_expr)?,
+                ]))
+            }
             ExprKind::Call { callee, args } => {
                 let name = expr_symbol(callee).unwrap_or_else(|| render_call_callee(callee));
                 let mut items = vec![Expr::atom(name)];
@@ -322,6 +331,98 @@ impl<'a> Lowerer<'a> {
                 Ok(Expr::list(items))
             }
         }
+    }
+
+    fn lower_tristate_ternary(
+        &mut self,
+        condition: &SvExpr,
+        then_expr: &SvExpr,
+        else_expr: &SvExpr,
+    ) -> LowerResult<Option<Expr>> {
+        if self.is_z_expr(else_expr) {
+            if let Some(value) = self.tristate_drive_value(then_expr) {
+                return Ok(Some(Expr::list(vec![
+                    Expr::atom("bufif1"),
+                    value,
+                    self.lower_expr(condition)?,
+                ])));
+            }
+        }
+        if self.is_z_expr(then_expr) {
+            if let Some(value) = self.tristate_drive_value(else_expr) {
+                return Ok(Some(Expr::list(vec![
+                    Expr::atom("bufif0"),
+                    value,
+                    self.lower_expr(condition)?,
+                ])));
+            }
+        }
+        Ok(None)
+    }
+
+    fn tristate_drive_value(&mut self, expr: &SvExpr) -> Option<Expr> {
+        match &expr.kind {
+            ExprKind::Constant(ConstKind::Zero) => Some(Expr::atom("0")),
+            ExprKind::Constant(ConstKind::One) => Some(Expr::atom("1")),
+            ExprKind::Integer(value) if value == "0" => Some(Expr::atom("0")),
+            ExprKind::Integer(value) if value == "1" => Some(Expr::atom("1")),
+            ExprKind::Group(inner) => self.tristate_drive_value(inner),
+            _ => None,
+        }
+    }
+
+    fn is_z_expr(&self, expr: &SvExpr) -> bool {
+        match &expr.kind {
+            ExprKind::Constant(ConstKind::Z) => true,
+            ExprKind::Group(inner) => self.is_z_expr(inner),
+            _ => false,
+        }
+    }
+
+    fn lower_primitive_call(&mut self, call: &PrimitiveCall) -> LowerResult<()> {
+        match call.name.as_str() {
+            "bufif0" | "bufif1" => self.lower_bufif_call(call),
+            "nmos" | "pmos" | "rnmos" => Err(Diagnostic::new(
+                call.span.clone(),
+                format!("unsupported primitive {}", call.name),
+            )),
+            _ => Err(Diagnostic::new(
+                call.span.clone(),
+                "unsupported primitive for lowering",
+            )),
+        }
+    }
+
+    fn lower_bufif_call(&mut self, call: &PrimitiveCall) -> LowerResult<()> {
+        if call.args.len() != 3 {
+            return Err(Diagnostic::new(
+                call.span.clone(),
+                format!("expected {} arity", call.name),
+            ));
+        }
+        let target = call.args[0]
+            .as_ref()
+            .ok_or_else(|| Diagnostic::new(call.span.clone(), "expected bufif target argument"))?;
+        let value = call.args[1]
+            .as_ref()
+            .ok_or_else(|| Diagnostic::new(call.span.clone(), "expected bufif drive argument"))?;
+        let control = call.args[2]
+            .as_ref()
+            .ok_or_else(|| Diagnostic::new(call.span.clone(), "expected bufif control argument"))?;
+        let target = expr_symbol(target)
+            .ok_or_else(|| Diagnostic::new(target.span.clone(), "expected bufif target symbol"))?;
+        let expr = Expr::list(vec![
+            Expr::atom(call.name.clone()),
+            self.lower_expr(value)?,
+            self.lower_expr(control)?,
+        ]);
+        let delay = self.lower_delay(call.delay.as_ref())?;
+        self.cell.items.push(CellItem::Assignment(Assignment {
+            target,
+            expr,
+            delay,
+        }));
+        Ok(())
     }
 
     fn lower_not_expr(&mut self, expr: &SvExpr) -> LowerResult<Expr> {
@@ -484,7 +585,7 @@ impl<'a> Lowerer<'a> {
                 ]))
             }
             "tpd_z" => {
-                let Some(arg) = args.first().and_then(|arg| arg.as_ref()) else {
+                let Some(arg) = args.iter().find_map(|arg| arg.as_ref()) else {
                     return Err(Diagnostic::new(
                         callee.span.clone(),
                         "expected tpd_z argument",
@@ -633,9 +734,9 @@ mod tests {
     use std::fs;
 
     fn lower_path(path: &str) -> LoweredModule {
-        let path = Path::new(path);
-        let input = fs::read_to_string(path).unwrap();
-        lower_file(path, &input).unwrap()
+        let path = Path::new(env!("CARGO_MANIFEST_DIR")).join(path);
+        let input = fs::read_to_string(&path).unwrap();
+        lower_file(&path, &input).unwrap()
     }
 
     fn assignment_strings(lowered: &LoweredModule) -> Vec<(String, String, String)> {
@@ -768,6 +869,58 @@ mod tests {
                     "0".to_string(),
                 ),
                 ("q_n".to_string(), "(not q)".to_string(), "0".to_string(),),
+            ]
+        );
+    }
+
+    #[test]
+    fn lowers_tri_state_assign_and_precharge_cell() {
+        let lowered = lower_path("../sv-cells/sm83/cells/not_pch_x2_alu.sv");
+        assert_eq!(
+            assignment_strings(&lowered)
+                .into_iter()
+                .map(|(target, expr, _)| (target, expr))
+                .collect::<Vec<_>>(),
+            vec![
+                ("y".to_string(), "(not in)".to_string()),
+                ("in".to_string(), "(bufif0 1 pch_n)".to_string()),
+            ]
+        );
+    }
+
+    #[test]
+    fn lowers_direct_bufif_precharge_and_tristate_variants() {
+        let lowered = lower_path("../sv-cells/dmg_cpu_b/cells/pad_bidir.sv");
+        assert_eq!(
+            assignment_strings(&lowered)
+                .into_iter()
+                .map(|(target, expr, _)| (target, expr))
+                .collect::<Vec<_>>(),
+            vec![
+                ("pad".to_string(), "(bufif1 0 ndrv)".to_string()),
+                ("pad".to_string(), "(bufif0 1 pdrv_n)".to_string()),
+                ("i_n".to_string(), "(not pad)".to_string()),
+            ]
+        );
+    }
+
+    #[test]
+    fn lowers_tristate_assigns_with_repeated_drivers_in_source_order() {
+        let lowered = lower_path("../sv-cells/sm83/cells/reg_pc_out_bit012.sv");
+        let assignments = assignment_strings(&lowered);
+        assert!(assignments.iter().any(|(target, expr, _)| {
+            target == "y1" && expr == "(bufif1 0 (or (and in1 in2) (and in3 in4)))"
+        }));
+        let y4_assignments = assignments
+            .iter()
+            .filter(|(target, _, _)| target == "y4")
+            .map(|(_, expr, _)| expr.clone())
+            .collect::<Vec<_>>();
+        assert_eq!(
+            y4_assignments,
+            vec![
+                "(bufif1 0 (and in7 in8))".to_string(),
+                "(bufif1 0 in9)".to_string(),
             ]
         );
     }

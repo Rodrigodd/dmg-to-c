@@ -430,7 +430,7 @@ Acceptance criteria:
 
 ## Current Progress
 
-Last updated after Milestone 6.
+Last updated after Milestone 7.
 
 - Completed Milestone 1 in commit `bd40d33`: CLI harness, lexer, `survey`, and `check --stage lex`.
 - Completed Milestone 2 in commit `d78d8c9`: AST, parser, `parse`, and `check --stage parse`.
@@ -438,32 +438,22 @@ Last updated after Milestone 6.
 - Superseded Milestone 4: the initial reference-cell-specific lowering path was removed because it mocked the commented reference output instead of implementing reusable conversion logic.
 - Completed Milestone 5: simple combinational lowering for scalar continuous assignments with `!`, `~`, `&`, `&&`, `|`, `||`, `^`, `~^`, `~&`, and `~|`.
 - Completed Milestone 6: generic latch/register lowering for `always_latch` and simple stateful procedural assignments, including blocking/non-blocking normalization and mux-based hold behavior.
-- Verified current corpus status:
+- Completed Milestone 7: tri-state and precharge families.
+- Verified corpus and lowering status:
   - `cargo test` passes.
-  - `cargo run -- check ../sv-cells --stage lex` reports `processed=206 failed=0`.
-  - `cargo run -- check ../sv-cells --stage parse` reports `processed=206 failed=0`.
-  - `cargo run -- check ../sv-cells --stage analyze` reports `processed=206 failed=0`.
-  - `cargo run -- check ../sv-cells/sm83/cells/and2.sv --stage lower` reports `processed=1 failed=0`.
-  - `cargo run -- convert-file ../sv-cells/sm83/cells/and2.sv /tmp/and2.cell --dry-run` succeeds.
-  - Targeted lower checks and dry-run conversions passed for:
-    - `sv-cells/sm83/cells/and2.sv`
-    - `sv-cells/sm83/cells/and3.sv`
-    - `sv-cells/sm83/cells/or3_b.sv`
-    - `sv-cells/sm83/cells/nor8_alu.sv`
-    - `sv-cells/sm83/cells/xor_idu_l.sv`
-    - `sv-cells/dmg_cpu_b/cells/and2.sv`
-    - `sv-cells/dmg_cpu_b/cells/xor.sv`
-    - `sv-cells/dmg_cpu_b/cells/xnor.sv`
-- Verified Milestone 6 representative latch/register fixtures:
-  - `cargo run -- check ../sv-cells/sm83/cells/dff_cc_q.sv --stage lower` reports `processed=1 failed=0`.
-  - `cargo run -- check ../sv-cells/sm83/cells/dff_cc_ee_q_x1_reg_bit.sv --stage lower` reports `processed=1 failed=0`.
-  - `cargo run -- check ../sv-cells/dmg_cpu_b/cells/nand_latch.sv --stage lower` reports `processed=1 failed=0`.
-  - `cargo run -- convert-file ../sv-cells/sm83/cells/dff_cc_ee_q_n_reg_wz_bit.sv /tmp/dff_cc_ee_q_n_reg_wz_bit.cell --dry-run` succeeds.
-  - `cargo run -- convert-file ../sv-cells/dmg_cpu_b/cells/dlatch.sv /tmp/dlatch.cell --dry-run` succeeds.
-  - `cargo run -- convert-file ../sv-cells/sm83/cells/dlatch_ee_q_n.sv /tmp/dlatch_ee_q_n.cell --dry-run` succeeds.
+  - `cargo run -- check sv-cells/sm83/cells/pch_dec2_c.sv --stage lower` reports `processed=1 failed=0`.
+  - `cargo run -- check sv-cells/sm83/cells/not_pch_x2_alu.sv --stage lower` reports `processed=1 failed=0`.
+  - `cargo run -- check sv-cells/sm83/cells/reg_pc_out_bit012.sv --stage lower` reports `processed=1 failed=0`.
+  - `cargo run -- check sv-cells/sm83/cells/nand2_od_b_dbus.sv --stage lower` reports `processed=1 failed=0`.
+  - `cargo run -- check sv-cells/dmg_cpu_b/cells/pad_bidir.sv --stage lower` reports `processed=1 failed=0`.
+  - `cargo run -- convert-file sv-cells/sm83/cells/pch_dec2_c.sv /tmp/pch_dec2_c.cell --dry-run` succeeds.
+  - `cargo run -- convert-file sv-cells/sm83/cells/not_pch_x2_alu.sv /tmp/not_pch_x2_alu.cell --dry-run` succeeds.
+  - `cargo run -- convert-file sv-cells/sm83/cells/reg_pc_out_bit012.sv /tmp/reg_pc_out_bit012.cell --dry-run` succeeds.
+  - `cargo run -- convert-file sv-cells/sm83/cells/nand2_od_b_dbus.sv /tmp/nand2_od_b_dbus.cell --dry-run` succeeds.
+  - `cargo run -- convert-file sv-cells/dmg_cpu_b/cells/pad_bidir.sv /tmp/pad_bidir.cell --dry-run` succeeds.
 - Reference-specific lowering was removed from `lower.rs`; the checked-in reference `.cell` no longer drives the lowering path and is not used as a golden lowering test.
-- Next pending work: Milestone 7, tri-state and precharge families.
-- Remaining after Milestone 6: tri-state/precharge families, transistor-heavy cells, then full corpus conversion.
+- Next pending work: Milestone 8, transistor-heavy cells.
+- Remaining after Milestone 7: transistor-heavy cells, then full corpus conversion.
 
 ### Milestone 1: CLI and Lex All Files
 
