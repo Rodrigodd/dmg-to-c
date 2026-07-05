@@ -1,0 +1,66 @@
+(cell
+  sm83_dffs_cc_ee_pch_d_reg_pc_bit
+  (inputs
+    clk
+    clk_n
+    ena
+    ena_n
+    s_n
+    pch_n
+    d
+  )
+
+  (outputs q q_n d)
+
+  (registers ff1 ff2 q_n)
+
+  (assignments
+
+    ;; ----- ff1 latch enable -----
+
+    (t0 (and d clk_n ena) 0)
+    (t1 (not d) 0)
+    (t2 (not clk) 0)
+    (t3 (and t1 t2 ena_n) 0)
+    (t4 (not s_n) 0)
+    (t5 (or t0 t3) 0)
+    (t6 (or t5 t4) 0)
+
+    ;; ff1 data
+    (t7 (or d t4) 0)
+
+    ;; latch hold
+    (ff1 (mux t6 t7 ff1) 0)
+
+    ;; ----- ff2 latch -----
+
+    (t8 (and ff1 clk) 0)
+    (t9 (not ff1) 0)
+    (t10 (and t9 clk_n) 0)
+    (t11 (or t8 t10) 0)
+
+    (t12 (not ff1) 0)
+
+    (ff2 (mux t11 t12 ff2) 0)
+
+    ;; ----- q_n latch -----
+
+    (t13 (and ff2 clk) 0)
+    (t14 (not ff2) 0)
+    (t15 (and t14 clk_n) 0)
+    (t16 (or t13 t15) 0)
+
+    (q_n
+      (mux t16 ff2 q_n)
+      (+ (elmore (wire 55) (nmos 3)) (elmore (wire 25) (pmos 3)) (elmore (wire L_q) (pmos 13)))
+    )
+
+    ;; ----- output inverter -----
+
+    (q (not q_n) (elmore (wire L_q) (nmos 13)))
+
+    ;; ----- precharge transistor -----
+
+    (d (bufif0 1 pch_n) (elmore (wire L_d) (pmos 5)))
+  )
+)
