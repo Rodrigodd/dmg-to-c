@@ -430,13 +430,14 @@ Acceptance criteria:
 
 ## Current Progress
 
-Last updated after Milestone 5.
+Last updated after Milestone 6.
 
 - Completed Milestone 1 in commit `bd40d33`: CLI harness, lexer, `survey`, and `check --stage lex`.
 - Completed Milestone 2 in commit `d78d8c9`: AST, parser, `parse`, and `check --stage parse`.
 - Completed Milestone 3 in commit `98429a7`: semantic analysis, `analyze`, and `check --stage analyze`.
 - Superseded Milestone 4: the initial reference-cell-specific lowering path was removed because it mocked the commented reference output instead of implementing reusable conversion logic.
 - Completed Milestone 5: simple combinational lowering for scalar continuous assignments with `!`, `~`, `&`, `&&`, `|`, `||`, `^`, `~^`, `~&`, and `~|`.
+- Completed Milestone 6: generic latch/register lowering for `always_latch` and simple stateful procedural assignments, including blocking/non-blocking normalization and mux-based hold behavior.
 - Verified current corpus status:
   - `cargo test` passes.
   - `cargo run -- check ../sv-cells --stage lex` reports `processed=206 failed=0`.
@@ -453,9 +454,16 @@ Last updated after Milestone 5.
     - `sv-cells/dmg_cpu_b/cells/and2.sv`
     - `sv-cells/dmg_cpu_b/cells/xor.sv`
     - `sv-cells/dmg_cpu_b/cells/xnor.sv`
+- Verified Milestone 6 representative latch/register fixtures:
+  - `cargo run -- check ../sv-cells/sm83/cells/dff_cc_q.sv --stage lower` reports `processed=1 failed=0`.
+  - `cargo run -- check ../sv-cells/sm83/cells/dff_cc_ee_q_x1_reg_bit.sv --stage lower` reports `processed=1 failed=0`.
+  - `cargo run -- check ../sv-cells/dmg_cpu_b/cells/nand_latch.sv --stage lower` reports `processed=1 failed=0`.
+  - `cargo run -- convert-file ../sv-cells/sm83/cells/dff_cc_ee_q_n_reg_wz_bit.sv /tmp/dff_cc_ee_q_n_reg_wz_bit.cell --dry-run` succeeds.
+  - `cargo run -- convert-file ../sv-cells/dmg_cpu_b/cells/dlatch.sv /tmp/dlatch.cell --dry-run` succeeds.
+  - `cargo run -- convert-file ../sv-cells/sm83/cells/dlatch_ee_q_n.sv /tmp/dlatch_ee_q_n.cell --dry-run` succeeds.
 - Reference-specific lowering was removed from `lower.rs`; the checked-in reference `.cell` no longer drives the lowering path and is not used as a golden lowering test.
-- Next pending work: Milestone 6, register and latch families.
-- Remaining after Milestone 5: tri-state/precharge families, transistor-heavy cells, then full corpus conversion.
+- Next pending work: Milestone 7, tri-state and precharge families.
+- Remaining after Milestone 6: tri-state/precharge families, transistor-heavy cells, then full corpus conversion.
 
 ### Milestone 1: CLI and Lex All Files
 
@@ -502,6 +510,8 @@ Status: completed.
 - Cover all `dff*` and `dlatch*` cells.
 - Normalize blocking and non-blocking latch assignments the same way.
 - Support set/reset variants such as source expressions containing `!s_n` or reset conditions.
+
+Status: completed.
 
 ### Milestone 7: Tri-state and Precharge Families
 

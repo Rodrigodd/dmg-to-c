@@ -650,7 +650,7 @@ fn analyze_specify(specify: &SpecifyBlock, analysis: &mut ModuleAnalysis) {
     }
 }
 
-fn sensitivity_is_stateful(sensitivity: &Sensitivity, kind: AlwaysKind) -> bool {
+pub(crate) fn sensitivity_is_stateful(sensitivity: &Sensitivity, kind: AlwaysKind) -> bool {
     match kind {
         AlwaysKind::Ff => true,
         AlwaysKind::Comb => false,

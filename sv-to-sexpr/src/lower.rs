@@ -1,4 +1,4 @@
-use crate::analyze::analyze_design;
+use crate::analyze::{analyze_design, sensitivity_is_stateful};
 use crate::ast::*;
 use crate::diagnostic::{Diagnostic, Span};
 use crate::ir::{Assignment, Cell, CellItem, Expr, LoweredModule};
@@ -102,13 +102,28 @@ impl<'a> Lowerer<'a> {
                 self.lower_continuous_assign(assign)?;
                 Ok(())
             }
+            ItemKind::Initial(_) => Ok(()),
+            ItemKind::AlwaysLatch(always) => {
+                let condition = always
+                    .condition
+                    .as_ref()
+                    .map(|expr| self.lower_expr(expr))
+                    .transpose()?;
+                self.lower_procedural_body(&always.body, condition, true)
+            }
+            ItemKind::Always(always) => {
+                let stateful = matches!(always.kind, AlwaysKind::Ff)
+                    || always
+                        .sensitivity
+                        .as_ref()
+                        .map(|sensitivity| sensitivity_is_stateful(sensitivity, always.kind))
+                        .unwrap_or(false);
+                self.lower_procedural_body(&always.body, None, stateful)
+            }
             ItemKind::Specify(_) | ItemKind::Decl(_) | ItemKind::Import(_) | ItemKind::Empty => {
                 Ok(())
             }
-            ItemKind::Initial(_)
-            | ItemKind::AlwaysLatch(_)
-            | ItemKind::Always(_)
-            | ItemKind::ProcAssign(_)
+            ItemKind::ProcAssign(_)
             | ItemKind::Primitive(_)
             | ItemKind::Instantiation(_)
             | ItemKind::Generate(_)
@@ -118,6 +133,86 @@ impl<'a> Lowerer<'a> {
                 "unsupported item for lowering",
             )),
         }
+    }
+
+    fn lower_procedural_body(
+        &mut self,
+        item: &Item,
+        condition: Option<Expr>,
+        hold_on_false: bool,
+    ) -> LowerResult<()> {
+        match &item.kind {
+            ItemKind::ProcAssign(stmt) => {
+                self.lower_procedural_assign(stmt, condition.as_ref(), hold_on_false)
+            }
+            ItemKind::Block(block) | ItemKind::Generate(block) => {
+                for child in &block.items {
+                    self.lower_procedural_body(child, condition.clone(), hold_on_false)?;
+                }
+                Ok(())
+            }
+            ItemKind::If(stmt) => {
+                if let Some(else_branch) = &stmt.else_branch {
+                    return Err(Diagnostic::new(
+                        else_branch.span.clone(),
+                        "unsupported procedural else branch",
+                    ));
+                }
+                let next_condition = match condition {
+                    Some(ref parent) => Expr::list(vec![
+                        Expr::atom("and"),
+                        parent.clone(),
+                        self.lower_expr(&stmt.condition)?,
+                    ]),
+                    None => self.lower_expr(&stmt.condition)?,
+                };
+                self.lower_procedural_body(&stmt.then_branch, Some(next_condition), hold_on_false)
+            }
+            ItemKind::Initial(_)
+            | ItemKind::Assign(_)
+            | ItemKind::Specify(_)
+            | ItemKind::Decl(_)
+            | ItemKind::Import(_)
+            | ItemKind::Empty
+            | ItemKind::AlwaysLatch(_)
+            | ItemKind::Always(_)
+            | ItemKind::Primitive(_)
+            | ItemKind::Instantiation(_) => Err(Diagnostic::new(
+                item.span.clone(),
+                "unsupported procedural body for lowering",
+            )),
+        }
+    }
+
+    fn lower_procedural_assign(
+        &mut self,
+        stmt: &AssignStmt,
+        condition: Option<&Expr>,
+        hold_on_false: bool,
+    ) -> LowerResult<()> {
+        let target = expr_symbol(&stmt.target).ok_or_else(|| {
+            Diagnostic::new(
+                stmt.target.span.clone(),
+                "expected assignment target symbol",
+            )
+        })?;
+        let mut expr = self.lower_expr(&stmt.value)?;
+        if hold_on_false {
+            if let Some(condition) = condition {
+                expr = Expr::list(vec![
+                    Expr::atom("mux"),
+                    condition.clone(),
+                    expr,
+                    Expr::atom(target.clone()),
+                ]);
+            }
+        }
+        self.cell.items.push(CellItem::Assignment(Assignment {
+            target,
+            expr,
+            delay: Expr::atom("0"),
+        }));
+        Ok(())
     }
 
     fn lower_continuous_assign(&mut self, assign: &AssignDecl) -> LowerResult<()> {
@@ -534,39 +629,146 @@ fn multiply_unit_factor(left: &SvExpr, right: &SvExpr) -> Option<i64> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::serialize::render_cell;
+    use crate::serialize::render_expr;
     use std::fs;
 
-    fn lower_render(path: &str) -> String {
+    fn lower_path(path: &str) -> LoweredModule {
         let path = Path::new(path);
         let input = fs::read_to_string(path).unwrap();
-        let lowered = lower_file(path, &input).unwrap();
-        render_cell(&lowered.cell)
+        lower_file(path, &input).unwrap()
+    }
+
+    fn assignment_strings(lowered: &LoweredModule) -> Vec<(String, String, String)> {
+        lowered
+            .cell
+            .items
+            .iter()
+            .filter_map(|item| match item {
+                CellItem::Assignment(assignment) => Some((
+                    assignment.target.clone(),
+                    render_expr(&assignment.expr),
+                    render_expr(&assignment.delay),
+                )),
+                _ => None,
+            })
+            .collect()
+    }
+
+    fn rendered_exprs(path: &str) -> Vec<String> {
+        assignment_strings(&lower_path(path))
+            .into_iter()
+            .map(|(_, expr, _)| expr)
+            .collect()
     }
 
     #[test]
     fn lowers_and_gate_cells() {
-        let rendered = lower_render("../sv-cells/sm83/cells/and3.sv");
-        assert!(rendered.contains("(and in1 in2 in3)"));
-        let rendered = lower_render("../sv-cells/dmg_cpu_b/cells/and2.sv");
-        assert!(rendered.contains("(and in1 in2)"));
+        assert!(
+            rendered_exprs("../sv-cells/sm83/cells/and3.sv")
+                .contains(&"(and in1 in2 in3)".to_string())
+        );
+        assert!(
+            rendered_exprs("../sv-cells/dmg_cpu_b/cells/and2.sv")
+                .contains(&"(and in1 in2)".to_string())
+        );
     }
 
     #[test]
     fn lowers_or_and_nor_cells() {
-        let rendered = lower_render("../sv-cells/sm83/cells/or3_b.sv");
-        assert!(rendered.contains("(or in1 in2 in3)"));
-        let rendered = lower_render("../sv-cells/sm83/cells/nor8_alu.sv");
-        assert!(rendered.contains("(nor in1 in2 in3 in4 in5 in6 in7 in8)"));
+        assert!(
+            rendered_exprs("../sv-cells/sm83/cells/or3_b.sv")
+                .contains(&"(or in1 in2 in3)".to_string())
+        );
+        assert!(
+            rendered_exprs("../sv-cells/sm83/cells/nor8_alu.sv")
+                .contains(&"(nor in1 in2 in3 in4 in5 in6 in7 in8)".to_string())
+        );
     }
 
     #[test]
     fn lowers_xor_and_xnor_cells() {
-        let rendered = lower_render("../sv-cells/sm83/cells/xor_idu_l.sv");
-        assert!(rendered.contains("(xor in1 in2)"));
-        let rendered = lower_render("../sv-cells/dmg_cpu_b/cells/xor.sv");
-        assert!(rendered.contains("(xor in1 in2)"));
-        let rendered = lower_render("../sv-cells/dmg_cpu_b/cells/xnor.sv");
-        assert!(rendered.contains("(xnor in1 in2)"));
+        assert!(
+            rendered_exprs("../sv-cells/sm83/cells/xor_idu_l.sv")
+                .contains(&"(xor in1 in2)".to_string())
+        );
+        assert!(
+            rendered_exprs("../sv-cells/dmg_cpu_b/cells/xor.sv")
+                .contains(&"(xor in1 in2)".to_string())
+        );
+        assert!(
+            rendered_exprs("../sv-cells/dmg_cpu_b/cells/xnor.sv")
+                .contains(&"(xnor in1 in2)".to_string())
+        );
+    }
+
+    #[test]
+    fn lowers_register_latch_family_with_normalized_assignments() {
+        let lowered = lower_path("../sv-cells/sm83/cells/dffr_cc_ee_reg_ie_bit.sv");
+        assert_eq!(lowered.cell.registers, vec!["ff1", "ff2", "q_n"]);
+        assert_eq!(
+            assignment_strings(&lowered),
+            vec![
+                (
+                    "ff1".to_string(),
+                    "(mux (or (and d clk_n ena) (and (not d) (not clk) (not ena_n)) r) (and d (not r)) ff1)"
+                        .to_string(),
+                    "0".to_string(),
+                ),
+                (
+                    "ff2".to_string(),
+                    "(mux (or (and ff1 clk) (and (not ff1) (not clk_n))) (not ff1) ff2)"
+                        .to_string(),
+                    "0".to_string(),
+                ),
+                (
+                    "q_n".to_string(),
+                    "(mux (or (and ff2 clk) (and (not ff2) (not clk_n))) ff2 q_n)".to_string(),
+                    "0".to_string(),
+                ),
+                (
+                    "q".to_string(),
+                    "(not q_n)".to_string(),
+                    "0".to_string(),
+                ),
+            ]
+        );
+    }
+
+    #[test]
+    fn lowers_block_wrapped_latch_body() {
+        let lowered = lower_path("../sv-cells/dmg_cpu_b/cells/nand_latch.sv");
+        assert_eq!(lowered.cell.registers, vec!["q", "q_n"]);
+        assert_eq!(
+            assignment_strings(&lowered),
+            vec![
+                (
+                    "q".to_string(),
+                    "(mux (or (not s_n) (not r_n)) (not s_n) q)".to_string(),
+                    "0".to_string(),
+                ),
+                (
+                    "q_n".to_string(),
+                    "(mux (or (not s_n) (not r_n)) (not r_n) q_n)".to_string(),
+                    "0".to_string(),
+                ),
+            ]
+        );
+    }
+
+    #[test]
+    fn lowers_simple_latch_and_continuous_output() {
+        let lowered = lower_path("../sv-cells/dmg_cpu_b/cells/dlatch.sv");
+        assert_eq!(lowered.cell.registers, vec!["q"]);
+        assert_eq!(
+            assignment_strings(&lowered),
+            vec![
+                (
+                    "q".to_string(),
+                    "(mux ena d q)".to_string(),
+                    "0".to_string(),
+                ),
+                ("q_n".to_string(), "(not q)".to_string(), "0".to_string(),),
+            ]
+        );
     }
 }
