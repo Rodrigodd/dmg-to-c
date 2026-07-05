@@ -29,6 +29,7 @@ pub enum Operator {
     DoubleAnd,
     DoubleOr,
     EqualEqual,
+    TripleEqual,
     NotEqual,
     NotCaseEqual,
     LessEqual,
@@ -289,6 +290,10 @@ impl<'a> Lexer<'a> {
                 return Err(self.error_here("invalid real literal exponent".to_string()));
             }
         }
+        while matches!(self.peek_byte().map(char::from), Some(ch) if ch.is_ascii_alphabetic()) {
+            is_real = true;
+            self.advance_char();
+        }
         Ok(Token {
             kind: if is_real {
                 TokenKind::Real
@@ -339,6 +344,8 @@ impl<'a> Lexer<'a> {
             Some(TokenKind::Operator(Operator::DoubleAnd))
         } else if rest.starts_with("||") {
             Some(TokenKind::Operator(Operator::DoubleOr))
+        } else if rest.starts_with("===") {
+            Some(TokenKind::Operator(Operator::TripleEqual))
         } else if rest.starts_with("==") {
             Some(TokenKind::Operator(Operator::EqualEqual))
         } else if rest.starts_with("!=") {
@@ -354,7 +361,8 @@ impl<'a> Lexer<'a> {
         };
         if let Some(kind) = kind {
             let len = match kind {
-                TokenKind::Operator(Operator::NotCaseEqual) => 3,
+                TokenKind::Operator(Operator::NotCaseEqual)
+                | TokenKind::Operator(Operator::TripleEqual) => 3,
                 TokenKind::Operator(Operator::TildeCaret)
                 | TokenKind::Operator(Operator::TildeAmpersand)
                 | TokenKind::Operator(Operator::TildePipe) => 2,

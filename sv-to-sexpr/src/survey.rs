@@ -1,5 +1,6 @@
 use crate::diagnostic::Diagnostic;
 use crate::lexer::{Keyword, Operator, Punct, TokenKind, lex_file};
+use crate::parser::parse_file;
 use std::collections::BTreeMap;
 use std::fs;
 use std::path::{Path, PathBuf};
@@ -59,7 +60,10 @@ pub fn survey_dir(path: &Path) -> Result<SurveyReport, Diagnostic> {
 }
 
 pub fn check_lex_dir(path: &Path) -> Result<CheckReport, Diagnostic> {
-    let mut report = CheckReport::default();
+    let mut report = CheckReport {
+        stage: "lex".to_string(),
+        ..Default::default()
+    };
     for file in collect_sv_files(path)? {
         report.processed += 1;
         match fs::read_to_string(&file) {
@@ -85,8 +89,39 @@ pub fn check_lex_dir(path: &Path) -> Result<CheckReport, Diagnostic> {
     Ok(report)
 }
 
+pub fn check_parse_dir(path: &Path) -> Result<CheckReport, Diagnostic> {
+    let mut report = CheckReport {
+        stage: "parse".to_string(),
+        ..Default::default()
+    };
+    for file in collect_sv_files(path)? {
+        report.processed += 1;
+        match fs::read_to_string(&file) {
+            Ok(contents) => match parse_file(&file, &contents) {
+                Ok(_) => {}
+                Err(err) => {
+                    report.failed += 1;
+                    report.failures.push(err.to_string());
+                }
+            },
+            Err(err) => {
+                report.failed += 1;
+                report.failures.push(
+                    Diagnostic::new(
+                        crate::diagnostic::Span::new(&file, 1, 1),
+                        format!("failed to read file: {}", err),
+                    )
+                    .to_string(),
+                );
+            }
+        }
+    }
+    Ok(report)
+}
+
 #[derive(Debug, Default, Clone)]
 pub struct CheckReport {
+    pub stage: String,
     pub processed: usize,
     pub failed: usize,
     pub failures: Vec<String>,
@@ -96,8 +131,8 @@ impl CheckReport {
     pub fn render(&self) -> String {
         let mut out = String::new();
         out.push_str(&format!(
-            "lex check summary: processed={} failed={}\n",
-            self.processed, self.failed
+            "{} check summary: processed={} failed={}\n",
+            self.stage, self.processed, self.failed
         ));
         for failure in &self.failures {
             out.push_str("  ");
@@ -189,6 +224,7 @@ fn kind_label(kind: &TokenKind) -> &'static str {
             Operator::DoubleAnd => "op:&&",
             Operator::DoubleOr => "op:||",
             Operator::EqualEqual => "op:==",
+            Operator::TripleEqual => "op:===",
             Operator::NotEqual => "op:!=",
             Operator::NotCaseEqual => "op:!==",
             Operator::LessEqual => "op:<=",
