@@ -5,11 +5,13 @@ a milestone acceptance condition changes or is completed.
 
 ## Verified Baseline
 
-Last audited on 2026-07-10:
+Last audited on 2026-07-11:
 
-- `cargo test` passes 44 unit tests.
+- `cargo test` passes 48 unit tests and 11 integration tests.
 - Lexing succeeds for all 206 curated files.
 - Parsing succeeds for all 206 curated files.
+- `survey sv-cells` deterministically inventories 63,240 tokens and 138 typed
+  capabilities: 128 deferred, 10 intentional ignores, and zero unsupported.
 - The analysis command returns success for all 206 files, but its output is not
   accepted yet because it can misclassify combinational nets as registers and
   combine mutually exclusive generate branches.
@@ -37,8 +39,9 @@ Last audited on 2026-07-10:
   hierarchy, keeper, transistor, timing, and diagnostic behavior. Typed IR
   operators and structural validation enforce the expression boundary, and the
   CLI applies the shared strict diagnostic policy.
-- Milestone 1: partial. Full-corpus lexing works; the capability inventory and
-  required snapshots are missing.
+- Milestone 1: complete. Full-corpus lexing reports `processed=206 failed=0`;
+  deterministic snapshots cover the required syntax families and the typed
+  survey inventory attributes every observed capability to sorted source files.
 - Milestone 2: partial. Full-corpus parsing works; losslessness assertions and
   representative golden ASTs are missing.
 - Milestone 3: partial. Analysis structures exist, but register classification

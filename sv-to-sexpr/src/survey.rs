@@ -1,18 +1,59 @@
 use crate::analyze::analyze_file;
 use crate::diagnostic::{Diagnostic, DiagnosticCollection, DiagnosticKind, DiagnosticPolicy};
+use crate::inventory::{CapabilityInventory, ClassificationKind, InventoryWalker};
 use crate::lexer::{Keyword, Operator, Punct, TokenKind, lex_file};
 use crate::lower::lower_file;
 use crate::parser::parse_file;
-use std::collections::BTreeMap;
+use std::collections::{BTreeMap, BTreeSet};
 use std::fs;
 use std::path::{Path, PathBuf};
 
-#[derive(Debug, Default, Clone)]
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct SurveyFailure {
+    pub path: String,
+    pub line: usize,
+    pub column: usize,
+    pub kind: DiagnosticKind,
+    pub message: String,
+}
+
+impl SurveyFailure {
+    fn from_diagnostic(path: String, diagnostic: Diagnostic) -> Self {
+        Self {
+            path,
+            line: diagnostic.span.line,
+            column: diagnostic.span.column,
+            kind: diagnostic.kind,
+            message: diagnostic.message,
+        }
+    }
+
+    fn read_error(path: String, message: String) -> Self {
+        Self {
+            path,
+            line: 1,
+            column: 1,
+            kind: DiagnosticKind::Error,
+            message,
+        }
+    }
+
+    fn render(&self) -> String {
+        format!(
+            "{}:{}:{}: {}: {}",
+            self.path, self.line, self.column, self.kind, self.message
+        )
+    }
+}
+
+#[derive(Debug, Default, Clone, PartialEq, Eq)]
 pub struct SurveyReport {
     pub files: usize,
     pub failed_files: usize,
     pub tokens: usize,
     pub kinds: BTreeMap<String, usize>,
+    pub inventory: CapabilityInventory,
+    pub failures: Vec<SurveyFailure>,
 }
 
 impl SurveyReport {
@@ -26,18 +67,79 @@ impl SurveyReport {
         }
     }
 
-    pub fn record_failure(&mut self) {
+    pub fn record_failure(&mut self, failure: SurveyFailure) {
         self.failed_files += 1;
+        self.failures.push(failure);
     }
 
     pub fn render(&self) -> String {
         let mut out = String::new();
         out.push_str(&format!(
-            "survey summary: files={} failed={} tokens={}\n",
-            self.files, self.failed_files, self.tokens
+            "survey summary: files={} failed={} tokens={} supported={} deferred={} intentional-ignored={} unsupported={}\n",
+            self.files,
+            self.failed_files,
+            self.tokens,
+            self.inventory
+                .classification_count(ClassificationKind::Supported),
+            self.inventory
+                .classification_count(ClassificationKind::Deferred),
+            self.inventory
+                .classification_count(ClassificationKind::IntentionalIgnore),
+            self.inventory.unsupported_count(),
         ));
+        out.push_str("token kinds:\n");
         for (kind, count) in &self.kinds {
             out.push_str(&format!("  {:<24} {}\n", kind, count));
+        }
+        let mut failures = self
+            .failures
+            .iter()
+            .map(SurveyFailure::render)
+            .collect::<Vec<_>>();
+        failures.sort();
+        out.push_str(&format!("failures: {}\n", failures.len()));
+        for failure in failures {
+            out.push_str("  ");
+            out.push_str(&failure);
+            out.push('\n');
+        }
+        out.push_str(&format!(
+            "capabilities: {}\n",
+            self.inventory.records().len()
+        ));
+        for (id, record) in self.inventory.records() {
+            out.push_str(&format!(
+                "  {id} | {} | occurrences={} | files={}\n",
+                record.classification.label(),
+                record.occurrences,
+                record
+                    .files
+                    .iter()
+                    .map(String::as_str)
+                    .collect::<Vec<_>>()
+                    .join(",")
+            ));
+        }
+        out.push_str(&format!(
+            "unsupported capabilities: {}\n",
+            self.inventory.unsupported_count()
+        ));
+        for (id, record) in
+            self.inventory.records().iter().filter(|(_, record)| {
+                record.classification.kind() == ClassificationKind::Unsupported
+            })
+        {
+            out.push_str(&format!(
+                "  {id} | {} | occurrences={} | files={}\n",
+                record.classification.label(),
+                record.occurrences,
+                record
+                    .files
+                    .iter()
+                    .map(String::as_str)
+                    .collect::<Vec<_>>()
+                    .join(",")
+            ));
         }
         out
     }
@@ -45,20 +147,55 @@ impl SurveyReport {
 
 pub fn survey_dir(path: &Path) -> Result<SurveyReport, Diagnostic> {
     let mut report = SurveyReport::default();
+    let mut parsed_files = Vec::new();
     for file in collect_sv_files(path)? {
         report.files += 1;
+        let normalized = normalize_survey_path(path, &file);
         match fs::read_to_string(&file) {
             Ok(contents) => match lex_file(&file, &contents) {
-                Ok(tokens) => report.record(&tokens),
-                Err(_) => report.record_failure(),
+                Ok(tokens) => {
+                    report.record(&tokens);
+                    match parse_file(&file, &contents) {
+                        Ok(design) => parsed_files.push((normalized, tokens, design)),
+                        Err(diagnostic) => report
+                            .record_failure(SurveyFailure::from_diagnostic(normalized, diagnostic)),
+                    }
+                }
+                Err(diagnostic) => {
+                    report.record_failure(SurveyFailure::from_diagnostic(normalized, diagnostic))
+                }
             },
             Err(err) => {
-                report.record_failure();
-                let _ = err;
+                report.record_failure(SurveyFailure::read_error(
+                    normalized,
+                    format!("failed to read file: {err}"),
+                ));
             }
         }
     }
+    let known_modules = parsed_files
+        .iter()
+        .flat_map(|(_, _, design)| design.modules.iter().map(|module| module.name.clone()))
+        .collect::<BTreeSet<_>>();
+    for (normalized, tokens, design) in &parsed_files {
+        let mut walker = InventoryWalker::new(&mut report.inventory, &known_modules, normalized);
+        walker.record_tokens(tokens);
+        walker.record_design(design);
+    }
     Ok(report)
+}
+
+fn normalize_survey_path(root: &Path, file: &Path) -> String {
+    let relative = if root.is_file() {
+        file.file_name().map(Path::new).unwrap_or(file)
+    } else {
+        file.strip_prefix(root).unwrap_or(file)
+    };
+    relative
+        .components()
+        .map(|component| component.as_os_str().to_string_lossy())
+        .collect::<Vec<_>>()
+        .join("/")
 }
 
 pub fn check_lex_dir(path: &Path) -> Result<CheckReport, Diagnostic> {
@@ -350,5 +487,31 @@ mod check_report_tests {
                 "  d.sv:1:1: error: failure\n",
             )
         );
+    }
+
+    #[test]
+    fn survey_surfaces_lex_and_parse_failures_with_normalized_paths() {
+        let directory = std::env::temp_dir().join(format!(
+            "sv-to-sexpr-survey-test-{}-{:?}",
+            std::process::id(),
+            std::thread::current().id()
+        ));
+        if directory.exists() {
+            std::fs::remove_dir_all(&directory).unwrap();
+        }
+        std::fs::create_dir_all(&directory).unwrap();
+        std::fs::write(directory.join("bad_lex.sv"), "module bad; % endmodule\n").unwrap();
+        std::fs::write(directory.join("bad_parse.sv"), "module truncated;\n").unwrap();
+
+        let report = survey_dir(&directory).unwrap();
+        std::fs::remove_dir_all(&directory).unwrap();
+
+        assert_eq!(report.files, 2);
+        assert_eq!(report.failed_files, 2);
+        assert_eq!(report.failures.len(), 2);
+        let rendered = report.render();
+        assert!(rendered.contains("bad_lex.sv:1:13: error: unexpected character `%`"));
+        assert!(rendered.contains("bad_parse.sv:1:1: error: unterminated module body"));
+        assert!(!rendered.contains(&directory.to_string_lossy().to_string()));
     }
 }

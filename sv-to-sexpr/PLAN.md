@@ -169,6 +169,9 @@ Acceptance conditions:
 
 ### Milestone 1: Corpus Inventory and Lexer
 
+Status: complete as of 2026-07-11. The deterministic survey inventory covers
+all 206 curated files and reports zero unsupported capabilities.
+
 Complete the lexer and turn `survey` into a capability inventory rather than a
 token counter only.
 
