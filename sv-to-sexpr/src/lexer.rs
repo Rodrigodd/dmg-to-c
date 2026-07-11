@@ -167,33 +167,18 @@ impl<'a> Lexer<'a> {
             }
         }
         let name = &self.input[start..self.index];
-        if name == "default_nettype" {
-            while let Some(byte) = self.peek_byte() {
-                let ch = byte as char;
-                if ch == '\n' {
-                    break;
-                }
-                self.advance_char();
+        while let Some(byte) = self.peek_byte() {
+            let ch = byte as char;
+            if ch == '\n' {
+                break;
             }
-            Ok(Token {
-                kind: TokenKind::Directive,
-                lexeme: format!("`{}", name),
-                span,
-            })
-        } else {
-            while let Some(byte) = self.peek_byte() {
-                let ch = byte as char;
-                if ch == '\n' {
-                    break;
-                }
-                self.advance_char();
-            }
-            Ok(Token {
-                kind: TokenKind::Directive,
-                lexeme: format!("`{}", name),
-                span,
-            })
+            self.advance_char();
         }
+        Ok(Token {
+            kind: TokenKind::Directive,
+            lexeme: format!("`{}", name),
+            span,
+        })
     }
 
     fn lex_escaped_identifier(&mut self) -> LexResult<Token> {
@@ -267,7 +252,7 @@ impl<'a> Lexer<'a> {
         }
         let mut is_real = false;
         if self.peek_char() == Some('.')
-            && self.peek_next_char().map_or(false, |c| c.is_ascii_digit())
+            && self.peek_next_char().is_some_and(|c| c.is_ascii_digit())
         {
             is_real = true;
             self.advance_char();

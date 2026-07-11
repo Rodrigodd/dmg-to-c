@@ -941,10 +941,7 @@ impl Parser {
         kinds: &[BinaryOp],
     ) -> ParseResult<Expr> {
         let mut expr = next(self)?;
-        loop {
-            let Some(op_index) = self.peek_operator_index(operators) else {
-                break;
-            };
+        while let Some(op_index) = self.peek_operator_index(operators) {
             let op = kinds[op_index];
             self.next_token();
             let right = next(self)?;

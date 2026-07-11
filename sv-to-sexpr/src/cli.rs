@@ -96,7 +96,7 @@ pub fn run() -> Result<(), Diagnostic> {
                 .next()
                 .ok_or_else(|| usage_error("convert-file requires <input.sv> <output.cell>"))?;
             let mut dry_run = false;
-            while let Some(arg) = args.next() {
+            for arg in args.by_ref() {
                 match arg.as_str() {
                     "--dry-run" => dry_run = true,
                     other => return Err(usage_error(&format!("unexpected argument `{}`", other))),

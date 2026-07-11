@@ -197,15 +197,13 @@ impl<'a> Lowerer<'a> {
             )
         })?;
         let mut expr = self.lower_expr(&stmt.value)?;
-        if hold_on_false {
-            if let Some(condition) = condition {
-                expr = Expr::list(vec![
-                    Expr::atom("mux"),
-                    condition.clone(),
-                    expr,
-                    Expr::atom(target.clone()),
-                ]);
-            }
+        if hold_on_false && let Some(condition) = condition {
+            expr = Expr::list(vec![
+                Expr::atom("mux"),
+                condition.clone(),
+                expr,
+                Expr::atom(target.clone()),
+            ]);
         }
         self.cell.items.push(CellItem::Assignment(Assignment {
             target,
@@ -339,23 +337,23 @@ impl<'a> Lowerer<'a> {
         then_expr: &SvExpr,
         else_expr: &SvExpr,
     ) -> LowerResult<Option<Expr>> {
-        if self.is_z_expr(else_expr) {
-            if let Some(value) = self.tristate_drive_value(then_expr) {
-                return Ok(Some(Expr::list(vec![
-                    Expr::atom("bufif1"),
-                    value,
-                    self.lower_expr(condition)?,
-                ])));
-            }
+        if self.is_z_expr(else_expr)
+            && let Some(value) = self.tristate_drive_value(then_expr)
+        {
+            return Ok(Some(Expr::list(vec![
+                Expr::atom("bufif1"),
+                value,
+                self.lower_expr(condition)?,
+            ])));
         }
-        if self.is_z_expr(then_expr) {
-            if let Some(value) = self.tristate_drive_value(else_expr) {
-                return Ok(Some(Expr::list(vec![
-                    Expr::atom("bufif0"),
-                    value,
-                    self.lower_expr(condition)?,
-                ])));
-            }
+        if self.is_z_expr(then_expr)
+            && let Some(value) = self.tristate_drive_value(else_expr)
+        {
+            return Ok(Some(Expr::list(vec![
+                Expr::atom("bufif0"),
+                value,
+                self.lower_expr(condition)?,
+            ])));
         }
         Ok(None)
     }
@@ -472,10 +470,10 @@ impl<'a> Lowerer<'a> {
     fn lower_timing_expr(&mut self, expr: &SvExpr) -> LowerResult<Expr> {
         match &expr.kind {
             ExprKind::Path(segments) => {
-                if segments.len() == 1 {
-                    if let Some(alias) = self.timing_aliases.get(&segments[0]) {
-                        return Ok(alias.clone());
-                    }
+                if segments.len() == 1
+                    && let Some(alias) = self.timing_aliases.get(&segments[0])
+                {
+                    return Ok(alias.clone());
                 }
                 Ok(Expr::atom(segments.join("::")))
             }
@@ -546,10 +544,8 @@ impl<'a> Lowerer<'a> {
 
     fn lower_timing_expr_from_delay(&mut self, delay: &Delay) -> LowerResult<Expr> {
         let mut values = Vec::new();
-        for item in &delay.values {
-            if let Some(expr) = item {
-                values.push(self.lower_timing_expr(expr)?);
-            }
+        for expr in delay.values.iter().flatten() {
+            values.push(self.lower_timing_expr(expr)?);
         }
         match values.len() {
             0 => Ok(Expr::atom("0")),
@@ -689,9 +685,11 @@ fn render_call_callee(expr: &SvExpr) -> String {
 
 fn collect_and_operands<'a>(expr: &'a SvExpr, out: &mut Vec<&'a SvExpr>) {
     match &expr.kind {
-        ExprKind::Binary { op, left, right }
-            if matches!(op, BinaryOp::BitAnd | BinaryOp::LogicalAnd) =>
-        {
+        ExprKind::Binary {
+            op: BinaryOp::BitAnd | BinaryOp::LogicalAnd,
+            left,
+            right,
+        } => {
             collect_and_operands(left, out);
             collect_and_operands(right, out);
         }
@@ -701,9 +699,11 @@ fn collect_and_operands<'a>(expr: &'a SvExpr, out: &mut Vec<&'a SvExpr>) {
 
 fn collect_or_operands<'a>(expr: &'a SvExpr, out: &mut Vec<&'a SvExpr>) {
     match &expr.kind {
-        ExprKind::Binary { op, left, right }
-            if matches!(op, BinaryOp::BitOr | BinaryOp::LogicalOr) =>
-        {
+        ExprKind::Binary {
+            op: BinaryOp::BitOr | BinaryOp::LogicalOr,
+            left,
+            right,
+        } => {
             collect_or_operands(left, out);
             collect_or_operands(right, out);
         }

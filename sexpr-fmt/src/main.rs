@@ -8,7 +8,7 @@ use std::fs;
 use std::path::PathBuf;
 use std::process::ExitCode;
 
-use format::{format_document, FormatOptions};
+use format::{FormatOptions, format_document};
 use parser::parse_document;
 
 fn main() -> ExitCode {

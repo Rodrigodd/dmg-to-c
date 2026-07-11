@@ -361,21 +361,21 @@ fn analyze_item(item: &Item, analysis: &mut ModuleAnalysis, context: ProceduralC
             );
         }
         ItemKind::Always(always) => {
-            if let Some(sensitivity) = &always.sensitivity {
-                if sensitivity_is_stateful(sensitivity, always.kind) {
-                    analyze_item(
-                        &always.body,
-                        analysis,
-                        ProceduralContext::Always {
-                            state: true,
-                            source: match always.kind {
-                                AlwaysKind::Ff => ProceduralSource::AlwaysFf,
-                                _ => ProceduralSource::Always,
-                            },
+            if let Some(sensitivity) = &always.sensitivity
+                && sensitivity_is_stateful(sensitivity, always.kind)
+            {
+                analyze_item(
+                    &always.body,
+                    analysis,
+                    ProceduralContext::Always {
+                        state: true,
+                        source: match always.kind {
+                            AlwaysKind::Ff => ProceduralSource::AlwaysFf,
+                            _ => ProceduralSource::Always,
                         },
-                    );
-                    return;
-                }
+                    },
+                );
+                return;
             }
             analyze_item(
                 &always.body,
@@ -522,10 +522,10 @@ fn analyze_assignment(
         delay: None,
         kind,
     });
-    if context.is_state() {
-        if let Some(name) = expr_symbol(&stmt.target) {
-            register_name(&name, analysis);
-        }
+    if context.is_state()
+        && let Some(name) = expr_symbol(&stmt.target)
+    {
+        register_name(&name, analysis);
     }
 }
 
@@ -631,10 +631,8 @@ fn analyze_specify(specify: &SpecifyBlock, analysis: &mut ModuleAnalysis) {
                 for control in &path.controls {
                     collect_expr_reads(control, analysis);
                 }
-                for delay in &path.delays {
-                    if let Some(expr) = delay {
-                        collect_expr_reads(expr, analysis);
-                    }
+                for expr in path.delays.iter().flatten() {
+                    collect_expr_reads(expr, analysis);
                 }
                 analysis.specify_paths.push(SpecPathAnalysis {
                     controls: path.controls.iter().map(render_expr).collect(),
@@ -685,10 +683,8 @@ fn collect_expr_reads(expr: &Expr, analysis: &mut ModuleAnalysis) {
         }
         ExprKind::Call { callee, args } => {
             collect_expr_reads(callee, analysis);
-            for arg in args {
-                if let Some(expr) = arg {
-                    collect_expr_reads(expr, analysis);
-                }
+            for expr in args.iter().flatten() {
+                collect_expr_reads(expr, analysis);
             }
         }
         ExprKind::Integer(_) | ExprKind::Real(_) | ExprKind::Constant(_) => {}
@@ -696,20 +692,18 @@ fn collect_expr_reads(expr: &Expr, analysis: &mut ModuleAnalysis) {
 }
 
 fn collect_optional_exprs(exprs: &[Option<Expr>], analysis: &mut ModuleAnalysis) {
-    for expr in exprs {
-        if let Some(expr) = expr {
-            collect_expr_reads(expr, analysis);
-        }
+    for expr in exprs.iter().flatten() {
+        collect_expr_reads(expr, analysis);
     }
 }
 
 fn mark_writes(expr: &Expr, analysis: &mut ModuleAnalysis) {
     if let Some(name) = expr_symbol(expr) {
-        if let Some(port) = analysis.ports.get_mut(&name) {
-            if matches!(port.direction, Direction::Inout) {
-                port.is_output = true;
-                push_unique(&mut analysis.outputs, name.clone());
-            }
+        if let Some(port) = analysis.ports.get_mut(&name)
+            && matches!(port.direction, Direction::Inout)
+        {
+            port.is_output = true;
+            push_unique(&mut analysis.outputs, name.clone());
         }
         if analysis.declarations.contains_key(&name)
             || analysis.localparams.contains_key(&name)
@@ -721,11 +715,11 @@ fn mark_writes(expr: &Expr, analysis: &mut ModuleAnalysis) {
 }
 
 fn mark_read(name: &str, analysis: &mut ModuleAnalysis) {
-    if let Some(port) = analysis.ports.get_mut(name) {
-        if matches!(port.direction, Direction::Inout) {
-            port.is_input = true;
-            push_unique(&mut analysis.inputs, name.to_string());
-        }
+    if let Some(port) = analysis.ports.get_mut(name)
+        && matches!(port.direction, Direction::Inout)
+    {
+        port.is_input = true;
+        push_unique(&mut analysis.inputs, name.to_string());
     }
 }
 

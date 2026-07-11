@@ -18,9 +18,7 @@ impl Default for FormatOptions {
 pub fn format_document(document: &Document, options: FormatOptions) -> String {
     let mut out = String::new();
     format_items(&document.items, 0, true, &options, &mut out);
-    if out.is_empty() {
-        out.push('\n');
-    } else if !out.ends_with('\n') {
+    if !out.ends_with('\n') {
         out.push('\n');
     }
     out
@@ -50,9 +48,7 @@ fn format_items(
                 previous_emitted_expr = false;
             }
             Item::Expr(expr) => {
-                if pending_blank_line && !out.is_empty() {
-                    out.push('\n');
-                } else if top_level && previous_emitted_expr {
+                if (pending_blank_line && !out.is_empty()) || (top_level && previous_emitted_expr) {
                     out.push('\n');
                 }
                 pending_blank_line = false;
@@ -64,13 +60,13 @@ fn format_items(
 }
 
 fn render_expr(expr: &Expr, indent: usize, options: &FormatOptions, out: &mut String) {
-    if let Some(inline) = inline_expr(expr, options) {
-        if indent + inline.len() <= options.width || matches!(expr, Expr::Atom(_)) {
-            write_indent(out, indent);
-            out.push_str(&inline);
-            out.push('\n');
-            return;
-        }
+    if let Some(inline) = inline_expr(expr, options)
+        && (indent + inline.len() <= options.width || matches!(expr, Expr::Atom(_)))
+    {
+        write_indent(out, indent);
+        out.push_str(&inline);
+        out.push('\n');
+        return;
     }
 
     match expr {
@@ -124,7 +120,13 @@ fn render_list(list: &List, indent: usize, options: &FormatOptions, out: &mut St
     if start_index == 0 {
         format_items(&list.children, indent + 2, false, options, out);
     } else {
-        format_items(&list.children[start_index..], indent + 2, false, options, out);
+        format_items(
+            &list.children[start_index..],
+            indent + 2,
+            false,
+            options,
+            out,
+        );
     }
 
     write_indent(out, indent);
