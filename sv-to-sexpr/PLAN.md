@@ -2,24 +2,52 @@
 
 ## Goal
 
-Implement `sv-to-sexpr`, a Rust tool that converts the curated SystemVerilog cell corpus into the SSA-like S-expression cell DSL.
+Implement `sv-to-sexpr`, a Rust tool that converts the curated scalar
+SystemVerilog cell corpus into the repository's SSA-like S-expression cell DSL.
 
 Primary paths:
 
 - Input cells: `sv-cells/**/*.sv`
 - Output cells: `sexpr-cells/**/*.cell`
-- The input corpus currently contains 206 files from copied subsets of:
-  - `dmg-sim/dmg_cpu_b/cells`
-  - `dmg-sim/sm83/cells`
+- Current curated corpus: 206 files
 - Reference pair:
   - `sv-cells/sm83/cells/dffs_cc_ee_pch_d_reg_pc_bit.sv`
   - `sexpr-cells/sm83/cells/dffs_cc_ee_pch_d_reg_pc_bit.cell`
 
-The converter only needs to parse and lower the cell subset used by this repository. It should not attempt to implement a complete SystemVerilog frontend.
+The converter is complete only when its output preserves the modeled logic,
+state, drivers, and timing according to reviewed fixtures. Parsing a file or
+serializing a syntactically valid S-expression is not sufficient by itself.
 
-## Target Output Model
+## Scope
 
-Each converted file should serialize one `(cell ...)` form:
+### In Scope
+
+- The SystemVerilog constructs that occur in the 206-file curated corpus.
+- Scalar combinational and stateful logic.
+- Continuous, procedural, primitive, and selected hierarchical drivers.
+- Tri-state, precharge, keeper, and repeated-driver behavior used by the corpus.
+- The timing expressions and `specify` paths required to reproduce cell delays.
+- Deterministic SSA-like lowering and deterministic serialization.
+- Precise diagnostics for constructs that have not been implemented safely.
+
+### Global Non-Goals
+
+These are not expected from any milestone unless the corpus changes and the
+plan is revised:
+
+- A general-purpose or standards-complete SystemVerilog frontend.
+- Arbitrary vectors, arrays, interfaces, classes, assertions, or generate loops.
+- Synthesis, simulation, truth-table evaluation, or next-state execution of
+  either the SystemVerilog source or generated cells.
+- Analog-accurate transistor or strength simulation beyond a documented DSL
+  representation.
+- Per-transition rise, fall, turn-off, or high-Z delays. The DSL stores one
+  delay per assignment and uses only the first SystemVerilog delay tuple entry.
+- Guessing semantics for unsupported constructs. The tool must reject them.
+
+## Target Output Contract
+
+Each converted file contains one cell form:
 
 ```scheme
 (cell
@@ -28,545 +56,572 @@ Each converted file should serialize one `(cell ...)` form:
   (outputs ...)
   (registers ...)
   (assignments
-    (target expr delay)
+    (target expression delay)
     ...
   )
 )
 ```
 
-Output conventions:
+The following rules are part of the contract and must be tested:
 
-- `inputs` include `input` ports and `inout` ports that are read by logic.
-- `outputs` include `output` ports and `inout` ports that are driven by logic.
-- `registers` include variables assigned by `initial` and `always_latch`.
-- `assignments` are in SSA-like order.
-- Temporary names should be deterministic: `t0`, `t1`, `t2`, ...
-- Assignment expressions use the DSL operators already implied by the reference:
-  - Boolean: `(not x)`, `(and a b ...)`, `(or a b ...)`, `(xor a b)`
-  - State hold: `(mux enable data old_value)`
-  - Tri-state/precharge: `(bufif0 value control)`, `(bufif1 value control)`
-  - Delay arithmetic: `0`, `(+ ...)`, `(elmore (wire L_x) (pmos n))`, `(elmore (wire L_x) (nmos n))`
-- Comments in output are optional initially, but the serializer should preserve enough structure to allow readable section comments later.
+- `inputs` contains input ports and inout ports read by the cell.
+- `outputs` contains output ports and inout ports driven by the cell.
+- `registers` contains only modeled state, such as variables initialized by
+  `initial` or assigned by stateful procedural logic. Continuously driven and
+  primitive-driven internal nets are not registers.
+- Each source driver becomes an explicit assignment or a documented normalized
+  equivalent. Repeated drivers remain distinct and in source order unless the
+  DSL explicitly defines a merge operation.
+- A value expression is either one variable/literal or one flat operator followed
+  only by variables/literals: `(operator operand ...)`. Value expressions cannot
+  contain nested expressions.
+- Every compound source expression is split into deterministic temporaries named
+  `t0`, `t1`, and so on, so each serialized value expression remains flat.
+  Dependencies precede their uses.
+- The allowed value operators are defined centrally. The initial contract must
+  cover `not`, `and`, `or`, `xor`, `mux`, `bufif0`, `bufif1`, and the equality
+  forms required by the corpus. Operators such as `nand`, `nor`, and `xnor` may
+  be emitted only after they are added to the DSL contract and covered by
+  reviewed fixtures; otherwise they are expressed using the contracted
+  primitive operators.
+- Only the first entry of a SystemVerilog delay tuple is lowered. All later tuple
+  entries are intentionally ignored because the DSL does not model separate
+  transition delays. A missing delay is `0`; an explicitly omitted first tuple
+  entry is rejected unless Milestone 0 defines an equivalent single delay.
+- Delay expressions may be nested. Timing sums within the selected first tuple
+  entry use `(+ ...)`, and timing primitives use forms such as
+  `(elmore (wire L_x) (pmos 5))`.
+- Unknown, ambiguous, or unrepresentable behavior is an error in strict mode
+  and is never silently simplified.
 
-## Implementation Phases
+For example, this is valid because each value expression is flat while the delay
+expression may be nested:
 
-### 1. Corpus Survey
-
-Build a small scanner command before implementing the parser deeply.
-
-Tasks:
-
-- Enumerate all `sv-cells/**/*.sv` files.
-- Collect all statement forms:
-  - `assign`
-  - `initial`
-  - `always_latch`
-  - primitive calls such as `bufif0`, `bufif1`, `nmos`, `pmos`, `rnmos`
-  - `localparam realtime`
-  - `specify` / `specparam`
-- Collect all expression operators:
-  - unary `!`
-  - binary or n-ary `&`, `|`, `^`
-  - logical `&&`, `||`
-  - equality/inequality if present
-  - ternary `?:`
-  - constants `0`, `1`, `'0`, `'1`, `'z`
-- Emit a report listing unsupported constructs by file.
-
-Acceptance criteria:
-
-- Running the survey over all 206 curated cell files produces a stable construct inventory.
-- Every construct is classified as either supported now, deliberately ignored, or blocked.
-
-### 2. Incremental CLI Harness
-
-Implement the command-line interface early, before the full parser and converter are complete. The CLI should accept a single file and run the deepest implemented stage, so each new feature can be validated against every file in `sv-cells`.
-
-Suggested commands:
-
-```text
-sv-to-sexpr lex <input.sv>
-sv-to-sexpr parse <input.sv>
-sv-to-sexpr analyze <input.sv>
-sv-to-sexpr lower <input.sv>
-sv-to-sexpr convert-file <input.sv> <output.cell>
-sv-to-sexpr survey <input-dir>
-sv-to-sexpr check <input-dir>
-sv-to-sexpr convert <input-dir> <output-dir>
+```scheme
+(t0 (not a) 0)
+(t1 (and t0 b) 0)
+(y (mux select t1 c) (+ (elmore (wire L_y) (pmos 5)) extra_delay))
 ```
 
-Stage behavior:
+This is invalid because the `not` value expression is nested inside `and`:
 
-- `lex` tokenizes one file and reports unexpected characters.
-- `parse` lexes and parses one file, optionally dumping the AST.
-- `analyze` parses and builds symbol/register/timing summaries.
-- `lower` analyzes and emits IR, without requiring final serialization.
-- `convert-file` runs the full pipeline for one file.
-- `check` recursively runs the deepest supported non-writing stage over all `*.sv` files in a directory.
-- `convert` recursively writes `.cell` files for all supported inputs.
+```scheme
+(y (and (not a) b) 0)
+```
 
-Suggested flags:
+## Validation Rules
 
-- `--stage lex|parse|analyze|lower|convert`: lets `check` stop at a specific stage.
-- `--strict`: treat warnings and unsupported timing as errors.
-- `--overwrite`: allow replacing existing `.cell` files.
-- `--dry-run`: parse/lower/serialize without writing.
-- `--emit-tokens <dir>`: write token dumps.
-- `--emit-ast <dir>`: write AST debug snapshots.
-- `--emit-ir <dir>`: write IR debug snapshots.
-- `--filter <glob-or-substring>`: process selected cells.
+Every milestone uses the strongest applicable layers below:
 
-Acceptance criteria:
+1. Unit tests for local lexer, parser, analyzer, lowering, and serializer rules.
+2. Golden AST, analysis, IR, and `.cell` fixtures for representative cells.
+3. Corpus checks that report processed, skipped, warned, and failed files.
+4. Manual comparison of each new or changed fixture against its SystemVerilog
+   source and the DSL contract.
+5. Explicit review of fixture diffs whenever lowering behavior changes.
+6. Parsing and idempotent formatting of generated output with `sexpr-fmt`.
 
-- `sv-to-sexpr lex sv-cells/sm83/cells/dffs_cc_ee_pch_d_reg_pc_bit.sv` succeeds first.
-- `sv-to-sexpr check sv-cells --stage lex` can be used to drive the "lex all files" milestone.
-- Later stages reuse the same file-oriented CLI and diagnostics.
-- Diagnostics summarize processed, skipped, warned, and failed files.
+A milestone cannot be marked complete if its stated tests are absent, even when
+the implementation appears to work on manually selected files. Automated cell
+simulation or behavioral equivalence checking is outside the project scope.
 
-### 3. Specialized Lexer
+## Current Status
 
-Implement a small lexer in `sv-to-sexpr/src/lexer.rs`.
-
-Token classes:
-
-- Identifiers and escaped identifiers if discovered in the corpus.
-- Keywords used by the cell subset:
-  - `module`, `endmodule`
-  - `parameter`, `localparam`, `real`, `realtime`
-  - `input`, `output`, `inout`, `logic`, `tri`, `wire`
-  - `import`
-  - `initial`
-  - `always_latch`
-  - `assign`
-  - `specify`, `endspecify`, `specparam`
-- Numeric literals:
-  - decimal integers
-  - real numbers if needed for parameters
-  - SystemVerilog constants `'0`, `'1`, `'z`
-- Punctuation and operators:
-  - `(`, `)`, `[`, `]`, `{`, `}`, `,`, `;`, `:`, `?`, `#`
-  - `=`, `<=`, `*>`
-  - `!`, `&`, `|`, `^`, `&&`, `||`, `!==`, `==`, `!=`
-  - `+`, `-`, `*`, `/`
-- Comments:
-  - line comments `// ...`
-  - block comments `/* ... */`
-- Preprocessor directives:
-  - tolerate and ignore `` `default_nettype ... ``
-
-Acceptance criteria:
-
-- Lexer tests cover representative lines from the reference cell.
-- Lexer reports file, line, and column for invalid tokens.
-- `sv-to-sexpr check sv-cells --stage lex` succeeds for all 206 files.
-
-### 4. Specialized Parser
-
-Implement a recursive-descent parser in `sv-to-sexpr/src/parser.rs`.
-
-Parser scope:
-
-- Module declarations:
-  - module name
-  - optional `#(...)` parameter list
-  - port list with direction/type groups
-- Declarations:
-  - `logic a, b;`
-  - `localparam realtime NAME = expr;`
-  - ignore `import sm83_timing::*;`
-- Statements:
-  - `initial target = literal;`
-  - `always_latch if (enable_expr) target = data_expr;`
-  - `always_latch if (enable_expr) target <= data_expr;`
-  - `assign [strength] [delay] target = expr;`
-  - primitive calls: `[primitive] [strength] [delay] (args...);`
-  - `specify ... endspecify`
-- Expressions:
-  - identifiers
-  - constants
-  - parenthesized expressions
-  - unary not
-  - binary/n-ary logical and/or/xor
-  - arithmetic expressions for timing parameters
-  - function calls such as `tpd_elmore(...)`, `R_pmos_ohm(...)`, `tpd_z(...)`
-  - ternary expressions for tri-state assigns
-
-Intentionally out of scope unless the corpus proves otherwise:
-
-- Packed/unpacked vectors and arrays.
-- Procedural blocks other than single-line `always_latch if`.
-- Generate blocks.
-- Full strength semantics beyond identifying high-Z/strong drive direction.
-- Full specify path semantics beyond extracting delay formulas relevant to output assignments.
-
-Acceptance criteria:
-
-- Parser unit tests parse:
-  - simple combinational cells such as `and2.sv`
-  - latch cells such as `dff_cc_q.sv`
-  - the reference `dffs_cc_ee_pch_d_reg_pc_bit.sv`
-  - tri-state cells such as `reg_pc_out_bit012.sv`
-- Parse errors include the current file, line, column, and expected construct.
-- `sv-to-sexpr check sv-cells --stage parse` succeeds for all 206 files before conversion milestones begin.
-
-### 5. Parsed AST
-
-Define a direct AST that mirrors the supported SystemVerilog subset.
-
-Suggested modules:
-
-- `ast.rs`
-  - `Module`
-  - `Port`
-  - `Direction`
-  - `Decl`
-  - `Statement`
-  - `PrimitiveCall`
-  - `SvExpr`
-  - `TimingExpr`
-- `diagnostic.rs`
-  - source spans
-  - warnings
-  - errors
-
-The AST should preserve:
-
-- Source spans for diagnostics.
-- Port directions and whether ports are `tri`/`inout`.
-- Assignment kind: blocking, non-blocking, continuous.
-- Delay annotations from assigns and primitives.
-- Localparam/specparam timing expressions.
-
-Acceptance criteria:
-
-- AST debug snapshots are deterministic and can be used in tests.
-- AST contains no stringly typed statement bodies.
-
-### 6. Semantic Analysis
-
-Lower the AST into a normalized cell analysis model before generating the final DSL.
-
-Responsibilities:
-
-- Build symbol tables:
-  - parameters
-  - ports
-  - internal signals
-  - localparams/specparams
-  - register candidates
-- Classify port usage:
-  - inputs
-  - outputs
-  - bidirectional nets that appear in both `inputs` and `outputs`
-- Classify registers:
-  - any target initialized by `initial`
-  - any target assigned by `always_latch`
-- Resolve timing aliases:
-  - map `T_rise_d = tpd_elmore(L_d, R_pmos_ohm(5*L_unit))`
-  - map `T_Z_d = tpd_z(T_rise_d)`
-  - preserve unknown timing formulas as symbolic fallback, but warn.
-- Extract specify delays where they determine an output assignment delay.
-- Detect repeated drivers on a net and model them as separate assignments unless a later DSL merge rule is required.
-- Reject unsupported constructs with precise diagnostics instead of silently producing incorrect output.
-
-Acceptance criteria:
-
-- The reference cell analysis identifies:
-  - inputs: `clk`, `clk_n`, `ena`, `ena_n`, `s_n`, `pch_n`, `d`
-  - outputs: `q`, `q_n`, `d`
-  - registers: `ff1`, `ff2`, `q_n`
-  - three latch assignments, one inverter assignment, one `bufif0` assignment.
-
-### 7. Expression Lowering to SSA-like IR
-
-Introduce an intermediate representation independent of SystemVerilog syntax.
-
-Suggested modules:
-
-- `ir.rs`
-  - `Cell`
-  - `Assignment`
-  - `Expr`
-  - `Delay`
-  - `Signal`
-- `lower.rs`
-  - AST-to-IR lowering
-
-Lowering rules:
-
-- Break compound expressions into deterministic temporaries.
-- Preserve source evaluation order where possible.
-- Convert `&&` and `&` to `(and ...)` for 1-bit logic.
-- Convert `||` and `|` to `(or ...)` for 1-bit logic.
-- Convert `!x` to `(not x)`.
-- Convert `a ? b : c` to `(mux a b c)` when the result is a value.
-- Convert latch statements:
-  - `always_latch if (enable) q <= data;`
-  - becomes temporary assignments for `enable`, temporary assignments for `data`, then `(q (mux enable data q) delay)`.
-- Convert simple continuous assigns:
-  - `assign q = !q_n;`
-  - becomes `(q (not q_n) delay)`.
-- Convert tri-state zero drivers:
-  - `assign y = cond ? 0 : 'z;`
-  - becomes `(y (bufif1 0 cond) delay)` or an equivalent DSL form.
-- Convert precharge primitives:
-  - `bufif0 (...)(d, '1, pch_n);`
-  - becomes `(d (bufif0 1 pch_n) delay)`.
-  - `bufif1 (...)(d, '0, cond);`
-  - becomes `(d (bufif1 0 cond) delay)`.
-- Convert transistor primitives only after defining a DSL representation:
-  - either direct forms such as `(nmos drain source gate)`
-  - or normalized `bufif*` equivalents when electrically valid for the corpus.
-
-Acceptance criteria:
-
-- Lowering the reference cell produces the same dependency order and equivalent expression tree as the checked-in `.cell`.
-- Temporary numbering is stable across runs and independent of filesystem order.
-
-### 8. Timing Lowering
-
-Implement the timing subset needed by cells.
-
-Initial supported mapping:
-
-- `tpd_elmore(L_x, R_pmos_ohm(N*L_unit))` -> `(elmore (wire L_x) (pmos N))`
-- `tpd_elmore(L_x, R_nmos_ohm(N*L_unit))` -> `(elmore (wire L_x) (nmos N))`
-- Multiplicative resistance factors:
-  - `R_nmos_ohm(8*L_unit) * 2` should become an equivalent normalized form.
-  - If the DSL cannot represent factor multiplication yet, preserve it symbolically and record the gap.
-- Delay sums:
-  - `T_a + T_b + T_c` -> `(+ delay_a delay_b delay_c)`
-- `tpd_z(...)`:
-  - usually ignored for driven value delays unless it is the only available timing annotation.
-- Assign delay tuples:
-  - choose rise or fall delay based on the driven value/operator where known.
-  - for output inverters, choose the path matching the produced transition convention used by the reference.
-- `specify` path delays:
-  - parse `specparam` aliases.
-  - parse path assignments such as `(clk, clk_n *> q_n) = (...);`.
-  - use them to annotate latch/output assignments when local delay annotations are not directly attached.
-
-Acceptance criteria:
-
-- The reference `q_n`, `q`, and `d` delay expressions lower to the same symbolic structure as the checked-in `.cell`, modulo formatting.
-- Unsupported timing formulas produce warnings and a non-zero exit only in strict mode.
-
-### 9. Serializer
-
-Implement deterministic S-expression serialization in `sv-to-sexpr/src/serialize.rs`.
-
-Requirements:
-
-- Stable indentation matching the current style closely enough for review.
-- One output file per input file.
-- Module name from `module sm83_...` or `module dmg_...` is the cell name.
-- Output path should mirror the input path below `sv-cells`:
-  - `sv-cells/sm83/cells/foo.sv`
-  - `sexpr-cells/sm83/cells/foo.cell`
-  - `sv-cells/dmg_cpu_b/cells/foo.sv`
-  - `sexpr-cells/dmg_cpu_b/cells/foo.cell`
-- Preserve deterministic section order:
-  - `inputs`
-  - `outputs`
-  - `registers`
-  - `assignments`
-- Use multi-line formatting for complex expressions and compact single-line formatting for short expressions.
-
-Acceptance criteria:
-
-- Reformatting a generated file with `sexpr-fmt` produces stable output.
-- The generated reference file diff is explainable and ideally empty after formatting.
-
-### 10. Validation Strategy
-
-Use layered validation so parser bugs and lowering bugs are easy to isolate.
-
-Parser validation:
-
-- Unit tests for lexer and expression precedence.
-- Fixture tests for representative cells.
-- Golden AST snapshots for tricky files.
-
-Lowering validation:
-
-- Golden IR snapshots.
-- Golden `.cell` output for the reference file.
-- Add goldens incrementally for each construct family:
-  - simple gates
-  - inverting gates
-  - latches/flip-flops
-  - precharge cells
-  - open-drain/tri-state output cells
-  - IRQ priority cells with transistor primitives
-
-Corpus validation:
-
-- `sv-to-sexpr survey sv-cells`
-- `sv-to-sexpr check sv-cells --stage lex`
-- `sv-to-sexpr check sv-cells --stage parse`
-- `sv-to-sexpr check sv-cells --stage analyze`
-- `sv-to-sexpr check sv-cells --stage lower`
-- `sv-to-sexpr convert sv-cells sexpr-cells --dry-run`
-
-Round-trip/format validation:
-
-- Run generated files through `sexpr-fmt`.
-- Parse generated `.cell` files if/when a cell DSL parser exists.
-
-Semantic validation:
-
-- For combinational cells, compare a truth table generated from the SystemVerilog expression AST against the generated IR expression for all input combinations.
-- For latches, compare next-state equations:
-  - generated `q_next = mux(enable, data, q_old)`
-  - source `always_latch if (enable) q = data`
-- For tri-state cells, compare driver conditions and driven values.
-
-Acceptance criteria:
-
-- CI can run parser and lowering tests without external tools.
-- A full corpus check is deterministic and produces no unexpected unsupported constructs.
+See [STATUS.md](STATUS.md).
 
 ## Milestones
 
-## Current Progress
+### Milestone 0: Freeze the DSL and Diagnostic Contracts
 
-Last updated after Milestone 7.
+Define the contracts that later lowering work must implement.
 
-- Completed Milestone 1 in commit `bd40d33`: CLI harness, lexer, `survey`, and `check --stage lex`.
-- Completed Milestone 2 in commit `d78d8c9`: AST, parser, `parse`, and `check --stage parse`.
-- Completed Milestone 3 in commit `98429a7`: semantic analysis, `analyze`, and `check --stage analyze`.
-- Superseded Milestone 4: the initial reference-cell-specific lowering path was removed because it mocked the commented reference output instead of implementing reusable conversion logic.
-- Completed Milestone 5: simple combinational lowering for scalar continuous assignments with `!`, `~`, `&`, `&&`, `|`, `||`, `^`, `~^`, `~&`, and `~|`.
-- Completed Milestone 6: generic latch/register lowering for `always_latch` and simple stateful procedural assignments, including blocking/non-blocking normalization and mux-based hold behavior.
-- Completed Milestone 7: tri-state and precharge families.
-- Verified corpus and lowering status:
-  - `cargo test` passes.
-  - `cargo run -- check sv-cells/sm83/cells/pch_dec2_c.sv --stage lower` reports `processed=1 failed=0`.
-  - `cargo run -- check sv-cells/sm83/cells/not_pch_x2_alu.sv --stage lower` reports `processed=1 failed=0`.
-  - `cargo run -- check sv-cells/sm83/cells/reg_pc_out_bit012.sv --stage lower` reports `processed=1 failed=0`.
-  - `cargo run -- check sv-cells/sm83/cells/nand2_od_b_dbus.sv --stage lower` reports `processed=1 failed=0`.
-  - `cargo run -- check sv-cells/dmg_cpu_b/cells/pad_bidir.sv --stage lower` reports `processed=1 failed=0`.
-  - `cargo run -- convert-file sv-cells/sm83/cells/pch_dec2_c.sv /tmp/pch_dec2_c.cell --dry-run` succeeds.
-  - `cargo run -- convert-file sv-cells/sm83/cells/not_pch_x2_alu.sv /tmp/not_pch_x2_alu.cell --dry-run` succeeds.
-  - `cargo run -- convert-file sv-cells/sm83/cells/reg_pc_out_bit012.sv /tmp/reg_pc_out_bit012.cell --dry-run` succeeds.
-  - `cargo run -- convert-file sv-cells/sm83/cells/nand2_od_b_dbus.sv /tmp/nand2_od_b_dbus.cell --dry-run` succeeds.
-  - `cargo run -- convert-file sv-cells/dmg_cpu_b/cells/pad_bidir.sv /tmp/pad_bidir.cell --dry-run` succeeds.
-- Reference-specific lowering was removed from `lower.rs`; the checked-in reference `.cell` no longer drives the lowering path and is not used as a golden lowering test.
-- Next pending work: Milestone 8, transistor-heavy cells.
-- Remaining after Milestone 7: transistor-heavy cells, then full corpus conversion.
+Expected to be working after this milestone:
 
-### Milestone 1: CLI and Lex All Files
+- A documented list of legal value, driver, state, and timing forms.
+- A documented decision for initial values, repeated drivers, keepers,
+  transistor primitives, omitted first delays, and the single-delay policy.
+- A diagnostic classification with `error`, `warning`, and intentional-ignore
+  categories.
+- `--strict` semantics: warnings become failures; errors always fail.
 
-- Implement the CLI harness with `lex`, `survey`, and `check --stage lex`.
-- Implement the lexer and token diagnostics.
-- Validate `sv-to-sexpr lex sv-cells/sm83/cells/dffs_cc_ee_pch_d_reg_pc_bit.sv`.
-- Validate `sv-to-sexpr check sv-cells --stage lex` over all 206 files.
-- Add token snapshot tests for representative files.
+Expected not to be working yet:
 
-### Milestone 2: Parse All Files
+- Conversion of cells that depend on unresolved keeper or transistor choices.
+- Full-corpus lowering or conversion.
 
-- Implement parser coverage for the full curated corpus.
-- Implement AST data structures and AST debug output.
-- Validate `sv-to-sexpr parse sv-cells/sm83/cells/dffs_cc_ee_pch_d_reg_pc_bit.sv`.
-- Validate `sv-to-sexpr check sv-cells --stage parse` over all 206 files.
-- Add golden AST snapshots for representative combinational, latch, tri-state, and transistor-heavy cells.
+Not expected to do:
 
-### Milestone 3: Analyze All Files
+- Implement parsing or lowering merely to exercise the contract.
+- Define analog behavior beyond what the cell DSL can represent.
 
-- Implement symbol tables, port classification, register classification, localparam/specparam collection, and unsupported-construct diagnostics.
-- Validate `sv-to-sexpr analyze sv-cells/sm83/cells/dffs_cc_ee_pch_d_reg_pc_bit.sv`.
-- Validate `sv-to-sexpr check sv-cells --stage analyze` over all 206 files.
-- Confirm the reference cell analysis identifies the expected inputs, outputs, registers, and primitive assignments.
+Acceptance conditions:
 
-### Milestone 4: Reference Cell Conversion
+- The contract includes examples for every currently emitted operator and delay
+  form.
+- The contract defines flat value expressions and permits nesting only inside
+  delay expressions.
+- No emitted operator exists only by convention in `lower.rs`.
+- Every known corpus construct is classified as supported in a named milestone,
+  intentionally ignored with justification, or blocked on a contract decision.
 
-- Implement enough lowering, timing, and serialization to regenerate `dffs_cc_ee_pch_d_reg_pc_bit.cell`.
-- Cover boolean expressions, latch-to-`mux` lowering, output inverter lowering, `bufif0`, localparams, and relevant specify delays.
-- Validate `sv-to-sexpr convert-file sv-cells/sm83/cells/dffs_cc_ee_pch_d_reg_pc_bit.sv sexpr-cells/sm83/cells/dffs_cc_ee_pch_d_reg_pc_bit.cell --dry-run`.
-- Add a golden output test for the reference pair.
+### Milestone 1: Corpus Inventory and Lexer
 
-Status: superseded. Do not use the checked-in commented reference output as a golden test for the generic converter. Revisit this cell after simpler combinational, latch, and tri-state/precharge families are implemented generically.
+Complete the lexer and turn `survey` into a capability inventory rather than a
+token counter only.
 
-### Milestone 5: Simple Combinational Cells
+Expected to be working after this milestone:
 
-- Support common continuous assignments with `!`, `&`, `|`, `^`.
-- Convert simple gates such as `and2`, `and3`, `or3_b`, `nor8_alu`, `xor_idu_l`.
-- Add truth-table comparison tests.
+- File, line, and column diagnostics for invalid tokens.
+- Stable tokenization of every curated file.
+- An inventory of statement, expression, primitive, generate, instantiation,
+  timing, strength, and literal forms, with files using each form.
+- A supported/deferred/ignored classification tied to later milestones.
 
-Status: completed.
+Expected not to be working yet:
 
-### Milestone 6: Register and Latch Families
+- Parsing, semantic analysis, or conversion may still reject valid token
+  streams.
 
-- Cover all `dff*` and `dlatch*` cells.
-- Normalize blocking and non-blocking latch assignments the same way.
-- Support set/reset variants such as source expressions containing `!s_n` or reset conditions.
+Not expected to do:
 
-Status: completed.
+- Validate expression precedence or SystemVerilog semantics.
+- Infer support from token frequency alone.
 
-### Milestone 7: Tri-state and Precharge Families
+Acceptance conditions:
 
-- Support continuous tri-state assigns with strengths and delay tuples.
-- Support repeated drivers on the same net.
-- Cover register output bus cells and precharge decoder cells.
+- `check sv-cells --stage lex` reports `processed=206 failed=0`.
+- Survey output is deterministic and identifies unsupported constructs by file.
+- Token snapshot tests cover the reference cell, generate syntax, named port
+  instantiation, strength/delay tuples, transistor calls, and `'0/'1/'x/'z`.
+- A deliberately invalid character produces an exact source location.
 
-### Milestone 8: Transistor-heavy Cells
+### Milestone 2: Lossless Specialized Parser and AST
 
-- Define the DSL representation for `nmos`, `pmos`, and `rnmos`.
-- Lower IRQ priority and bus-injection cells.
-- Add explicit tests for any electrical simplification used to map transistors to existing DSL operators.
+Parse every curated file into typed AST nodes without silently discarding input.
 
-### Milestone 9: Full Corpus Conversion
+Expected to be working after this milestone:
 
-- Convert all files in `sv-cells`.
-- Write outputs to mirrored paths under `sexpr-cells`.
-- Require zero unsupported constructs in strict mode.
-- Document any intentional semantic approximations.
+- Typed AST nodes for all corpus module, declaration, expression, procedural,
+  primitive, instantiation, generate, and specify forms.
+- Source spans and deterministic debug rendering for every node.
+- Correct expression precedence and grouping.
+- Explicit AST representation for constructs that later stages defer.
 
-## File Layout
+Expected not to be working yet:
 
-Proposed Rust source layout:
+- Generate conditions need not be evaluated.
+- Instantiations need not be resolved to module definitions.
+- Parsing success does not imply semantic or lowering support.
 
-```text
-sv-to-sexpr/src/
-  main.rs
-  cli.rs
-  diagnostic.rs
-  lexer.rs
-  parser.rs
-  ast.rs
-  analyze.rs
-  ir.rs
-  lower.rs
-  timing.rs
-  serialize.rs
-  survey.rs
-```
+Not expected to do:
 
-Suggested test layout:
+- Parse SystemVerilog constructs absent from the curated corpus.
+- Store unparsed statement bodies as raw strings.
+
+Acceptance conditions:
+
+- `check sv-cells --stage parse` reports `processed=206 failed=0`.
+- Golden AST fixtures cover a simple gate, latch, generated DFF, tri-state cell,
+  hierarchical adder, keeper, specify block, and transistor-heavy IRQ cell.
+- AST coverage tests prove that no source item is dropped or converted to an
+  untyped placeholder.
+- Invalid and truncated constructs report the expected construct and location.
+
+### Milestone 3: Correct Semantic Analysis and Support Classification
+
+Build a trustworthy normalized analysis before lowering any additional family.
+
+Expected to be working after this milestone:
+
+- Correct symbol tables for ports, parameters, declarations, localparams, and
+  specparams.
+- Correct input/output classification for inout ports based on actual reads and
+  writes.
+- Register classification limited to initial/stateful procedural targets.
+- Separate classification of continuous nets, state variables, primitive nets,
+  and hierarchical connections.
+- Generate branches represented as alternatives until a later milestone selects
+  one; mutually exclusive branches are never combined as simultaneous drivers.
+- Specify paths and timing aliases preserved structurally.
+- Per-file support status for each later lowering capability.
+
+Expected not to be working yet:
+
+- Unsupported items may still prevent lowering.
+- Generate branches, keepers, hierarchy, and transistors may remain unresolved.
+- Timing aliases need not yet be converted to final DSL delay expressions.
+
+Not expected to do:
+
+- Treat analysis success as proof that conversion is supported.
+- Guess instantiation port directions without resolving the instantiated module.
+
+Acceptance conditions:
+
+- The reference analysis identifies inputs `clk clk_n ena ena_n s_n pch_n d`,
+  outputs `q q_n d`, and registers `ff1 ff2 q_n`.
+- A combinational cell with internal nets reports no registers.
+- A primitive-driven internal tri net reports no register.
+- A generated DFF analysis keeps the `nodelay` branches distinct.
+- A hierarchical adder records named connections and resolves the referenced
+  module's port directions without elaborating its behavior.
+- `check --stage analyze` reports supported, deferred, warned, and failed counts;
+  it cannot report a deferred construct as fully supported.
+
+### Milestone 4: Flat SSA IR and Combinational Logic
+
+Implement the reusable IR and scalar combinational subset without timing.
+
+Expected to be working after this milestone:
+
+- Deterministic SSA temporaries for every nested source operation.
+- Every IR and serialized value expression contains at most one operator and
+  atom operands. No operand is another operator expression.
+- Scalar continuous assignments using `!`, `~`, `&`, `&&`, `|`, `||`, `^`,
+  `~^`, `~&`, `~|`, equality, and ordinary value ternaries where present.
+- Stable source/dependency order independent of filesystem traversal.
+- Zero delay only for source assignments that genuinely have no modeled delay.
+- Fixture coverage for every supported operator and representative compound
+  expressions.
+
+Expected not to be working yet:
+
+- Delayed assignments, stateful logic, tri-state values, generate blocks,
+  hierarchy, keepers, and transistor primitives may fail lowering explicitly.
+
+Not expected to do:
+
+- Flatten hierarchical cells.
+- Apply Boolean rewrites that change four-state behavior unless the contract
+  explicitly permits a two-state approximation for that cell family.
+
+Acceptance conditions:
+
+- Reviewed fixtures cover representative `and`, `or`, `xor`, inverter, NAND,
+  NOR, XNOR, equality, and value-mux cells.
+- Each fixture is manually checked against its source expression when created or
+  changed.
+- Golden IR and output fixtures contain stable `t0`, `t1`, ... numbering.
+- A structural validator rejects any nested value expression while accepting
+  nested delay expressions.
+- Unsupported delayed or driver constructs fail with their source location.
+- No uncontracted operator appears in serialized output.
+
+### Milestone 5: Flat Stateful Cells
+
+Lower stateful procedural logic that does not depend on unresolved generate or
+hierarchical behavior.
+
+Expected to be working after this milestone:
+
+- `initial` targets classified as registers according to the DSL contract.
+- Blocking and non-blocking assignments normalized consistently.
+- `always_latch` and supported stateful `always` forms lowered to next-state
+  equations such as `(mux enable data old_value)`.
+- Set/reset and nested source conditions preserved through flat temporaries.
+- Multiple procedural assignments maintain source-defined priority.
+
+Expected not to be working yet:
+
+- DFF/TFF files containing unresolved `generate if (nodelay)` may remain
+  deferred to Milestone 8.
+- Specify-derived timing remains deferred to Milestone 7.
+
+Not expected to do:
+
+- General event scheduling, races, or arbitrary procedural blocks.
+- Infer latch semantics from unsupported procedural code.
+
+Acceptance conditions:
+
+- Reviewed fixtures cover simple latch, blocking/non-blocking variants,
+  set/reset latch, nested `if`, and multiple assignments with priority.
+- Stateful golden outputs contain flat `mux` assignments whose condition and
+  data operands are variables/literals, never nested operator expressions.
+- All flat supported `dff*` and `dlatch*` cells lower successfully.
+- Every deferred stateful file is listed with a specific later milestone; the
+  milestone is not called complete merely because selected DFFs pass.
+- Combinational procedural targets are not listed as registers.
+
+### Milestone 6: Tri-State, Precharge, Strength, and Multiple Drivers
+
+Implement driver semantics independently from timing semantics.
+
+Expected to be working after this milestone:
+
+- Direct `bufif0` and `bufif1` primitive calls with literal or signal values.
+- Continuous ternaries with either branch equal to `'z`, including signal-valued
+  drives such as `ena_n ? 'z : in`.
+- Precharge/open-drain forms and repeated drivers in source order.
+- Strength annotations interpreted according to the Milestone 0 contract or
+  rejected if they require unrepresentable behavior.
+- Reviewed fixtures for every supported driver normalization.
+
+Expected not to be working yet:
+
+- Delay tuples remain deferred to Milestone 7.
+- Keeper instantiations remain deferred to Milestone 10.
+- `nmos`, `pmos`, and `rnmos` remain deferred to Milestone 11.
+
+Not expected to do:
+
+- Collapse multiple drivers into Boolean OR/AND unless the DSL contract proves
+  that transformation valid.
+- Silently discard strength information.
+
+Acceptance conditions:
+
+- `buf_if0`, constant open-drain, precharge, bidirectional pad, and repeated-bus
+  driver fixtures match driven value, enabled state, and high-Z state.
+- `ena_n ? 'z : in` emits an appropriate `bufif0` form, not `(mux ... z ...)`.
+- Compound driver conditions are assigned to temporaries before a flat
+  `bufif0` or `bufif1` assignment uses them.
+- A strength combination outside the contract fails explicitly.
+- Tests assert complete assignments, including target and driver expression,
+  rather than discarding unverified fields.
+
+### Milestone 7: First-Entry Timing and Specify Paths
+
+Implement nested delay expressions using the DSL's first-entry-only policy.
+
+Expected to be working after this milestone:
+
+- Localparam/specparam alias resolution without silently dropping factors.
+- `tpd_elmore`, multi-argument `tpd_z`, resistance sums, resistance
+  multiplication, real factors such as `1.5`, and delay sums used by the corpus.
+- Lowering of exactly the first delay tuple entry for every assignment,
+  primitive, and specify path.
+- Specify path lookup and composition for assignments without attached delays.
+- Symbolic warnings for contract-approved approximations and strict failures for
+  ambiguous/unrepresentable formulas.
+
+Expected not to be working yet:
+
+- Timing through unresolved hierarchy, keepers, or transistor networks may be
+  deferred to Milestones 9, 10, and 11 respectively.
+
+Not expected to do:
+
+- Use, combine, or emit the second or third delay tuple entries after parsing
+  them as part of the source syntax.
+- Add delay tuple entries together.
+- Drop outer resistance multipliers from the selected first entry.
+- Claim analog accuracy beyond the documented Elmore model.
+
+Acceptance conditions:
+
+- Unit tests cover one-, two-, and three-entry delay tuples and prove that all
+  three forms lower to their first entry only.
+- Precharge `#(T_rise, T_Z, T_Z)` lowers to `T_rise`, never
+  `(+ T_rise T_Z T_Z)`.
+- A tuple whose first entry is `T_Z` lowers to `T_Z`, regardless of later fall
+  or turn-off entries.
+- `R_nmos_ohm(8*L_unit) * 2` and `* 1.5` preserve their full meaning.
+- `pad_xtal.sv` timing lowers without an unsupported-factor error.
+- The reference cell's `q_n`, `q`, and `d` delays match the symbolic structure
+  obtained from the first applicable source/specify tuple entry. The checked-in
+  reference output is updated if it encodes a different policy.
+- Timing golden tests assert the entire rendered assignment.
+
+### Milestone 8: Generate Branch Selection
+
+Resolve the conditional generate forms used by the curated corpus.
+
+Expected to be working after this milestone:
+
+- A documented and configurable treatment of `nodelay` generate branches.
+- Exactly one generate branch contributes declarations, state, assignments, and
+  timing aliases to analysis and lowering.
+- Diagnostics identify an unresolved or unsupported generate condition.
+
+Expected not to be working yet:
+
+- Ordinary hierarchy remains deferred to Milestone 9.
+- Keeper instances remain deferred to Milestone 10.
+- Direct transistor primitives remain deferred to Milestone 11.
+
+Not expected to do:
+
+- General generate loops, arbitrary constant elaboration, or generate syntax
+  absent from the curated corpus.
+- Combine both branches to avoid choosing the configured mode.
+
+Acceptance conditions:
+
+- `dffr`, `dffr_cc`, `dffr_cc_q`, `dffsr`, and `tffnl` select exactly one
+  branch.
+- Reviewed analysis, IR, and output fixtures cover both supported `nodelay`
+  configurations where both are intended converter modes.
+- Fixture inspection confirms that no declaration or driver from the unselected
+  branch appears in output.
+- No curated cell fails solely because of a supported `Generate` node.
+
+### Milestone 9: Hierarchical Cell Instantiations
+
+Resolve ordinary cell instances used to compose larger cells.
+
+Expected to be working after this milestone:
+
+- Named and positional port connections and parameter overrides are resolved.
+- Supported cell instances are either flattened with deterministic names or
+  represented directly by a form fixed in the DSL contract.
+- Instance output drivers and internal dependencies appear in deterministic
+  order.
+
+Expected not to be working yet:
+
+- Keeper instances remain deferred to Milestone 10.
+- Direct transistor primitives remain deferred to Milestone 11.
+
+Not expected to do:
+
+- General recursive elaboration, arbitrary external module resolution, or
+  support for modules outside the curated cell library.
+- Treat an unknown module as an empty instance.
+
+Acceptance conditions:
+
+- Reviewed fixtures for `half_add` and `full_add` show the expected flattened or
+  contracted instance connections for every input and output.
+- Fixture inspection confirms deterministic temporary and instance-derived
+  names across repeated runs.
+- Parameter overrides used by the hierarchical corpus are present in analysis
+  and reflected in any affected output delay.
+- No curated cell fails solely because of an ordinary supported instantiation.
+
+### Milestone 10: Keeper Representation
+
+Define and lower the keeper instances used by tri-state and mux cells.
+
+Expected to be working after this milestone:
+
+- Keeper behavior has one documented DSL representation or normalization.
+- Keeper-driven nets remain distinguishable from ordinary state registers and
+  from independent tri-state drivers.
+- Keeper placement and source order are deterministic.
+
+Expected not to be working yet:
+
+- Direct `nmos`, `pmos`, and `rnmos` primitives remain deferred to Milestone 11.
+
+Not expected to do:
+
+- Simulate charge storage or analog keeper strength.
+- Ignore keeper instances merely to make lowering return success.
+
+Acceptance conditions:
+
+- Reviewed fixtures cover `mux`, `muxi`, `pad_xtal`, `idu_bit0`, and
+  `reg_wz_out` keeper usage where the rest of each file is supported.
+- Manual fixture inspection confirms that the keeper form is attached to the
+  intended net and is not listed as a register.
+- No curated cell fails solely because of a `keeper` instance.
+
+### Milestone 11: Transistor-Heavy Cells
+
+Implement the transistor contract selected in Milestone 0.
+
+Expected to be working after this milestone:
+
+- `nmos`, `pmos`, and `rnmos` represented directly or normalized only where the
+  transformation is electrically valid under the DSL contract.
+- Signal propagation, enable polarity, strength behavior, repeated drivers, and
+  timing retained to the supported fidelity.
+- IRQ priority, IDU, and bus-injection transistor families lowered.
+
+Expected not to be working yet:
+
+- Full-corpus file writing and release-quality CLI behavior remain Milestone 12.
+
+Not expected to do:
+
+- General transistor-network solving or SPICE-equivalent simulation.
+- Replace a transistor with `bufif*` without a documented rationale and reviewed
+  output fixture.
+
+Acceptance conditions:
+
+- Reviewed fixtures cover every transistor normalization used.
+- `dlatch_ee_irq`, `idu_bit0`, `idu_bit123456`, and all IRQ priority cells lower
+  successfully.
+- No curated cell fails because of `nmos`, `pmos`, or `rnmos`.
+- Any fidelity limitation is documented next to the DSL contract and exposed in
+  non-strict diagnostics.
+
+### Milestone 12: Full Corpus Conversion and Release Gate
+
+Complete the CLI, serializer, corpus output, and end-to-end validation.
+
+Expected to be working after this milestone:
+
+- `convert` mirrors input paths below `sv-cells` into `sexpr-cells`.
+- `--dry-run`, `--strict`, `--overwrite`, and filtering have documented behavior.
+- Diagnostics summarize processed, skipped, warned, written, and failed files.
+- Serializer output is deterministic and canonical under `sexpr-fmt`.
+- All generated cells pass structural checks and reviewed fixture tests.
+
+Expected not to be working yet:
+
+- Nothing required for the curated corpus. A failure here blocks completion.
+
+Not expected to do:
+
+- Convert arbitrary third-party SystemVerilog outside the declared subset.
+- Overwrite checked-in files without explicit `--overwrite`.
+
+Acceptance conditions:
+
+- `check sv-cells --stage lower --strict` reports `processed=206 failed=0` and
+  no unexpected warnings.
+- `convert sv-cells sexpr-cells --dry-run --strict` succeeds deterministically.
+- `convert sv-cells sexpr-cells --strict --overwrite` writes exactly 206 mirrored
+  `.cell` files.
+- Every generated file parses with `sexpr-fmt`; formatting it twice is
+  byte-identical; canonical generated output passes `sexpr-fmt --check`.
+- The IR/output structural validator reports zero nested value expressions and
+  permits nested delay expressions.
+- Running conversion twice produces no diff.
+- The checked-in reference output matches modulo approved comments/formatting.
+- Parser, analyzer, lowering, timing, serializer, fixture, and corpus tests all
+  pass in CI.
+- Every changed fixture has been manually compared with its source and reviewed
+  as part of the change.
+- Unsupported input outside the curated subset fails with a precise diagnostic
+  rather than producing partial output.
+
+## Required Test Layout
+
+Tests may remain next to small units, but corpus and golden coverage should be
+visible as first-class test suites:
 
 ```text
 sv-to-sexpr/tests/
   fixtures/
     sv/
+    ast/
+    analysis/
+    ir/
     cell/
-  lexer_tests.rs
-  parser_tests.rs
-  lower_tests.rs
   corpus_tests.rs
+  fixture_tests.rs
+  timing_tests.rs
+  cli_tests.rs
 ```
-
-## Key Risks
-
-- Timing semantics may not be fully inferable from local `assign` delays; some cells rely on `specify` paths.
-- Multiple drivers and transistor primitives need a precise DSL representation before conversion can be considered complete.
-- SystemVerilog strength annotations are probably only a clue for high-Z behavior, not something the initial DSL can represent completely.
-- Delay tuple selection can become inconsistent unless the lowering rules are documented and tested per construct family.
-- A parser that silently skips unsupported statements would be dangerous; unsupported constructs must be hard diagnostics in strict mode.
 
 ## Definition of Done
 
-- `sv-to-sexpr convert sv-cells sexpr-cells --strict` succeeds.
-- All 206 curated cells produce deterministic `.cell` files under mirrored `sexpr-cells` paths.
-- The reference cell output matches the checked-in target modulo formatting.
-- Parser, lowering, timing, serializer, and corpus tests pass.
-- Unsupported SystemVerilog outside the known cell subset fails with clear diagnostics instead of producing partial output.
+The project is done only when Milestone 12 is accepted. In particular:
+
+- All 206 files produce deterministic, structurally valid, manually reviewed
+  fixture output for every supported construct family.
+- Register lists contain state only.
+- Generate branches are not combined accidentally.
+- Tri-state drivers never encode high-Z as an ordinary mux value unless that is
+  explicitly part of the DSL contract.
+- Each source delay uses only its first tuple entry; later transition entries are
+  intentionally ignored and are never summed.
+- Specify timing required by the reference and corpus is present.
+- Every value expression is flat, and SSA temporary order is deterministic.
+- No in-scope construct, strength, multiplier, driver, or first-entry timing path
+  is silently lost. Later delay tuple entries are excluded by explicit policy.
+- Strict conversion succeeds with zero unsupported constructs.
