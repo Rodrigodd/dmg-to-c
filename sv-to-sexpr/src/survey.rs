@@ -1,5 +1,5 @@
 use crate::analyze::analyze_file;
-use crate::diagnostic::Diagnostic;
+use crate::diagnostic::{Diagnostic, DiagnosticCollection, DiagnosticKind, DiagnosticPolicy};
 use crate::lexer::{Keyword, Operator, Punct, TokenKind, lex_file};
 use crate::lower::lower_file;
 use crate::parser::parse_file;
@@ -62,144 +62,119 @@ pub fn survey_dir(path: &Path) -> Result<SurveyReport, Diagnostic> {
 }
 
 pub fn check_lex_dir(path: &Path) -> Result<CheckReport, Diagnostic> {
-    let mut report = CheckReport {
-        stage: "lex".to_string(),
-        ..Default::default()
-    };
-    for file in collect_sv_files(path)? {
-        report.processed += 1;
-        match fs::read_to_string(&file) {
-            Ok(contents) => match lex_file(&file, &contents) {
-                Ok(_) => {}
-                Err(err) => {
-                    report.failed += 1;
-                    report.failures.push(err.to_string());
-                }
-            },
-            Err(err) => {
-                report.failed += 1;
-                report.failures.push(
-                    Diagnostic::new(
-                        crate::diagnostic::Span::new(&file, 1, 1),
-                        format!("failed to read file: {}", err),
-                    )
-                    .to_string(),
-                );
-            }
-        }
-    }
-    Ok(report)
+    check_dir(path, "lex", |file, contents| {
+        lex_file(file, contents).map(|_| ())
+    })
 }
 
 pub fn check_parse_dir(path: &Path) -> Result<CheckReport, Diagnostic> {
-    let mut report = CheckReport {
-        stage: "parse".to_string(),
-        ..Default::default()
-    };
-    for file in collect_sv_files(path)? {
-        report.processed += 1;
-        match fs::read_to_string(&file) {
-            Ok(contents) => match parse_file(&file, &contents) {
-                Ok(_) => {}
-                Err(err) => {
-                    report.failed += 1;
-                    report.failures.push(err.to_string());
-                }
-            },
-            Err(err) => {
-                report.failed += 1;
-                report.failures.push(
-                    Diagnostic::new(
-                        crate::diagnostic::Span::new(&file, 1, 1),
-                        format!("failed to read file: {}", err),
-                    )
-                    .to_string(),
-                );
-            }
-        }
-    }
-    Ok(report)
+    check_dir(path, "parse", |file, contents| {
+        parse_file(file, contents).map(|_| ())
+    })
 }
 
 pub fn check_analyze_dir(path: &Path) -> Result<CheckReport, Diagnostic> {
-    let mut report = CheckReport {
-        stage: "analyze".to_string(),
-        ..Default::default()
-    };
-    for file in collect_sv_files(path)? {
-        report.processed += 1;
-        match fs::read_to_string(&file) {
-            Ok(contents) => match analyze_file(&file, &contents) {
-                Ok(_) => {}
-                Err(err) => {
-                    report.failed += 1;
-                    report.failures.push(err.to_string());
-                }
-            },
-            Err(err) => {
-                report.failed += 1;
-                report.failures.push(
-                    Diagnostic::new(
-                        crate::diagnostic::Span::new(&file, 1, 1),
-                        format!("failed to read file: {}", err),
-                    )
-                    .to_string(),
-                );
-            }
-        }
-    }
-    Ok(report)
+    check_dir(path, "analyze", |file, contents| {
+        analyze_file(file, contents).map(|_| ())
+    })
 }
 
 pub fn check_lower_dir(path: &Path) -> Result<CheckReport, Diagnostic> {
-    let mut report = CheckReport {
-        stage: "lower".to_string(),
-        ..Default::default()
-    };
+    check_dir(path, "lower", |file, contents| {
+        lower_file(file, contents).map(|_| ())
+    })
+}
+
+fn check_dir(
+    path: &Path,
+    stage: &str,
+    check: impl Fn(&Path, &str) -> Result<(), Diagnostic>,
+) -> Result<CheckReport, Diagnostic> {
+    let mut report = CheckReport::new(stage);
     for file in collect_sv_files(path)? {
         report.processed += 1;
         match fs::read_to_string(&file) {
-            Ok(contents) => match lower_file(&file, &contents) {
-                Ok(_) => {}
-                Err(err) => {
-                    report.failed += 1;
-                    report.failures.push(err.to_string());
+            Ok(contents) => {
+                if let Err(diagnostic) = check(&file, &contents) {
+                    report.record(diagnostic);
                 }
-            },
-            Err(err) => {
-                report.failed += 1;
-                report.failures.push(
-                    Diagnostic::new(
-                        crate::diagnostic::Span::new(&file, 1, 1),
-                        format!("failed to read file: {}", err),
-                    )
-                    .to_string(),
-                );
             }
+            Err(err) => report.record(Diagnostic::new(
+                crate::diagnostic::Span::new(&file, 1, 1),
+                format!("failed to read file: {}", err),
+            )),
         }
     }
     Ok(report)
 }
 
-#[derive(Debug, Default, Clone)]
+#[derive(Debug, Default, Clone, PartialEq, Eq)]
 pub struct CheckReport {
     pub stage: String,
     pub processed: usize,
-    pub failed: usize,
-    pub failures: Vec<String>,
+    diagnostics: DiagnosticCollection,
 }
 
 impl CheckReport {
+    pub fn new(stage: impl Into<String>) -> Self {
+        Self {
+            stage: stage.into(),
+            ..Self::default()
+        }
+    }
+
+    pub fn record(&mut self, diagnostic: Diagnostic) {
+        self.diagnostics.push(diagnostic);
+    }
+
+    pub fn warned(&self) -> usize {
+        self.diagnostics.warnings()
+    }
+
+    pub fn intentional_ignores(&self) -> usize {
+        self.diagnostics.intentional_ignores()
+    }
+
+    pub fn failed(&self) -> usize {
+        self.diagnostics.errors()
+    }
+
+    pub fn diagnostics(&self) -> &DiagnosticCollection {
+        &self.diagnostics
+    }
+
+    pub fn fails(&self, policy: DiagnosticPolicy) -> bool {
+        self.diagnostics.fails(policy)
+    }
+
     pub fn render(&self) -> String {
         let mut out = String::new();
         out.push_str(&format!(
-            "{} check summary: processed={} failed={}\n",
-            self.stage, self.processed, self.failed
+            "{} check summary: processed={} warned={} intentional-ignored={} failed={}\n",
+            self.stage,
+            self.processed,
+            self.warned(),
+            self.intentional_ignores(),
+            self.failed()
         ));
-        for failure in &self.failures {
-            out.push_str("  ");
-            out.push_str(failure);
-            out.push('\n');
+        for kind in [
+            DiagnosticKind::Warning,
+            DiagnosticKind::IntentionalIgnore,
+            DiagnosticKind::Error,
+        ] {
+            let mut details = self
+                .diagnostics
+                .entries()
+                .iter()
+                .filter(|diagnostic| diagnostic.kind == kind)
+                .map(ToString::to_string)
+                .collect::<Vec<_>>();
+            details.sort();
+            for detail in details {
+                out.push_str("  ");
+                out.push_str(&detail);
+                out.push('\n');
+            }
         }
         out
     }
@@ -314,5 +289,66 @@ fn kind_label(kind: &TokenKind) -> &'static str {
             Operator::Colon => "op::",
         },
         TokenKind::Directive => "directive",
+    }
+}
+
+#[cfg(test)]
+mod check_report_tests {
+    use super::*;
+
+    fn span(path: &str) -> crate::diagnostic::Span {
+        crate::diagnostic::Span::new(path, 1, 1)
+    }
+
+    #[test]
+    fn warnings_fail_only_in_strict_mode_and_errors_always_fail() {
+        let mut warning = CheckReport::new("lex");
+        warning.record(Diagnostic::warning(span("warning.sv"), "approximation"));
+        assert!(!warning.fails(DiagnosticPolicy::new(false)));
+        assert!(warning.fails(DiagnosticPolicy::new(true)));
+        assert_eq!(warning.warned(), 1);
+
+        let mut error = CheckReport::new("lex");
+        error.record(Diagnostic::error(span("error.sv"), "unsupported"));
+        assert!(error.fails(DiagnosticPolicy::new(false)));
+        assert!(error.fails(DiagnosticPolicy::new(true)));
+        assert_eq!(error.failed(), 1);
+    }
+
+    #[test]
+    fn intentional_ignores_are_visible_but_do_not_fail() {
+        let mut report = CheckReport::new("lower");
+        report.record(Diagnostic::intentional_ignore(
+            span("ignored.sv"),
+            "later delay entry",
+        ));
+        assert!(!report.fails(DiagnosticPolicy::new(false)));
+        assert!(!report.fails(DiagnosticPolicy::new(true)));
+        assert_eq!(report.intentional_ignores(), 1);
+        assert!(report.render().contains("intentional-ignored=1"));
+    }
+
+    #[test]
+    fn summary_and_grouped_details_render_deterministically() {
+        let mut report = CheckReport::new("lower");
+        report.processed = 4;
+        report.record(Diagnostic::warning(span("b.sv"), "second warning"));
+        report.record(Diagnostic::error(span("d.sv"), "failure"));
+        report.record(Diagnostic::intentional_ignore(
+            span("c.sv"),
+            "ignored source",
+        ));
+        report.record(Diagnostic::warning(span("a.sv"), "first warning"));
+
+        assert_eq!(
+            report.render(),
+            concat!(
+                "lower check summary: processed=4 warned=2 intentional-ignored=1 failed=1\n",
+                "  a.sv:1:1: warning: first warning\n",
+                "  b.sv:1:1: warning: second warning\n",
+                "  c.sv:1:1: intentional-ignore: ignored source\n",
+                "  d.sv:1:1: error: failure\n",
+            )
+        );
     }
 }

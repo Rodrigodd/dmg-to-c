@@ -1,7 +1,7 @@
 use crate::analyze::{analyze_design, sensitivity_is_stateful};
 use crate::ast::*;
 use crate::diagnostic::{Diagnostic, Span};
-use crate::ir::{Assignment, Cell, CellItem, Expr, LoweredModule};
+use crate::ir::{Assignment, Cell, CellItem, Expr, LoweredModule, TimingOperator, ValueOperator};
 use std::collections::BTreeMap;
 use std::path::Path;
 
@@ -159,11 +159,10 @@ impl<'a> Lowerer<'a> {
                     ));
                 }
                 let next_condition = match condition {
-                    Some(ref parent) => Expr::list(vec![
-                        Expr::atom("and"),
-                        parent.clone(),
-                        self.lower_expr(&stmt.condition)?,
-                    ]),
+                    Some(ref parent) => Expr::value(
+                        ValueOperator::And,
+                        vec![parent.clone(), self.lower_expr(&stmt.condition)?],
+                    ),
                     None => self.lower_expr(&stmt.condition)?,
                 };
                 self.lower_procedural_body(&stmt.then_branch, Some(next_condition), hold_on_false)
@@ -198,12 +197,10 @@ impl<'a> Lowerer<'a> {
         })?;
         let mut expr = self.lower_expr(&stmt.value)?;
         if hold_on_false && let Some(condition) = condition {
-            expr = Expr::list(vec![
-                Expr::atom("mux"),
-                condition.clone(),
-                expr,
-                Expr::atom(target.clone()),
-            ]);
+            expr = Expr::value(
+                ValueOperator::Mux,
+                vec![condition.clone(), expr, Expr::atom(target.clone())],
+            );
         }
         self.cell.items.push(CellItem::Assignment(Assignment {
             target,
@@ -237,66 +234,78 @@ impl<'a> Lowerer<'a> {
             ExprKind::Constant(kind) => Ok(Expr::atom(match kind {
                 ConstKind::Zero => "0",
                 ConstKind::One => "1",
-                ConstKind::Z => "z",
+                ConstKind::Z => {
+                    return Err(Diagnostic::new(
+                        expr.span.clone(),
+                        "high-Z is not a contracted ordinary driven value",
+                    ));
+                }
                 ConstKind::X => "x",
             })),
             ExprKind::Group(inner) => self.lower_expr(inner),
-            ExprKind::Unary { op, expr } => {
-                let label = match op {
-                    UnaryOp::Not | UnaryOp::BitNot => {
-                        return self.lower_not_expr(expr);
-                    }
-                    UnaryOp::Plus => "plus",
-                    UnaryOp::Minus => "minus",
-                };
-                Ok(Expr::list(vec![Expr::atom(label), self.lower_expr(expr)?]))
-            }
+            ExprKind::Unary { op, expr: operand } => match op {
+                UnaryOp::Not | UnaryOp::BitNot => self.lower_not_expr(operand),
+                UnaryOp::Plus | UnaryOp::Minus => Err(Diagnostic::new(
+                    expr.span.clone(),
+                    "unary arithmetic is not a contracted value expression",
+                )),
+            },
             ExprKind::Binary { op, left, right } => {
-                let label = match op {
-                    BinaryOp::Mul => "mul",
-                    BinaryOp::Div => "div",
-                    BinaryOp::Add => "add",
-                    BinaryOp::Sub => "sub",
-                    BinaryOp::BitAnd | BinaryOp::LogicalAnd => "and",
-                    BinaryOp::BitOr | BinaryOp::LogicalOr => "or",
-                    BinaryOp::BitXor => "xor",
-                    BinaryOp::BitNand => "nand",
-                    BinaryOp::BitNor => "nor",
-                    BinaryOp::BitXnor => "xnor",
-                    BinaryOp::Eq => "eq",
-                    BinaryOp::CaseEq => "caseeq",
-                    BinaryOp::Neq => "neq",
-                    BinaryOp::CaseNeq => "caseneq",
-                    BinaryOp::Less => "lt",
-                    BinaryOp::Greater => "gt",
+                let operator = match op {
+                    BinaryOp::BitAnd | BinaryOp::LogicalAnd => ValueOperator::And,
+                    BinaryOp::BitOr | BinaryOp::LogicalOr => ValueOperator::Or,
+                    BinaryOp::BitXor => ValueOperator::Xor,
+                    BinaryOp::BitNand => ValueOperator::Nand,
+                    BinaryOp::BitNor => ValueOperator::Nor,
+                    BinaryOp::BitXnor => ValueOperator::Xnor,
+                    BinaryOp::Eq => ValueOperator::Eq,
+                    BinaryOp::CaseEq => ValueOperator::CaseEq,
+                    BinaryOp::Neq => ValueOperator::Neq,
+                    BinaryOp::CaseNeq => ValueOperator::CaseNeq,
+                    BinaryOp::Mul
+                    | BinaryOp::Div
+                    | BinaryOp::Add
+                    | BinaryOp::Sub
+                    | BinaryOp::Less
+                    | BinaryOp::Greater => {
+                        return Err(Diagnostic::new(
+                            expr.span.clone(),
+                            "arithmetic and relational operators are not contracted value expressions",
+                        ));
+                    }
                 };
                 if matches!(op, BinaryOp::BitAnd | BinaryOp::LogicalAnd) {
                     let mut operands = Vec::new();
                     collect_and_operands(left, &mut operands);
                     collect_and_operands(right, &mut operands);
                     let mut items = Vec::with_capacity(operands.len() + 1);
-                    items.push(Expr::atom(label));
                     for operand in operands {
                         items.push(self.lower_expr(operand)?);
                     }
-                    return Ok(Expr::list(items));
+                    return Ok(Expr::value(operator, items));
                 }
                 if matches!(op, BinaryOp::BitOr | BinaryOp::LogicalOr) {
                     let mut operands = Vec::new();
                     collect_or_operands(left, &mut operands);
                     collect_or_operands(right, &mut operands);
                     let mut items = Vec::with_capacity(operands.len() + 1);
-                    items.push(Expr::atom(label));
                     for operand in operands {
                         items.push(self.lower_expr(operand)?);
                     }
-                    return Ok(Expr::list(items));
+                    return Ok(Expr::value(operator, items));
                 }
-                Ok(Expr::list(vec![
-                    Expr::atom(label),
-                    self.lower_expr(left)?,
-                    self.lower_expr(right)?,
-                ]))
+                let operands = if matches!(
+                    op,
+                    BinaryOp::Eq | BinaryOp::CaseEq | BinaryOp::Neq | BinaryOp::CaseNeq
+                ) {
+                    vec![
+                        self.lower_equality_operand(left)?,
+                        self.lower_equality_operand(right)?,
+                    ]
+                } else {
+                    vec![self.lower_expr(left)?, self.lower_expr(right)?]
+                };
+                Ok(Expr::value(operator, operands))
             }
             ExprKind::Ternary {
                 condition,
@@ -310,24 +319,33 @@ impl<'a> Lowerer<'a> {
                 )? {
                     return Ok(expr);
                 }
-                Ok(Expr::list(vec![
-                    Expr::atom("mux"),
-                    self.lower_expr(condition)?,
-                    self.lower_expr(then_expr)?,
-                    self.lower_expr(else_expr)?,
-                ]))
-            }
-            ExprKind::Call { callee, args } => {
-                let name = expr_symbol(callee).unwrap_or_else(|| render_call_callee(callee));
-                let mut items = vec![Expr::atom(name)];
-                for arg in args {
-                    match arg {
-                        Some(expr) => items.push(self.lower_expr(expr)?),
-                        None => items.push(Expr::atom("_")),
-                    }
+                if self.is_z_expr(then_expr) || self.is_z_expr(else_expr) {
+                    return Err(Diagnostic::new(
+                        expr.span.clone(),
+                        "high-Z ternary is not yet a contracted polarity-equivalent driver form",
+                    ));
                 }
-                Ok(Expr::list(items))
+                Ok(Expr::value(
+                    ValueOperator::Mux,
+                    vec![
+                        self.lower_expr(condition)?,
+                        self.lower_expr(then_expr)?,
+                        self.lower_expr(else_expr)?,
+                    ],
+                ))
             }
+            ExprKind::Call { .. } => Err(Diagnostic::new(
+                expr.span.clone(),
+                "function calls are not contracted value expressions",
+            )),
+        }
+    }
+
+    fn lower_equality_operand(&mut self, expr: &SvExpr) -> LowerResult<Expr> {
+        match &expr.kind {
+            ExprKind::Constant(ConstKind::Z) => Ok(Expr::atom("z")),
+            ExprKind::Group(inner) => self.lower_equality_operand(inner),
+            _ => self.lower_expr(expr),
         }
     }
 
@@ -340,20 +358,18 @@ impl<'a> Lowerer<'a> {
         if self.is_z_expr(else_expr)
             && let Some(value) = self.tristate_drive_value(then_expr)
         {
-            return Ok(Some(Expr::list(vec![
-                Expr::atom("bufif1"),
-                value,
-                self.lower_expr(condition)?,
-            ])));
+            return Ok(Some(Expr::value(
+                ValueOperator::BufIf1,
+                vec![value, self.lower_expr(condition)?],
+            )));
         }
         if self.is_z_expr(then_expr)
             && let Some(value) = self.tristate_drive_value(else_expr)
         {
-            return Ok(Some(Expr::list(vec![
-                Expr::atom("bufif0"),
-                value,
-                self.lower_expr(condition)?,
-            ])));
+            return Ok(Some(Expr::value(
+                ValueOperator::BufIf0,
+                vec![value, self.lower_expr(condition)?],
+            )));
         }
         Ok(None)
     }
@@ -409,11 +425,13 @@ impl<'a> Lowerer<'a> {
             .ok_or_else(|| Diagnostic::new(call.span.clone(), "expected bufif control argument"))?;
         let target = expr_symbol(target)
             .ok_or_else(|| Diagnostic::new(target.span.clone(), "expected bufif target symbol"))?;
-        let expr = Expr::list(vec![
-            Expr::atom(call.name.clone()),
-            self.lower_expr(value)?,
-            self.lower_expr(control)?,
-        ]);
+        let operator = ValueOperator::parse(&call.name).ok_or_else(|| {
+            Diagnostic::new(call.span.clone(), "uncontracted bufif value operator")
+        })?;
+        let expr = Expr::value(
+            operator,
+            vec![self.lower_expr(value)?, self.lower_expr(control)?],
+        );
         let delay = self.lower_delay(call.delay.as_ref())?;
         self.cell.items.push(CellItem::Assignment(Assignment {
             target,
@@ -434,11 +452,11 @@ impl<'a> Lowerer<'a> {
                 let mut operands = Vec::new();
                 collect_and_operands(left, &mut operands);
                 collect_and_operands(right, &mut operands);
-                let mut items = vec![Expr::atom("nand")];
+                let mut items = Vec::new();
                 for operand in operands {
                     items.push(self.lower_expr(operand)?);
                 }
-                Ok(Expr::list(items))
+                Ok(Expr::value(ValueOperator::Nand, items))
             }
             ExprKind::Binary {
                 op: BinaryOp::BitOr | BinaryOp::LogicalOr,
@@ -448,22 +466,24 @@ impl<'a> Lowerer<'a> {
                 let mut operands = Vec::new();
                 collect_or_operands(left, &mut operands);
                 collect_or_operands(right, &mut operands);
-                let mut items = vec![Expr::atom("nor")];
+                let mut items = Vec::new();
                 for operand in operands {
                     items.push(self.lower_expr(operand)?);
                 }
-                Ok(Expr::list(items))
+                Ok(Expr::value(ValueOperator::Nor, items))
             }
             ExprKind::Binary {
                 op: BinaryOp::BitXor,
                 left,
                 right,
-            } => Ok(Expr::list(vec![
-                Expr::atom("xnor"),
-                self.lower_expr(left)?,
-                self.lower_expr(right)?,
-            ])),
-            _ => Ok(Expr::list(vec![Expr::atom("not"), self.lower_expr(expr)?])),
+            } => Ok(Expr::value(
+                ValueOperator::Xnor,
+                vec![self.lower_expr(left)?, self.lower_expr(right)?],
+            )),
+            _ => Ok(Expr::value(
+                ValueOperator::Not,
+                vec![self.lower_expr(expr)?],
+            )),
         }
     }
 
@@ -485,52 +505,73 @@ impl<'a> Lowerer<'a> {
                 ConstKind::X => "x",
             })),
             ExprKind::Group(inner) => self.lower_timing_expr(inner),
-            ExprKind::Unary { op, expr } => {
-                let label = match op {
-                    UnaryOp::Plus => "plus",
-                    UnaryOp::Minus => "minus",
-                    UnaryOp::Not | UnaryOp::BitNot => "not",
+            ExprKind::Unary { op, expr: operand } => {
+                let operator = match op {
+                    UnaryOp::Plus => return self.lower_timing_expr(operand),
+                    UnaryOp::Minus => TimingOperator::Subtract,
+                    UnaryOp::Not | UnaryOp::BitNot => {
+                        return Err(Diagnostic::new(
+                            expr.span.clone(),
+                            "Boolean operators are not part of the timing contract",
+                        ));
+                    }
                 };
-                Ok(Expr::list(vec![
-                    Expr::atom(label),
-                    self.lower_timing_expr(expr)?,
-                ]))
+                Ok(Expr::timing(
+                    operator,
+                    vec![Expr::atom("0"), self.lower_timing_expr(operand)?],
+                ))
             }
             ExprKind::Binary { op, left, right } => {
-                let label = match op {
-                    BinaryOp::Add => "+",
-                    BinaryOp::Sub => "-",
-                    BinaryOp::Mul => "*",
-                    BinaryOp::Div => "/",
-                    BinaryOp::BitAnd | BinaryOp::LogicalAnd => "and",
-                    BinaryOp::BitOr | BinaryOp::LogicalOr => "or",
-                    BinaryOp::BitXor => "xor",
-                    BinaryOp::BitNand => "nand",
-                    BinaryOp::BitNor => "nor",
-                    BinaryOp::BitXnor => "xnor",
-                    BinaryOp::Eq => "eq",
-                    BinaryOp::CaseEq => "caseeq",
-                    BinaryOp::Neq => "neq",
-                    BinaryOp::CaseNeq => "caseneq",
-                    BinaryOp::Less => "lt",
-                    BinaryOp::Greater => "gt",
+                let operator = match op {
+                    BinaryOp::Add => TimingOperator::Add,
+                    BinaryOp::Sub => TimingOperator::Subtract,
+                    BinaryOp::Mul => TimingOperator::Multiply,
+                    BinaryOp::Div => TimingOperator::Divide,
+                    BinaryOp::BitAnd
+                    | BinaryOp::LogicalAnd
+                    | BinaryOp::BitOr
+                    | BinaryOp::LogicalOr
+                    | BinaryOp::BitXor
+                    | BinaryOp::BitNand
+                    | BinaryOp::BitNor
+                    | BinaryOp::BitXnor
+                    | BinaryOp::Eq
+                    | BinaryOp::CaseEq
+                    | BinaryOp::Neq
+                    | BinaryOp::CaseNeq => {
+                        return Err(Diagnostic::new(
+                            expr.span.clone(),
+                            "operator is not part of the timing contract",
+                        ));
+                    }
+                    BinaryOp::Greater => TimingOperator::Greater,
+                    BinaryOp::Less => {
+                        return Err(Diagnostic::new(
+                            expr.span.clone(),
+                            "less-than is not part of the timing contract",
+                        ));
+                    }
                 };
-                Ok(Expr::list(vec![
-                    Expr::atom(label),
-                    self.lower_timing_expr(left)?,
-                    self.lower_timing_expr(right)?,
-                ]))
+                Ok(Expr::timing(
+                    operator,
+                    vec![
+                        self.lower_timing_expr(left)?,
+                        self.lower_timing_expr(right)?,
+                    ],
+                ))
             }
             ExprKind::Ternary {
                 condition,
                 then_expr,
                 else_expr,
-            } => Ok(Expr::list(vec![
-                Expr::atom("mux"),
-                self.lower_timing_expr(condition)?,
-                self.lower_timing_expr(then_expr)?,
-                self.lower_timing_expr(else_expr)?,
-            ])),
+            } => Ok(Expr::timing(
+                TimingOperator::Mux,
+                vec![
+                    self.lower_timing_expr(condition)?,
+                    self.lower_timing_expr(then_expr)?,
+                    self.lower_timing_expr(else_expr)?,
+                ],
+            )),
             ExprKind::Call { callee, args } => self.lower_timing_call(callee, args),
         }
     }
@@ -543,19 +584,19 @@ impl<'a> Lowerer<'a> {
     }
 
     fn lower_timing_expr_from_delay(&mut self, delay: &Delay) -> LowerResult<Expr> {
-        let mut values = Vec::new();
-        for expr in delay.values.iter().flatten() {
-            values.push(self.lower_timing_expr(expr)?);
-        }
-        match values.len() {
-            0 => Ok(Expr::atom("0")),
-            1 => Ok(values.remove(0)),
-            _ => {
-                let mut items = vec![Expr::atom("+")];
-                items.extend(values);
-                Ok(Expr::list(items))
-            }
-        }
+        let Some(first) = delay.values.first() else {
+            return Err(Diagnostic::new(
+                delay.span.clone(),
+                "delay tuple must contain a first entry",
+            ));
+        };
+        let first = first.as_ref().ok_or_else(|| {
+            Diagnostic::new(
+                delay.span.clone(),
+                "explicitly omitted first delay tuple entry is unsupported",
+            )
+        })?;
+        self.lower_timing_expr(first)
     }
 
     fn lower_timing_call(&mut self, callee: &SvExpr, args: &[Option<SvExpr>]) -> LowerResult<Expr> {
@@ -574,11 +615,13 @@ impl<'a> Lowerer<'a> {
                 let resistance = args[1].as_ref().ok_or_else(|| {
                     Diagnostic::new(callee.span.clone(), "expected resistance argument")
                 })?;
-                Ok(Expr::list(vec![
-                    Expr::atom("elmore"),
-                    Expr::list(vec![Expr::atom("wire"), self.lower_timing_expr(wire)?]),
-                    self.lower_timing_resistance(resistance)?,
-                ]))
+                Ok(Expr::timing(
+                    TimingOperator::Elmore,
+                    vec![
+                        Expr::timing(TimingOperator::Wire, vec![self.lower_timing_expr(wire)?]),
+                        self.lower_timing_resistance(resistance)?,
+                    ],
+                ))
             }
             "tpd_z" => {
                 let Some(arg) = args.iter().find_map(|arg| arg.as_ref()) else {
@@ -589,18 +632,12 @@ impl<'a> Lowerer<'a> {
                 };
                 self.lower_timing_expr(arg)
             }
-            "R_pmos_ohm" => self.lower_timing_resistance_call("pmos", args),
-            "R_nmos_ohm" => self.lower_timing_resistance_call("nmos", args),
-            _ => {
-                let mut items = vec![Expr::atom(name)];
-                for arg in args {
-                    match arg {
-                        Some(expr) => items.push(self.lower_timing_expr(expr)?),
-                        None => items.push(Expr::atom("_")),
-                    }
-                }
-                Ok(Expr::list(items))
-            }
+            "R_pmos_ohm" => self.lower_timing_resistance_call(TimingOperator::Pmos, callee, args),
+            "R_nmos_ohm" => self.lower_timing_resistance_call(TimingOperator::Nmos, callee, args),
+            _ => Err(Diagnostic::new(
+                callee.span.clone(),
+                format!("uncontracted timing function `{name}`"),
+            )),
         }
     }
 
@@ -609,8 +646,12 @@ impl<'a> Lowerer<'a> {
             ExprKind::Call { callee, args } => {
                 let name = expr_symbol(callee).unwrap_or_else(|| render_call_callee(callee));
                 match name.as_str() {
-                    "R_pmos_ohm" => self.lower_timing_resistance_call("pmos", args),
-                    "R_nmos_ohm" => self.lower_timing_resistance_call("nmos", args),
+                    "R_pmos_ohm" => {
+                        self.lower_timing_resistance_call(TimingOperator::Pmos, callee, args)
+                    }
+                    "R_nmos_ohm" => {
+                        self.lower_timing_resistance_call(TimingOperator::Nmos, callee, args)
+                    }
                     _ => self.lower_timing_expr(expr),
                 }
             }
@@ -636,20 +677,22 @@ impl<'a> Lowerer<'a> {
 
     fn lower_timing_resistance_call(
         &mut self,
-        label: &str,
+        operator: TimingOperator,
+        callee: &SvExpr,
         args: &[Option<SvExpr>],
     ) -> LowerResult<Expr> {
         let Some(arg) = args.first().and_then(|arg| arg.as_ref()) else {
             return Err(Diagnostic::new(
-                Span::new("<timing>", 1, 1),
+                callee.span.clone(),
                 "expected resistance argument",
             ));
         };
         let value = self.extract_unit_factor(arg)?;
-        Ok(Expr::list(vec![
-            Expr::atom(label),
-            Expr::atom(value.to_string()),
-        ]))
+        debug_assert!(matches!(
+            operator,
+            TimingOperator::Pmos | TimingOperator::Nmos
+        ));
+        Ok(Expr::timing(operator, vec![Expr::atom(value.to_string())]))
     }
 
     fn extract_unit_factor(&self, expr: &SvExpr) -> LowerResult<i64> {
@@ -760,6 +803,10 @@ mod tests {
             .into_iter()
             .map(|(_, expr, _)| expr)
             .collect()
+    }
+
+    fn lower_snippet(input: &str) -> LowerResult<LoweredModule> {
+        lower_file(Path::new("snippet.sv"), input)
     }
 
     #[test]
@@ -923,5 +970,81 @@ mod tests {
                 "(bufif1 0 in9)".to_string(),
             ]
         );
+    }
+
+    #[test]
+    fn delay_tuples_select_exactly_the_first_entry() {
+        for (delay, expected) in [("#(1)", "1"), ("#(1, 2)", "1"), ("#(1, 2, 3)", "1")] {
+            let input = format!(
+                "module sample(input logic a, output logic y); assign {delay} y = a; endmodule"
+            );
+            let lowered = lower_snippet(&input).unwrap();
+            assert_eq!(assignment_strings(&lowered)[0].2, expected);
+        }
+        let lowered =
+            lower_snippet("module sample(input logic a, output logic y); assign y = a; endmodule")
+                .unwrap();
+        assert_eq!(assignment_strings(&lowered)[0].2, "0");
+    }
+
+    #[test]
+    fn explicitly_omitted_first_delay_entry_is_an_error() {
+        let error = lower_snippet(
+            "module sample(input logic a, output logic y); assign #(, 2) y = a; endmodule",
+        )
+        .unwrap_err();
+        assert!(error.message.contains("omitted first delay"));
+    }
+
+    #[test]
+    fn uncontracted_value_operator_reports_its_source_span() {
+        let error = lower_snippet(
+            "module sample(input logic a, output logic y);\n  assign y = a + 1;\nendmodule",
+        )
+        .unwrap_err();
+        assert_eq!(error.span, Span::new("snippet.sv", 2, 14));
+        assert!(error.message.contains("not contracted value expressions"));
+    }
+
+    #[test]
+    fn timing_clamp_uses_contracted_greater_and_mux_operators() {
+        let lowered = lower_snippet(
+            "module sample(input logic a, output logic y);\n  assign #((0.2 * T_fall_y1) > T_Z_min ? (0.2 * T_fall_y1) : T_Z_min) y = a;\nendmodule",
+        )
+        .unwrap();
+        assert_eq!(
+            assignment_strings(&lowered)[0].2,
+            "(mux (gt (* 0.2 T_fall_y1) T_Z_min) (* 0.2 T_fall_y1) T_Z_min)"
+        );
+    }
+
+    #[test]
+    fn timing_less_than_reports_its_source_span() {
+        let error = lower_snippet(
+            "module sample(input logic a, output logic y);\n  assign #(a < 1) y = a;\nendmodule",
+        )
+        .unwrap_err();
+        assert_eq!(error.span, Span::new("snippet.sv", 2, 12));
+        assert!(error.message.contains("less-than"));
+    }
+
+    #[test]
+    fn high_z_lowers_only_as_an_equality_operand() {
+        let equality = lower_snippet(
+            "module sample(input logic a, output logic y); assign y = a === 'z; endmodule",
+        )
+        .unwrap();
+        assert_eq!(assignment_strings(&equality)[0].1, "(caseeq a z)");
+
+        let direct =
+            lower_snippet("module sample(input logic a, output logic y); assign y = 'z; endmodule")
+                .unwrap_err();
+        assert!(direct.message.contains("high-Z"));
+
+        let unimplemented_tristate = lower_snippet(
+            "module sample(input logic a, input logic s, output logic y); assign y = s ? a : 'z; endmodule",
+        )
+        .unwrap_err();
+        assert!(unimplemented_tristate.message.contains("high-Z ternary"));
     }
 }

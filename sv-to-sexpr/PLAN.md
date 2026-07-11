@@ -133,6 +133,9 @@ See [STATUS.md](STATUS.md).
 
 ### Milestone 0: Freeze the DSL and Diagnostic Contracts
 
+Status: complete as of 2026-07-10. The frozen contract is
+[CONTRACT.md](CONTRACT.md).
+
 Define the contracts that later lowering work must implement.
 
 Expected to be working after this milestone:
