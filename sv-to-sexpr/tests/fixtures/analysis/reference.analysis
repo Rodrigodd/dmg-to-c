@@ -1,0 +1,93 @@
+analyze summary: modules=1 disposition=deferred requirements=8
+module sm83_dffs_cc_ee_pch_d_reg_pc_bit @sv-cells/sm83/cells/dffs_cc_ee_pch_d_reg_pc_bit.sv:3:1
+  inputs: clk clk_n ena ena_n s_n pch_n d
+  outputs: q q_n d
+  registers: ff1 ff2 q_n
+  symbols:
+    L_d category=parameter @sv-cells/sm83/cells/dffs_cc_ee_pch_d_reg_pc_bit.sv:4:3
+    L_q category=parameter @sv-cells/sm83/cells/dffs_cc_ee_pch_d_reg_pc_bit.sv:5:3
+    L_q_n category=parameter @sv-cells/sm83/cells/dffs_cc_ee_pch_d_reg_pc_bit.sv:6:3
+    T_Z_d category=localparam @sv-cells/sm83/cells/dffs_cc_ee_pch_d_reg_pc_bit.sv:27:2
+    T_fall_buf1 category=specparam @sv-cells/sm83/cells/dffs_cc_ee_pch_d_reg_pc_bit.sv:32:3
+    T_fall_buf2 category=specparam @sv-cells/sm83/cells/dffs_cc_ee_pch_d_reg_pc_bit.sv:34:3
+    T_fall_q category=specparam @sv-cells/sm83/cells/dffs_cc_ee_pch_d_reg_pc_bit.sv:38:3
+    T_fall_q_n category=specparam @sv-cells/sm83/cells/dffs_cc_ee_pch_d_reg_pc_bit.sv:36:3
+    T_rise_buf1 category=specparam @sv-cells/sm83/cells/dffs_cc_ee_pch_d_reg_pc_bit.sv:31:3
+    T_rise_buf2 category=specparam @sv-cells/sm83/cells/dffs_cc_ee_pch_d_reg_pc_bit.sv:33:3
+    T_rise_d category=localparam @sv-cells/sm83/cells/dffs_cc_ee_pch_d_reg_pc_bit.sv:26:2
+    T_rise_q category=specparam @sv-cells/sm83/cells/dffs_cc_ee_pch_d_reg_pc_bit.sv:37:3
+    T_rise_q_n category=specparam @sv-cells/sm83/cells/dffs_cc_ee_pch_d_reg_pc_bit.sv:35:3
+    clk category=port @sv-cells/sm83/cells/dffs_cc_ee_pch_d_reg_pc_bit.sv:8:3
+    clk_n category=port @sv-cells/sm83/cells/dffs_cc_ee_pch_d_reg_pc_bit.sv:8:3
+    d category=port @sv-cells/sm83/cells/dffs_cc_ee_pch_d_reg_pc_bit.sv:9:3
+    ena category=port @sv-cells/sm83/cells/dffs_cc_ee_pch_d_reg_pc_bit.sv:8:3
+    ena_n category=port @sv-cells/sm83/cells/dffs_cc_ee_pch_d_reg_pc_bit.sv:8:3
+    ff1 category=declaration @sv-cells/sm83/cells/dffs_cc_ee_pch_d_reg_pc_bit.sv:15:2
+    ff2 category=declaration @sv-cells/sm83/cells/dffs_cc_ee_pch_d_reg_pc_bit.sv:15:2
+    pch_n category=port @sv-cells/sm83/cells/dffs_cc_ee_pch_d_reg_pc_bit.sv:8:3
+    q category=port @sv-cells/sm83/cells/dffs_cc_ee_pch_d_reg_pc_bit.sv:10:3
+    q_n category=port @sv-cells/sm83/cells/dffs_cc_ee_pch_d_reg_pc_bit.sv:10:3
+    s_n category=port @sv-cells/sm83/cells/dffs_cc_ee_pch_d_reg_pc_bit.sv:8:3
+  ports:
+    clk direction=input use=input modifiers=[logic] @sv-cells/sm83/cells/dffs_cc_ee_pch_d_reg_pc_bit.sv:8:3
+    clk_n direction=input use=input modifiers=[logic] @sv-cells/sm83/cells/dffs_cc_ee_pch_d_reg_pc_bit.sv:8:3
+    d direction=inout use=input+output modifiers=[tri,logic] @sv-cells/sm83/cells/dffs_cc_ee_pch_d_reg_pc_bit.sv:9:3
+    ena direction=input use=input modifiers=[logic] @sv-cells/sm83/cells/dffs_cc_ee_pch_d_reg_pc_bit.sv:8:3
+    ena_n direction=input use=input modifiers=[logic] @sv-cells/sm83/cells/dffs_cc_ee_pch_d_reg_pc_bit.sv:8:3
+    pch_n direction=input use=input modifiers=[logic] @sv-cells/sm83/cells/dffs_cc_ee_pch_d_reg_pc_bit.sv:8:3
+    q direction=output use=output modifiers=[logic] @sv-cells/sm83/cells/dffs_cc_ee_pch_d_reg_pc_bit.sv:10:3
+    q_n direction=output use=output modifiers=[logic] @sv-cells/sm83/cells/dffs_cc_ee_pch_d_reg_pc_bit.sv:10:3
+    s_n direction=input use=input modifiers=[logic] @sv-cells/sm83/cells/dffs_cc_ee_pch_d_reg_pc_bit.sv:8:3
+  declarations:
+    ff1 kind=Logic type=<implicit> value=<none> @sv-cells/sm83/cells/dffs_cc_ee_pch_d_reg_pc_bit.sv:15:2
+    ff2 kind=Logic type=<implicit> value=<none> @sv-cells/sm83/cells/dffs_cc_ee_pch_d_reg_pc_bit.sv:15:2
+  signal_roles:
+    d roles=[PrimitiveDriven] declared=sv-cells/sm83/cells/dffs_cc_ee_pch_d_reg_pc_bit.sv:9:3
+    ff1 roles=[ModeledState] declared=sv-cells/sm83/cells/dffs_cc_ee_pch_d_reg_pc_bit.sv:15:2
+    ff2 roles=[ModeledState] declared=sv-cells/sm83/cells/dffs_cc_ee_pch_d_reg_pc_bit.sv:15:2
+    q roles=[ContinuousDriven] declared=sv-cells/sm83/cells/dffs_cc_ee_pch_d_reg_pc_bit.sv:10:3
+    q_n roles=[ModeledState] declared=sv-cells/sm83/cells/dffs_cc_ee_pch_d_reg_pc_bit.sv:10:3
+  assignments:
+    #6 (q continuous (not q_n)) @sv-cells/sm83/cells/dffs_cc_ee_pch_d_reg_pc_bit.sv:24:2 strength=<none> syntax=Continuous
+    #0 (ff1 initial 0) @sv-cells/sm83/cells/dffs_cc_ee_pch_d_reg_pc_bit.sv:17:10 strength=<none> syntax=Initial
+    #1 (ff2 initial 0) @sv-cells/sm83/cells/dffs_cc_ee_pch_d_reg_pc_bit.sv:18:10 strength=<none> syntax=Initial
+    #2 (q_n initial 0) @sv-cells/sm83/cells/dffs_cc_ee_pch_d_reg_pc_bit.sv:19:10 strength=<none> syntax=Initial
+    #3 (ff1 state (or d (not s_n))) @sv-cells/sm83/cells/dffs_cc_ee_pch_d_reg_pc_bit.sv:21:74 strength=<none> syntax=Procedural { state: true, source: AlwaysLatch }
+    #4 (ff2 state (not ff1)) @sv-cells/sm83/cells/dffs_cc_ee_pch_d_reg_pc_bit.sv:22:74 strength=<none> syntax=Procedural { state: true, source: AlwaysLatch }
+    #5 (q_n state ff2) @sv-cells/sm83/cells/dffs_cc_ee_pch_d_reg_pc_bit.sv:23:74 strength=<none> syntax=Procedural { state: true, source: AlwaysLatch }
+  drivers:
+    #0 target=ff1 source=initial @sv-cells/sm83/cells/dffs_cc_ee_pch_d_reg_pc_bit.sv:17:10
+    #1 target=ff2 source=initial @sv-cells/sm83/cells/dffs_cc_ee_pch_d_reg_pc_bit.sv:18:10
+    #2 target=q_n source=initial @sv-cells/sm83/cells/dffs_cc_ee_pch_d_reg_pc_bit.sv:19:10
+    #3 target=ff1 source=procedural(state=true,source=AlwaysLatch) @sv-cells/sm83/cells/dffs_cc_ee_pch_d_reg_pc_bit.sv:21:74
+    #4 target=ff2 source=procedural(state=true,source=AlwaysLatch) @sv-cells/sm83/cells/dffs_cc_ee_pch_d_reg_pc_bit.sv:22:74
+    #5 target=q_n source=procedural(state=true,source=AlwaysLatch) @sv-cells/sm83/cells/dffs_cc_ee_pch_d_reg_pc_bit.sv:23:74
+    #6 target=q source=continuous @sv-cells/sm83/cells/dffs_cc_ee_pch_d_reg_pc_bit.sv:24:2
+    #7 target=d source=primitive(bufif0) @sv-cells/sm83/cells/dffs_cc_ee_pch_d_reg_pc_bit.sv:28:2
+  primitives:
+    #7 bufif0 args=[d,'1,pch_n] strength=strong1,highz0 delay=(T_rise_d T_Z_d T_Z_d) @sv-cells/sm83/cells/dffs_cc_ee_pch_d_reg_pc_bit.sv:28:2
+  instantiations:
+  timing_aliases:
+    T_Z_d kind=Localparam value=(call tpd_z T_rise_d) @sv-cells/sm83/cells/dffs_cc_ee_pch_d_reg_pc_bit.sv:27:2
+    T_fall_buf1 kind=Specparam value=(call tpd_elmore 55 (mul (call R_nmos_ohm (mul 3 L_unit)) 2)) @sv-cells/sm83/cells/dffs_cc_ee_pch_d_reg_pc_bit.sv:32:3
+    T_fall_buf2 kind=Specparam value=(call tpd_elmore 25 (mul (call R_nmos_ohm (mul 3 L_unit)) 2)) @sv-cells/sm83/cells/dffs_cc_ee_pch_d_reg_pc_bit.sv:34:3
+    T_fall_q kind=Specparam value=(call tpd_elmore L_q (call R_nmos_ohm (mul 6 L_unit))) @sv-cells/sm83/cells/dffs_cc_ee_pch_d_reg_pc_bit.sv:38:3
+    T_fall_q_n kind=Specparam value=(call tpd_elmore L_q_n (call R_nmos_ohm (mul 6 L_unit))) @sv-cells/sm83/cells/dffs_cc_ee_pch_d_reg_pc_bit.sv:36:3
+    T_rise_buf1 kind=Specparam value=(call tpd_elmore 55 (mul (call R_pmos_ohm (mul 3 L_unit)) 2)) @sv-cells/sm83/cells/dffs_cc_ee_pch_d_reg_pc_bit.sv:31:3
+    T_rise_buf2 kind=Specparam value=(call tpd_elmore 25 (mul (call R_pmos_ohm (mul 3 L_unit)) 2)) @sv-cells/sm83/cells/dffs_cc_ee_pch_d_reg_pc_bit.sv:33:3
+    T_rise_d kind=Localparam value=(call tpd_elmore L_d (call R_pmos_ohm (mul 5 L_unit))) @sv-cells/sm83/cells/dffs_cc_ee_pch_d_reg_pc_bit.sv:26:2
+    T_rise_q kind=Specparam value=(call tpd_elmore L_q (call R_pmos_ohm (mul 13 L_unit))) @sv-cells/sm83/cells/dffs_cc_ee_pch_d_reg_pc_bit.sv:37:3
+    T_rise_q_n kind=Specparam value=(call tpd_elmore L_q_n (call R_pmos_ohm (mul 13 L_unit))) @sv-cells/sm83/cells/dffs_cc_ee_pch_d_reg_pc_bit.sv:35:3
+  specify_paths:
+    controls=[clk,clk_n] target=q delays=[(add (add (add T_fall_buf1 T_rise_buf2) T_fall_q_n) T_rise_q),(add (add (add T_rise_buf1 T_fall_buf2) T_rise_q_n) T_fall_q)] @sv-cells/sm83/cells/dffs_cc_ee_pch_d_reg_pc_bit.sv:40:3
+    controls=[clk,clk_n] target=q_n delays=[(add (add T_rise_buf1 T_fall_buf2) T_rise_q_n),(add (add T_fall_buf1 T_rise_buf2) T_fall_q_n)] @sv-cells/sm83/cells/dffs_cc_ee_pch_d_reg_pc_bit.sv:42:3
+  generate_alternatives:
+requirements:
+  driver.primitive-tristate | M6 | sv-cells/sm83/cells/dffs_cc_ee_pch_d_reg_pc_bit.sv:28:2 | tri-state primitive and strength semantics are scheduled for Milestone 6
+  driver.repeated | M6 | sv-cells/sm83/cells/dffs_cc_ee_pch_d_reg_pc_bit.sv:17:10 | repeated source drivers are scheduled for Milestone 6
+  state.initial | M5 | sv-cells/sm83/cells/dffs_cc_ee_pch_d_reg_pc_bit.sv:17:10 | literal initialization and modeled state are scheduled for Milestone 5
+  state.procedural | M5 | sv-cells/sm83/cells/dffs_cc_ee_pch_d_reg_pc_bit.sv:21:74 | stateful procedural lowering is scheduled for Milestone 5
+  timing.alias | M7 | sv-cells/sm83/cells/dffs_cc_ee_pch_d_reg_pc_bit.sv:27:2 | timing aliases are scheduled for Milestone 7
+  timing.primitive-delay | M7 | sv-cells/sm83/cells/dffs_cc_ee_pch_d_reg_pc_bit.sv:28:2 | symbolic primitive delays are scheduled for Milestone 7
+  timing.specify-path | M7 | sv-cells/sm83/cells/dffs_cc_ee_pch_d_reg_pc_bit.sv:40:3 | specify paths are scheduled for Milestone 7
+  value.combinational | M4 | sv-cells/sm83/cells/dffs_cc_ee_pch_d_reg_pc_bit.sv:24:2 | combinational value lowering is scheduled for Milestone 4

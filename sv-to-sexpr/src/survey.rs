@@ -1,4 +1,7 @@
-use crate::analyze::analyze_file;
+use crate::analyze::{
+    AnalysisDisposition, AnalysisReport, CapabilityRequirement, ModuleCatalog,
+    analyze_design_with_catalog,
+};
 use crate::diagnostic::{Diagnostic, DiagnosticCollection, DiagnosticKind, DiagnosticPolicy};
 use crate::inventory::{
     CapabilityInventory, ClassificationKind, InventoryWalker, record_token_capabilities,
@@ -212,10 +215,211 @@ pub fn check_parse_dir(path: &Path) -> Result<CheckReport, Diagnostic> {
     })
 }
 
-pub fn check_analyze_dir(path: &Path) -> Result<CheckReport, Diagnostic> {
-    check_dir(path, "analyze", |file, contents| {
-        analyze_file(file, contents).map(|_| ())
-    })
+pub fn check_analyze_dir(path: &Path) -> Result<AnalyzeCheckReport, Diagnostic> {
+    let files = collect_sv_files(path)?;
+    let mut report = AnalyzeCheckReport {
+        processed: files.len(),
+        ..AnalyzeCheckReport::default()
+    };
+    let mut parsed = Vec::new();
+    for file in files {
+        match fs::read_to_string(&file) {
+            Ok(contents) => match parse_file(&file, &contents) {
+                Ok(design) => parsed.push((file, design)),
+                Err(diagnostic) => report
+                    .files
+                    .push(AnalyzeFileReport::failed(file, vec![diagnostic])),
+            },
+            Err(error) => report.files.push(AnalyzeFileReport::failed(
+                file.clone(),
+                vec![Diagnostic::new(
+                    crate::diagnostic::Span::new(&file, 1, 1),
+                    format!("failed to read file: {error}"),
+                )],
+            )),
+        }
+    }
+    let designs = parsed
+        .iter()
+        .map(|(_, design)| design.clone())
+        .collect::<Vec<_>>();
+    let catalog = match ModuleCatalog::from_designs(&designs) {
+        Ok(catalog) => catalog,
+        Err(diagnostic) => {
+            for (file, _) in parsed {
+                let diagnostics = if diagnostic.span.path == file {
+                    vec![diagnostic.clone()]
+                } else {
+                    vec![Diagnostic::new(
+                        crate::diagnostic::Span::new(&file, 1, 1),
+                        "module catalog construction failed",
+                    )]
+                };
+                report
+                    .files
+                    .push(AnalyzeFileReport::failed(file, diagnostics));
+            }
+            report.sort_files();
+            return Ok(report);
+        }
+    };
+    for (file, design) in parsed {
+        match analyze_design_with_catalog(&design, &catalog) {
+            Ok(analysis) => report
+                .files
+                .push(AnalyzeFileReport::from_analysis(file, analysis)),
+            Err(diagnostic) => report
+                .files
+                .push(AnalyzeFileReport::failed(file, vec![diagnostic])),
+        }
+    }
+    report.sort_files();
+    Ok(report)
+}
+
+pub fn analyze_file_with_sibling_catalog(path: &Path) -> Result<AnalysisReport, Diagnostic> {
+    let parent = sibling_catalog_parent(path);
+    let mut files = collect_sv_files(parent)?;
+    if !files.iter().any(|candidate| candidate == path) {
+        files.push(path.to_path_buf());
+        files.sort();
+        files.dedup();
+    }
+    let mut parsed = Vec::new();
+    let mut target_index = None;
+    for file in files {
+        let contents = fs::read_to_string(&file).map_err(|error| {
+            Diagnostic::new(
+                crate::diagnostic::Span::new(&file, 1, 1),
+                format!("failed to read file: {error}"),
+            )
+        })?;
+        let design = parse_file(&file, &contents)?;
+        if file == path {
+            target_index = Some(parsed.len());
+        }
+        parsed.push(design);
+    }
+    let target_index = target_index.ok_or_else(|| {
+        Diagnostic::new(
+            crate::diagnostic::Span::new(path, 1, 1),
+            "input SystemVerilog file was not included in its sibling catalog",
+        )
+    })?;
+    let catalog = ModuleCatalog::from_designs(&parsed)?;
+    analyze_design_with_catalog(&parsed[target_index], &catalog)
+}
+
+fn sibling_catalog_parent(path: &Path) -> &Path {
+    path.parent()
+        .filter(|parent| !parent.as_os_str().is_empty())
+        .unwrap_or_else(|| Path::new("."))
+}
+
+#[derive(Debug, Default, Clone, PartialEq, Eq)]
+pub struct AnalyzeCheckReport {
+    pub processed: usize,
+    pub files: Vec<AnalyzeFileReport>,
+}
+
+impl AnalyzeCheckReport {
+    fn sort_files(&mut self) {
+        self.files.sort_by(|left, right| left.path.cmp(&right.path));
+    }
+
+    pub fn supported(&self) -> usize {
+        self.count(AnalysisDisposition::Supported)
+    }
+
+    pub fn deferred(&self) -> usize {
+        self.count(AnalysisDisposition::Deferred)
+    }
+
+    pub fn warned(&self) -> usize {
+        self.count(AnalysisDisposition::Warned)
+    }
+
+    pub fn failed(&self) -> usize {
+        self.count(AnalysisDisposition::Failed)
+    }
+
+    fn count(&self, disposition: AnalysisDisposition) -> usize {
+        self.files
+            .iter()
+            .filter(|file| file.disposition == disposition)
+            .count()
+    }
+
+    pub fn fails(&self, policy: DiagnosticPolicy) -> bool {
+        self.failed() > 0 || (policy.strict && self.warned() > 0)
+    }
+
+    pub fn render(&self) -> String {
+        let mut out = format!(
+            "analyze check summary: processed={} supported={} deferred={} warned={} failed={}\n",
+            self.processed,
+            self.supported(),
+            self.deferred(),
+            self.warned(),
+            self.failed()
+        );
+        for file in &self.files {
+            out.push_str(&format!(
+                "  {}: {}\n",
+                file.path.display(),
+                file.disposition.label()
+            ));
+            for requirement in &file.requirements {
+                out.push_str(&format!(
+                    "    {} | {} | {}:{} | {}\n",
+                    requirement.capability_id,
+                    requirement.milestone.label(),
+                    requirement.span.line,
+                    requirement.span.column,
+                    requirement.reason
+                ));
+            }
+            for diagnostic in &file.diagnostics {
+                out.push_str(&format!("    {diagnostic}\n"));
+            }
+        }
+        out
+    }
+}
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct AnalyzeFileReport {
+    pub path: PathBuf,
+    pub disposition: AnalysisDisposition,
+    pub requirements: Vec<CapabilityRequirement>,
+    pub diagnostics: Vec<Diagnostic>,
+}
+
+impl AnalyzeFileReport {
+    fn from_analysis(path: PathBuf, analysis: AnalysisReport) -> Self {
+        Self {
+            path,
+            disposition: analysis.disposition,
+            requirements: analysis.requirements,
+            diagnostics: analysis.diagnostics,
+        }
+    }
+
+    fn failed(path: PathBuf, mut diagnostics: Vec<Diagnostic>) -> Self {
+        diagnostics.sort_by(|left, right| {
+            left.span
+                .line
+                .cmp(&right.span.line)
+                .then_with(|| left.span.column.cmp(&right.span.column))
+                .then_with(|| left.message.cmp(&right.message))
+        });
+        Self {
+            path,
+            disposition: AnalysisDisposition::Failed,
+            requirements: Vec::new(),
+            diagnostics,
+        }
+    }
 }
 
 pub fn check_lower_dir(path: &Path) -> Result<CheckReport, Diagnostic> {
@@ -434,6 +638,7 @@ fn kind_label(kind: &TokenKind) -> &'static str {
 #[cfg(test)]
 mod check_report_tests {
     use super::*;
+    use crate::analyze::{InstantiationResolution, TargetMilestone};
 
     fn span(path: &str) -> crate::diagnostic::Span {
         crate::diagnostic::Span::new(path, 1, 1)
@@ -489,6 +694,192 @@ mod check_report_tests {
                 "  d.sv:1:1: error: failure\n",
             )
         );
+    }
+
+    #[test]
+    fn analyze_report_counts_each_file_once_and_obeys_policy() {
+        let requirement = CapabilityRequirement {
+            span: span("deferred.sv"),
+            capability_id: "hierarchy.ordinary".to_string(),
+            milestone: TargetMilestone::M9OrdinaryHierarchy,
+            disposition: AnalysisDisposition::Deferred,
+            reason: "ordinary hierarchy lowering is scheduled for Milestone 9".to_string(),
+        };
+        let report = AnalyzeCheckReport {
+            processed: 4,
+            files: vec![
+                AnalyzeFileReport {
+                    path: PathBuf::from("supported.sv"),
+                    disposition: AnalysisDisposition::Supported,
+                    requirements: Vec::new(),
+                    diagnostics: Vec::new(),
+                },
+                AnalyzeFileReport {
+                    path: PathBuf::from("deferred.sv"),
+                    disposition: AnalysisDisposition::Deferred,
+                    requirements: vec![requirement],
+                    diagnostics: Vec::new(),
+                },
+                AnalyzeFileReport {
+                    path: PathBuf::from("warned.sv"),
+                    disposition: AnalysisDisposition::Warned,
+                    requirements: Vec::new(),
+                    diagnostics: vec![Diagnostic::warning(span("warned.sv"), "review required")],
+                },
+                AnalyzeFileReport {
+                    path: PathBuf::from("failed.sv"),
+                    disposition: AnalysisDisposition::Failed,
+                    requirements: Vec::new(),
+                    diagnostics: vec![Diagnostic::error(span("failed.sv"), "invalid source")],
+                },
+            ],
+        };
+        assert_eq!(report.supported(), 1);
+        assert_eq!(report.deferred(), 1);
+        assert_eq!(report.warned(), 1);
+        assert_eq!(report.failed(), 1);
+        assert_eq!(
+            report.supported() + report.deferred() + report.warned() + report.failed(),
+            report.processed
+        );
+        let rendered = report.render();
+        assert_eq!(rendered, report.render());
+        assert!(rendered.starts_with(
+            "analyze check summary: processed=4 supported=1 deferred=1 warned=1 failed=1\n"
+        ));
+
+        let deferred_only = AnalyzeCheckReport {
+            processed: 1,
+            files: vec![report.files[1].clone()],
+        };
+        assert!(!deferred_only.fails(DiagnosticPolicy::new(false)));
+        assert!(!deferred_only.fails(DiagnosticPolicy::new(true)));
+        let warned_only = AnalyzeCheckReport {
+            processed: 1,
+            files: vec![report.files[2].clone()],
+        };
+        assert!(!warned_only.fails(DiagnosticPolicy::new(false)));
+        assert!(warned_only.fails(DiagnosticPolicy::new(true)));
+        let failed_only = AnalyzeCheckReport {
+            processed: 1,
+            files: vec![report.files[3].clone()],
+        };
+        assert!(failed_only.fails(DiagnosticPolicy::new(false)));
+        assert!(failed_only.fails(DiagnosticPolicy::new(true)));
+    }
+
+    #[test]
+    fn catalog_aware_analyze_check_resolves_known_hierarchy_and_fails_unknown_module() {
+        let directory = temporary_directory("analyze-check");
+        std::fs::write(
+            directory.join("child.sv"),
+            "module child(input logic i, output logic o); endmodule\n",
+        )
+        .unwrap();
+        std::fs::write(
+            directory.join("parent.sv"),
+            "module parent(input logic i, output logic o);\n  child u(.i(i), .o(o));\nendmodule\n",
+        )
+        .unwrap();
+        std::fs::write(
+            directory.join("unknown.sv"),
+            "module unknown(input logic i, output logic o);\n  missing u(i, o);\nendmodule\n",
+        )
+        .unwrap();
+
+        let report = check_analyze_dir(&directory).unwrap();
+        assert_eq!(report.processed, 3);
+        assert_eq!(report.supported(), 1);
+        assert_eq!(report.deferred(), 1);
+        assert_eq!(report.warned(), 0);
+        assert_eq!(report.failed(), 1);
+        assert_eq!(
+            report.supported() + report.deferred() + report.warned() + report.failed(),
+            report.processed
+        );
+        let child = report
+            .files
+            .iter()
+            .find(|file| file.path.ends_with("child.sv"))
+            .unwrap();
+        assert_eq!(child.disposition, AnalysisDisposition::Supported);
+        let parent = report
+            .files
+            .iter()
+            .find(|file| file.path.ends_with("parent.sv"))
+            .unwrap();
+        assert_eq!(parent.disposition, AnalysisDisposition::Deferred);
+        assert!(
+            parent.requirements.iter().any(|requirement| {
+                requirement.milestone == TargetMilestone::M9OrdinaryHierarchy
+            })
+        );
+        let unknown = report
+            .files
+            .iter()
+            .find(|file| file.path.ends_with("unknown.sv"))
+            .unwrap();
+        assert_eq!(unknown.disposition, AnalysisDisposition::Failed);
+        assert_eq!(unknown.diagnostics.len(), 1);
+        assert_eq!(unknown.diagnostics[0].span.line, 2);
+        assert_eq!(unknown.diagnostics[0].span.column, 3);
+        assert_eq!(
+            unknown.diagnostics[0].message,
+            "unknown instantiated module `missing` for instance `u`"
+        );
+        assert_eq!(report.render(), report.render());
+        std::fs::remove_dir_all(directory).unwrap();
+    }
+
+    #[test]
+    fn sibling_catalog_helper_resolves_dependencies_and_normalizes_bare_parent() {
+        assert_eq!(
+            sibling_catalog_parent(Path::new("parent.sv")),
+            Path::new(".")
+        );
+        let directory = temporary_directory("sibling-catalog");
+        std::fs::write(
+            directory.join("child.sv"),
+            "module child(input logic i, output logic o); endmodule\n",
+        )
+        .unwrap();
+        let parent_path = directory.join("parent.sv");
+        std::fs::write(
+            &parent_path,
+            "module parent(input logic i, output logic o);\n  child u(.i(i), .o(o));\nendmodule\n",
+        )
+        .unwrap();
+
+        let analysis = analyze_file_with_sibling_catalog(&parent_path).unwrap();
+        assert_eq!(analysis.disposition, AnalysisDisposition::Deferred);
+        assert!(
+            analysis.requirements.iter().any(|requirement| {
+                requirement.milestone == TargetMilestone::M9OrdinaryHierarchy
+            })
+        );
+        assert!(matches!(
+            analysis.modules[0].instantiations[0].resolution,
+            InstantiationResolution::Resolved(_)
+        ));
+        let rendered = analysis.render();
+        assert!(rendered.contains("child u @"));
+        assert!(rendered.contains("resolution=resolved"));
+        assert!(rendered.contains("connection i direction=input source=Named value=i local=i"));
+        assert!(rendered.contains("connection o direction=output source=Named value=o local=o"));
+        std::fs::remove_dir_all(directory).unwrap();
+    }
+
+    fn temporary_directory(label: &str) -> PathBuf {
+        let directory = std::env::temp_dir().join(format!(
+            "sv-to-sexpr-{label}-{}-{:?}",
+            std::process::id(),
+            std::thread::current().id()
+        ));
+        if directory.exists() {
+            std::fs::remove_dir_all(&directory).unwrap();
+        }
+        std::fs::create_dir_all(&directory).unwrap();
+        directory
     }
 
     #[test]

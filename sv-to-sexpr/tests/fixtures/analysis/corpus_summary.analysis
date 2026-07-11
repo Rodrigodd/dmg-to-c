@@ -1,0 +1,28 @@
+analysis corpus summary
+processed=206 supported=1 deferred=205 warned=0 failed=0
+milestones:
+  M4 files=180
+  M5 files=27
+  M6 files=85
+  M7 files=199
+  M8 files=5
+  M9 files=2
+  M10 files=6
+  M11 files=10
+capabilities:
+  driver.high-z | M6 | files=20
+  driver.primitive-tristate | M6 | files=50
+  driver.repeated | M6 | files=47
+  driver.strength | M6 | files=15
+  generate.alternative | M8 | files=5
+  hierarchy.keeper | M10 | files=6
+  hierarchy.ordinary | M9 | files=2
+  primitive.transistor | M11 | files=10
+  state.initial | M5 | files=23
+  state.procedural | M5 | files=27
+  timing.alias | M7 | files=199
+  timing.assignment-delay | M7 | files=39
+  timing.primitive-delay | M7 | files=49
+  timing.specify-path | M7 | files=162
+  value.combinational | M4 | files=180
+  value.procedural-combinational | M4 | files=5

@@ -239,6 +239,11 @@ Acceptance conditions:
 
 ### Milestone 3: Correct Semantic Analysis and Support Classification
 
+Status: complete as of 2026-07-11. Catalog-aware analysis classifies all 206
+curated files as 1 supported and 205 explicitly deferred, with zero warnings or
+failures; reviewed fixtures cover state, internal nets, primitive drivers,
+generate alternatives, timing structure, and resolved hierarchy.
+
 Build a trustworthy normalized analysis before lowering any additional family.
 
 Expected to be working after this milestone:

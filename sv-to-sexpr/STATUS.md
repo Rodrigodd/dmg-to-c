@@ -7,14 +7,15 @@ a milestone acceptance condition changes or is completed.
 
 Last audited on 2026-07-11:
 
-- `cargo test` passes 56 unit tests and 18 integration tests.
+- `cargo test` passes 78 unit tests and 20 integration tests.
 - Lexing succeeds for all 206 curated files.
 - Parsing succeeds for all 206 curated files.
 - `survey sv-cells` deterministically inventories 63,240 tokens and 138 typed
   capabilities: 128 deferred, 10 intentional ignores, and zero unsupported.
-- The analysis command returns success for all 206 files, but its output is not
-  accepted yet because it can misclassify combinational nets as registers and
-  combine mutually exclusive generate branches.
+- Catalog-aware semantic analysis succeeds for all 206 files and reports 1
+  supported, 205 deferred, zero warned, and zero failed. It preserves distinct
+  generate alternatives, resolves ordinary module interfaces without
+  elaborating child behavior, and limits registers to modeled state.
 - Lowering returns success for 182 files and fails explicitly for 24 files.
 - Nine failures are transistor-related. The other failures are five generated
   DFF/TFF variants, two hierarchical adders, four keeper users, three
@@ -46,8 +47,12 @@ Last audited on 2026-07-11:
   typed AST goldens cover all eight required families, an exhaustive visitor
   accounts for every AST variant and source item, and exact diagnostics cover
   malformed and truncated constructs at logical source locations.
-- Milestone 3: partial. Analysis structures exist, but register classification
-  and generate-branch separation are not accepted.
+- Milestone 3: complete. Typed symbol, signal-role, source-ordered driver,
+  timing, generate-alternative, and hierarchy analyses are covered by reviewed
+  fixtures. The reference inputs, outputs, and registers match the contract;
+  continuous and primitive nets remain non-state; full-adder connections
+  resolve against child port directions; and analyze checks distinguish
+  supported, deferred, warned, and failed files.
 - Milestone 4: partial. Combinational lowering exists, but flat SSA output,
   complete fixtures, and fixture review are missing.
 - Milestone 5: partial. Several flat latch/register cells lower, but complete

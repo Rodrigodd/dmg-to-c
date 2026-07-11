@@ -1,11 +1,11 @@
-use crate::analyze::analyze_file;
 use crate::ast::render_design;
 use crate::diagnostic::{Diagnostic, DiagnosticPolicy};
 use crate::lower::lower_file;
 use crate::parser::parse_file;
 use crate::serialize::render_cell;
 use crate::survey::{
-    CheckReport, check_analyze_dir, check_lex_dir, check_lower_dir, check_parse_dir, survey_dir,
+    AnalyzeCheckReport, CheckReport, analyze_file_with_sibling_catalog, check_analyze_dir,
+    check_lex_dir, check_lower_dir, check_parse_dir, survey_dir,
 };
 use std::env;
 use std::fs;
@@ -44,17 +44,20 @@ pub fn run() -> Result<(), Diagnostic> {
             Ok(())
         }
         "analyze" => {
-            let (input, _policy) = parse_single_input(args, "analyze", "<input.sv>")?;
+            let (input, policy) = parse_single_input(args, "analyze", "<input.sv>")?;
             let path = PathBuf::from(input);
-            let contents = fs::read_to_string(&path).map_err(|err| {
-                Diagnostic::new(
-                    crate::diagnostic::Span::new(&path, 1, 1),
-                    format!("failed to read file: {}", err),
-                )
-            })?;
-            let report = analyze_file(&path, &contents)?;
+            let report = analyze_file_with_sibling_catalog(&path)?;
             print!("{}", report.render());
-            Ok(())
+            if report.fails(policy) {
+                Err(report.diagnostics.first().cloned().unwrap_or_else(|| {
+                    Diagnostic::new(
+                        crate::diagnostic::Span::new(&path, 1, 1),
+                        "analysis failed diagnostic policy",
+                    )
+                }))
+            } else {
+                Ok(())
+            }
         }
         "lower" => {
             let (input, _policy) = parse_single_input(args, "lower", "<input.sv>")?;
@@ -117,15 +120,39 @@ pub fn run() -> Result<(), Diagnostic> {
                 CheckStage::Parse => {
                     run_check(&parsed.input, "parsing", parsed.policy, check_parse_dir)
                 }
-                CheckStage::Analyze => {
-                    run_check(&parsed.input, "analyzing", parsed.policy, check_analyze_dir)
-                }
+                CheckStage::Analyze => run_analyze_check(&parsed.input, parsed.policy),
                 CheckStage::Lower => {
                     run_check(&parsed.input, "lowering", parsed.policy, check_lower_dir)
                 }
             }
         }
         other => Err(usage_error(&format!("unknown subcommand `{}`", other))),
+    }
+}
+
+fn run_analyze_check(input: &str, policy: DiagnosticPolicy) -> Result<(), Diagnostic> {
+    let report = check_analyze_dir(Path::new(input))?;
+    print!("{}", report.render());
+    if report.fails(policy) {
+        Err(Diagnostic::new(
+            crate::diagnostic::Span::new(input, 1, 1),
+            analyze_check_failure_message(&report, policy),
+        ))
+    } else {
+        Ok(())
+    }
+}
+
+fn analyze_check_failure_message(report: &AnalyzeCheckReport, policy: DiagnosticPolicy) -> String {
+    if report.failed() > 0 {
+        format!("{} files failed analyzing", report.failed())
+    } else if policy.strict && report.warned() > 0 {
+        format!(
+            "{} files warned during analyzing in strict mode",
+            report.warned()
+        )
+    } else {
+        "analyze check failed diagnostic policy".to_string()
     }
 }
 
@@ -498,5 +525,45 @@ mod tests {
             check_failure_message(&warning, "lowering", DiagnosticPolicy::new(true)),
             "1 files failed lowering"
         );
+    }
+
+    #[test]
+    fn analyze_check_failure_messages_use_file_disposition_counts() {
+        let warned = AnalyzeCheckReport {
+            processed: 1,
+            files: vec![crate::survey::AnalyzeFileReport {
+                path: PathBuf::from("warning.sv"),
+                disposition: crate::analyze::AnalysisDisposition::Warned,
+                requirements: Vec::new(),
+                diagnostics: vec![Diagnostic::warning(
+                    crate::diagnostic::Span::new("warning.sv", 1, 1),
+                    "review required",
+                )],
+            }],
+        };
+        assert_eq!(
+            analyze_check_failure_message(&warned, DiagnosticPolicy::new(true)),
+            "1 files warned during analyzing in strict mode"
+        );
+
+        let failed = AnalyzeCheckReport {
+            processed: 1,
+            files: vec![crate::survey::AnalyzeFileReport {
+                path: PathBuf::from("failed.sv"),
+                disposition: crate::analyze::AnalysisDisposition::Failed,
+                requirements: Vec::new(),
+                diagnostics: vec![Diagnostic::error(
+                    crate::diagnostic::Span::new("failed.sv", 1, 1),
+                    "invalid source",
+                )],
+            }],
+        };
+        assert_eq!(
+            analyze_check_failure_message(&failed, DiagnosticPolicy::new(false)),
+            "1 files failed analyzing"
+        );
+        assert!(failed.render().starts_with(
+            "analyze check summary: processed=1 supported=0 deferred=0 warned=0 failed=1\n"
+        ));
     }
 }

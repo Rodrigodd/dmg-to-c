@@ -1,0 +1,67 @@
+analyze summary: modules=1 disposition=deferred requirements=7
+module dmg_muxi @sv-cells/dmg_cpu_b/cells/muxi.sv:3:1
+  inputs: d0 d1 sel
+  outputs: y
+  registers: <none>
+  symbols:
+    L_y category=parameter @sv-cells/dmg_cpu_b/cells/muxi.sv:4:3
+    T_fall_buf category=localparam @sv-cells/dmg_cpu_b/cells/muxi.sv:19:2
+    T_fall_sel category=localparam @sv-cells/dmg_cpu_b/cells/muxi.sv:14:2
+    T_fall_y category=localparam @sv-cells/dmg_cpu_b/cells/muxi.sv:27:2
+    T_rise_buf category=localparam @sv-cells/dmg_cpu_b/cells/muxi.sv:18:2
+    T_rise_sel category=localparam @sv-cells/dmg_cpu_b/cells/muxi.sv:13:2
+    T_rise_y category=localparam @sv-cells/dmg_cpu_b/cells/muxi.sv:26:2
+    d0 category=port @sv-cells/dmg_cpu_b/cells/muxi.sv:6:3
+    d1 category=port @sv-cells/dmg_cpu_b/cells/muxi.sv:6:3
+    mux category=declaration @sv-cells/dmg_cpu_b/cells/muxi.sv:17:2
+    sel category=port @sv-cells/dmg_cpu_b/cells/muxi.sv:6:3
+    sel_n category=declaration @sv-cells/dmg_cpu_b/cells/muxi.sv:12:2
+    y category=port @sv-cells/dmg_cpu_b/cells/muxi.sv:7:3
+  ports:
+    d0 direction=input use=input modifiers=[logic] @sv-cells/dmg_cpu_b/cells/muxi.sv:6:3
+    d1 direction=input use=input modifiers=[logic] @sv-cells/dmg_cpu_b/cells/muxi.sv:6:3
+    sel direction=input use=input modifiers=[logic] @sv-cells/dmg_cpu_b/cells/muxi.sv:6:3
+    y direction=output use=output modifiers=[logic] @sv-cells/dmg_cpu_b/cells/muxi.sv:7:3
+  declarations:
+    mux kind=Tri type=logic value=<none> @sv-cells/dmg_cpu_b/cells/muxi.sv:17:2
+    sel_n kind=Logic type=<implicit> value=<none> @sv-cells/dmg_cpu_b/cells/muxi.sv:12:2
+  signal_roles:
+    mux roles=[PrimitiveDriven,HierarchicalConnection] declared=sv-cells/dmg_cpu_b/cells/muxi.sv:17:2
+    sel_n roles=[ContinuousDriven] declared=sv-cells/dmg_cpu_b/cells/muxi.sv:12:2
+    y roles=[ContinuousDriven] declared=sv-cells/dmg_cpu_b/cells/muxi.sv:7:3
+  assignments:
+    #0 (sel_n continuous (not sel) (T_rise_sel T_fall_sel)) @sv-cells/dmg_cpu_b/cells/muxi.sv:15:2 strength=<none> syntax=Continuous
+    #6 (y continuous (not mux) (T_rise_y T_fall_y)) @sv-cells/dmg_cpu_b/cells/muxi.sv:28:2 strength=<none> syntax=Continuous
+  drivers:
+    #0 target=sel_n source=continuous @sv-cells/dmg_cpu_b/cells/muxi.sv:15:2
+    #1 target=mux source=primitive(bufif0) @sv-cells/dmg_cpu_b/cells/muxi.sv:20:2
+    #2 target=mux source=primitive(bufif1) @sv-cells/dmg_cpu_b/cells/muxi.sv:21:2
+    #3 target=mux source=primitive(bufif0) @sv-cells/dmg_cpu_b/cells/muxi.sv:22:2
+    #4 target=mux source=primitive(bufif1) @sv-cells/dmg_cpu_b/cells/muxi.sv:23:2
+    #6 target=y source=continuous @sv-cells/dmg_cpu_b/cells/muxi.sv:28:2
+  primitives:
+    #1 bufif0 args=[mux,d0,sel] strength=strong1,highz0 delay=(T_rise_buf T_fall_buf) @sv-cells/dmg_cpu_b/cells/muxi.sv:20:2
+    #2 bufif1 args=[mux,d0,sel_n] strength=highz1,strong0 delay=(T_rise_buf T_fall_buf) @sv-cells/dmg_cpu_b/cells/muxi.sv:21:2
+    #3 bufif0 args=[mux,d1,sel_n] strength=strong1,highz0 delay=(T_rise_buf T_fall_buf) @sv-cells/dmg_cpu_b/cells/muxi.sv:22:2
+    #4 bufif1 args=[mux,d1,sel] strength=highz1,strong0 delay=(T_rise_buf T_fall_buf) @sv-cells/dmg_cpu_b/cells/muxi.sv:23:2
+  instantiations:
+    #5 keeper mux_keeper @sv-cells/dmg_cpu_b/cells/muxi.sv:24:2
+      resolution=special(Keeper)
+      connection mux @sv-cells/dmg_cpu_b/cells/muxi.sv:24:20
+  timing_aliases:
+    T_fall_buf kind=Localparam value=(call tpd_elmore 93 (call R_nmos_ohm (mul 6 L_unit))) @sv-cells/dmg_cpu_b/cells/muxi.sv:19:2
+    T_fall_sel kind=Localparam value=(call tpd_elmore 33 (call R_nmos_ohm (mul 6 L_unit))) @sv-cells/dmg_cpu_b/cells/muxi.sv:14:2
+    T_fall_y kind=Localparam value=(call tpd_elmore L_y (call R_nmos_ohm (mul 35 L_unit))) @sv-cells/dmg_cpu_b/cells/muxi.sv:27:2
+    T_rise_buf kind=Localparam value=(call tpd_elmore 93 (call R_pmos_ohm (mul 6 L_unit))) @sv-cells/dmg_cpu_b/cells/muxi.sv:18:2
+    T_rise_sel kind=Localparam value=(call tpd_elmore 33 (call R_pmos_ohm (mul 6 L_unit))) @sv-cells/dmg_cpu_b/cells/muxi.sv:13:2
+    T_rise_y kind=Localparam value=(call tpd_elmore L_y (call R_pmos_ohm (mul 35 L_unit))) @sv-cells/dmg_cpu_b/cells/muxi.sv:26:2
+  specify_paths:
+  generate_alternatives:
+requirements:
+  driver.primitive-tristate | M6 | sv-cells/dmg_cpu_b/cells/muxi.sv:20:2 | tri-state primitive and strength semantics are scheduled for Milestone 6
+  driver.repeated | M6 | sv-cells/dmg_cpu_b/cells/muxi.sv:20:2 | repeated source drivers are scheduled for Milestone 6
+  hierarchy.keeper | M10 | sv-cells/dmg_cpu_b/cells/muxi.sv:24:2 | keeper behavior is scheduled for Milestone 10
+  timing.alias | M7 | sv-cells/dmg_cpu_b/cells/muxi.sv:19:2 | timing aliases are scheduled for Milestone 7
+  timing.assignment-delay | M7 | sv-cells/dmg_cpu_b/cells/muxi.sv:15:2 | symbolic assignment delays are scheduled for Milestone 7
+  timing.primitive-delay | M7 | sv-cells/dmg_cpu_b/cells/muxi.sv:20:2 | symbolic primitive delays are scheduled for Milestone 7
+  value.combinational | M4 | sv-cells/dmg_cpu_b/cells/muxi.sv:15:2 | combinational value lowering is scheduled for Milestone 4

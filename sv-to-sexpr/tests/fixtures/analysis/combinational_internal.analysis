@@ -1,0 +1,138 @@
+analyze summary: modules=1 disposition=deferred requirements=3
+module sm83_alu_cgen @sv-cells/sm83/cells/alu_cgen.sv:3:1
+  inputs: p0 g0 p1 g1 p2 g2 p3 g3 cin
+  outputs: cout0 cout1 cout2 cout3
+  registers: <none>
+  symbols:
+    L_cout0 category=parameter @sv-cells/sm83/cells/alu_cgen.sv:4:3
+    L_cout1 category=parameter @sv-cells/sm83/cells/alu_cgen.sv:5:3
+    L_cout2 category=parameter @sv-cells/sm83/cells/alu_cgen.sv:6:3
+    L_cout3 category=parameter @sv-cells/sm83/cells/alu_cgen.sv:7:3
+    T_fall_cout0 category=specparam @sv-cells/sm83/cells/alu_cgen.sv:47:3
+    T_fall_cout1 category=specparam @sv-cells/sm83/cells/alu_cgen.sv:49:3
+    T_fall_cout2 category=specparam @sv-cells/sm83/cells/alu_cgen.sv:51:3
+    T_fall_cout3 category=specparam @sv-cells/sm83/cells/alu_cgen.sv:53:3
+    T_fall_p0_cin category=specparam @sv-cells/sm83/cells/alu_cgen.sv:39:3
+    T_fall_p10_cin category=specparam @sv-cells/sm83/cells/alu_cgen.sv:41:3
+    T_fall_p210_cin category=specparam @sv-cells/sm83/cells/alu_cgen.sv:43:3
+    T_fall_p3210_cin category=specparam @sv-cells/sm83/cells/alu_cgen.sv:45:3
+    T_rise_cout0 category=specparam @sv-cells/sm83/cells/alu_cgen.sv:46:3
+    T_rise_cout1 category=specparam @sv-cells/sm83/cells/alu_cgen.sv:48:3
+    T_rise_cout2 category=specparam @sv-cells/sm83/cells/alu_cgen.sv:50:3
+    T_rise_cout3 category=specparam @sv-cells/sm83/cells/alu_cgen.sv:52:3
+    T_rise_g0_cin category=specparam @sv-cells/sm83/cells/alu_cgen.sv:38:3
+    T_rise_g10_cin category=specparam @sv-cells/sm83/cells/alu_cgen.sv:40:3
+    T_rise_g210_cin category=specparam @sv-cells/sm83/cells/alu_cgen.sv:42:3
+    T_rise_g3210_cin category=specparam @sv-cells/sm83/cells/alu_cgen.sv:44:3
+    cin category=port @sv-cells/sm83/cells/alu_cgen.sv:9:3
+    cout0 category=port @sv-cells/sm83/cells/alu_cgen.sv:10:3
+    cout0_n_n category=declaration @sv-cells/sm83/cells/alu_cgen.sv:15:2
+    cout0_n_p category=declaration @sv-cells/sm83/cells/alu_cgen.sv:15:2
+    cout1 category=port @sv-cells/sm83/cells/alu_cgen.sv:10:3
+    cout1_n_n category=declaration @sv-cells/sm83/cells/alu_cgen.sv:16:2
+    cout1_n_p category=declaration @sv-cells/sm83/cells/alu_cgen.sv:16:2
+    cout2 category=port @sv-cells/sm83/cells/alu_cgen.sv:10:3
+    cout2_n_n category=declaration @sv-cells/sm83/cells/alu_cgen.sv:17:2
+    cout2_n_p category=declaration @sv-cells/sm83/cells/alu_cgen.sv:17:2
+    cout3 category=port @sv-cells/sm83/cells/alu_cgen.sv:10:3
+    cout3_n_n category=declaration @sv-cells/sm83/cells/alu_cgen.sv:18:2
+    cout3_n_p category=declaration @sv-cells/sm83/cells/alu_cgen.sv:18:2
+    g0 category=port @sv-cells/sm83/cells/alu_cgen.sv:9:3
+    g1 category=port @sv-cells/sm83/cells/alu_cgen.sv:9:3
+    g2 category=port @sv-cells/sm83/cells/alu_cgen.sv:9:3
+    g3 category=port @sv-cells/sm83/cells/alu_cgen.sv:9:3
+    p0 category=port @sv-cells/sm83/cells/alu_cgen.sv:9:3
+    p1 category=port @sv-cells/sm83/cells/alu_cgen.sv:9:3
+    p2 category=port @sv-cells/sm83/cells/alu_cgen.sv:9:3
+    p3 category=port @sv-cells/sm83/cells/alu_cgen.sv:9:3
+  ports:
+    cin direction=input use=input modifiers=[logic] @sv-cells/sm83/cells/alu_cgen.sv:9:3
+    cout0 direction=output use=output modifiers=[logic] @sv-cells/sm83/cells/alu_cgen.sv:10:3
+    cout1 direction=output use=output modifiers=[logic] @sv-cells/sm83/cells/alu_cgen.sv:10:3
+    cout2 direction=output use=output modifiers=[logic] @sv-cells/sm83/cells/alu_cgen.sv:10:3
+    cout3 direction=output use=output modifiers=[logic] @sv-cells/sm83/cells/alu_cgen.sv:10:3
+    g0 direction=input use=input modifiers=[logic] @sv-cells/sm83/cells/alu_cgen.sv:9:3
+    g1 direction=input use=input modifiers=[logic] @sv-cells/sm83/cells/alu_cgen.sv:9:3
+    g2 direction=input use=input modifiers=[logic] @sv-cells/sm83/cells/alu_cgen.sv:9:3
+    g3 direction=input use=input modifiers=[logic] @sv-cells/sm83/cells/alu_cgen.sv:9:3
+    p0 direction=input use=input modifiers=[logic] @sv-cells/sm83/cells/alu_cgen.sv:9:3
+    p1 direction=input use=input modifiers=[logic] @sv-cells/sm83/cells/alu_cgen.sv:9:3
+    p2 direction=input use=input modifiers=[logic] @sv-cells/sm83/cells/alu_cgen.sv:9:3
+    p3 direction=input use=input modifiers=[logic] @sv-cells/sm83/cells/alu_cgen.sv:9:3
+  declarations:
+    cout0_n_n kind=Logic type=<implicit> value=<none> @sv-cells/sm83/cells/alu_cgen.sv:15:2
+    cout0_n_p kind=Logic type=<implicit> value=<none> @sv-cells/sm83/cells/alu_cgen.sv:15:2
+    cout1_n_n kind=Logic type=<implicit> value=<none> @sv-cells/sm83/cells/alu_cgen.sv:16:2
+    cout1_n_p kind=Logic type=<implicit> value=<none> @sv-cells/sm83/cells/alu_cgen.sv:16:2
+    cout2_n_n kind=Logic type=<implicit> value=<none> @sv-cells/sm83/cells/alu_cgen.sv:17:2
+    cout2_n_p kind=Logic type=<implicit> value=<none> @sv-cells/sm83/cells/alu_cgen.sv:17:2
+    cout3_n_n kind=Logic type=<implicit> value=<none> @sv-cells/sm83/cells/alu_cgen.sv:18:2
+    cout3_n_p kind=Logic type=<implicit> value=<none> @sv-cells/sm83/cells/alu_cgen.sv:18:2
+  signal_roles:
+    cout0 roles=[ContinuousDriven] declared=sv-cells/sm83/cells/alu_cgen.sv:10:3
+    cout0_n_n roles=[ContinuousDriven] declared=sv-cells/sm83/cells/alu_cgen.sv:15:2
+    cout0_n_p roles=[ContinuousDriven] declared=sv-cells/sm83/cells/alu_cgen.sv:15:2
+    cout1 roles=[ContinuousDriven] declared=sv-cells/sm83/cells/alu_cgen.sv:10:3
+    cout1_n_n roles=[ContinuousDriven] declared=sv-cells/sm83/cells/alu_cgen.sv:16:2
+    cout1_n_p roles=[ContinuousDriven] declared=sv-cells/sm83/cells/alu_cgen.sv:16:2
+    cout2 roles=[ContinuousDriven] declared=sv-cells/sm83/cells/alu_cgen.sv:10:3
+    cout2_n_n roles=[ContinuousDriven] declared=sv-cells/sm83/cells/alu_cgen.sv:17:2
+    cout2_n_p roles=[ContinuousDriven] declared=sv-cells/sm83/cells/alu_cgen.sv:17:2
+    cout3 roles=[ContinuousDriven] declared=sv-cells/sm83/cells/alu_cgen.sv:10:3
+    cout3_n_n roles=[ContinuousDriven] declared=sv-cells/sm83/cells/alu_cgen.sv:18:2
+    cout3_n_p roles=[ContinuousDriven] declared=sv-cells/sm83/cells/alu_cgen.sv:18:2
+  assignments:
+    #0 (cout0_n_p continuous (not ((and ((or cin g0)) p0)))) @sv-cells/sm83/cells/alu_cgen.sv:20:2 strength=<none> syntax=Continuous
+    #1 (cout0_n_n continuous (not ((or ((and cin p0)) g0)))) @sv-cells/sm83/cells/alu_cgen.sv:21:2 strength=<none> syntax=Continuous
+    #2 (cout1_n_p continuous (not ((and ((or ((and ((or cin g0)) p0)) g1)) p1)))) @sv-cells/sm83/cells/alu_cgen.sv:23:2 strength=<none> syntax=Continuous
+    #3 (cout1_n_n continuous (not ((or ((and ((or ((and cin p0)) g0)) p1)) g1)))) @sv-cells/sm83/cells/alu_cgen.sv:24:2 strength=<none> syntax=Continuous
+    #4 (cout2_n_p continuous (not ((and ((or ((and ((or ((and ((or cin g0)) p0)) g1)) p1)) g2)) p2)))) @sv-cells/sm83/cells/alu_cgen.sv:26:2 strength=<none> syntax=Continuous
+    #5 (cout2_n_n continuous (not ((or ((and ((or ((and ((or ((and cin p0)) g0)) p1)) g1)) p2)) g2)))) @sv-cells/sm83/cells/alu_cgen.sv:27:2 strength=<none> syntax=Continuous
+    #6 (cout3_n_p continuous (not ((and ((or ((and ((or ((and ((or ((and ((or cin g0)) p0)) g1)) p1)) g2)) p2)) g3)) p3)))) @sv-cells/sm83/cells/alu_cgen.sv:29:2 strength=<none> syntax=Continuous
+    #7 (cout3_n_n continuous (not ((or ((and ((or ((and ((or ((and ((or ((and cin p0)) g0)) p1)) g1)) p2)) g2)) p3)) g3)))) @sv-cells/sm83/cells/alu_cgen.sv:30:2 strength=<none> syntax=Continuous
+    #8 (cout0 continuous (?: ((caseeq cout0_n_p cout0_n_n)) (not cout0_n_p) 'x)) @sv-cells/sm83/cells/alu_cgen.sv:32:2 strength=<none> syntax=Continuous
+    #9 (cout1 continuous (?: ((caseeq cout1_n_p cout1_n_n)) (not cout1_n_p) 'x)) @sv-cells/sm83/cells/alu_cgen.sv:33:2 strength=<none> syntax=Continuous
+    #10 (cout2 continuous (?: ((caseeq cout2_n_p cout2_n_n)) (not cout2_n_p) 'x)) @sv-cells/sm83/cells/alu_cgen.sv:34:2 strength=<none> syntax=Continuous
+    #11 (cout3 continuous (?: ((caseeq cout3_n_p cout3_n_n)) (not cout3_n_p) 'x)) @sv-cells/sm83/cells/alu_cgen.sv:35:2 strength=<none> syntax=Continuous
+  drivers:
+    #0 target=cout0_n_p source=continuous @sv-cells/sm83/cells/alu_cgen.sv:20:2
+    #1 target=cout0_n_n source=continuous @sv-cells/sm83/cells/alu_cgen.sv:21:2
+    #2 target=cout1_n_p source=continuous @sv-cells/sm83/cells/alu_cgen.sv:23:2
+    #3 target=cout1_n_n source=continuous @sv-cells/sm83/cells/alu_cgen.sv:24:2
+    #4 target=cout2_n_p source=continuous @sv-cells/sm83/cells/alu_cgen.sv:26:2
+    #5 target=cout2_n_n source=continuous @sv-cells/sm83/cells/alu_cgen.sv:27:2
+    #6 target=cout3_n_p source=continuous @sv-cells/sm83/cells/alu_cgen.sv:29:2
+    #7 target=cout3_n_n source=continuous @sv-cells/sm83/cells/alu_cgen.sv:30:2
+    #8 target=cout0 source=continuous @sv-cells/sm83/cells/alu_cgen.sv:32:2
+    #9 target=cout1 source=continuous @sv-cells/sm83/cells/alu_cgen.sv:33:2
+    #10 target=cout2 source=continuous @sv-cells/sm83/cells/alu_cgen.sv:34:2
+    #11 target=cout3 source=continuous @sv-cells/sm83/cells/alu_cgen.sv:35:2
+  primitives:
+  instantiations:
+  timing_aliases:
+    T_fall_cout0 kind=Specparam value=(call tpd_elmore L_cout0 (call R_nmos_ohm (mul 5 L_unit))) @sv-cells/sm83/cells/alu_cgen.sv:47:3
+    T_fall_cout1 kind=Specparam value=(call tpd_elmore L_cout1 (call R_nmos_ohm (mul 5 L_unit))) @sv-cells/sm83/cells/alu_cgen.sv:49:3
+    T_fall_cout2 kind=Specparam value=(call tpd_elmore L_cout2 (call R_nmos_ohm (mul 5 L_unit))) @sv-cells/sm83/cells/alu_cgen.sv:51:3
+    T_fall_cout3 kind=Specparam value=(call tpd_elmore L_cout3 (call R_nmos_ohm (mul 12 L_unit))) @sv-cells/sm83/cells/alu_cgen.sv:53:3
+    T_fall_p0_cin kind=Specparam value=(call tpd_elmore 70 (mul (call R_nmos_ohm (mul 11 L_unit)) 2)) @sv-cells/sm83/cells/alu_cgen.sv:39:3
+    T_fall_p10_cin kind=Specparam value=(call tpd_elmore 94 (mul (call R_nmos_ohm (mul 11 L_unit)) 3)) @sv-cells/sm83/cells/alu_cgen.sv:41:3
+    T_fall_p210_cin kind=Specparam value=(call tpd_elmore 122 (mul (call R_nmos_ohm (mul 11 L_unit)) 4)) @sv-cells/sm83/cells/alu_cgen.sv:43:3
+    T_fall_p3210_cin kind=Specparam value=(call tpd_elmore 152 (mul (call R_nmos_ohm (mul 11 L_unit)) 5)) @sv-cells/sm83/cells/alu_cgen.sv:45:3
+    T_rise_cout0 kind=Specparam value=(call tpd_elmore L_cout0 (call R_pmos_ohm (mul 11 L_unit))) @sv-cells/sm83/cells/alu_cgen.sv:46:3
+    T_rise_cout1 kind=Specparam value=(call tpd_elmore L_cout1 (call R_pmos_ohm (mul 11 L_unit))) @sv-cells/sm83/cells/alu_cgen.sv:48:3
+    T_rise_cout2 kind=Specparam value=(call tpd_elmore L_cout2 (call R_pmos_ohm (mul 11 L_unit))) @sv-cells/sm83/cells/alu_cgen.sv:50:3
+    T_rise_cout3 kind=Specparam value=(call tpd_elmore L_cout3 (call R_pmos_ohm (mul 23 L_unit))) @sv-cells/sm83/cells/alu_cgen.sv:52:3
+    T_rise_g0_cin kind=Specparam value=(call tpd_elmore 70 (mul (call R_pmos_ohm (mul 11 L_unit)) 2)) @sv-cells/sm83/cells/alu_cgen.sv:38:3
+    T_rise_g10_cin kind=Specparam value=(call tpd_elmore 94 (mul (call R_pmos_ohm (mul 11 L_unit)) 3)) @sv-cells/sm83/cells/alu_cgen.sv:40:3
+    T_rise_g210_cin kind=Specparam value=(call tpd_elmore 122 (mul (call R_pmos_ohm (mul 11 L_unit)) 4)) @sv-cells/sm83/cells/alu_cgen.sv:42:3
+    T_rise_g3210_cin kind=Specparam value=(call tpd_elmore 152 (mul (call R_pmos_ohm (mul 11 L_unit)) 5)) @sv-cells/sm83/cells/alu_cgen.sv:44:3
+  specify_paths:
+    controls=[cin,p0,g0] target=cout0 delays=[(add T_fall_p0_cin T_rise_cout0),(add T_rise_g0_cin T_fall_cout0)] @sv-cells/sm83/cells/alu_cgen.sv:55:3
+    controls=[cin,p0,g0,p1,g1] target=cout1 delays=[(add T_fall_p10_cin T_rise_cout1),(add T_rise_g10_cin T_fall_cout1)] @sv-cells/sm83/cells/alu_cgen.sv:56:3
+    controls=[cin,p0,g0,p1,g1,p2,g2] target=cout2 delays=[(add T_fall_p210_cin T_rise_cout2),(add T_rise_g210_cin T_fall_cout2)] @sv-cells/sm83/cells/alu_cgen.sv:57:3
+    controls=[cin,p0,g0,p1,g1,p2,g2,p3,g3] target=cout3 delays=[(add T_fall_p3210_cin T_rise_cout3),(add T_rise_g3210_cin T_fall_cout3)] @sv-cells/sm83/cells/alu_cgen.sv:58:3
+  generate_alternatives:
+requirements:
+  timing.alias | M7 | sv-cells/sm83/cells/alu_cgen.sv:47:3 | timing aliases are scheduled for Milestone 7
+  timing.specify-path | M7 | sv-cells/sm83/cells/alu_cgen.sv:55:3 | specify paths are scheduled for Milestone 7
+  value.combinational | M4 | sv-cells/sm83/cells/alu_cgen.sv:20:2 | combinational value lowering is scheduled for Milestone 4

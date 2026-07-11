@@ -1,0 +1,166 @@
+analyze summary: modules=1 disposition=deferred requirements=8
+module dmg_dffr_cc @sv-cells/dmg_cpu_b/cells/dffr_cc.sv:3:1
+  inputs: d clk clk_n r_n
+  outputs: q q_n
+  registers: <none>
+  symbols:
+    L_q category=parameter @sv-cells/dmg_cpu_b/cells/dffr_cc.sv:4:3
+    L_q_n category=parameter @sv-cells/dmg_cpu_b/cells/dffr_cc.sv:5:3
+    clk category=port @sv-cells/dmg_cpu_b/cells/dffr_cc.sv:7:3
+    clk_n category=port @sv-cells/dmg_cpu_b/cells/dffr_cc.sv:7:3
+    d category=port @sv-cells/dmg_cpu_b/cells/dffr_cc.sv:7:3
+    q category=port @sv-cells/dmg_cpu_b/cells/dffr_cc.sv:8:3
+    q_n category=port @sv-cells/dmg_cpu_b/cells/dffr_cc.sv:8:3
+    r_n category=port @sv-cells/dmg_cpu_b/cells/dffr_cc.sv:7:3
+  ports:
+    clk direction=input use=input modifiers=[logic] @sv-cells/dmg_cpu_b/cells/dffr_cc.sv:7:3
+    clk_n direction=input use=input modifiers=[logic] @sv-cells/dmg_cpu_b/cells/dffr_cc.sv:7:3
+    d direction=input use=input modifiers=[logic] @sv-cells/dmg_cpu_b/cells/dffr_cc.sv:7:3
+    q direction=output use=output modifiers=[logic] @sv-cells/dmg_cpu_b/cells/dffr_cc.sv:8:3
+    q_n direction=output use=output modifiers=[logic] @sv-cells/dmg_cpu_b/cells/dffr_cc.sv:8:3
+    r_n direction=input use=input modifiers=[logic] @sv-cells/dmg_cpu_b/cells/dffr_cc.sv:7:3
+  declarations:
+  signal_roles:
+  assignments:
+  drivers:
+  primitives:
+  instantiations:
+  timing_aliases:
+  specify_paths:
+  generate_alternatives:
+    [0] condition=nodelay @sv-cells/dmg_cpu_b/cells/dffr_cc.sv:14:3
+      then scope @sv-cells/dmg_cpu_b/cells/dffr_cc.sv:14:16
+        symbols:
+          clk_buf category=declaration @sv-cells/dmg_cpu_b/cells/dffr_cc.sv:16:4
+          clk_n_buf category=declaration @sv-cells/dmg_cpu_b/cells/dffr_cc.sv:16:4
+          ff category=declaration @sv-cells/dmg_cpu_b/cells/dffr_cc.sv:16:4
+          r_n_buf category=declaration @sv-cells/dmg_cpu_b/cells/dffr_cc.sv:16:4
+        declarations:
+          clk_buf kind=Logic type=<implicit> value=<none> @sv-cells/dmg_cpu_b/cells/dffr_cc.sv:16:4
+          clk_n_buf kind=Logic type=<implicit> value=<none> @sv-cells/dmg_cpu_b/cells/dffr_cc.sv:16:4
+          ff kind=Logic type=<implicit> value=<none> @sv-cells/dmg_cpu_b/cells/dffr_cc.sv:16:4
+          r_n_buf kind=Logic type=<implicit> value=<none> @sv-cells/dmg_cpu_b/cells/dffr_cc.sv:16:4
+        registers: ff q
+        signal_roles:
+          clk_buf roles=[ProceduralDriven] declared=sv-cells/dmg_cpu_b/cells/dffr_cc.sv:16:4
+          clk_n_buf roles=[ProceduralDriven] declared=sv-cells/dmg_cpu_b/cells/dffr_cc.sv:16:4
+          ff roles=[ModeledState] declared=sv-cells/dmg_cpu_b/cells/dffr_cc.sv:16:4
+          q roles=[ModeledState] declared=sv-cells/dmg_cpu_b/cells/dffr_cc.sv:8:3
+          q_n roles=[ContinuousDriven] declared=sv-cells/dmg_cpu_b/cells/dffr_cc.sv:8:3
+          r_n_buf roles=[ProceduralDriven] declared=sv-cells/dmg_cpu_b/cells/dffr_cc.sv:16:4
+        assignments:
+          #7 (q_n continuous (not q)) @sv-cells/dmg_cpu_b/cells/dffr_cc.sv:27:4 strength=<none> syntax=Continuous
+          #0 (ff initial 0) @sv-cells/dmg_cpu_b/cells/dffr_cc.sv:18:12 strength=<none> syntax=Initial
+          #1 (q initial 0) @sv-cells/dmg_cpu_b/cells/dffr_cc.sv:19:12 strength=<none> syntax=Initial
+          #2 (clk_buf procedural clk) @sv-cells/dmg_cpu_b/cells/dffr_cc.sv:21:14 strength=<none> syntax=Procedural { state: false, source: Always }
+          #3 (clk_n_buf procedural clk_n) @sv-cells/dmg_cpu_b/cells/dffr_cc.sv:22:14 strength=<none> syntax=Procedural { state: false, source: Always }
+          #4 (r_n_buf procedural r_n) @sv-cells/dmg_cpu_b/cells/dffr_cc.sv:23:14 strength=<none> syntax=Procedural { state: false, source: Always }
+          #5 (ff state (and d r_n_buf)) @sv-cells/dmg_cpu_b/cells/dffr_cc.sv:25:73 strength=<none> syntax=Procedural { state: true, source: AlwaysLatch }
+          #6 (q state (and ff r_n_buf)) @sv-cells/dmg_cpu_b/cells/dffr_cc.sv:26:73 strength=<none> syntax=Procedural { state: true, source: AlwaysLatch }
+        drivers:
+          #0 target=ff source=initial @sv-cells/dmg_cpu_b/cells/dffr_cc.sv:18:12
+          #1 target=q source=initial @sv-cells/dmg_cpu_b/cells/dffr_cc.sv:19:12
+          #2 target=clk_buf source=procedural(state=false,source=Always) @sv-cells/dmg_cpu_b/cells/dffr_cc.sv:21:14
+          #3 target=clk_n_buf source=procedural(state=false,source=Always) @sv-cells/dmg_cpu_b/cells/dffr_cc.sv:22:14
+          #4 target=r_n_buf source=procedural(state=false,source=Always) @sv-cells/dmg_cpu_b/cells/dffr_cc.sv:23:14
+          #5 target=ff source=procedural(state=true,source=AlwaysLatch) @sv-cells/dmg_cpu_b/cells/dffr_cc.sv:25:73
+          #6 target=q source=procedural(state=true,source=AlwaysLatch) @sv-cells/dmg_cpu_b/cells/dffr_cc.sv:26:73
+          #7 target=q_n source=continuous @sv-cells/dmg_cpu_b/cells/dffr_cc.sv:27:4
+        primitives:
+        instantiations:
+        timing_aliases:
+        specify_paths:
+        generate_alternatives:
+      else scope @sv-cells/dmg_cpu_b/cells/dffr_cc.sv:29:12
+        symbols:
+          T_fall_mux1 category=localparam @sv-cells/dmg_cpu_b/cells/dffr_cc.sv:32:4
+          T_fall_mux2 category=localparam @sv-cells/dmg_cpu_b/cells/dffr_cc.sv:38:4
+          T_fall_nand1 category=localparam @sv-cells/dmg_cpu_b/cells/dffr_cc.sv:34:4
+          T_fall_nand2 category=localparam @sv-cells/dmg_cpu_b/cells/dffr_cc.sv:40:4
+          T_fall_not1 category=localparam @sv-cells/dmg_cpu_b/cells/dffr_cc.sv:36:4
+          T_fall_not2 category=localparam @sv-cells/dmg_cpu_b/cells/dffr_cc.sv:42:4
+          T_fall_q category=localparam @sv-cells/dmg_cpu_b/cells/dffr_cc.sv:44:4
+          T_fall_q_n category=localparam @sv-cells/dmg_cpu_b/cells/dffr_cc.sv:46:4
+          T_rise_mux1 category=localparam @sv-cells/dmg_cpu_b/cells/dffr_cc.sv:31:4
+          T_rise_mux2 category=localparam @sv-cells/dmg_cpu_b/cells/dffr_cc.sv:37:4
+          T_rise_nand1 category=localparam @sv-cells/dmg_cpu_b/cells/dffr_cc.sv:33:4
+          T_rise_nand2 category=localparam @sv-cells/dmg_cpu_b/cells/dffr_cc.sv:39:4
+          T_rise_not1 category=localparam @sv-cells/dmg_cpu_b/cells/dffr_cc.sv:35:4
+          T_rise_not2 category=localparam @sv-cells/dmg_cpu_b/cells/dffr_cc.sv:41:4
+          T_rise_q category=localparam @sv-cells/dmg_cpu_b/cells/dffr_cc.sv:43:4
+          T_rise_q_n category=localparam @sv-cells/dmg_cpu_b/cells/dffr_cc.sv:45:4
+          and1 category=declaration @sv-cells/dmg_cpu_b/cells/dffr_cc.sv:48:4
+          mux1 category=declaration @sv-cells/dmg_cpu_b/cells/dffr_cc.sv:48:4
+          mux1_buf category=declaration @sv-cells/dmg_cpu_b/cells/dffr_cc.sv:48:4
+          mux2 category=declaration @sv-cells/dmg_cpu_b/cells/dffr_cc.sv:48:4
+          mux2_buf category=declaration @sv-cells/dmg_cpu_b/cells/dffr_cc.sv:48:4
+          nand2 category=declaration @sv-cells/dmg_cpu_b/cells/dffr_cc.sv:48:4
+        declarations:
+          and1 kind=Logic type=<implicit> value=<none> @sv-cells/dmg_cpu_b/cells/dffr_cc.sv:48:4
+          mux1 kind=Logic type=<implicit> value=<none> @sv-cells/dmg_cpu_b/cells/dffr_cc.sv:48:4
+          mux1_buf kind=Logic type=<implicit> value=<none> @sv-cells/dmg_cpu_b/cells/dffr_cc.sv:48:4
+          mux2 kind=Logic type=<implicit> value=<none> @sv-cells/dmg_cpu_b/cells/dffr_cc.sv:48:4
+          mux2_buf kind=Logic type=<implicit> value=<none> @sv-cells/dmg_cpu_b/cells/dffr_cc.sv:48:4
+          nand2 kind=Logic type=<implicit> value=<none> @sv-cells/dmg_cpu_b/cells/dffr_cc.sv:48:4
+        registers: mux1 mux2
+        signal_roles:
+          and1 roles=[ContinuousDriven] declared=sv-cells/dmg_cpu_b/cells/dffr_cc.sv:48:4
+          mux1 roles=[ModeledState] declared=sv-cells/dmg_cpu_b/cells/dffr_cc.sv:48:4
+          mux1_buf roles=[ContinuousDriven] declared=sv-cells/dmg_cpu_b/cells/dffr_cc.sv:48:4
+          mux2 roles=[ModeledState] declared=sv-cells/dmg_cpu_b/cells/dffr_cc.sv:48:4
+          mux2_buf roles=[ContinuousDriven] declared=sv-cells/dmg_cpu_b/cells/dffr_cc.sv:48:4
+          nand2 roles=[ContinuousDriven] declared=sv-cells/dmg_cpu_b/cells/dffr_cc.sv:48:4
+          q roles=[ContinuousDriven] declared=sv-cells/dmg_cpu_b/cells/dffr_cc.sv:8:3
+          q_n roles=[ContinuousDriven] declared=sv-cells/dmg_cpu_b/cells/dffr_cc.sv:8:3
+        assignments:
+          #12 (mux1_buf continuous mux1 (T_rise_mux1 T_fall_mux1)) @sv-cells/dmg_cpu_b/cells/dffr_cc.sv:55:4 strength=<none> syntax=Continuous
+          #13 (mux2_buf continuous mux2 (T_rise_mux2 T_fall_mux2)) @sv-cells/dmg_cpu_b/cells/dffr_cc.sv:56:4 strength=<none> syntax=Continuous
+          #14 (and1 continuous (and r_n mux1_buf) ((add T_fall_nand1 T_rise_not1) (add T_rise_nand1 T_fall_not1))) @sv-cells/dmg_cpu_b/cells/dffr_cc.sv:57:4 strength=<none> syntax=Continuous
+          #15 (nand2 continuous (not ((and r_n mux2_buf))) (T_rise_nand2 T_fall_nand2)) @sv-cells/dmg_cpu_b/cells/dffr_cc.sv:58:4 strength=<none> syntax=Continuous
+          #16 (q continuous (not nand2) (T_rise_q T_fall_q)) @sv-cells/dmg_cpu_b/cells/dffr_cc.sv:59:4 strength=<none> syntax=Continuous
+          #17 (q_n continuous nand2 ((add T_fall_not2 T_rise_q_n) (add T_rise_not2 T_fall_q_n))) @sv-cells/dmg_cpu_b/cells/dffr_cc.sv:60:4 strength=<none> syntax=Continuous
+          #8 (mux1 initial 0) @sv-cells/dmg_cpu_b/cells/dffr_cc.sv:50:12 strength=<none> syntax=Initial
+          #9 (mux2 initial 0) @sv-cells/dmg_cpu_b/cells/dffr_cc.sv:51:12 strength=<none> syntax=Initial
+          #10 (mux1 state (and d r_n)) @sv-cells/dmg_cpu_b/cells/dffr_cc.sv:53:69 strength=<none> syntax=Procedural { state: true, source: AlwaysLatch }
+          #11 (mux2 state (and and1 r_n)) @sv-cells/dmg_cpu_b/cells/dffr_cc.sv:54:69 strength=<none> syntax=Procedural { state: true, source: AlwaysLatch }
+        drivers:
+          #8 target=mux1 source=initial @sv-cells/dmg_cpu_b/cells/dffr_cc.sv:50:12
+          #9 target=mux2 source=initial @sv-cells/dmg_cpu_b/cells/dffr_cc.sv:51:12
+          #10 target=mux1 source=procedural(state=true,source=AlwaysLatch) @sv-cells/dmg_cpu_b/cells/dffr_cc.sv:53:69
+          #11 target=mux2 source=procedural(state=true,source=AlwaysLatch) @sv-cells/dmg_cpu_b/cells/dffr_cc.sv:54:69
+          #12 target=mux1_buf source=continuous @sv-cells/dmg_cpu_b/cells/dffr_cc.sv:55:4
+          #13 target=mux2_buf source=continuous @sv-cells/dmg_cpu_b/cells/dffr_cc.sv:56:4
+          #14 target=and1 source=continuous @sv-cells/dmg_cpu_b/cells/dffr_cc.sv:57:4
+          #15 target=nand2 source=continuous @sv-cells/dmg_cpu_b/cells/dffr_cc.sv:58:4
+          #16 target=q source=continuous @sv-cells/dmg_cpu_b/cells/dffr_cc.sv:59:4
+          #17 target=q_n source=continuous @sv-cells/dmg_cpu_b/cells/dffr_cc.sv:60:4
+        primitives:
+        instantiations:
+        timing_aliases:
+          T_fall_mux1 kind=Localparam value=(call tpd_elmore 44 (mul (call R_nmos_ohm (mul 8 L_unit)) 1.5)) @sv-cells/dmg_cpu_b/cells/dffr_cc.sv:32:4
+          T_fall_mux2 kind=Localparam value=(call tpd_elmore 59 (call R_nmos_ohm (mul 8 L_unit))) @sv-cells/dmg_cpu_b/cells/dffr_cc.sv:38:4
+          T_fall_nand1 kind=Localparam value=(call tpd_elmore 42 (mul (call R_nmos_ohm (mul 8 L_unit)) 2)) @sv-cells/dmg_cpu_b/cells/dffr_cc.sv:34:4
+          T_fall_nand2 kind=Localparam value=(call tpd_elmore 122 (mul (call R_nmos_ohm (mul 8 L_unit)) 2)) @sv-cells/dmg_cpu_b/cells/dffr_cc.sv:40:4
+          T_fall_not1 kind=Localparam value=(call tpd_elmore 63 (call R_nmos_ohm (mul 8 L_unit))) @sv-cells/dmg_cpu_b/cells/dffr_cc.sv:36:4
+          T_fall_not2 kind=Localparam value=(call tpd_elmore 130 (call R_nmos_ohm (mul 8 L_unit))) @sv-cells/dmg_cpu_b/cells/dffr_cc.sv:42:4
+          T_fall_q kind=Localparam value=(call tpd_elmore L_q (call R_nmos_ohm (mul 35 L_unit))) @sv-cells/dmg_cpu_b/cells/dffr_cc.sv:44:4
+          T_fall_q_n kind=Localparam value=(call tpd_elmore L_q_n (call R_nmos_ohm (mul 35 L_unit))) @sv-cells/dmg_cpu_b/cells/dffr_cc.sv:46:4
+          T_rise_mux1 kind=Localparam value=(call tpd_elmore 44 (mul (call R_pmos_ohm (mul 8 L_unit)) 1.5)) @sv-cells/dmg_cpu_b/cells/dffr_cc.sv:31:4
+          T_rise_mux2 kind=Localparam value=(call tpd_elmore 59 (call R_pmos_ohm (mul 8 L_unit))) @sv-cells/dmg_cpu_b/cells/dffr_cc.sv:37:4
+          T_rise_nand1 kind=Localparam value=(call tpd_elmore 42 (call R_pmos_ohm (mul 8 L_unit))) @sv-cells/dmg_cpu_b/cells/dffr_cc.sv:33:4
+          T_rise_nand2 kind=Localparam value=(call tpd_elmore 122 (call R_pmos_ohm (mul 8 L_unit))) @sv-cells/dmg_cpu_b/cells/dffr_cc.sv:39:4
+          T_rise_not1 kind=Localparam value=(call tpd_elmore 63 (call R_pmos_ohm (mul 8 L_unit))) @sv-cells/dmg_cpu_b/cells/dffr_cc.sv:35:4
+          T_rise_not2 kind=Localparam value=(call tpd_elmore 130 (call R_pmos_ohm (mul 8 L_unit))) @sv-cells/dmg_cpu_b/cells/dffr_cc.sv:41:4
+          T_rise_q kind=Localparam value=(call tpd_elmore L_q (call R_pmos_ohm (mul 35 L_unit))) @sv-cells/dmg_cpu_b/cells/dffr_cc.sv:43:4
+          T_rise_q_n kind=Localparam value=(call tpd_elmore L_q_n (call R_pmos_ohm (mul 35 L_unit))) @sv-cells/dmg_cpu_b/cells/dffr_cc.sv:45:4
+        specify_paths:
+        generate_alternatives:
+requirements:
+  driver.repeated | M6 | sv-cells/dmg_cpu_b/cells/dffr_cc.sv:18:12 | repeated source drivers are scheduled for Milestone 6
+  generate.alternative | M8 | sv-cells/dmg_cpu_b/cells/dffr_cc.sv:14:3 | generate branch selection is scheduled for Milestone 8
+  state.initial | M5 | sv-cells/dmg_cpu_b/cells/dffr_cc.sv:18:12 | literal initialization and modeled state are scheduled for Milestone 5
+  state.procedural | M5 | sv-cells/dmg_cpu_b/cells/dffr_cc.sv:25:73 | stateful procedural lowering is scheduled for Milestone 5
+  timing.alias | M7 | sv-cells/dmg_cpu_b/cells/dffr_cc.sv:32:4 | timing aliases are scheduled for Milestone 7
+  timing.assignment-delay | M7 | sv-cells/dmg_cpu_b/cells/dffr_cc.sv:55:4 | symbolic assignment delays are scheduled for Milestone 7
+  value.combinational | M4 | sv-cells/dmg_cpu_b/cells/dffr_cc.sv:27:4 | combinational value lowering is scheduled for Milestone 4
+  value.procedural-combinational | M4 | sv-cells/dmg_cpu_b/cells/dffr_cc.sv:21:14 | combinational procedural lowering is scheduled for Milestone 4

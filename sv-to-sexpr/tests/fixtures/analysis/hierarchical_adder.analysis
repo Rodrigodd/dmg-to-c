@@ -1,0 +1,79 @@
+analyze summary: modules=1 disposition=deferred requirements=1
+module dmg_full_add @sv-cells/dmg_cpu_b/cells/full_add.sv:3:1
+  inputs: a b cin
+  outputs: sum cout
+  registers: <none>
+  symbols:
+    L_cout category=parameter @sv-cells/dmg_cpu_b/cells/full_add.sv:5:3
+    L_sum category=parameter @sv-cells/dmg_cpu_b/cells/full_add.sv:4:3
+    a category=port @sv-cells/dmg_cpu_b/cells/full_add.sv:7:3
+    ab category=declaration @sv-cells/dmg_cpu_b/cells/full_add.sv:11:2
+    axb category=declaration @sv-cells/dmg_cpu_b/cells/full_add.sv:11:2
+    b category=port @sv-cells/dmg_cpu_b/cells/full_add.sv:7:3
+    caxb category=declaration @sv-cells/dmg_cpu_b/cells/full_add.sv:11:2
+    cin category=port @sv-cells/dmg_cpu_b/cells/full_add.sv:7:3
+    cout category=port @sv-cells/dmg_cpu_b/cells/full_add.sv:8:3
+    sum category=port @sv-cells/dmg_cpu_b/cells/full_add.sv:8:3
+  ports:
+    a direction=input use=input modifiers=[logic] @sv-cells/dmg_cpu_b/cells/full_add.sv:7:3
+    b direction=input use=input modifiers=[logic] @sv-cells/dmg_cpu_b/cells/full_add.sv:7:3
+    cin direction=input use=input modifiers=[logic] @sv-cells/dmg_cpu_b/cells/full_add.sv:7:3
+    cout direction=output use=output modifiers=[logic] @sv-cells/dmg_cpu_b/cells/full_add.sv:8:3
+    sum direction=output use=output modifiers=[logic] @sv-cells/dmg_cpu_b/cells/full_add.sv:8:3
+  declarations:
+    ab kind=Logic type=<implicit> value=<none> @sv-cells/dmg_cpu_b/cells/full_add.sv:11:2
+    axb kind=Logic type=<implicit> value=<none> @sv-cells/dmg_cpu_b/cells/full_add.sv:11:2
+    caxb kind=Logic type=<implicit> value=<none> @sv-cells/dmg_cpu_b/cells/full_add.sv:11:2
+  signal_roles:
+    a roles=[HierarchicalConnection] declared=sv-cells/dmg_cpu_b/cells/full_add.sv:7:3
+    ab roles=[HierarchicalConnection] declared=sv-cells/dmg_cpu_b/cells/full_add.sv:11:2
+    axb roles=[HierarchicalConnection] declared=sv-cells/dmg_cpu_b/cells/full_add.sv:11:2
+    b roles=[HierarchicalConnection] declared=sv-cells/dmg_cpu_b/cells/full_add.sv:7:3
+    caxb roles=[HierarchicalConnection] declared=sv-cells/dmg_cpu_b/cells/full_add.sv:11:2
+    cin roles=[HierarchicalConnection] declared=sv-cells/dmg_cpu_b/cells/full_add.sv:7:3
+    cout roles=[HierarchicalConnection] declared=sv-cells/dmg_cpu_b/cells/full_add.sv:8:3
+    sum roles=[HierarchicalConnection] declared=sv-cells/dmg_cpu_b/cells/full_add.sv:8:3
+  assignments:
+  drivers:
+    #0 target=sum source=hierarchical(module=dmg_xor,instance=xor_sum_inst,port=y) @sv-cells/dmg_cpu_b/cells/full_add.sv:13:44
+    #1 target=caxb source=hierarchical(module=dmg_nand2,instance=nand2_caxb_inst,port=y) @sv-cells/dmg_cpu_b/cells/full_add.sv:14:44
+    #2 target=cout source=hierarchical(module=dmg_nand2,instance=nand2_cout_inst,port=y) @sv-cells/dmg_cpu_b/cells/full_add.sv:15:44
+    #3 target=ab source=hierarchical(module=dmg_nand2,instance=nand2_ab_inst,port=y) @sv-cells/dmg_cpu_b/cells/full_add.sv:16:44
+    #4 target=axb source=hierarchical(module=dmg_xor,instance=xor_axb_inst,port=y) @sv-cells/dmg_cpu_b/cells/full_add.sv:17:44
+  primitives:
+  instantiations:
+    #0 dmg_xor xor_sum_inst @sv-cells/dmg_cpu_b/cells/full_add.sv:13:2
+      resolution=resolved
+      parameter L_y source=Named value=L_sum @sv-cells/dmg_cpu_b/cells/full_add.sv:13:14
+      connection y direction=output source=Named value=sum local=sum @sv-cells/dmg_cpu_b/cells/full_add.sv:13:44
+      connection in1 direction=input source=Named value=axb local=axb @sv-cells/dmg_cpu_b/cells/full_add.sv:13:54
+      connection in2 direction=input source=Named value=cin local=cin @sv-cells/dmg_cpu_b/cells/full_add.sv:13:65
+    #1 dmg_nand2 nand2_caxb_inst @sv-cells/dmg_cpu_b/cells/full_add.sv:14:2
+      resolution=resolved
+      parameter L_y source=Named value=120 @sv-cells/dmg_cpu_b/cells/full_add.sv:14:14
+      connection y direction=output source=Named value=caxb local=caxb @sv-cells/dmg_cpu_b/cells/full_add.sv:14:44
+      connection in1 direction=input source=Named value=cin local=cin @sv-cells/dmg_cpu_b/cells/full_add.sv:14:54
+      connection in2 direction=input source=Named value=axb local=axb @sv-cells/dmg_cpu_b/cells/full_add.sv:14:65
+    #2 dmg_nand2 nand2_cout_inst @sv-cells/dmg_cpu_b/cells/full_add.sv:15:2
+      resolution=resolved
+      parameter L_y source=Named value=L_cout @sv-cells/dmg_cpu_b/cells/full_add.sv:15:14
+      connection y direction=output source=Named value=cout local=cout @sv-cells/dmg_cpu_b/cells/full_add.sv:15:44
+      connection in1 direction=input source=Named value=ab local=ab @sv-cells/dmg_cpu_b/cells/full_add.sv:15:54
+      connection in2 direction=input source=Named value=caxb local=caxb @sv-cells/dmg_cpu_b/cells/full_add.sv:15:65
+    #3 dmg_nand2 nand2_ab_inst @sv-cells/dmg_cpu_b/cells/full_add.sv:16:2
+      resolution=resolved
+      parameter L_y source=Named value=119 @sv-cells/dmg_cpu_b/cells/full_add.sv:16:14
+      connection y direction=output source=Named value=ab local=ab @sv-cells/dmg_cpu_b/cells/full_add.sv:16:44
+      connection in1 direction=input source=Named value=b local=b @sv-cells/dmg_cpu_b/cells/full_add.sv:16:54
+      connection in2 direction=input source=Named value=a local=a @sv-cells/dmg_cpu_b/cells/full_add.sv:16:65
+    #4 dmg_xor xor_axb_inst @sv-cells/dmg_cpu_b/cells/full_add.sv:17:2
+      resolution=resolved
+      parameter L_y source=Named value=296 @sv-cells/dmg_cpu_b/cells/full_add.sv:17:14
+      connection y direction=output source=Named value=axb local=axb @sv-cells/dmg_cpu_b/cells/full_add.sv:17:44
+      connection in1 direction=input source=Named value=a local=a @sv-cells/dmg_cpu_b/cells/full_add.sv:17:54
+      connection in2 direction=input source=Named value=b local=b @sv-cells/dmg_cpu_b/cells/full_add.sv:17:65
+  timing_aliases:
+  specify_paths:
+  generate_alternatives:
+requirements:
+  hierarchy.ordinary | M9 | sv-cells/dmg_cpu_b/cells/full_add.sv:13:2 | ordinary hierarchy lowering is scheduled for Milestone 9
