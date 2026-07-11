@@ -7,31 +7,70 @@ pub type ParseResult<T> = Result<T, Diagnostic>;
 
 pub fn parse_file(path: &Path, input: &str) -> ParseResult<Design> {
     let tokens = lex_file(path, input)?;
-    Parser::new(tokens).parse_design()
+    Parser::new(tokens, eof_span(path, input)).parse_design()
 }
 
 struct Parser {
     tokens: Vec<Token>,
     index: usize,
+    eof_span: Span,
 }
 
 impl Parser {
-    fn new(tokens: Vec<Token>) -> Self {
-        Self { tokens, index: 0 }
+    fn new(tokens: Vec<Token>, eof_span: Span) -> Self {
+        Self {
+            tokens,
+            index: 0,
+            eof_span,
+        }
     }
 
     fn parse_design(mut self) -> ParseResult<Design> {
-        let mut modules = Vec::new();
-        self.skip_directives();
+        let mut items = Vec::new();
         while !self.is_eof() {
-            if self.peek_ident("module") {
-                modules.push(self.parse_module()?);
-                self.skip_directives();
-                continue;
+            match self.peek_kind() {
+                Some(TokenKind::Directive) => {
+                    items.push(DesignItem::Directive(self.parse_directive()?));
+                }
+                Some(TokenKind::Keyword(Keyword::Module)) => {
+                    items.push(DesignItem::Module(self.parse_module()?));
+                }
+                _ => return Err(self.error_current("expected directive or `module` declaration")),
             }
-            return Err(self.error_current("expected `module` declaration"));
         }
-        Ok(Design { modules })
+        Ok(Design { items })
+    }
+
+    fn parse_directive(&mut self) -> ParseResult<Directive> {
+        let token = self
+            .next_token()
+            .ok_or_else(|| self.error_current("expected directive"))?;
+        let mut parts = token.lexeme.split_whitespace();
+        let name = parts
+            .next()
+            .and_then(|part| part.strip_prefix('`'))
+            .filter(|name| !name.is_empty())
+            .ok_or_else(|| self.error_at(&token, "expected directive name"))?;
+        let arguments = parts.map(str::to_string).collect::<Vec<_>>();
+
+        if name != "default_nettype" {
+            return Err(self.error_at(
+                &token,
+                &format!("unsupported directive `{name}` at design scope"),
+            ));
+        }
+        if arguments.len() != 1 || !matches!(arguments[0].as_str(), "none" | "wire") {
+            return Err(self.error_at(
+                &token,
+                "expected `default_nettype` argument `none` or `wire`",
+            ));
+        }
+
+        Ok(Directive {
+            span: token.span,
+            name: name.to_string(),
+            arguments,
+        })
     }
 
     fn parse_module(&mut self) -> ParseResult<Module> {
@@ -40,14 +79,10 @@ impl Parser {
         let mut parameters = Vec::new();
         if self.matches_operator(Operator::Hash) {
             self.expect_punct(Punct::LParen)?;
-            self.skip_directives();
             if !self.peek_punct(Punct::RParen) {
                 loop {
-                    self.skip_directives();
                     parameters.push(self.parse_module_parameter()?);
-                    self.skip_directives();
                     if self.matches_punct(Punct::Comma) {
-                        self.skip_directives();
                         if self.peek_punct(Punct::RParen) {
                             break;
                         }
@@ -60,14 +95,10 @@ impl Parser {
         }
         let mut ports = Vec::new();
         if self.matches_punct(Punct::LParen) {
-            self.skip_directives();
             if !self.peek_punct(Punct::RParen) {
                 loop {
-                    self.skip_directives();
                     ports.push(self.parse_port_decl()?);
-                    self.skip_directives();
                     if self.matches_punct(Punct::Comma) {
-                        self.skip_directives();
                         if self.peek_punct(Punct::RParen) {
                             break;
                         }
@@ -82,7 +113,6 @@ impl Parser {
 
         let mut items = Vec::new();
         loop {
-            self.skip_directives();
             if self.matches_keyword(Keyword::Endmodule) {
                 break;
             }
@@ -155,9 +185,11 @@ impl Parser {
     }
 
     fn parse_item(&mut self) -> ParseResult<Option<Item>> {
-        self.skip_directives();
         if self.is_eof() || self.is_terminator() {
             return Ok(None);
+        }
+        if matches!(self.peek_kind(), Some(TokenKind::Directive)) {
+            return Err(self.error_current("directives are only supported at design scope"));
         }
         if self.peek_ident("import") {
             return self.parse_import().map(Some);
@@ -340,7 +372,7 @@ impl Parser {
     fn parse_always(&mut self, kind: AlwaysKind) -> ParseResult<Item> {
         let start = self.next_token().unwrap().span.clone();
         let sensitivity = if self.matches_operator(Operator::At) {
-            Some(self.parse_sensitivity()?)
+            Some(self.parse_sensitivity(self.previous().span.clone())?)
         } else {
             None
         };
@@ -425,18 +457,7 @@ impl Parser {
         let mut parameters = Vec::new();
         if self.matches_operator(Operator::Hash) {
             self.expect_punct(Punct::LParen)?;
-            if !self.peek_punct(Punct::RParen) {
-                loop {
-                    parameters.push(self.parse_param_override()?);
-                    if self.matches_punct(Punct::Comma) {
-                        if self.peek_punct(Punct::RParen) {
-                            break;
-                        }
-                        continue;
-                    }
-                    break;
-                }
-            }
+            parameters = self.parse_param_override_list()?;
             self.expect_punct(Punct::RParen)?;
         }
         let instance = self.expect_identifier("expected instance name")?.lexeme;
@@ -458,7 +479,6 @@ impl Parser {
         let start = self.expect_ident_exact("generate")?.span.clone();
         let mut items = Vec::new();
         loop {
-            self.skip_directives();
             if self.peek_ident("endgenerate") {
                 self.next_token();
                 break;
@@ -482,7 +502,6 @@ impl Parser {
         let start = self.expect_ident_exact("begin")?.span.clone();
         let mut items = Vec::new();
         loop {
-            self.skip_directives();
             if self.peek_ident("end") {
                 self.next_token();
                 break;
@@ -534,7 +553,6 @@ impl Parser {
         let start = self.next_token().unwrap().span.clone();
         let mut items = Vec::new();
         loop {
-            self.skip_directives();
             if self.peek_ident("endspecify") {
                 break;
             }
@@ -597,9 +615,12 @@ impl Parser {
         })
     }
 
-    fn parse_sensitivity(&mut self) -> ParseResult<Sensitivity> {
+    fn parse_sensitivity(&mut self, span: Span) -> ParseResult<Sensitivity> {
         if self.matches_operator(Operator::Star) {
-            return Ok(Sensitivity::Any);
+            return Ok(Sensitivity {
+                span,
+                kind: SensitivityKind::Any,
+            });
         }
         self.expect_punct(Punct::LParen)?;
         let mut list = Vec::new();
@@ -626,7 +647,10 @@ impl Parser {
             }
         }
         self.expect_punct(Punct::RParen)?;
-        Ok(Sensitivity::List(list))
+        Ok(Sensitivity {
+            span,
+            kind: SensitivityKind::List(list),
+        })
     }
 
     fn parse_optional_strength(&mut self) -> ParseResult<Option<Strength>> {
@@ -981,12 +1005,6 @@ impl Parser {
         Ok(names)
     }
 
-    fn skip_directives(&mut self) {
-        while matches!(self.peek_kind(), Some(TokenKind::Directive)) {
-            self.next_token();
-        }
-    }
-
     fn looks_like_strength_group(&self) -> bool {
         let Some(token) = self.peek_token() else {
             return false;
@@ -1101,15 +1119,65 @@ impl Parser {
         )
     }
 
+    fn parse_param_override_list(&mut self) -> ParseResult<Vec<ParamOverride>> {
+        let mut parameters = Vec::new();
+        let mut expecting_slot = true;
+        let mut saw_slot = false;
+        let mut last_comma_span = None;
+
+        while !self.peek_punct(Punct::RParen) {
+            if self.peek_punct(Punct::Comma) {
+                let comma = self.next_token().unwrap();
+                if expecting_slot {
+                    parameters.push(ParamOverride {
+                        span: comma.span.clone(),
+                        kind: ParamOverrideKind::Positional(None),
+                    });
+                }
+                expecting_slot = true;
+                saw_slot = true;
+                last_comma_span = Some(comma.span);
+                continue;
+            }
+
+            parameters.push(self.parse_param_override()?);
+            expecting_slot = false;
+            saw_slot = true;
+            if self.peek_punct(Punct::RParen) {
+                break;
+            }
+            let comma = self.expect_punct(Punct::Comma)?;
+            expecting_slot = true;
+            last_comma_span = Some(comma.span);
+        }
+
+        if expecting_slot && saw_slot {
+            parameters.push(ParamOverride {
+                span: last_comma_span.expect("an empty trailing slot follows a comma"),
+                kind: ParamOverrideKind::Positional(None),
+            });
+        }
+
+        Ok(parameters)
+    }
+
     fn parse_param_override(&mut self) -> ParseResult<ParamOverride> {
         if self.matches_operator(Operator::Dot) {
+            let span = self.previous().span.clone();
             let name = self.expect_identifier("expected parameter name")?.lexeme;
             self.expect_punct(Punct::LParen)?;
             let value = self.parse_expr()?;
             self.expect_punct(Punct::RParen)?;
-            Ok(ParamOverride::Named { name, value })
+            Ok(ParamOverride {
+                span,
+                kind: ParamOverrideKind::Named { name, value },
+            })
         } else {
-            Ok(ParamOverride::Positional(Some(self.parse_expr()?)))
+            let value = self.parse_expr()?;
+            Ok(ParamOverride {
+                span: value.span.clone(),
+                kind: ParamOverrideKind::Positional(Some(value)),
+            })
         }
     }
 
@@ -1134,13 +1202,21 @@ impl Parser {
 
     fn parse_connection(&mut self) -> ParseResult<Connection> {
         if self.matches_operator(Operator::Dot) {
+            let span = self.previous().span.clone();
             let name = self.expect_identifier("expected connection name")?.lexeme;
             self.expect_punct(Punct::LParen)?;
             let value = self.parse_expr()?;
             self.expect_punct(Punct::RParen)?;
-            Ok(Connection::Named { name, value })
+            Ok(Connection {
+                span,
+                kind: ConnectionKind::Named { name, value },
+            })
         } else {
-            Ok(Connection::Positional(self.parse_expr()?))
+            let value = self.parse_expr()?;
+            Ok(Connection {
+                span: value.span.clone(),
+                kind: ConnectionKind::Positional(value),
+            })
         }
     }
 
@@ -1201,32 +1277,35 @@ impl Parser {
     }
 
     fn expect_keyword(&mut self, keyword: Keyword) -> ParseResult<Token> {
+        let message = format!("expected keyword `{:?}`", keyword);
         let token = self
             .next_token()
-            .ok_or_else(|| self.error_current("unexpected end of input"))?;
+            .ok_or_else(|| self.error_current(&message))?;
         match token.kind {
             TokenKind::Keyword(k) if k == keyword => Ok(token),
-            _ => Err(self.error_at(&token, &format!("expected keyword `{:?}`", keyword))),
+            _ => Err(self.error_at(&token, &message)),
         }
     }
 
     fn expect_operator(&mut self, operator: Operator) -> ParseResult<Token> {
+        let message = format!("expected operator `{:?}`", operator);
         let token = self
             .next_token()
-            .ok_or_else(|| self.error_current("unexpected end of input"))?;
+            .ok_or_else(|| self.error_current(&message))?;
         match token.kind {
             TokenKind::Operator(op) if op == operator => Ok(token),
-            _ => Err(self.error_at(&token, &format!("expected operator `{:?}`", operator))),
+            _ => Err(self.error_at(&token, &message)),
         }
     }
 
     fn expect_punct(&mut self, punct: Punct) -> ParseResult<Token> {
+        let message = format!("expected punctuation `{:?}`", punct);
         let token = self
             .next_token()
-            .ok_or_else(|| self.error_current("unexpected end of input"))?;
+            .ok_or_else(|| self.error_current(&message))?;
         match token.kind {
             TokenKind::Punct(p) if p == punct => Ok(token),
-            _ => Err(self.error_at(&token, &format!("expected punctuation `{:?}`", punct))),
+            _ => Err(self.error_at(&token, &message)),
         }
     }
 
@@ -1282,7 +1361,7 @@ impl Parser {
     fn peek_span(&self) -> Span {
         self.peek_token()
             .map(|token| token.span.clone())
-            .unwrap_or_else(|| Span::new("<eof>", 1, 1))
+            .unwrap_or_else(|| self.eof_span.clone())
     }
 
     fn is_eof(&self) -> bool {
@@ -1296,6 +1375,20 @@ impl Parser {
     fn error_at(&self, token: &Token, message: &str) -> Diagnostic {
         Diagnostic::new(token.span.clone(), message.to_string())
     }
+}
+
+fn eof_span(path: &Path, input: &str) -> Span {
+    let mut line = 1;
+    let mut column = 1;
+    for byte in input.bytes() {
+        if byte == b'\n' {
+            line += 1;
+            column = 1;
+        } else {
+            column += 1;
+        }
+    }
+    Span::new(path, line, column)
 }
 
 #[cfg(test)]
@@ -1312,13 +1405,11 @@ mod tests {
         let design = parse_snippet(
             "module test(input logic a, b, output logic y); assign y = !(a & b); endmodule",
         );
-        assert_eq!(design.modules.len(), 1);
-        assert_eq!(design.modules[0].ports.len(), 2);
-        assert_eq!(design.modules[0].items.len(), 1);
-        assert!(matches!(
-            design.modules[0].items[0].kind,
-            ItemKind::Assign(_)
-        ));
+        let module = design.first_module().unwrap();
+        assert_eq!(design.modules().count(), 1);
+        assert_eq!(module.ports.len(), 2);
+        assert_eq!(module.items.len(), 1);
+        assert!(matches!(module.items[0].kind, ItemKind::Assign(_)));
     }
 
     #[test]
@@ -1326,7 +1417,7 @@ mod tests {
         let design = parse_snippet(
             "module test(input logic en, d, output logic q); always_latch if (en) q <= d; endmodule",
         );
-        let item = &design.modules[0].items[0];
+        let item = &design.first_module().unwrap().items[0];
         match &item.kind {
             ItemKind::AlwaysLatch(always) => {
                 assert!(always.condition.is_some());
@@ -1341,7 +1432,7 @@ mod tests {
         let design = parse_snippet(
             "module test(input logic a, output tri logic y); localparam realtime T_Z_y = tpd_z(, T_a); assign (highz1, strong0) #(T_Z_y) y = a ? 0 : 'z; specify specparam T_a = 1; (a *> y) = (T_Z_y); endspecify endmodule",
         );
-        assert_eq!(design.modules[0].items.len(), 3);
+        assert_eq!(design.first_module().unwrap().items.len(), 3);
     }
 
     #[test]
@@ -1349,6 +1440,158 @@ mod tests {
         let design = parse_snippet(
             "module test(input logic clk, output logic q); generate if (nodelay) begin always @* q <= clk; end else begin nmos #(T_a) (q, clk, clk); end endgenerate endmodule",
         );
-        assert_eq!(design.modules[0].items.len(), 1);
+        assert_eq!(design.first_module().unwrap().items.len(), 1);
+    }
+
+    #[test]
+    fn preserves_ordered_top_level_directives_and_arguments() {
+        let source = "`default_nettype none\nmodule test; endmodule\n`default_nettype wire\n";
+        let design = parse_snippet(source);
+        assert_eq!(design.items.len(), 3);
+        match &design.items[0] {
+            DesignItem::Directive(directive) => {
+                assert_eq!(directive.span, Span::new("snippet.sv", 1, 1));
+                assert_eq!(directive.name, "default_nettype");
+                assert_eq!(directive.arguments, ["none"]);
+            }
+            other => panic!("unexpected design item: {other:?}"),
+        }
+        assert!(matches!(&design.items[1], DesignItem::Module(_)));
+        match &design.items[2] {
+            DesignItem::Directive(directive) => {
+                assert_eq!(directive.span, Span::new("snippet.sv", 3, 1));
+                assert_eq!(directive.name, "default_nettype");
+                assert_eq!(directive.arguments, ["wire"]);
+            }
+            other => panic!("unexpected design item: {other:?}"),
+        }
+    }
+
+    #[test]
+    fn rejects_directives_outside_design_scope_at_their_location() {
+        let source = "module test;\n  `default_nettype none\nendmodule\n";
+        let error = parse_file(Path::new("snippet.sv"), source).unwrap_err();
+        assert_eq!(error.span, Span::new("snippet.sv", 2, 3));
+        assert_eq!(
+            error.message,
+            "directives are only supported at design scope"
+        );
+    }
+
+    #[test]
+    fn rejects_unknown_and_malformed_directives_at_their_location() {
+        let unknown = parse_file(Path::new("snippet.sv"), "`mystery setting\n").unwrap_err();
+        assert_eq!(unknown.span, Span::new("snippet.sv", 1, 1));
+        assert_eq!(
+            unknown.message,
+            "unsupported directive `mystery` at design scope"
+        );
+
+        let malformed =
+            parse_file(Path::new("snippet.sv"), "`default_nettype banana\n").unwrap_err();
+        assert_eq!(malformed.span, Span::new("snippet.sv", 1, 1));
+        assert_eq!(
+            malformed.message,
+            "expected `default_nettype` argument `none` or `wire`"
+        );
+    }
+
+    #[test]
+    fn parameter_overrides_and_connections_have_exact_spans() {
+        let source = concat!(
+            "module test;\n",
+            "  child #(.WIDTH(1), 2, , 4) inst(.a(a), b);\n",
+            "endmodule\n",
+        );
+        let design = parse_snippet(source);
+        let line = source.lines().nth(1).unwrap();
+        let ItemKind::Instantiation(instance) = &design.first_module().unwrap().items[0].kind
+        else {
+            panic!("expected instantiation");
+        };
+
+        assert_eq!(instance.parameters.len(), 4);
+        assert_eq!(
+            instance.parameters[0].span,
+            Span::new("snippet.sv", 2, line.find(".WIDTH").unwrap() + 1)
+        );
+        assert!(matches!(
+            &instance.parameters[0].kind,
+            ParamOverrideKind::Named { .. }
+        ));
+        assert_eq!(instance.parameters[1].span, Span::new("snippet.sv", 2, 22));
+        assert!(matches!(
+            &instance.parameters[1].kind,
+            ParamOverrideKind::Positional(Some(_))
+        ));
+        assert_eq!(instance.parameters[2].span, Span::new("snippet.sv", 2, 25));
+        assert!(matches!(
+            &instance.parameters[2].kind,
+            ParamOverrideKind::Positional(None)
+        ));
+        assert_eq!(instance.parameters[3].span, Span::new("snippet.sv", 2, 27));
+
+        assert_eq!(instance.connections.len(), 2);
+        assert_eq!(
+            instance.connections[0].span,
+            Span::new("snippet.sv", 2, line.find(".a(a)").unwrap() + 1)
+        );
+        assert!(matches!(
+            &instance.connections[0].kind,
+            ConnectionKind::Named { .. }
+        ));
+        assert_eq!(
+            instance.connections[1].span,
+            Span::new("snippet.sv", 2, line.rfind("b)").unwrap() + 1)
+        );
+        assert!(matches!(
+            &instance.connections[1].kind,
+            ConnectionKind::Positional(_)
+        ));
+    }
+
+    #[test]
+    fn sensitivities_and_events_have_exact_spans() {
+        let source = concat!(
+            "module test;\n",
+            "  always @* q = d;\n",
+            "  always @(posedge clk, negedge rst_n) q = d;\n",
+            "endmodule\n",
+        );
+        let design = parse_snippet(source);
+        let module = design.first_module().unwrap();
+
+        let ItemKind::Always(any) = &module.items[0].kind else {
+            panic!("expected always block");
+        };
+        let any = any.sensitivity.as_ref().unwrap();
+        assert_eq!(any.span, Span::new("snippet.sv", 2, 10));
+        assert!(matches!(&any.kind, SensitivityKind::Any));
+
+        let ItemKind::Always(list) = &module.items[1].kind else {
+            panic!("expected always block");
+        };
+        let list = list.sensitivity.as_ref().unwrap();
+        assert_eq!(list.span, Span::new("snippet.sv", 3, 10));
+        let SensitivityKind::List(events) = &list.kind else {
+            panic!("expected event-list sensitivity");
+        };
+        assert_eq!(events[0].span, Span::new("snippet.sv", 3, 12));
+        assert_eq!(events[1].span, Span::new("snippet.sv", 3, 25));
+    }
+
+    #[test]
+    fn design_rendering_is_deterministic_and_complete() {
+        let design = parse_snippet(
+            "`default_nettype none\nmodule test(input logic a); always @* a = a; endmodule\n",
+        );
+        let first = render_design(&design);
+        let second = render_design(&design);
+        assert_eq!(first, second);
+        assert!(first.ends_with('\n'));
+        assert!(first.contains("Directive("));
+        assert!(first.contains("arguments: ["));
+        assert!(first.contains("path: \"snippet.sv\""));
+        assert!(first.contains("kind: Any"));
     }
 }

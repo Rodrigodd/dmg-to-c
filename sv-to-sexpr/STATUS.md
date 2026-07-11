@@ -7,7 +7,7 @@ a milestone acceptance condition changes or is completed.
 
 Last audited on 2026-07-11:
 
-- `cargo test` passes 48 unit tests and 11 integration tests.
+- `cargo test` passes 56 unit tests and 18 integration tests.
 - Lexing succeeds for all 206 curated files.
 - Parsing succeeds for all 206 curated files.
 - `survey sv-cells` deterministically inventories 63,240 tokens and 138 typed
@@ -42,8 +42,10 @@ Last audited on 2026-07-11:
 - Milestone 1: complete. Full-corpus lexing reports `processed=206 failed=0`;
   deterministic snapshots cover the required syntax families and the typed
   survey inventory attributes every observed capability to sorted source files.
-- Milestone 2: partial. Full-corpus parsing works; losslessness assertions and
-  representative golden ASTs are missing.
+- Milestone 2: complete. Full-corpus parsing reports `processed=206 failed=0`;
+  typed AST goldens cover all eight required families, an exhaustive visitor
+  accounts for every AST variant and source item, and exact diagnostics cover
+  malformed and truncated constructs at logical source locations.
 - Milestone 3: partial. Analysis structures exist, but register classification
   and generate-branch separation are not accepted.
 - Milestone 4: partial. Combinational lowering exists, but flat SSA output,

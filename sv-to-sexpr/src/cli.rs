@@ -1,4 +1,5 @@
 use crate::analyze::analyze_file;
+use crate::ast::render_design;
 use crate::diagnostic::{Diagnostic, DiagnosticPolicy};
 use crate::lower::lower_file;
 use crate::parser::parse_file;
@@ -39,7 +40,7 @@ pub fn run() -> Result<(), Diagnostic> {
                 )
             })?;
             let design = parse_file(&path, &contents)?;
-            println!("{:#?}", design);
+            print!("{}", render_design(&design));
             Ok(())
         }
         "analyze" => {

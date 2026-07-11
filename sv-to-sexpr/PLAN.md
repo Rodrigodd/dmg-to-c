@@ -203,6 +203,10 @@ Acceptance conditions:
 
 ### Milestone 2: Lossless Specialized Parser and AST
 
+Status: complete as of 2026-07-11. Full-corpus parsing consumes every token in
+all 206 curated files, and deterministic typed AST fixtures and exhaustive
+coverage tests preserve all observed source forms with logical source spans.
+
 Parse every curated file into typed AST nodes without silently discarding input.
 
 Expected to be working after this milestone:

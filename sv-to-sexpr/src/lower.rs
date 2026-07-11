@@ -19,8 +19,7 @@ pub fn lower_design(
     analysis: &crate::analyze::AnalysisReport,
 ) -> LowerResult<LoweredModule> {
     let module = design
-        .modules
-        .first()
+        .first_module()
         .ok_or_else(|| Diagnostic::new(Span::new("<lower>", 1, 1), "expected one module"))?;
     let module_analysis = analysis.modules.first().ok_or_else(|| {
         Diagnostic::new(Span::new("<lower>", 1, 1), "expected one analysis module")

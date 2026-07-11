@@ -2,7 +2,33 @@ use crate::diagnostic::Span;
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Design {
-    pub modules: Vec<Module>,
+    pub items: Vec<DesignItem>,
+}
+
+impl Design {
+    pub fn modules(&self) -> impl Iterator<Item = &Module> {
+        self.items.iter().filter_map(|item| match item {
+            DesignItem::Module(module) => Some(module),
+            DesignItem::Directive(_) => None,
+        })
+    }
+
+    pub fn first_module(&self) -> Option<&Module> {
+        self.modules().next()
+    }
+}
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum DesignItem {
+    Directive(Directive),
+    Module(Module),
+}
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct Directive {
+    pub span: Span,
+    pub name: String,
+    pub arguments: Vec<String>,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -142,7 +168,13 @@ pub enum AlwaysKind {
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub enum Sensitivity {
+pub struct Sensitivity {
+    pub span: Span,
+    pub kind: SensitivityKind,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum SensitivityKind {
     Any,
     List(Vec<EventControl>),
 }
@@ -173,13 +205,25 @@ pub struct Instantiation {
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub enum ParamOverride {
+pub struct ParamOverride {
+    pub span: Span,
+    pub kind: ParamOverrideKind,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum ParamOverrideKind {
     Named { name: String, value: Expr },
     Positional(Option<Expr>),
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub enum Connection {
+pub struct Connection {
+    pub span: Span,
+    pub kind: ConnectionKind,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum ConnectionKind {
     Named { name: String, value: Expr },
     Positional(Expr),
 }
@@ -299,4 +343,13 @@ pub enum BinaryOp {
     CaseNeq,
     Less,
     Greater,
+}
+
+/// Renders a design deterministically for diagnostics and checked-in fixtures.
+///
+/// The renderer intentionally exposes the complete typed AST, including source
+/// spans. Paths are rendered exactly as supplied to [`crate::parser::parse_file`]
+/// and are never resolved against the process working directory.
+pub fn render_design(design: &Design) -> String {
+    format!("{design:#?}\n")
 }

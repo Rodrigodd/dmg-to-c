@@ -156,6 +156,7 @@ impl<'a> Lexer<'a> {
 
     fn lex_directive(&mut self) -> LexResult<Token> {
         let span = self.span_here();
+        let directive_start = self.index;
         self.advance_char();
         let start = self.index;
         while let Some(byte) = self.peek_byte() {
@@ -167,6 +168,9 @@ impl<'a> Lexer<'a> {
             }
         }
         let name = &self.input[start..self.index];
+        if name.is_empty() {
+            return Err(Diagnostic::new(span, "expected directive name"));
+        }
         while let Some(byte) = self.peek_byte() {
             let ch = byte as char;
             if ch == '\n' {
@@ -176,7 +180,9 @@ impl<'a> Lexer<'a> {
         }
         Ok(Token {
             kind: TokenKind::Directive,
-            lexeme: format!("`{}", name),
+            lexeme: self.input[directive_start..self.index]
+                .trim_end()
+                .to_string(),
             span,
         })
     }
@@ -578,6 +584,22 @@ mod tests {
                 TokenKind::Punct(Punct::Semicolon),
             ]
         );
+    }
+
+    #[test]
+    fn directive_token_preserves_name_and_arguments() {
+        let tokens = lex_file(Path::new("directive.sv"), "`default_nettype none  \n").unwrap();
+        assert_eq!(tokens.len(), 1);
+        assert_eq!(tokens[0].kind, TokenKind::Directive);
+        assert_eq!(tokens[0].lexeme, "`default_nettype none");
+        assert_eq!(tokens[0].span, Span::new("directive.sv", 1, 1));
+    }
+
+    #[test]
+    fn bare_directive_marker_reports_its_location() {
+        let error = lex_file(Path::new("directive.sv"), "  `\n").unwrap_err();
+        assert_eq!(error.span, Span::new("directive.sv", 1, 3));
+        assert_eq!(error.message, "expected directive name");
     }
 
     #[test]

@@ -1,0 +1,1076 @@
+Design {
+    items: [
+        Directive(
+            Directive {
+                span: Span {
+                    path: "sv-cells/dmg_cpu_b/cells/pad_bidir_pu.sv",
+                    line: 1,
+                    column: 1,
+                },
+                name: "default_nettype",
+                arguments: [
+                    "none",
+                ],
+            },
+        ),
+        Module(
+            Module {
+                span: Span {
+                    path: "sv-cells/dmg_cpu_b/cells/pad_bidir_pu.sv",
+                    line: 3,
+                    column: 1,
+                },
+                name: "dmg_pad_bidir_pu",
+                parameters: [
+                    ParamDecl {
+                        span: Span {
+                            path: "sv-cells/dmg_cpu_b/cells/pad_bidir_pu.sv",
+                            line: 4,
+                            column: 3,
+                        },
+                        kind: Parameter,
+                        ty: Some(
+                            "real",
+                        ),
+                        name: "L_i_n",
+                        value: Expr {
+                            span: Span {
+                                path: "sv-cells/dmg_cpu_b/cells/pad_bidir_pu.sv",
+                                line: 4,
+                                column: 26,
+                            },
+                            kind: Integer(
+                                "160",
+                            ),
+                        },
+                    },
+                    ParamDecl {
+                        span: Span {
+                            path: "sv-cells/dmg_cpu_b/cells/pad_bidir_pu.sv",
+                            line: 5,
+                            column: 3,
+                        },
+                        kind: Parameter,
+                        ty: Some(
+                            "real",
+                        ),
+                        name: "L_pad",
+                        value: Expr {
+                            span: Span {
+                                path: "sv-cells/dmg_cpu_b/cells/pad_bidir_pu.sv",
+                                line: 5,
+                                column: 26,
+                            },
+                            kind: Integer(
+                                "0",
+                            ),
+                        },
+                    },
+                ],
+                ports: [
+                    PortDecl {
+                        span: Span {
+                            path: "sv-cells/dmg_cpu_b/cells/pad_bidir_pu.sv",
+                            line: 7,
+                            column: 3,
+                        },
+                        direction: Input,
+                        modifiers: [
+                            "logic",
+                        ],
+                        names: [
+                            "ndrv",
+                            "pdrv_n",
+                            "ena_n_pu",
+                        ],
+                    },
+                    PortDecl {
+                        span: Span {
+                            path: "sv-cells/dmg_cpu_b/cells/pad_bidir_pu.sv",
+                            line: 8,
+                            column: 3,
+                        },
+                        direction: Output,
+                        modifiers: [
+                            "logic",
+                        ],
+                        names: [
+                            "i_n",
+                        ],
+                    },
+                    PortDecl {
+                        span: Span {
+                            path: "sv-cells/dmg_cpu_b/cells/pad_bidir_pu.sv",
+                            line: 9,
+                            column: 3,
+                        },
+                        direction: Inout,
+                        modifiers: [
+                            "tri",
+                            "logic",
+                        ],
+                        names: [
+                            "pad",
+                        ],
+                    },
+                ],
+                items: [
+                    Item {
+                        span: Span {
+                            path: "sv-cells/dmg_cpu_b/cells/pad_bidir_pu.sv",
+                            line: 12,
+                            column: 2,
+                        },
+                        kind: Import(
+                            ImportDecl {
+                                span: Span {
+                                    path: "sv-cells/dmg_cpu_b/cells/pad_bidir_pu.sv",
+                                    line: 12,
+                                    column: 2,
+                                },
+                                path: [
+                                    "dmg_timing",
+                                ],
+                                wildcard: true,
+                            },
+                        ),
+                    },
+                    Item {
+                        span: Span {
+                            path: "sv-cells/dmg_cpu_b/cells/pad_bidir_pu.sv",
+                            line: 14,
+                            column: 2,
+                        },
+                        kind: Decl(
+                            Decl {
+                                span: Span {
+                                    path: "sv-cells/dmg_cpu_b/cells/pad_bidir_pu.sv",
+                                    line: 14,
+                                    column: 2,
+                                },
+                                kind: Localparam,
+                                ty: Some(
+                                    "realtime",
+                                ),
+                                names: [
+                                    "T_rise_pad",
+                                ],
+                                value: Some(
+                                    Expr {
+                                        span: Span {
+                                            path: "sv-cells/dmg_cpu_b/cells/pad_bidir_pu.sv",
+                                            line: 14,
+                                            column: 35,
+                                        },
+                                        kind: Call {
+                                            callee: Expr {
+                                                span: Span {
+                                                    path: "sv-cells/dmg_cpu_b/cells/pad_bidir_pu.sv",
+                                                    line: 14,
+                                                    column: 35,
+                                                },
+                                                kind: Path(
+                                                    [
+                                                        "tpd_elmore",
+                                                    ],
+                                                ),
+                                            },
+                                            args: [
+                                                Some(
+                                                    Expr {
+                                                        span: Span {
+                                                            path: "sv-cells/dmg_cpu_b/cells/pad_bidir_pu.sv",
+                                                            line: 14,
+                                                            column: 46,
+                                                        },
+                                                        kind: Path(
+                                                            [
+                                                                "L_pad",
+                                                            ],
+                                                        ),
+                                                    },
+                                                ),
+                                                Some(
+                                                    Expr {
+                                                        span: Span {
+                                                            path: "sv-cells/dmg_cpu_b/cells/pad_bidir_pu.sv",
+                                                            line: 14,
+                                                            column: 53,
+                                                        },
+                                                        kind: Call {
+                                                            callee: Expr {
+                                                                span: Span {
+                                                                    path: "sv-cells/dmg_cpu_b/cells/pad_bidir_pu.sv",
+                                                                    line: 14,
+                                                                    column: 53,
+                                                                },
+                                                                kind: Path(
+                                                                    [
+                                                                        "R_pmos_ohm",
+                                                                    ],
+                                                                ),
+                                                            },
+                                                            args: [
+                                                                Some(
+                                                                    Expr {
+                                                                        span: Span {
+                                                                            path: "sv-cells/dmg_cpu_b/cells/pad_bidir_pu.sv",
+                                                                            line: 14,
+                                                                            column: 64,
+                                                                        },
+                                                                        kind: Integer(
+                                                                            "140",
+                                                                        ),
+                                                                    },
+                                                                ),
+                                                            ],
+                                                        },
+                                                    },
+                                                ),
+                                            ],
+                                        },
+                                    },
+                                ),
+                            },
+                        ),
+                    },
+                    Item {
+                        span: Span {
+                            path: "sv-cells/dmg_cpu_b/cells/pad_bidir_pu.sv",
+                            line: 15,
+                            column: 2,
+                        },
+                        kind: Decl(
+                            Decl {
+                                span: Span {
+                                    path: "sv-cells/dmg_cpu_b/cells/pad_bidir_pu.sv",
+                                    line: 15,
+                                    column: 2,
+                                },
+                                kind: Localparam,
+                                ty: Some(
+                                    "realtime",
+                                ),
+                                names: [
+                                    "T_fall_pad",
+                                ],
+                                value: Some(
+                                    Expr {
+                                        span: Span {
+                                            path: "sv-cells/dmg_cpu_b/cells/pad_bidir_pu.sv",
+                                            line: 15,
+                                            column: 35,
+                                        },
+                                        kind: Call {
+                                            callee: Expr {
+                                                span: Span {
+                                                    path: "sv-cells/dmg_cpu_b/cells/pad_bidir_pu.sv",
+                                                    line: 15,
+                                                    column: 35,
+                                                },
+                                                kind: Path(
+                                                    [
+                                                        "tpd_elmore",
+                                                    ],
+                                                ),
+                                            },
+                                            args: [
+                                                Some(
+                                                    Expr {
+                                                        span: Span {
+                                                            path: "sv-cells/dmg_cpu_b/cells/pad_bidir_pu.sv",
+                                                            line: 15,
+                                                            column: 46,
+                                                        },
+                                                        kind: Path(
+                                                            [
+                                                                "L_pad",
+                                                            ],
+                                                        ),
+                                                    },
+                                                ),
+                                                Some(
+                                                    Expr {
+                                                        span: Span {
+                                                            path: "sv-cells/dmg_cpu_b/cells/pad_bidir_pu.sv",
+                                                            line: 15,
+                                                            column: 53,
+                                                        },
+                                                        kind: Call {
+                                                            callee: Expr {
+                                                                span: Span {
+                                                                    path: "sv-cells/dmg_cpu_b/cells/pad_bidir_pu.sv",
+                                                                    line: 15,
+                                                                    column: 53,
+                                                                },
+                                                                kind: Path(
+                                                                    [
+                                                                        "R_nmos_ohm",
+                                                                    ],
+                                                                ),
+                                                            },
+                                                            args: [
+                                                                Some(
+                                                                    Expr {
+                                                                        span: Span {
+                                                                            path: "sv-cells/dmg_cpu_b/cells/pad_bidir_pu.sv",
+                                                                            line: 15,
+                                                                            column: 64,
+                                                                        },
+                                                                        kind: Integer(
+                                                                            "140",
+                                                                        ),
+                                                                    },
+                                                                ),
+                                                            ],
+                                                        },
+                                                    },
+                                                ),
+                                            ],
+                                        },
+                                    },
+                                ),
+                            },
+                        ),
+                    },
+                    Item {
+                        span: Span {
+                            path: "sv-cells/dmg_cpu_b/cells/pad_bidir_pu.sv",
+                            line: 16,
+                            column: 2,
+                        },
+                        kind: Decl(
+                            Decl {
+                                span: Span {
+                                    path: "sv-cells/dmg_cpu_b/cells/pad_bidir_pu.sv",
+                                    line: 16,
+                                    column: 2,
+                                },
+                                kind: Localparam,
+                                ty: Some(
+                                    "realtime",
+                                ),
+                                names: [
+                                    "T_pu_pad",
+                                ],
+                                value: Some(
+                                    Expr {
+                                        span: Span {
+                                            path: "sv-cells/dmg_cpu_b/cells/pad_bidir_pu.sv",
+                                            line: 16,
+                                            column: 35,
+                                        },
+                                        kind: Binary {
+                                            op: Mul,
+                                            left: Expr {
+                                                span: Span {
+                                                    path: "sv-cells/dmg_cpu_b/cells/pad_bidir_pu.sv",
+                                                    line: 16,
+                                                    column: 35,
+                                                },
+                                                kind: Path(
+                                                    [
+                                                        "T_rise_pad",
+                                                    ],
+                                                ),
+                                            },
+                                            right: Expr {
+                                                span: Span {
+                                                    path: "sv-cells/dmg_cpu_b/cells/pad_bidir_pu.sv",
+                                                    line: 16,
+                                                    column: 48,
+                                                },
+                                                kind: Integer(
+                                                    "10",
+                                                ),
+                                            },
+                                        },
+                                    },
+                                ),
+                            },
+                        ),
+                    },
+                    Item {
+                        span: Span {
+                            path: "sv-cells/dmg_cpu_b/cells/pad_bidir_pu.sv",
+                            line: 17,
+                            column: 2,
+                        },
+                        kind: Primitive(
+                            PrimitiveCall {
+                                span: Span {
+                                    path: "sv-cells/dmg_cpu_b/cells/pad_bidir_pu.sv",
+                                    line: 17,
+                                    column: 2,
+                                },
+                                name: "bufif1",
+                                strength: Some(
+                                    Strength {
+                                        span: Span {
+                                            path: "sv-cells/dmg_cpu_b/cells/pad_bidir_pu.sv",
+                                            line: 17,
+                                            column: 9,
+                                        },
+                                        values: [
+                                            "highz1",
+                                            "strong0",
+                                        ],
+                                    },
+                                ),
+                                delay: Some(
+                                    Delay {
+                                        span: Span {
+                                            path: "sv-cells/dmg_cpu_b/cells/pad_bidir_pu.sv",
+                                            line: 17,
+                                            column: 28,
+                                        },
+                                        values: [
+                                            Some(
+                                                Expr {
+                                                    span: Span {
+                                                        path: "sv-cells/dmg_cpu_b/cells/pad_bidir_pu.sv",
+                                                        line: 17,
+                                                        column: 29,
+                                                    },
+                                                    kind: Path(
+                                                        [
+                                                            "T_rise_pad",
+                                                        ],
+                                                    ),
+                                                },
+                                            ),
+                                            Some(
+                                                Expr {
+                                                    span: Span {
+                                                        path: "sv-cells/dmg_cpu_b/cells/pad_bidir_pu.sv",
+                                                        line: 17,
+                                                        column: 41,
+                                                    },
+                                                    kind: Path(
+                                                        [
+                                                            "T_fall_pad",
+                                                        ],
+                                                    ),
+                                                },
+                                            ),
+                                        ],
+                                    },
+                                ),
+                                args: [
+                                    Some(
+                                        Expr {
+                                            span: Span {
+                                                path: "sv-cells/dmg_cpu_b/cells/pad_bidir_pu.sv",
+                                                line: 17,
+                                                column: 54,
+                                            },
+                                            kind: Path(
+                                                [
+                                                    "pad",
+                                                ],
+                                            ),
+                                        },
+                                    ),
+                                    Some(
+                                        Expr {
+                                            span: Span {
+                                                path: "sv-cells/dmg_cpu_b/cells/pad_bidir_pu.sv",
+                                                line: 17,
+                                                column: 59,
+                                            },
+                                            kind: Constant(
+                                                Zero,
+                                            ),
+                                        },
+                                    ),
+                                    Some(
+                                        Expr {
+                                            span: Span {
+                                                path: "sv-cells/dmg_cpu_b/cells/pad_bidir_pu.sv",
+                                                line: 17,
+                                                column: 63,
+                                            },
+                                            kind: Path(
+                                                [
+                                                    "ndrv",
+                                                ],
+                                            ),
+                                        },
+                                    ),
+                                ],
+                            },
+                        ),
+                    },
+                    Item {
+                        span: Span {
+                            path: "sv-cells/dmg_cpu_b/cells/pad_bidir_pu.sv",
+                            line: 18,
+                            column: 2,
+                        },
+                        kind: Primitive(
+                            PrimitiveCall {
+                                span: Span {
+                                    path: "sv-cells/dmg_cpu_b/cells/pad_bidir_pu.sv",
+                                    line: 18,
+                                    column: 2,
+                                },
+                                name: "bufif0",
+                                strength: Some(
+                                    Strength {
+                                        span: Span {
+                                            path: "sv-cells/dmg_cpu_b/cells/pad_bidir_pu.sv",
+                                            line: 18,
+                                            column: 9,
+                                        },
+                                        values: [
+                                            "strong1",
+                                            "highz0",
+                                        ],
+                                    },
+                                ),
+                                delay: Some(
+                                    Delay {
+                                        span: Span {
+                                            path: "sv-cells/dmg_cpu_b/cells/pad_bidir_pu.sv",
+                                            line: 18,
+                                            column: 28,
+                                        },
+                                        values: [
+                                            Some(
+                                                Expr {
+                                                    span: Span {
+                                                        path: "sv-cells/dmg_cpu_b/cells/pad_bidir_pu.sv",
+                                                        line: 18,
+                                                        column: 29,
+                                                    },
+                                                    kind: Path(
+                                                        [
+                                                            "T_rise_pad",
+                                                        ],
+                                                    ),
+                                                },
+                                            ),
+                                            Some(
+                                                Expr {
+                                                    span: Span {
+                                                        path: "sv-cells/dmg_cpu_b/cells/pad_bidir_pu.sv",
+                                                        line: 18,
+                                                        column: 41,
+                                                    },
+                                                    kind: Path(
+                                                        [
+                                                            "T_fall_pad",
+                                                        ],
+                                                    ),
+                                                },
+                                            ),
+                                        ],
+                                    },
+                                ),
+                                args: [
+                                    Some(
+                                        Expr {
+                                            span: Span {
+                                                path: "sv-cells/dmg_cpu_b/cells/pad_bidir_pu.sv",
+                                                line: 18,
+                                                column: 54,
+                                            },
+                                            kind: Path(
+                                                [
+                                                    "pad",
+                                                ],
+                                            ),
+                                        },
+                                    ),
+                                    Some(
+                                        Expr {
+                                            span: Span {
+                                                path: "sv-cells/dmg_cpu_b/cells/pad_bidir_pu.sv",
+                                                line: 18,
+                                                column: 59,
+                                            },
+                                            kind: Constant(
+                                                One,
+                                            ),
+                                        },
+                                    ),
+                                    Some(
+                                        Expr {
+                                            span: Span {
+                                                path: "sv-cells/dmg_cpu_b/cells/pad_bidir_pu.sv",
+                                                line: 18,
+                                                column: 63,
+                                            },
+                                            kind: Path(
+                                                [
+                                                    "pdrv_n",
+                                                ],
+                                            ),
+                                        },
+                                    ),
+                                ],
+                            },
+                        ),
+                    },
+                    Item {
+                        span: Span {
+                            path: "sv-cells/dmg_cpu_b/cells/pad_bidir_pu.sv",
+                            line: 19,
+                            column: 2,
+                        },
+                        kind: Primitive(
+                            PrimitiveCall {
+                                span: Span {
+                                    path: "sv-cells/dmg_cpu_b/cells/pad_bidir_pu.sv",
+                                    line: 19,
+                                    column: 2,
+                                },
+                                name: "bufif0",
+                                strength: Some(
+                                    Strength {
+                                        span: Span {
+                                            path: "sv-cells/dmg_cpu_b/cells/pad_bidir_pu.sv",
+                                            line: 19,
+                                            column: 9,
+                                        },
+                                        values: [
+                                            "pull1",
+                                            "highz0",
+                                        ],
+                                    },
+                                ),
+                                delay: Some(
+                                    Delay {
+                                        span: Span {
+                                            path: "sv-cells/dmg_cpu_b/cells/pad_bidir_pu.sv",
+                                            line: 19,
+                                            column: 28,
+                                        },
+                                        values: [
+                                            Some(
+                                                Expr {
+                                                    span: Span {
+                                                        path: "sv-cells/dmg_cpu_b/cells/pad_bidir_pu.sv",
+                                                        line: 19,
+                                                        column: 29,
+                                                    },
+                                                    kind: Path(
+                                                        [
+                                                            "T_pu_pad",
+                                                        ],
+                                                    ),
+                                                },
+                                            ),
+                                            Some(
+                                                Expr {
+                                                    span: Span {
+                                                        path: "sv-cells/dmg_cpu_b/cells/pad_bidir_pu.sv",
+                                                        line: 19,
+                                                        column: 39,
+                                                    },
+                                                    kind: Path(
+                                                        [
+                                                            "T_fall_pad",
+                                                        ],
+                                                    ),
+                                                },
+                                            ),
+                                        ],
+                                    },
+                                ),
+                                args: [
+                                    Some(
+                                        Expr {
+                                            span: Span {
+                                                path: "sv-cells/dmg_cpu_b/cells/pad_bidir_pu.sv",
+                                                line: 19,
+                                                column: 54,
+                                            },
+                                            kind: Path(
+                                                [
+                                                    "pad",
+                                                ],
+                                            ),
+                                        },
+                                    ),
+                                    Some(
+                                        Expr {
+                                            span: Span {
+                                                path: "sv-cells/dmg_cpu_b/cells/pad_bidir_pu.sv",
+                                                line: 19,
+                                                column: 59,
+                                            },
+                                            kind: Constant(
+                                                One,
+                                            ),
+                                        },
+                                    ),
+                                    Some(
+                                        Expr {
+                                            span: Span {
+                                                path: "sv-cells/dmg_cpu_b/cells/pad_bidir_pu.sv",
+                                                line: 19,
+                                                column: 63,
+                                            },
+                                            kind: Path(
+                                                [
+                                                    "ena_n_pu",
+                                                ],
+                                            ),
+                                        },
+                                    ),
+                                ],
+                            },
+                        ),
+                    },
+                    Item {
+                        span: Span {
+                            path: "sv-cells/dmg_cpu_b/cells/pad_bidir_pu.sv",
+                            line: 21,
+                            column: 2,
+                        },
+                        kind: Decl(
+                            Decl {
+                                span: Span {
+                                    path: "sv-cells/dmg_cpu_b/cells/pad_bidir_pu.sv",
+                                    line: 21,
+                                    column: 2,
+                                },
+                                kind: Localparam,
+                                ty: Some(
+                                    "realtime",
+                                ),
+                                names: [
+                                    "T_rise_i_n",
+                                ],
+                                value: Some(
+                                    Expr {
+                                        span: Span {
+                                            path: "sv-cells/dmg_cpu_b/cells/pad_bidir_pu.sv",
+                                            line: 21,
+                                            column: 35,
+                                        },
+                                        kind: Call {
+                                            callee: Expr {
+                                                span: Span {
+                                                    path: "sv-cells/dmg_cpu_b/cells/pad_bidir_pu.sv",
+                                                    line: 21,
+                                                    column: 35,
+                                                },
+                                                kind: Path(
+                                                    [
+                                                        "tpd_elmore",
+                                                    ],
+                                                ),
+                                            },
+                                            args: [
+                                                Some(
+                                                    Expr {
+                                                        span: Span {
+                                                            path: "sv-cells/dmg_cpu_b/cells/pad_bidir_pu.sv",
+                                                            line: 21,
+                                                            column: 46,
+                                                        },
+                                                        kind: Path(
+                                                            [
+                                                                "L_i_n",
+                                                            ],
+                                                        ),
+                                                    },
+                                                ),
+                                                Some(
+                                                    Expr {
+                                                        span: Span {
+                                                            path: "sv-cells/dmg_cpu_b/cells/pad_bidir_pu.sv",
+                                                            line: 21,
+                                                            column: 53,
+                                                        },
+                                                        kind: Call {
+                                                            callee: Expr {
+                                                                span: Span {
+                                                                    path: "sv-cells/dmg_cpu_b/cells/pad_bidir_pu.sv",
+                                                                    line: 21,
+                                                                    column: 53,
+                                                                },
+                                                                kind: Path(
+                                                                    [
+                                                                        "R_pmos_ohm",
+                                                                    ],
+                                                                ),
+                                                            },
+                                                            args: [
+                                                                Some(
+                                                                    Expr {
+                                                                        span: Span {
+                                                                            path: "sv-cells/dmg_cpu_b/cells/pad_bidir_pu.sv",
+                                                                            line: 21,
+                                                                            column: 64,
+                                                                        },
+                                                                        kind: Binary {
+                                                                            op: Mul,
+                                                                            left: Expr {
+                                                                                span: Span {
+                                                                                    path: "sv-cells/dmg_cpu_b/cells/pad_bidir_pu.sv",
+                                                                                    line: 21,
+                                                                                    column: 64,
+                                                                                },
+                                                                                kind: Integer(
+                                                                                    "15",
+                                                                                ),
+                                                                            },
+                                                                            right: Expr {
+                                                                                span: Span {
+                                                                                    path: "sv-cells/dmg_cpu_b/cells/pad_bidir_pu.sv",
+                                                                                    line: 21,
+                                                                                    column: 67,
+                                                                                },
+                                                                                kind: Path(
+                                                                                    [
+                                                                                        "L_unit",
+                                                                                    ],
+                                                                                ),
+                                                                            },
+                                                                        },
+                                                                    },
+                                                                ),
+                                                            ],
+                                                        },
+                                                    },
+                                                ),
+                                            ],
+                                        },
+                                    },
+                                ),
+                            },
+                        ),
+                    },
+                    Item {
+                        span: Span {
+                            path: "sv-cells/dmg_cpu_b/cells/pad_bidir_pu.sv",
+                            line: 22,
+                            column: 2,
+                        },
+                        kind: Decl(
+                            Decl {
+                                span: Span {
+                                    path: "sv-cells/dmg_cpu_b/cells/pad_bidir_pu.sv",
+                                    line: 22,
+                                    column: 2,
+                                },
+                                kind: Localparam,
+                                ty: Some(
+                                    "realtime",
+                                ),
+                                names: [
+                                    "T_fall_i_n",
+                                ],
+                                value: Some(
+                                    Expr {
+                                        span: Span {
+                                            path: "sv-cells/dmg_cpu_b/cells/pad_bidir_pu.sv",
+                                            line: 22,
+                                            column: 35,
+                                        },
+                                        kind: Call {
+                                            callee: Expr {
+                                                span: Span {
+                                                    path: "sv-cells/dmg_cpu_b/cells/pad_bidir_pu.sv",
+                                                    line: 22,
+                                                    column: 35,
+                                                },
+                                                kind: Path(
+                                                    [
+                                                        "tpd_elmore",
+                                                    ],
+                                                ),
+                                            },
+                                            args: [
+                                                Some(
+                                                    Expr {
+                                                        span: Span {
+                                                            path: "sv-cells/dmg_cpu_b/cells/pad_bidir_pu.sv",
+                                                            line: 22,
+                                                            column: 46,
+                                                        },
+                                                        kind: Path(
+                                                            [
+                                                                "L_i_n",
+                                                            ],
+                                                        ),
+                                                    },
+                                                ),
+                                                Some(
+                                                    Expr {
+                                                        span: Span {
+                                                            path: "sv-cells/dmg_cpu_b/cells/pad_bidir_pu.sv",
+                                                            line: 22,
+                                                            column: 53,
+                                                        },
+                                                        kind: Call {
+                                                            callee: Expr {
+                                                                span: Span {
+                                                                    path: "sv-cells/dmg_cpu_b/cells/pad_bidir_pu.sv",
+                                                                    line: 22,
+                                                                    column: 53,
+                                                                },
+                                                                kind: Path(
+                                                                    [
+                                                                        "R_nmos_ohm",
+                                                                    ],
+                                                                ),
+                                                            },
+                                                            args: [
+                                                                Some(
+                                                                    Expr {
+                                                                        span: Span {
+                                                                            path: "sv-cells/dmg_cpu_b/cells/pad_bidir_pu.sv",
+                                                                            line: 22,
+                                                                            column: 65,
+                                                                        },
+                                                                        kind: Binary {
+                                                                            op: Mul,
+                                                                            left: Expr {
+                                                                                span: Span {
+                                                                                    path: "sv-cells/dmg_cpu_b/cells/pad_bidir_pu.sv",
+                                                                                    line: 22,
+                                                                                    column: 65,
+                                                                                },
+                                                                                kind: Integer(
+                                                                                    "7",
+                                                                                ),
+                                                                            },
+                                                                            right: Expr {
+                                                                                span: Span {
+                                                                                    path: "sv-cells/dmg_cpu_b/cells/pad_bidir_pu.sv",
+                                                                                    line: 22,
+                                                                                    column: 67,
+                                                                                },
+                                                                                kind: Path(
+                                                                                    [
+                                                                                        "L_unit",
+                                                                                    ],
+                                                                                ),
+                                                                            },
+                                                                        },
+                                                                    },
+                                                                ),
+                                                            ],
+                                                        },
+                                                    },
+                                                ),
+                                            ],
+                                        },
+                                    },
+                                ),
+                            },
+                        ),
+                    },
+                    Item {
+                        span: Span {
+                            path: "sv-cells/dmg_cpu_b/cells/pad_bidir_pu.sv",
+                            line: 23,
+                            column: 2,
+                        },
+                        kind: Assign(
+                            AssignDecl {
+                                span: Span {
+                                    path: "sv-cells/dmg_cpu_b/cells/pad_bidir_pu.sv",
+                                    line: 23,
+                                    column: 2,
+                                },
+                                strength: None,
+                                delay: Some(
+                                    Delay {
+                                        span: Span {
+                                            path: "sv-cells/dmg_cpu_b/cells/pad_bidir_pu.sv",
+                                            line: 23,
+                                            column: 10,
+                                        },
+                                        values: [
+                                            Some(
+                                                Expr {
+                                                    span: Span {
+                                                        path: "sv-cells/dmg_cpu_b/cells/pad_bidir_pu.sv",
+                                                        line: 23,
+                                                        column: 11,
+                                                    },
+                                                    kind: Path(
+                                                        [
+                                                            "T_rise_i_n",
+                                                        ],
+                                                    ),
+                                                },
+                                            ),
+                                            Some(
+                                                Expr {
+                                                    span: Span {
+                                                        path: "sv-cells/dmg_cpu_b/cells/pad_bidir_pu.sv",
+                                                        line: 23,
+                                                        column: 23,
+                                                    },
+                                                    kind: Path(
+                                                        [
+                                                            "T_fall_i_n",
+                                                        ],
+                                                    ),
+                                                },
+                                            ),
+                                        ],
+                                    },
+                                ),
+                                target: Expr {
+                                    span: Span {
+                                        path: "sv-cells/dmg_cpu_b/cells/pad_bidir_pu.sv",
+                                        line: 23,
+                                        column: 35,
+                                    },
+                                    kind: Path(
+                                        [
+                                            "i_n",
+                                        ],
+                                    ),
+                                },
+                                value: Expr {
+                                    span: Span {
+                                        path: "sv-cells/dmg_cpu_b/cells/pad_bidir_pu.sv",
+                                        line: 23,
+                                        column: 41,
+                                    },
+                                    kind: Unary {
+                                        op: Not,
+                                        expr: Expr {
+                                            span: Span {
+                                                path: "sv-cells/dmg_cpu_b/cells/pad_bidir_pu.sv",
+                                                line: 23,
+                                                column: 42,
+                                            },
+                                            kind: Path(
+                                                [
+                                                    "pad",
+                                                ],
+                                            ),
+                                        },
+                                    },
+                                },
+                                op: Blocking,
+                            },
+                        ),
+                    },
+                ],
+            },
+        ),
+        Directive(
+            Directive {
+                span: Span {
+                    path: "sv-cells/dmg_cpu_b/cells/pad_bidir_pu.sv",
+                    line: 27,
+                    column: 1,
+                },
+                name: "default_nettype",
+                arguments: [
+                    "wire",
+                ],
+            },
+        ),
+    ],
+}

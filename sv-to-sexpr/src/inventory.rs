@@ -680,6 +680,27 @@ impl CapabilityInventory {
     }
 }
 
+/// Records capabilities that are available immediately after lexing.
+///
+/// This deliberately does not require a module set because token-level
+/// directive classification must survive a later parser failure.
+pub fn record_token_capabilities(
+    inventory: &mut CapabilityInventory,
+    tokens: &[Token],
+    path: &str,
+) {
+    for token in tokens {
+        if token.kind == TokenKind::Directive {
+            let name = token
+                .lexeme
+                .split_whitespace()
+                .next()
+                .unwrap_or(&token.lexeme);
+            inventory.record(Capability::Directive(name.to_string()), path);
+        }
+    }
+}
+
 pub struct InventoryWalker<'a> {
     inventory: &'a mut CapabilityInventory,
     known_modules: &'a BTreeSet<String>,
@@ -700,16 +721,12 @@ impl<'a> InventoryWalker<'a> {
     }
 
     pub fn record_tokens(&mut self, tokens: &[Token]) {
-        for token in tokens {
-            if token.kind == TokenKind::Directive {
-                self.record(Capability::Directive(token.lexeme.clone()));
-            }
-        }
+        record_token_capabilities(self.inventory, tokens, self.path);
     }
 
     pub fn record_design(&mut self, design: &Design) {
         self.record(Capability::Design);
-        for module in &design.modules {
+        for module in design.modules() {
             self.record(Capability::Module);
             for parameter in &module.parameters {
                 self.record_parameter(parameter);
@@ -780,10 +797,16 @@ impl<'a> InventoryWalker<'a> {
                 self.record(Capability::Always(always.kind));
                 match &always.sensitivity {
                     None => self.record(Capability::Sensitivity(SensitivityForm::Missing)),
-                    Some(Sensitivity::Any) => {
+                    Some(Sensitivity {
+                        kind: SensitivityKind::Any,
+                        ..
+                    }) => {
                         self.record(Capability::Sensitivity(SensitivityForm::Any));
                     }
-                    Some(Sensitivity::List(events)) => {
+                    Some(Sensitivity {
+                        kind: SensitivityKind::List(events),
+                        ..
+                    }) => {
                         self.record(Capability::Sensitivity(SensitivityForm::List));
                         for event in events {
                             if let Some(edge) = &event.edge {
@@ -846,16 +869,16 @@ impl<'a> InventoryWalker<'a> {
                     module: instance.module.clone(),
                 });
                 for parameter in &instance.parameters {
-                    match parameter {
-                        ParamOverride::Named { value, .. } => {
+                    match &parameter.kind {
+                        ParamOverrideKind::Named { value, .. } => {
                             self.record(Capability::ParameterOverride(OverrideStyle::Named));
                             self.record_expr(value, ExprContext::Timing);
                         }
-                        ParamOverride::Positional(Some(value)) => {
+                        ParamOverrideKind::Positional(Some(value)) => {
                             self.record(Capability::ParameterOverride(OverrideStyle::Positional));
                             self.record_expr(value, ExprContext::Timing);
                         }
-                        ParamOverride::Positional(None) => {
+                        ParamOverrideKind::Positional(None) => {
                             self.record(Capability::ParameterOverride(
                                 OverrideStyle::PositionalOmitted,
                             ));
@@ -863,12 +886,12 @@ impl<'a> InventoryWalker<'a> {
                     }
                 }
                 for connection in &instance.connections {
-                    match connection {
-                        Connection::Named { value, .. } => {
+                    match &connection.kind {
+                        ConnectionKind::Named { value, .. } => {
                             self.record(Capability::Connection(ConnectionStyle::Named));
                             self.record_expr(value, ExprContext::Value);
                         }
-                        Connection::Positional(value) => {
+                        ConnectionKind::Positional(value) => {
                             self.record(Capability::Connection(ConnectionStyle::Positional));
                             self.record_expr(value, ExprContext::Value);
                         }
@@ -1512,14 +1535,17 @@ endmodule
     #[test]
     fn unknown_dynamic_forms_are_explicitly_unsupported() {
         let source = r#"
-`mystery setting
+`default_nettype none
 module bad(input logic a, b, output logic y);
   initial y = a;
   mystery (weak1, strong0) #(T) (y, a, b);
   alien alien_inst(.x(a));
 endmodule
 "#;
-        let inventory = inventory_for(source, &["bad"]);
+        let mut inventory = inventory_for(source, &["bad"]);
+        let directive_tokens = lex_file(Path::new("focused.sv"), "`mystery setting\n").unwrap();
+        InventoryWalker::new(&mut inventory, &BTreeSet::new(), "focused.sv")
+            .record_tokens(&directive_tokens);
 
         for id in [
             "directive.`mystery",

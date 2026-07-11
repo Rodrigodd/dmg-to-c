@@ -1,0 +1,1859 @@
+Design {
+    items: [
+        Directive(
+            Directive {
+                span: Span {
+                    path: "sv-cells/dmg_cpu_b/cells/mux.sv",
+                    line: 1,
+                    column: 1,
+                },
+                name: "default_nettype",
+                arguments: [
+                    "none",
+                ],
+            },
+        ),
+        Module(
+            Module {
+                span: Span {
+                    path: "sv-cells/dmg_cpu_b/cells/mux.sv",
+                    line: 3,
+                    column: 1,
+                },
+                name: "dmg_mux",
+                parameters: [
+                    ParamDecl {
+                        span: Span {
+                            path: "sv-cells/dmg_cpu_b/cells/mux.sv",
+                            line: 4,
+                            column: 3,
+                        },
+                        kind: Parameter,
+                        ty: Some(
+                            "real",
+                        ),
+                        name: "L_y",
+                        value: Expr {
+                            span: Span {
+                                path: "sv-cells/dmg_cpu_b/cells/mux.sv",
+                                line: 4,
+                                column: 24,
+                            },
+                            kind: Integer(
+                                "54",
+                            ),
+                        },
+                    },
+                ],
+                ports: [
+                    PortDecl {
+                        span: Span {
+                            path: "sv-cells/dmg_cpu_b/cells/mux.sv",
+                            line: 6,
+                            column: 3,
+                        },
+                        direction: Input,
+                        modifiers: [
+                            "logic",
+                        ],
+                        names: [
+                            "d0",
+                            "d1",
+                            "sel",
+                        ],
+                    },
+                    PortDecl {
+                        span: Span {
+                            path: "sv-cells/dmg_cpu_b/cells/mux.sv",
+                            line: 7,
+                            column: 3,
+                        },
+                        direction: Output,
+                        modifiers: [
+                            "logic",
+                        ],
+                        names: [
+                            "y",
+                        ],
+                    },
+                ],
+                items: [
+                    Item {
+                        span: Span {
+                            path: "sv-cells/dmg_cpu_b/cells/mux.sv",
+                            line: 10,
+                            column: 2,
+                        },
+                        kind: Import(
+                            ImportDecl {
+                                span: Span {
+                                    path: "sv-cells/dmg_cpu_b/cells/mux.sv",
+                                    line: 10,
+                                    column: 2,
+                                },
+                                path: [
+                                    "dmg_timing",
+                                ],
+                                wildcard: true,
+                            },
+                        ),
+                    },
+                    Item {
+                        span: Span {
+                            path: "sv-cells/dmg_cpu_b/cells/mux.sv",
+                            line: 12,
+                            column: 2,
+                        },
+                        kind: Decl(
+                            Decl {
+                                span: Span {
+                                    path: "sv-cells/dmg_cpu_b/cells/mux.sv",
+                                    line: 12,
+                                    column: 2,
+                                },
+                                kind: Logic,
+                                ty: None,
+                                names: [
+                                    "sel_n",
+                                ],
+                                value: None,
+                            },
+                        ),
+                    },
+                    Item {
+                        span: Span {
+                            path: "sv-cells/dmg_cpu_b/cells/mux.sv",
+                            line: 13,
+                            column: 2,
+                        },
+                        kind: Decl(
+                            Decl {
+                                span: Span {
+                                    path: "sv-cells/dmg_cpu_b/cells/mux.sv",
+                                    line: 13,
+                                    column: 2,
+                                },
+                                kind: Localparam,
+                                ty: Some(
+                                    "realtime",
+                                ),
+                                names: [
+                                    "T_rise_sel",
+                                ],
+                                value: Some(
+                                    Expr {
+                                        span: Span {
+                                            path: "sv-cells/dmg_cpu_b/cells/mux.sv",
+                                            line: 13,
+                                            column: 35,
+                                        },
+                                        kind: Call {
+                                            callee: Expr {
+                                                span: Span {
+                                                    path: "sv-cells/dmg_cpu_b/cells/mux.sv",
+                                                    line: 13,
+                                                    column: 35,
+                                                },
+                                                kind: Path(
+                                                    [
+                                                        "tpd_elmore",
+                                                    ],
+                                                ),
+                                            },
+                                            args: [
+                                                Some(
+                                                    Expr {
+                                                        span: Span {
+                                                            path: "sv-cells/dmg_cpu_b/cells/mux.sv",
+                                                            line: 13,
+                                                            column: 46,
+                                                        },
+                                                        kind: Integer(
+                                                            "33",
+                                                        ),
+                                                    },
+                                                ),
+                                                Some(
+                                                    Expr {
+                                                        span: Span {
+                                                            path: "sv-cells/dmg_cpu_b/cells/mux.sv",
+                                                            line: 13,
+                                                            column: 50,
+                                                        },
+                                                        kind: Call {
+                                                            callee: Expr {
+                                                                span: Span {
+                                                                    path: "sv-cells/dmg_cpu_b/cells/mux.sv",
+                                                                    line: 13,
+                                                                    column: 50,
+                                                                },
+                                                                kind: Path(
+                                                                    [
+                                                                        "R_pmos_ohm",
+                                                                    ],
+                                                                ),
+                                                            },
+                                                            args: [
+                                                                Some(
+                                                                    Expr {
+                                                                        span: Span {
+                                                                            path: "sv-cells/dmg_cpu_b/cells/mux.sv",
+                                                                            line: 13,
+                                                                            column: 61,
+                                                                        },
+                                                                        kind: Binary {
+                                                                            op: Mul,
+                                                                            left: Expr {
+                                                                                span: Span {
+                                                                                    path: "sv-cells/dmg_cpu_b/cells/mux.sv",
+                                                                                    line: 13,
+                                                                                    column: 61,
+                                                                                },
+                                                                                kind: Integer(
+                                                                                    "6",
+                                                                                ),
+                                                                            },
+                                                                            right: Expr {
+                                                                                span: Span {
+                                                                                    path: "sv-cells/dmg_cpu_b/cells/mux.sv",
+                                                                                    line: 13,
+                                                                                    column: 63,
+                                                                                },
+                                                                                kind: Path(
+                                                                                    [
+                                                                                        "L_unit",
+                                                                                    ],
+                                                                                ),
+                                                                            },
+                                                                        },
+                                                                    },
+                                                                ),
+                                                            ],
+                                                        },
+                                                    },
+                                                ),
+                                            ],
+                                        },
+                                    },
+                                ),
+                            },
+                        ),
+                    },
+                    Item {
+                        span: Span {
+                            path: "sv-cells/dmg_cpu_b/cells/mux.sv",
+                            line: 14,
+                            column: 2,
+                        },
+                        kind: Decl(
+                            Decl {
+                                span: Span {
+                                    path: "sv-cells/dmg_cpu_b/cells/mux.sv",
+                                    line: 14,
+                                    column: 2,
+                                },
+                                kind: Localparam,
+                                ty: Some(
+                                    "realtime",
+                                ),
+                                names: [
+                                    "T_fall_sel",
+                                ],
+                                value: Some(
+                                    Expr {
+                                        span: Span {
+                                            path: "sv-cells/dmg_cpu_b/cells/mux.sv",
+                                            line: 14,
+                                            column: 35,
+                                        },
+                                        kind: Call {
+                                            callee: Expr {
+                                                span: Span {
+                                                    path: "sv-cells/dmg_cpu_b/cells/mux.sv",
+                                                    line: 14,
+                                                    column: 35,
+                                                },
+                                                kind: Path(
+                                                    [
+                                                        "tpd_elmore",
+                                                    ],
+                                                ),
+                                            },
+                                            args: [
+                                                Some(
+                                                    Expr {
+                                                        span: Span {
+                                                            path: "sv-cells/dmg_cpu_b/cells/mux.sv",
+                                                            line: 14,
+                                                            column: 46,
+                                                        },
+                                                        kind: Integer(
+                                                            "33",
+                                                        ),
+                                                    },
+                                                ),
+                                                Some(
+                                                    Expr {
+                                                        span: Span {
+                                                            path: "sv-cells/dmg_cpu_b/cells/mux.sv",
+                                                            line: 14,
+                                                            column: 50,
+                                                        },
+                                                        kind: Call {
+                                                            callee: Expr {
+                                                                span: Span {
+                                                                    path: "sv-cells/dmg_cpu_b/cells/mux.sv",
+                                                                    line: 14,
+                                                                    column: 50,
+                                                                },
+                                                                kind: Path(
+                                                                    [
+                                                                        "R_nmos_ohm",
+                                                                    ],
+                                                                ),
+                                                            },
+                                                            args: [
+                                                                Some(
+                                                                    Expr {
+                                                                        span: Span {
+                                                                            path: "sv-cells/dmg_cpu_b/cells/mux.sv",
+                                                                            line: 14,
+                                                                            column: 61,
+                                                                        },
+                                                                        kind: Binary {
+                                                                            op: Mul,
+                                                                            left: Expr {
+                                                                                span: Span {
+                                                                                    path: "sv-cells/dmg_cpu_b/cells/mux.sv",
+                                                                                    line: 14,
+                                                                                    column: 61,
+                                                                                },
+                                                                                kind: Integer(
+                                                                                    "6",
+                                                                                ),
+                                                                            },
+                                                                            right: Expr {
+                                                                                span: Span {
+                                                                                    path: "sv-cells/dmg_cpu_b/cells/mux.sv",
+                                                                                    line: 14,
+                                                                                    column: 63,
+                                                                                },
+                                                                                kind: Path(
+                                                                                    [
+                                                                                        "L_unit",
+                                                                                    ],
+                                                                                ),
+                                                                            },
+                                                                        },
+                                                                    },
+                                                                ),
+                                                            ],
+                                                        },
+                                                    },
+                                                ),
+                                            ],
+                                        },
+                                    },
+                                ),
+                            },
+                        ),
+                    },
+                    Item {
+                        span: Span {
+                            path: "sv-cells/dmg_cpu_b/cells/mux.sv",
+                            line: 15,
+                            column: 2,
+                        },
+                        kind: Assign(
+                            AssignDecl {
+                                span: Span {
+                                    path: "sv-cells/dmg_cpu_b/cells/mux.sv",
+                                    line: 15,
+                                    column: 2,
+                                },
+                                strength: None,
+                                delay: Some(
+                                    Delay {
+                                        span: Span {
+                                            path: "sv-cells/dmg_cpu_b/cells/mux.sv",
+                                            line: 15,
+                                            column: 10,
+                                        },
+                                        values: [
+                                            Some(
+                                                Expr {
+                                                    span: Span {
+                                                        path: "sv-cells/dmg_cpu_b/cells/mux.sv",
+                                                        line: 15,
+                                                        column: 11,
+                                                    },
+                                                    kind: Path(
+                                                        [
+                                                            "T_rise_sel",
+                                                        ],
+                                                    ),
+                                                },
+                                            ),
+                                            Some(
+                                                Expr {
+                                                    span: Span {
+                                                        path: "sv-cells/dmg_cpu_b/cells/mux.sv",
+                                                        line: 15,
+                                                        column: 23,
+                                                    },
+                                                    kind: Path(
+                                                        [
+                                                            "T_fall_sel",
+                                                        ],
+                                                    ),
+                                                },
+                                            ),
+                                        ],
+                                    },
+                                ),
+                                target: Expr {
+                                    span: Span {
+                                        path: "sv-cells/dmg_cpu_b/cells/mux.sv",
+                                        line: 15,
+                                        column: 35,
+                                    },
+                                    kind: Path(
+                                        [
+                                            "sel_n",
+                                        ],
+                                    ),
+                                },
+                                value: Expr {
+                                    span: Span {
+                                        path: "sv-cells/dmg_cpu_b/cells/mux.sv",
+                                        line: 15,
+                                        column: 43,
+                                    },
+                                    kind: Unary {
+                                        op: Not,
+                                        expr: Expr {
+                                            span: Span {
+                                                path: "sv-cells/dmg_cpu_b/cells/mux.sv",
+                                                line: 15,
+                                                column: 44,
+                                            },
+                                            kind: Path(
+                                                [
+                                                    "sel",
+                                                ],
+                                            ),
+                                        },
+                                    },
+                                },
+                                op: Blocking,
+                            },
+                        ),
+                    },
+                    Item {
+                        span: Span {
+                            path: "sv-cells/dmg_cpu_b/cells/mux.sv",
+                            line: 17,
+                            column: 2,
+                        },
+                        kind: Decl(
+                            Decl {
+                                span: Span {
+                                    path: "sv-cells/dmg_cpu_b/cells/mux.sv",
+                                    line: 17,
+                                    column: 2,
+                                },
+                                kind: Tri,
+                                ty: Some(
+                                    "logic",
+                                ),
+                                names: [
+                                    "mux",
+                                ],
+                                value: None,
+                            },
+                        ),
+                    },
+                    Item {
+                        span: Span {
+                            path: "sv-cells/dmg_cpu_b/cells/mux.sv",
+                            line: 18,
+                            column: 2,
+                        },
+                        kind: Decl(
+                            Decl {
+                                span: Span {
+                                    path: "sv-cells/dmg_cpu_b/cells/mux.sv",
+                                    line: 18,
+                                    column: 2,
+                                },
+                                kind: Localparam,
+                                ty: Some(
+                                    "realtime",
+                                ),
+                                names: [
+                                    "T_rise_buf",
+                                ],
+                                value: Some(
+                                    Expr {
+                                        span: Span {
+                                            path: "sv-cells/dmg_cpu_b/cells/mux.sv",
+                                            line: 18,
+                                            column: 35,
+                                        },
+                                        kind: Call {
+                                            callee: Expr {
+                                                span: Span {
+                                                    path: "sv-cells/dmg_cpu_b/cells/mux.sv",
+                                                    line: 18,
+                                                    column: 35,
+                                                },
+                                                kind: Path(
+                                                    [
+                                                        "tpd_elmore",
+                                                    ],
+                                                ),
+                                            },
+                                            args: [
+                                                Some(
+                                                    Expr {
+                                                        span: Span {
+                                                            path: "sv-cells/dmg_cpu_b/cells/mux.sv",
+                                                            line: 18,
+                                                            column: 46,
+                                                        },
+                                                        kind: Integer(
+                                                            "93",
+                                                        ),
+                                                    },
+                                                ),
+                                                Some(
+                                                    Expr {
+                                                        span: Span {
+                                                            path: "sv-cells/dmg_cpu_b/cells/mux.sv",
+                                                            line: 18,
+                                                            column: 50,
+                                                        },
+                                                        kind: Call {
+                                                            callee: Expr {
+                                                                span: Span {
+                                                                    path: "sv-cells/dmg_cpu_b/cells/mux.sv",
+                                                                    line: 18,
+                                                                    column: 50,
+                                                                },
+                                                                kind: Path(
+                                                                    [
+                                                                        "R_pmos_ohm",
+                                                                    ],
+                                                                ),
+                                                            },
+                                                            args: [
+                                                                Some(
+                                                                    Expr {
+                                                                        span: Span {
+                                                                            path: "sv-cells/dmg_cpu_b/cells/mux.sv",
+                                                                            line: 18,
+                                                                            column: 61,
+                                                                        },
+                                                                        kind: Binary {
+                                                                            op: Mul,
+                                                                            left: Expr {
+                                                                                span: Span {
+                                                                                    path: "sv-cells/dmg_cpu_b/cells/mux.sv",
+                                                                                    line: 18,
+                                                                                    column: 61,
+                                                                                },
+                                                                                kind: Integer(
+                                                                                    "6",
+                                                                                ),
+                                                                            },
+                                                                            right: Expr {
+                                                                                span: Span {
+                                                                                    path: "sv-cells/dmg_cpu_b/cells/mux.sv",
+                                                                                    line: 18,
+                                                                                    column: 63,
+                                                                                },
+                                                                                kind: Path(
+                                                                                    [
+                                                                                        "L_unit",
+                                                                                    ],
+                                                                                ),
+                                                                            },
+                                                                        },
+                                                                    },
+                                                                ),
+                                                            ],
+                                                        },
+                                                    },
+                                                ),
+                                            ],
+                                        },
+                                    },
+                                ),
+                            },
+                        ),
+                    },
+                    Item {
+                        span: Span {
+                            path: "sv-cells/dmg_cpu_b/cells/mux.sv",
+                            line: 19,
+                            column: 2,
+                        },
+                        kind: Decl(
+                            Decl {
+                                span: Span {
+                                    path: "sv-cells/dmg_cpu_b/cells/mux.sv",
+                                    line: 19,
+                                    column: 2,
+                                },
+                                kind: Localparam,
+                                ty: Some(
+                                    "realtime",
+                                ),
+                                names: [
+                                    "T_fall_buf",
+                                ],
+                                value: Some(
+                                    Expr {
+                                        span: Span {
+                                            path: "sv-cells/dmg_cpu_b/cells/mux.sv",
+                                            line: 19,
+                                            column: 35,
+                                        },
+                                        kind: Call {
+                                            callee: Expr {
+                                                span: Span {
+                                                    path: "sv-cells/dmg_cpu_b/cells/mux.sv",
+                                                    line: 19,
+                                                    column: 35,
+                                                },
+                                                kind: Path(
+                                                    [
+                                                        "tpd_elmore",
+                                                    ],
+                                                ),
+                                            },
+                                            args: [
+                                                Some(
+                                                    Expr {
+                                                        span: Span {
+                                                            path: "sv-cells/dmg_cpu_b/cells/mux.sv",
+                                                            line: 19,
+                                                            column: 46,
+                                                        },
+                                                        kind: Integer(
+                                                            "93",
+                                                        ),
+                                                    },
+                                                ),
+                                                Some(
+                                                    Expr {
+                                                        span: Span {
+                                                            path: "sv-cells/dmg_cpu_b/cells/mux.sv",
+                                                            line: 19,
+                                                            column: 50,
+                                                        },
+                                                        kind: Call {
+                                                            callee: Expr {
+                                                                span: Span {
+                                                                    path: "sv-cells/dmg_cpu_b/cells/mux.sv",
+                                                                    line: 19,
+                                                                    column: 50,
+                                                                },
+                                                                kind: Path(
+                                                                    [
+                                                                        "R_nmos_ohm",
+                                                                    ],
+                                                                ),
+                                                            },
+                                                            args: [
+                                                                Some(
+                                                                    Expr {
+                                                                        span: Span {
+                                                                            path: "sv-cells/dmg_cpu_b/cells/mux.sv",
+                                                                            line: 19,
+                                                                            column: 61,
+                                                                        },
+                                                                        kind: Binary {
+                                                                            op: Mul,
+                                                                            left: Expr {
+                                                                                span: Span {
+                                                                                    path: "sv-cells/dmg_cpu_b/cells/mux.sv",
+                                                                                    line: 19,
+                                                                                    column: 61,
+                                                                                },
+                                                                                kind: Integer(
+                                                                                    "6",
+                                                                                ),
+                                                                            },
+                                                                            right: Expr {
+                                                                                span: Span {
+                                                                                    path: "sv-cells/dmg_cpu_b/cells/mux.sv",
+                                                                                    line: 19,
+                                                                                    column: 63,
+                                                                                },
+                                                                                kind: Path(
+                                                                                    [
+                                                                                        "L_unit",
+                                                                                    ],
+                                                                                ),
+                                                                            },
+                                                                        },
+                                                                    },
+                                                                ),
+                                                            ],
+                                                        },
+                                                    },
+                                                ),
+                                            ],
+                                        },
+                                    },
+                                ),
+                            },
+                        ),
+                    },
+                    Item {
+                        span: Span {
+                            path: "sv-cells/dmg_cpu_b/cells/mux.sv",
+                            line: 20,
+                            column: 2,
+                        },
+                        kind: Primitive(
+                            PrimitiveCall {
+                                span: Span {
+                                    path: "sv-cells/dmg_cpu_b/cells/mux.sv",
+                                    line: 20,
+                                    column: 2,
+                                },
+                                name: "bufif0",
+                                strength: Some(
+                                    Strength {
+                                        span: Span {
+                                            path: "sv-cells/dmg_cpu_b/cells/mux.sv",
+                                            line: 20,
+                                            column: 9,
+                                        },
+                                        values: [
+                                            "strong1",
+                                            "highz0",
+                                        ],
+                                    },
+                                ),
+                                delay: Some(
+                                    Delay {
+                                        span: Span {
+                                            path: "sv-cells/dmg_cpu_b/cells/mux.sv",
+                                            line: 20,
+                                            column: 28,
+                                        },
+                                        values: [
+                                            Some(
+                                                Expr {
+                                                    span: Span {
+                                                        path: "sv-cells/dmg_cpu_b/cells/mux.sv",
+                                                        line: 20,
+                                                        column: 29,
+                                                    },
+                                                    kind: Path(
+                                                        [
+                                                            "T_rise_buf",
+                                                        ],
+                                                    ),
+                                                },
+                                            ),
+                                            Some(
+                                                Expr {
+                                                    span: Span {
+                                                        path: "sv-cells/dmg_cpu_b/cells/mux.sv",
+                                                        line: 20,
+                                                        column: 41,
+                                                    },
+                                                    kind: Path(
+                                                        [
+                                                            "T_fall_buf",
+                                                        ],
+                                                    ),
+                                                },
+                                            ),
+                                        ],
+                                    },
+                                ),
+                                args: [
+                                    Some(
+                                        Expr {
+                                            span: Span {
+                                                path: "sv-cells/dmg_cpu_b/cells/mux.sv",
+                                                line: 20,
+                                                column: 54,
+                                            },
+                                            kind: Path(
+                                                [
+                                                    "mux",
+                                                ],
+                                            ),
+                                        },
+                                    ),
+                                    Some(
+                                        Expr {
+                                            span: Span {
+                                                path: "sv-cells/dmg_cpu_b/cells/mux.sv",
+                                                line: 20,
+                                                column: 59,
+                                            },
+                                            kind: Path(
+                                                [
+                                                    "d0",
+                                                ],
+                                            ),
+                                        },
+                                    ),
+                                    Some(
+                                        Expr {
+                                            span: Span {
+                                                path: "sv-cells/dmg_cpu_b/cells/mux.sv",
+                                                line: 20,
+                                                column: 63,
+                                            },
+                                            kind: Path(
+                                                [
+                                                    "sel",
+                                                ],
+                                            ),
+                                        },
+                                    ),
+                                ],
+                            },
+                        ),
+                    },
+                    Item {
+                        span: Span {
+                            path: "sv-cells/dmg_cpu_b/cells/mux.sv",
+                            line: 21,
+                            column: 2,
+                        },
+                        kind: Primitive(
+                            PrimitiveCall {
+                                span: Span {
+                                    path: "sv-cells/dmg_cpu_b/cells/mux.sv",
+                                    line: 21,
+                                    column: 2,
+                                },
+                                name: "bufif1",
+                                strength: Some(
+                                    Strength {
+                                        span: Span {
+                                            path: "sv-cells/dmg_cpu_b/cells/mux.sv",
+                                            line: 21,
+                                            column: 9,
+                                        },
+                                        values: [
+                                            "highz1",
+                                            "strong0",
+                                        ],
+                                    },
+                                ),
+                                delay: Some(
+                                    Delay {
+                                        span: Span {
+                                            path: "sv-cells/dmg_cpu_b/cells/mux.sv",
+                                            line: 21,
+                                            column: 28,
+                                        },
+                                        values: [
+                                            Some(
+                                                Expr {
+                                                    span: Span {
+                                                        path: "sv-cells/dmg_cpu_b/cells/mux.sv",
+                                                        line: 21,
+                                                        column: 29,
+                                                    },
+                                                    kind: Path(
+                                                        [
+                                                            "T_rise_buf",
+                                                        ],
+                                                    ),
+                                                },
+                                            ),
+                                            Some(
+                                                Expr {
+                                                    span: Span {
+                                                        path: "sv-cells/dmg_cpu_b/cells/mux.sv",
+                                                        line: 21,
+                                                        column: 41,
+                                                    },
+                                                    kind: Path(
+                                                        [
+                                                            "T_fall_buf",
+                                                        ],
+                                                    ),
+                                                },
+                                            ),
+                                        ],
+                                    },
+                                ),
+                                args: [
+                                    Some(
+                                        Expr {
+                                            span: Span {
+                                                path: "sv-cells/dmg_cpu_b/cells/mux.sv",
+                                                line: 21,
+                                                column: 54,
+                                            },
+                                            kind: Path(
+                                                [
+                                                    "mux",
+                                                ],
+                                            ),
+                                        },
+                                    ),
+                                    Some(
+                                        Expr {
+                                            span: Span {
+                                                path: "sv-cells/dmg_cpu_b/cells/mux.sv",
+                                                line: 21,
+                                                column: 59,
+                                            },
+                                            kind: Path(
+                                                [
+                                                    "d0",
+                                                ],
+                                            ),
+                                        },
+                                    ),
+                                    Some(
+                                        Expr {
+                                            span: Span {
+                                                path: "sv-cells/dmg_cpu_b/cells/mux.sv",
+                                                line: 21,
+                                                column: 63,
+                                            },
+                                            kind: Path(
+                                                [
+                                                    "sel_n",
+                                                ],
+                                            ),
+                                        },
+                                    ),
+                                ],
+                            },
+                        ),
+                    },
+                    Item {
+                        span: Span {
+                            path: "sv-cells/dmg_cpu_b/cells/mux.sv",
+                            line: 22,
+                            column: 2,
+                        },
+                        kind: Primitive(
+                            PrimitiveCall {
+                                span: Span {
+                                    path: "sv-cells/dmg_cpu_b/cells/mux.sv",
+                                    line: 22,
+                                    column: 2,
+                                },
+                                name: "bufif0",
+                                strength: Some(
+                                    Strength {
+                                        span: Span {
+                                            path: "sv-cells/dmg_cpu_b/cells/mux.sv",
+                                            line: 22,
+                                            column: 9,
+                                        },
+                                        values: [
+                                            "strong1",
+                                            "highz0",
+                                        ],
+                                    },
+                                ),
+                                delay: Some(
+                                    Delay {
+                                        span: Span {
+                                            path: "sv-cells/dmg_cpu_b/cells/mux.sv",
+                                            line: 22,
+                                            column: 28,
+                                        },
+                                        values: [
+                                            Some(
+                                                Expr {
+                                                    span: Span {
+                                                        path: "sv-cells/dmg_cpu_b/cells/mux.sv",
+                                                        line: 22,
+                                                        column: 29,
+                                                    },
+                                                    kind: Path(
+                                                        [
+                                                            "T_rise_buf",
+                                                        ],
+                                                    ),
+                                                },
+                                            ),
+                                            Some(
+                                                Expr {
+                                                    span: Span {
+                                                        path: "sv-cells/dmg_cpu_b/cells/mux.sv",
+                                                        line: 22,
+                                                        column: 41,
+                                                    },
+                                                    kind: Path(
+                                                        [
+                                                            "T_fall_buf",
+                                                        ],
+                                                    ),
+                                                },
+                                            ),
+                                        ],
+                                    },
+                                ),
+                                args: [
+                                    Some(
+                                        Expr {
+                                            span: Span {
+                                                path: "sv-cells/dmg_cpu_b/cells/mux.sv",
+                                                line: 22,
+                                                column: 54,
+                                            },
+                                            kind: Path(
+                                                [
+                                                    "mux",
+                                                ],
+                                            ),
+                                        },
+                                    ),
+                                    Some(
+                                        Expr {
+                                            span: Span {
+                                                path: "sv-cells/dmg_cpu_b/cells/mux.sv",
+                                                line: 22,
+                                                column: 59,
+                                            },
+                                            kind: Path(
+                                                [
+                                                    "d1",
+                                                ],
+                                            ),
+                                        },
+                                    ),
+                                    Some(
+                                        Expr {
+                                            span: Span {
+                                                path: "sv-cells/dmg_cpu_b/cells/mux.sv",
+                                                line: 22,
+                                                column: 63,
+                                            },
+                                            kind: Path(
+                                                [
+                                                    "sel_n",
+                                                ],
+                                            ),
+                                        },
+                                    ),
+                                ],
+                            },
+                        ),
+                    },
+                    Item {
+                        span: Span {
+                            path: "sv-cells/dmg_cpu_b/cells/mux.sv",
+                            line: 23,
+                            column: 2,
+                        },
+                        kind: Primitive(
+                            PrimitiveCall {
+                                span: Span {
+                                    path: "sv-cells/dmg_cpu_b/cells/mux.sv",
+                                    line: 23,
+                                    column: 2,
+                                },
+                                name: "bufif1",
+                                strength: Some(
+                                    Strength {
+                                        span: Span {
+                                            path: "sv-cells/dmg_cpu_b/cells/mux.sv",
+                                            line: 23,
+                                            column: 9,
+                                        },
+                                        values: [
+                                            "highz1",
+                                            "strong0",
+                                        ],
+                                    },
+                                ),
+                                delay: Some(
+                                    Delay {
+                                        span: Span {
+                                            path: "sv-cells/dmg_cpu_b/cells/mux.sv",
+                                            line: 23,
+                                            column: 28,
+                                        },
+                                        values: [
+                                            Some(
+                                                Expr {
+                                                    span: Span {
+                                                        path: "sv-cells/dmg_cpu_b/cells/mux.sv",
+                                                        line: 23,
+                                                        column: 29,
+                                                    },
+                                                    kind: Path(
+                                                        [
+                                                            "T_rise_buf",
+                                                        ],
+                                                    ),
+                                                },
+                                            ),
+                                            Some(
+                                                Expr {
+                                                    span: Span {
+                                                        path: "sv-cells/dmg_cpu_b/cells/mux.sv",
+                                                        line: 23,
+                                                        column: 41,
+                                                    },
+                                                    kind: Path(
+                                                        [
+                                                            "T_fall_buf",
+                                                        ],
+                                                    ),
+                                                },
+                                            ),
+                                        ],
+                                    },
+                                ),
+                                args: [
+                                    Some(
+                                        Expr {
+                                            span: Span {
+                                                path: "sv-cells/dmg_cpu_b/cells/mux.sv",
+                                                line: 23,
+                                                column: 54,
+                                            },
+                                            kind: Path(
+                                                [
+                                                    "mux",
+                                                ],
+                                            ),
+                                        },
+                                    ),
+                                    Some(
+                                        Expr {
+                                            span: Span {
+                                                path: "sv-cells/dmg_cpu_b/cells/mux.sv",
+                                                line: 23,
+                                                column: 59,
+                                            },
+                                            kind: Path(
+                                                [
+                                                    "d1",
+                                                ],
+                                            ),
+                                        },
+                                    ),
+                                    Some(
+                                        Expr {
+                                            span: Span {
+                                                path: "sv-cells/dmg_cpu_b/cells/mux.sv",
+                                                line: 23,
+                                                column: 63,
+                                            },
+                                            kind: Path(
+                                                [
+                                                    "sel",
+                                                ],
+                                            ),
+                                        },
+                                    ),
+                                ],
+                            },
+                        ),
+                    },
+                    Item {
+                        span: Span {
+                            path: "sv-cells/dmg_cpu_b/cells/mux.sv",
+                            line: 24,
+                            column: 2,
+                        },
+                        kind: Instantiation(
+                            Instantiation {
+                                span: Span {
+                                    path: "sv-cells/dmg_cpu_b/cells/mux.sv",
+                                    line: 24,
+                                    column: 2,
+                                },
+                                module: "keeper",
+                                parameters: [],
+                                instance: "mux_keeper",
+                                connections: [
+                                    Connection {
+                                        span: Span {
+                                            path: "sv-cells/dmg_cpu_b/cells/mux.sv",
+                                            line: 24,
+                                            column: 20,
+                                        },
+                                        kind: Positional(
+                                            Expr {
+                                                span: Span {
+                                                    path: "sv-cells/dmg_cpu_b/cells/mux.sv",
+                                                    line: 24,
+                                                    column: 20,
+                                                },
+                                                kind: Path(
+                                                    [
+                                                        "mux",
+                                                    ],
+                                                ),
+                                            },
+                                        ),
+                                    },
+                                ],
+                            },
+                        ),
+                    },
+                    Item {
+                        span: Span {
+                            path: "sv-cells/dmg_cpu_b/cells/mux.sv",
+                            line: 26,
+                            column: 2,
+                        },
+                        kind: Decl(
+                            Decl {
+                                span: Span {
+                                    path: "sv-cells/dmg_cpu_b/cells/mux.sv",
+                                    line: 26,
+                                    column: 2,
+                                },
+                                kind: Localparam,
+                                ty: Some(
+                                    "realtime",
+                                ),
+                                names: [
+                                    "T_rise_muxi",
+                                ],
+                                value: Some(
+                                    Expr {
+                                        span: Span {
+                                            path: "sv-cells/dmg_cpu_b/cells/mux.sv",
+                                            line: 26,
+                                            column: 36,
+                                        },
+                                        kind: Call {
+                                            callee: Expr {
+                                                span: Span {
+                                                    path: "sv-cells/dmg_cpu_b/cells/mux.sv",
+                                                    line: 26,
+                                                    column: 36,
+                                                },
+                                                kind: Path(
+                                                    [
+                                                        "tpd_elmore",
+                                                    ],
+                                                ),
+                                            },
+                                            args: [
+                                                Some(
+                                                    Expr {
+                                                        span: Span {
+                                                            path: "sv-cells/dmg_cpu_b/cells/mux.sv",
+                                                            line: 26,
+                                                            column: 47,
+                                                        },
+                                                        kind: Integer(
+                                                            "116",
+                                                        ),
+                                                    },
+                                                ),
+                                                Some(
+                                                    Expr {
+                                                        span: Span {
+                                                            path: "sv-cells/dmg_cpu_b/cells/mux.sv",
+                                                            line: 26,
+                                                            column: 52,
+                                                        },
+                                                        kind: Call {
+                                                            callee: Expr {
+                                                                span: Span {
+                                                                    path: "sv-cells/dmg_cpu_b/cells/mux.sv",
+                                                                    line: 26,
+                                                                    column: 52,
+                                                                },
+                                                                kind: Path(
+                                                                    [
+                                                                        "R_pmos_ohm",
+                                                                    ],
+                                                                ),
+                                                            },
+                                                            args: [
+                                                                Some(
+                                                                    Expr {
+                                                                        span: Span {
+                                                                            path: "sv-cells/dmg_cpu_b/cells/mux.sv",
+                                                                            line: 26,
+                                                                            column: 63,
+                                                                        },
+                                                                        kind: Binary {
+                                                                            op: Mul,
+                                                                            left: Expr {
+                                                                                span: Span {
+                                                                                    path: "sv-cells/dmg_cpu_b/cells/mux.sv",
+                                                                                    line: 26,
+                                                                                    column: 63,
+                                                                                },
+                                                                                kind: Integer(
+                                                                                    "35",
+                                                                                ),
+                                                                            },
+                                                                            right: Expr {
+                                                                                span: Span {
+                                                                                    path: "sv-cells/dmg_cpu_b/cells/mux.sv",
+                                                                                    line: 26,
+                                                                                    column: 66,
+                                                                                },
+                                                                                kind: Path(
+                                                                                    [
+                                                                                        "L_unit",
+                                                                                    ],
+                                                                                ),
+                                                                            },
+                                                                        },
+                                                                    },
+                                                                ),
+                                                            ],
+                                                        },
+                                                    },
+                                                ),
+                                            ],
+                                        },
+                                    },
+                                ),
+                            },
+                        ),
+                    },
+                    Item {
+                        span: Span {
+                            path: "sv-cells/dmg_cpu_b/cells/mux.sv",
+                            line: 27,
+                            column: 2,
+                        },
+                        kind: Decl(
+                            Decl {
+                                span: Span {
+                                    path: "sv-cells/dmg_cpu_b/cells/mux.sv",
+                                    line: 27,
+                                    column: 2,
+                                },
+                                kind: Localparam,
+                                ty: Some(
+                                    "realtime",
+                                ),
+                                names: [
+                                    "T_fall_muxi",
+                                ],
+                                value: Some(
+                                    Expr {
+                                        span: Span {
+                                            path: "sv-cells/dmg_cpu_b/cells/mux.sv",
+                                            line: 27,
+                                            column: 36,
+                                        },
+                                        kind: Call {
+                                            callee: Expr {
+                                                span: Span {
+                                                    path: "sv-cells/dmg_cpu_b/cells/mux.sv",
+                                                    line: 27,
+                                                    column: 36,
+                                                },
+                                                kind: Path(
+                                                    [
+                                                        "tpd_elmore",
+                                                    ],
+                                                ),
+                                            },
+                                            args: [
+                                                Some(
+                                                    Expr {
+                                                        span: Span {
+                                                            path: "sv-cells/dmg_cpu_b/cells/mux.sv",
+                                                            line: 27,
+                                                            column: 47,
+                                                        },
+                                                        kind: Integer(
+                                                            "116",
+                                                        ),
+                                                    },
+                                                ),
+                                                Some(
+                                                    Expr {
+                                                        span: Span {
+                                                            path: "sv-cells/dmg_cpu_b/cells/mux.sv",
+                                                            line: 27,
+                                                            column: 52,
+                                                        },
+                                                        kind: Call {
+                                                            callee: Expr {
+                                                                span: Span {
+                                                                    path: "sv-cells/dmg_cpu_b/cells/mux.sv",
+                                                                    line: 27,
+                                                                    column: 52,
+                                                                },
+                                                                kind: Path(
+                                                                    [
+                                                                        "R_nmos_ohm",
+                                                                    ],
+                                                                ),
+                                                            },
+                                                            args: [
+                                                                Some(
+                                                                    Expr {
+                                                                        span: Span {
+                                                                            path: "sv-cells/dmg_cpu_b/cells/mux.sv",
+                                                                            line: 27,
+                                                                            column: 63,
+                                                                        },
+                                                                        kind: Binary {
+                                                                            op: Mul,
+                                                                            left: Expr {
+                                                                                span: Span {
+                                                                                    path: "sv-cells/dmg_cpu_b/cells/mux.sv",
+                                                                                    line: 27,
+                                                                                    column: 63,
+                                                                                },
+                                                                                kind: Integer(
+                                                                                    "35",
+                                                                                ),
+                                                                            },
+                                                                            right: Expr {
+                                                                                span: Span {
+                                                                                    path: "sv-cells/dmg_cpu_b/cells/mux.sv",
+                                                                                    line: 27,
+                                                                                    column: 66,
+                                                                                },
+                                                                                kind: Path(
+                                                                                    [
+                                                                                        "L_unit",
+                                                                                    ],
+                                                                                ),
+                                                                            },
+                                                                        },
+                                                                    },
+                                                                ),
+                                                            ],
+                                                        },
+                                                    },
+                                                ),
+                                            ],
+                                        },
+                                    },
+                                ),
+                            },
+                        ),
+                    },
+                    Item {
+                        span: Span {
+                            path: "sv-cells/dmg_cpu_b/cells/mux.sv",
+                            line: 28,
+                            column: 2,
+                        },
+                        kind: Decl(
+                            Decl {
+                                span: Span {
+                                    path: "sv-cells/dmg_cpu_b/cells/mux.sv",
+                                    line: 28,
+                                    column: 2,
+                                },
+                                kind: Localparam,
+                                ty: Some(
+                                    "realtime",
+                                ),
+                                names: [
+                                    "T_rise_y",
+                                ],
+                                value: Some(
+                                    Expr {
+                                        span: Span {
+                                            path: "sv-cells/dmg_cpu_b/cells/mux.sv",
+                                            line: 28,
+                                            column: 36,
+                                        },
+                                        kind: Call {
+                                            callee: Expr {
+                                                span: Span {
+                                                    path: "sv-cells/dmg_cpu_b/cells/mux.sv",
+                                                    line: 28,
+                                                    column: 36,
+                                                },
+                                                kind: Path(
+                                                    [
+                                                        "tpd_elmore",
+                                                    ],
+                                                ),
+                                            },
+                                            args: [
+                                                Some(
+                                                    Expr {
+                                                        span: Span {
+                                                            path: "sv-cells/dmg_cpu_b/cells/mux.sv",
+                                                            line: 28,
+                                                            column: 47,
+                                                        },
+                                                        kind: Path(
+                                                            [
+                                                                "L_y",
+                                                            ],
+                                                        ),
+                                                    },
+                                                ),
+                                                Some(
+                                                    Expr {
+                                                        span: Span {
+                                                            path: "sv-cells/dmg_cpu_b/cells/mux.sv",
+                                                            line: 28,
+                                                            column: 52,
+                                                        },
+                                                        kind: Call {
+                                                            callee: Expr {
+                                                                span: Span {
+                                                                    path: "sv-cells/dmg_cpu_b/cells/mux.sv",
+                                                                    line: 28,
+                                                                    column: 52,
+                                                                },
+                                                                kind: Path(
+                                                                    [
+                                                                        "R_pmos_ohm",
+                                                                    ],
+                                                                ),
+                                                            },
+                                                            args: [
+                                                                Some(
+                                                                    Expr {
+                                                                        span: Span {
+                                                                            path: "sv-cells/dmg_cpu_b/cells/mux.sv",
+                                                                            line: 28,
+                                                                            column: 63,
+                                                                        },
+                                                                        kind: Binary {
+                                                                            op: Mul,
+                                                                            left: Expr {
+                                                                                span: Span {
+                                                                                    path: "sv-cells/dmg_cpu_b/cells/mux.sv",
+                                                                                    line: 28,
+                                                                                    column: 63,
+                                                                                },
+                                                                                kind: Integer(
+                                                                                    "35",
+                                                                                ),
+                                                                            },
+                                                                            right: Expr {
+                                                                                span: Span {
+                                                                                    path: "sv-cells/dmg_cpu_b/cells/mux.sv",
+                                                                                    line: 28,
+                                                                                    column: 66,
+                                                                                },
+                                                                                kind: Path(
+                                                                                    [
+                                                                                        "L_unit",
+                                                                                    ],
+                                                                                ),
+                                                                            },
+                                                                        },
+                                                                    },
+                                                                ),
+                                                            ],
+                                                        },
+                                                    },
+                                                ),
+                                            ],
+                                        },
+                                    },
+                                ),
+                            },
+                        ),
+                    },
+                    Item {
+                        span: Span {
+                            path: "sv-cells/dmg_cpu_b/cells/mux.sv",
+                            line: 29,
+                            column: 2,
+                        },
+                        kind: Decl(
+                            Decl {
+                                span: Span {
+                                    path: "sv-cells/dmg_cpu_b/cells/mux.sv",
+                                    line: 29,
+                                    column: 2,
+                                },
+                                kind: Localparam,
+                                ty: Some(
+                                    "realtime",
+                                ),
+                                names: [
+                                    "T_fall_y",
+                                ],
+                                value: Some(
+                                    Expr {
+                                        span: Span {
+                                            path: "sv-cells/dmg_cpu_b/cells/mux.sv",
+                                            line: 29,
+                                            column: 36,
+                                        },
+                                        kind: Call {
+                                            callee: Expr {
+                                                span: Span {
+                                                    path: "sv-cells/dmg_cpu_b/cells/mux.sv",
+                                                    line: 29,
+                                                    column: 36,
+                                                },
+                                                kind: Path(
+                                                    [
+                                                        "tpd_elmore",
+                                                    ],
+                                                ),
+                                            },
+                                            args: [
+                                                Some(
+                                                    Expr {
+                                                        span: Span {
+                                                            path: "sv-cells/dmg_cpu_b/cells/mux.sv",
+                                                            line: 29,
+                                                            column: 47,
+                                                        },
+                                                        kind: Path(
+                                                            [
+                                                                "L_y",
+                                                            ],
+                                                        ),
+                                                    },
+                                                ),
+                                                Some(
+                                                    Expr {
+                                                        span: Span {
+                                                            path: "sv-cells/dmg_cpu_b/cells/mux.sv",
+                                                            line: 29,
+                                                            column: 52,
+                                                        },
+                                                        kind: Call {
+                                                            callee: Expr {
+                                                                span: Span {
+                                                                    path: "sv-cells/dmg_cpu_b/cells/mux.sv",
+                                                                    line: 29,
+                                                                    column: 52,
+                                                                },
+                                                                kind: Path(
+                                                                    [
+                                                                        "R_nmos_ohm",
+                                                                    ],
+                                                                ),
+                                                            },
+                                                            args: [
+                                                                Some(
+                                                                    Expr {
+                                                                        span: Span {
+                                                                            path: "sv-cells/dmg_cpu_b/cells/mux.sv",
+                                                                            line: 29,
+                                                                            column: 63,
+                                                                        },
+                                                                        kind: Binary {
+                                                                            op: Mul,
+                                                                            left: Expr {
+                                                                                span: Span {
+                                                                                    path: "sv-cells/dmg_cpu_b/cells/mux.sv",
+                                                                                    line: 29,
+                                                                                    column: 63,
+                                                                                },
+                                                                                kind: Integer(
+                                                                                    "35",
+                                                                                ),
+                                                                            },
+                                                                            right: Expr {
+                                                                                span: Span {
+                                                                                    path: "sv-cells/dmg_cpu_b/cells/mux.sv",
+                                                                                    line: 29,
+                                                                                    column: 66,
+                                                                                },
+                                                                                kind: Path(
+                                                                                    [
+                                                                                        "L_unit",
+                                                                                    ],
+                                                                                ),
+                                                                            },
+                                                                        },
+                                                                    },
+                                                                ),
+                                                            ],
+                                                        },
+                                                    },
+                                                ),
+                                            ],
+                                        },
+                                    },
+                                ),
+                            },
+                        ),
+                    },
+                    Item {
+                        span: Span {
+                            path: "sv-cells/dmg_cpu_b/cells/mux.sv",
+                            line: 30,
+                            column: 2,
+                        },
+                        kind: Assign(
+                            AssignDecl {
+                                span: Span {
+                                    path: "sv-cells/dmg_cpu_b/cells/mux.sv",
+                                    line: 30,
+                                    column: 2,
+                                },
+                                strength: None,
+                                delay: Some(
+                                    Delay {
+                                        span: Span {
+                                            path: "sv-cells/dmg_cpu_b/cells/mux.sv",
+                                            line: 30,
+                                            column: 10,
+                                        },
+                                        values: [
+                                            Some(
+                                                Expr {
+                                                    span: Span {
+                                                        path: "sv-cells/dmg_cpu_b/cells/mux.sv",
+                                                        line: 30,
+                                                        column: 11,
+                                                    },
+                                                    kind: Binary {
+                                                        op: Add,
+                                                        left: Expr {
+                                                            span: Span {
+                                                                path: "sv-cells/dmg_cpu_b/cells/mux.sv",
+                                                                line: 30,
+                                                                column: 11,
+                                                            },
+                                                            kind: Path(
+                                                                [
+                                                                    "T_fall_muxi",
+                                                                ],
+                                                            ),
+                                                        },
+                                                        right: Expr {
+                                                            span: Span {
+                                                                path: "sv-cells/dmg_cpu_b/cells/mux.sv",
+                                                                line: 30,
+                                                                column: 25,
+                                                            },
+                                                            kind: Path(
+                                                                [
+                                                                    "T_rise_y",
+                                                                ],
+                                                            ),
+                                                        },
+                                                    },
+                                                },
+                                            ),
+                                            Some(
+                                                Expr {
+                                                    span: Span {
+                                                        path: "sv-cells/dmg_cpu_b/cells/mux.sv",
+                                                        line: 30,
+                                                        column: 35,
+                                                    },
+                                                    kind: Binary {
+                                                        op: Add,
+                                                        left: Expr {
+                                                            span: Span {
+                                                                path: "sv-cells/dmg_cpu_b/cells/mux.sv",
+                                                                line: 30,
+                                                                column: 35,
+                                                            },
+                                                            kind: Path(
+                                                                [
+                                                                    "T_rise_muxi",
+                                                                ],
+                                                            ),
+                                                        },
+                                                        right: Expr {
+                                                            span: Span {
+                                                                path: "sv-cells/dmg_cpu_b/cells/mux.sv",
+                                                                line: 30,
+                                                                column: 49,
+                                                            },
+                                                            kind: Path(
+                                                                [
+                                                                    "T_fall_y",
+                                                                ],
+                                                            ),
+                                                        },
+                                                    },
+                                                },
+                                            ),
+                                        ],
+                                    },
+                                ),
+                                target: Expr {
+                                    span: Span {
+                                        path: "sv-cells/dmg_cpu_b/cells/mux.sv",
+                                        line: 30,
+                                        column: 59,
+                                    },
+                                    kind: Path(
+                                        [
+                                            "y",
+                                        ],
+                                    ),
+                                },
+                                value: Expr {
+                                    span: Span {
+                                        path: "sv-cells/dmg_cpu_b/cells/mux.sv",
+                                        line: 30,
+                                        column: 63,
+                                    },
+                                    kind: Unary {
+                                        op: Not,
+                                        expr: Expr {
+                                            span: Span {
+                                                path: "sv-cells/dmg_cpu_b/cells/mux.sv",
+                                                line: 30,
+                                                column: 64,
+                                            },
+                                            kind: Group(
+                                                Expr {
+                                                    span: Span {
+                                                        path: "sv-cells/dmg_cpu_b/cells/mux.sv",
+                                                        line: 30,
+                                                        column: 65,
+                                                    },
+                                                    kind: Unary {
+                                                        op: Not,
+                                                        expr: Expr {
+                                                            span: Span {
+                                                                path: "sv-cells/dmg_cpu_b/cells/mux.sv",
+                                                                line: 30,
+                                                                column: 66,
+                                                            },
+                                                            kind: Path(
+                                                                [
+                                                                    "mux",
+                                                                ],
+                                                            ),
+                                                        },
+                                                    },
+                                                },
+                                            ),
+                                        },
+                                    },
+                                },
+                                op: Blocking,
+                            },
+                        ),
+                    },
+                ],
+            },
+        ),
+        Directive(
+            Directive {
+                span: Span {
+                    path: "sv-cells/dmg_cpu_b/cells/mux.sv",
+                    line: 34,
+                    column: 1,
+                },
+                name: "default_nettype",
+                arguments: [
+                    "wire",
+                ],
+            },
+        ),
+    ],
+}

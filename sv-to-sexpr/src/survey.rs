@@ -1,6 +1,8 @@
 use crate::analyze::analyze_file;
 use crate::diagnostic::{Diagnostic, DiagnosticCollection, DiagnosticKind, DiagnosticPolicy};
-use crate::inventory::{CapabilityInventory, ClassificationKind, InventoryWalker};
+use crate::inventory::{
+    CapabilityInventory, ClassificationKind, InventoryWalker, record_token_capabilities,
+};
 use crate::lexer::{Keyword, Operator, Punct, TokenKind, lex_file};
 use crate::lower::lower_file;
 use crate::parser::parse_file;
@@ -155,8 +157,9 @@ pub fn survey_dir(path: &Path) -> Result<SurveyReport, Diagnostic> {
             Ok(contents) => match lex_file(&file, &contents) {
                 Ok(tokens) => {
                     report.record(&tokens);
+                    record_token_capabilities(&mut report.inventory, &tokens, &normalized);
                     match parse_file(&file, &contents) {
-                        Ok(design) => parsed_files.push((normalized, tokens, design)),
+                        Ok(design) => parsed_files.push((normalized, design)),
                         Err(diagnostic) => report
                             .record_failure(SurveyFailure::from_diagnostic(normalized, diagnostic)),
                     }
@@ -175,11 +178,10 @@ pub fn survey_dir(path: &Path) -> Result<SurveyReport, Diagnostic> {
     }
     let known_modules = parsed_files
         .iter()
-        .flat_map(|(_, _, design)| design.modules.iter().map(|module| module.name.clone()))
+        .flat_map(|(_, design)| design.modules().map(|module| module.name.clone()))
         .collect::<BTreeSet<_>>();
-    for (normalized, tokens, design) in &parsed_files {
+    for (normalized, design) in &parsed_files {
         let mut walker = InventoryWalker::new(&mut report.inventory, &known_modules, normalized);
-        walker.record_tokens(tokens);
         walker.record_design(design);
     }
     Ok(report)
@@ -502,16 +504,38 @@ mod check_report_tests {
         std::fs::create_dir_all(&directory).unwrap();
         std::fs::write(directory.join("bad_lex.sv"), "module bad; % endmodule\n").unwrap();
         std::fs::write(directory.join("bad_parse.sv"), "module truncated;\n").unwrap();
+        std::fs::write(
+            directory.join("unknown_directive.sv"),
+            "`mystery setting\nmodule okay; endmodule\n",
+        )
+        .unwrap();
 
         let report = survey_dir(&directory).unwrap();
         std::fs::remove_dir_all(&directory).unwrap();
 
-        assert_eq!(report.files, 2);
-        assert_eq!(report.failed_files, 2);
-        assert_eq!(report.failures.len(), 2);
+        assert_eq!(report.files, 3);
+        assert_eq!(report.failed_files, 3);
+        assert_eq!(report.failures.len(), 3);
         let rendered = report.render();
         assert!(rendered.contains("bad_lex.sv:1:13: error: unexpected character `%`"));
-        assert!(rendered.contains("bad_parse.sv:1:1: error: unterminated module body"));
+        assert!(rendered.contains("bad_parse.sv:2:1: error: unterminated module body"));
+        assert!(rendered.contains(
+            "unknown_directive.sv:1:1: error: unsupported directive `mystery` at design scope"
+        ));
         assert!(!rendered.contains(&directory.to_string_lossy().to_string()));
+
+        let directive = report
+            .inventory
+            .record_by_id("directive.`mystery")
+            .expect("unknown directive must remain inventoried after parse failure");
+        assert_eq!(
+            directive.classification.kind(),
+            ClassificationKind::Unsupported
+        );
+        assert_eq!(directive.occurrences, 1);
+        assert_eq!(
+            directive.files,
+            BTreeSet::from(["unknown_directive.sv".to_string()])
+        );
     }
 }

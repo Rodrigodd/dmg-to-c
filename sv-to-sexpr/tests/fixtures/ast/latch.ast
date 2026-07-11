@@ -1,0 +1,2645 @@
+Design {
+    items: [
+        Directive(
+            Directive {
+                span: Span {
+                    path: "sv-cells/dmg_cpu_b/cells/dlatch.sv",
+                    line: 1,
+                    column: 1,
+                },
+                name: "default_nettype",
+                arguments: [
+                    "none",
+                ],
+            },
+        ),
+        Module(
+            Module {
+                span: Span {
+                    path: "sv-cells/dmg_cpu_b/cells/dlatch.sv",
+                    line: 3,
+                    column: 1,
+                },
+                name: "dmg_dlatch",
+                parameters: [
+                    ParamDecl {
+                        span: Span {
+                            path: "sv-cells/dmg_cpu_b/cells/dlatch.sv",
+                            line: 4,
+                            column: 3,
+                        },
+                        kind: Parameter,
+                        ty: Some(
+                            "real",
+                        ),
+                        name: "L_q",
+                        value: Expr {
+                            span: Span {
+                                path: "sv-cells/dmg_cpu_b/cells/dlatch.sv",
+                                line: 4,
+                                column: 26,
+                            },
+                            kind: Integer(
+                                "54",
+                            ),
+                        },
+                    },
+                    ParamDecl {
+                        span: Span {
+                            path: "sv-cells/dmg_cpu_b/cells/dlatch.sv",
+                            line: 5,
+                            column: 3,
+                        },
+                        kind: Parameter,
+                        ty: Some(
+                            "real",
+                        ),
+                        name: "L_q_n",
+                        value: Expr {
+                            span: Span {
+                                path: "sv-cells/dmg_cpu_b/cells/dlatch.sv",
+                                line: 5,
+                                column: 26,
+                            },
+                            kind: Integer(
+                                "54",
+                            ),
+                        },
+                    },
+                ],
+                ports: [
+                    PortDecl {
+                        span: Span {
+                            path: "sv-cells/dmg_cpu_b/cells/dlatch.sv",
+                            line: 7,
+                            column: 3,
+                        },
+                        direction: Input,
+                        modifiers: [
+                            "logic",
+                        ],
+                        names: [
+                            "d",
+                            "ena",
+                        ],
+                    },
+                    PortDecl {
+                        span: Span {
+                            path: "sv-cells/dmg_cpu_b/cells/dlatch.sv",
+                            line: 8,
+                            column: 3,
+                        },
+                        direction: Output,
+                        modifiers: [
+                            "logic",
+                        ],
+                        names: [
+                            "q",
+                            "q_n",
+                        ],
+                    },
+                ],
+                items: [
+                    Item {
+                        span: Span {
+                            path: "sv-cells/dmg_cpu_b/cells/dlatch.sv",
+                            line: 11,
+                            column: 2,
+                        },
+                        kind: Import(
+                            ImportDecl {
+                                span: Span {
+                                    path: "sv-cells/dmg_cpu_b/cells/dlatch.sv",
+                                    line: 11,
+                                    column: 2,
+                                },
+                                path: [
+                                    "dmg_timing",
+                                ],
+                                wildcard: true,
+                            },
+                        ),
+                    },
+                    Item {
+                        span: Span {
+                            path: "sv-cells/dmg_cpu_b/cells/dlatch.sv",
+                            line: 13,
+                            column: 2,
+                        },
+                        kind: Initial(
+                            AssignStmt {
+                                span: Span {
+                                    path: "sv-cells/dmg_cpu_b/cells/dlatch.sv",
+                                    line: 13,
+                                    column: 10,
+                                },
+                                target: Expr {
+                                    span: Span {
+                                        path: "sv-cells/dmg_cpu_b/cells/dlatch.sv",
+                                        line: 13,
+                                        column: 10,
+                                    },
+                                    kind: Path(
+                                        [
+                                            "q",
+                                        ],
+                                    ),
+                                },
+                                value: Expr {
+                                    span: Span {
+                                        path: "sv-cells/dmg_cpu_b/cells/dlatch.sv",
+                                        line: 13,
+                                        column: 14,
+                                    },
+                                    kind: Integer(
+                                        "0",
+                                    ),
+                                },
+                                op: Blocking,
+                            },
+                        ),
+                    },
+                    Item {
+                        span: Span {
+                            path: "sv-cells/dmg_cpu_b/cells/dlatch.sv",
+                            line: 15,
+                            column: 2,
+                        },
+                        kind: AlwaysLatch(
+                            AlwaysLatch {
+                                span: Span {
+                                    path: "sv-cells/dmg_cpu_b/cells/dlatch.sv",
+                                    line: 15,
+                                    column: 2,
+                                },
+                                condition: Some(
+                                    Expr {
+                                        span: Span {
+                                            path: "sv-cells/dmg_cpu_b/cells/dlatch.sv",
+                                            line: 15,
+                                            column: 19,
+                                        },
+                                        kind: Path(
+                                            [
+                                                "ena",
+                                            ],
+                                        ),
+                                    },
+                                ),
+                                body: Item {
+                                    span: Span {
+                                        path: "sv-cells/dmg_cpu_b/cells/dlatch.sv",
+                                        line: 15,
+                                        column: 24,
+                                    },
+                                    kind: ProcAssign(
+                                        AssignStmt {
+                                            span: Span {
+                                                path: "sv-cells/dmg_cpu_b/cells/dlatch.sv",
+                                                line: 15,
+                                                column: 24,
+                                            },
+                                            target: Expr {
+                                                span: Span {
+                                                    path: "sv-cells/dmg_cpu_b/cells/dlatch.sv",
+                                                    line: 15,
+                                                    column: 24,
+                                                },
+                                                kind: Path(
+                                                    [
+                                                        "q",
+                                                    ],
+                                                ),
+                                            },
+                                            value: Expr {
+                                                span: Span {
+                                                    path: "sv-cells/dmg_cpu_b/cells/dlatch.sv",
+                                                    line: 15,
+                                                    column: 28,
+                                                },
+                                                kind: Path(
+                                                    [
+                                                        "d",
+                                                    ],
+                                                ),
+                                            },
+                                            op: Blocking,
+                                        },
+                                    ),
+                                },
+                            },
+                        ),
+                    },
+                    Item {
+                        span: Span {
+                            path: "sv-cells/dmg_cpu_b/cells/dlatch.sv",
+                            line: 16,
+                            column: 2,
+                        },
+                        kind: Assign(
+                            AssignDecl {
+                                span: Span {
+                                    path: "sv-cells/dmg_cpu_b/cells/dlatch.sv",
+                                    line: 16,
+                                    column: 2,
+                                },
+                                strength: None,
+                                delay: None,
+                                target: Expr {
+                                    span: Span {
+                                        path: "sv-cells/dmg_cpu_b/cells/dlatch.sv",
+                                        line: 16,
+                                        column: 9,
+                                    },
+                                    kind: Path(
+                                        [
+                                            "q_n",
+                                        ],
+                                    ),
+                                },
+                                value: Expr {
+                                    span: Span {
+                                        path: "sv-cells/dmg_cpu_b/cells/dlatch.sv",
+                                        line: 16,
+                                        column: 15,
+                                    },
+                                    kind: Unary {
+                                        op: Not,
+                                        expr: Expr {
+                                            span: Span {
+                                                path: "sv-cells/dmg_cpu_b/cells/dlatch.sv",
+                                                line: 16,
+                                                column: 16,
+                                            },
+                                            kind: Path(
+                                                [
+                                                    "q",
+                                                ],
+                                            ),
+                                        },
+                                    },
+                                },
+                                op: Blocking,
+                            },
+                        ),
+                    },
+                    Item {
+                        span: Span {
+                            path: "sv-cells/dmg_cpu_b/cells/dlatch.sv",
+                            line: 18,
+                            column: 2,
+                        },
+                        kind: Specify(
+                            SpecifyBlock {
+                                span: Span {
+                                    path: "sv-cells/dmg_cpu_b/cells/dlatch.sv",
+                                    line: 18,
+                                    column: 2,
+                                },
+                                items: [
+                                    Specparam(
+                                        ParamDecl {
+                                            span: Span {
+                                                path: "sv-cells/dmg_cpu_b/cells/dlatch.sv",
+                                                line: 19,
+                                                column: 3,
+                                            },
+                                            kind: Specparam,
+                                            ty: None,
+                                            name: "T_rise_buf",
+                                            value: Expr {
+                                                span: Span {
+                                                    path: "sv-cells/dmg_cpu_b/cells/dlatch.sv",
+                                                    line: 19,
+                                                    column: 27,
+                                                },
+                                                kind: Call {
+                                                    callee: Expr {
+                                                        span: Span {
+                                                            path: "sv-cells/dmg_cpu_b/cells/dlatch.sv",
+                                                            line: 19,
+                                                            column: 27,
+                                                        },
+                                                        kind: Path(
+                                                            [
+                                                                "tpd_elmore",
+                                                            ],
+                                                        ),
+                                                    },
+                                                    args: [
+                                                        Some(
+                                                            Expr {
+                                                                span: Span {
+                                                                    path: "sv-cells/dmg_cpu_b/cells/dlatch.sv",
+                                                                    line: 19,
+                                                                    column: 41,
+                                                                },
+                                                                kind: Integer(
+                                                                    "73",
+                                                                ),
+                                                            },
+                                                        ),
+                                                        Some(
+                                                            Expr {
+                                                                span: Span {
+                                                                    path: "sv-cells/dmg_cpu_b/cells/dlatch.sv",
+                                                                    line: 19,
+                                                                    column: 45,
+                                                                },
+                                                                kind: Call {
+                                                                    callee: Expr {
+                                                                        span: Span {
+                                                                            path: "sv-cells/dmg_cpu_b/cells/dlatch.sv",
+                                                                            line: 19,
+                                                                            column: 45,
+                                                                        },
+                                                                        kind: Path(
+                                                                            [
+                                                                                "R_pmos_ohm",
+                                                                            ],
+                                                                        ),
+                                                                    },
+                                                                    args: [
+                                                                        Some(
+                                                                            Expr {
+                                                                                span: Span {
+                                                                                    path: "sv-cells/dmg_cpu_b/cells/dlatch.sv",
+                                                                                    line: 19,
+                                                                                    column: 56,
+                                                                                },
+                                                                                kind: Binary {
+                                                                                    op: Mul,
+                                                                                    left: Expr {
+                                                                                        span: Span {
+                                                                                            path: "sv-cells/dmg_cpu_b/cells/dlatch.sv",
+                                                                                            line: 19,
+                                                                                            column: 56,
+                                                                                        },
+                                                                                        kind: Integer(
+                                                                                            "10",
+                                                                                        ),
+                                                                                    },
+                                                                                    right: Expr {
+                                                                                        span: Span {
+                                                                                            path: "sv-cells/dmg_cpu_b/cells/dlatch.sv",
+                                                                                            line: 19,
+                                                                                            column: 59,
+                                                                                        },
+                                                                                        kind: Path(
+                                                                                            [
+                                                                                                "L_unit",
+                                                                                            ],
+                                                                                        ),
+                                                                                    },
+                                                                                },
+                                                                            },
+                                                                        ),
+                                                                    ],
+                                                                },
+                                                            },
+                                                        ),
+                                                    ],
+                                                },
+                                            },
+                                        },
+                                    ),
+                                    Specparam(
+                                        ParamDecl {
+                                            span: Span {
+                                                path: "sv-cells/dmg_cpu_b/cells/dlatch.sv",
+                                                line: 20,
+                                                column: 3,
+                                            },
+                                            kind: Specparam,
+                                            ty: None,
+                                            name: "T_fall_buf",
+                                            value: Expr {
+                                                span: Span {
+                                                    path: "sv-cells/dmg_cpu_b/cells/dlatch.sv",
+                                                    line: 20,
+                                                    column: 27,
+                                                },
+                                                kind: Call {
+                                                    callee: Expr {
+                                                        span: Span {
+                                                            path: "sv-cells/dmg_cpu_b/cells/dlatch.sv",
+                                                            line: 20,
+                                                            column: 27,
+                                                        },
+                                                        kind: Path(
+                                                            [
+                                                                "tpd_elmore",
+                                                            ],
+                                                        ),
+                                                    },
+                                                    args: [
+                                                        Some(
+                                                            Expr {
+                                                                span: Span {
+                                                                    path: "sv-cells/dmg_cpu_b/cells/dlatch.sv",
+                                                                    line: 20,
+                                                                    column: 41,
+                                                                },
+                                                                kind: Integer(
+                                                                    "73",
+                                                                ),
+                                                            },
+                                                        ),
+                                                        Some(
+                                                            Expr {
+                                                                span: Span {
+                                                                    path: "sv-cells/dmg_cpu_b/cells/dlatch.sv",
+                                                                    line: 20,
+                                                                    column: 45,
+                                                                },
+                                                                kind: Call {
+                                                                    callee: Expr {
+                                                                        span: Span {
+                                                                            path: "sv-cells/dmg_cpu_b/cells/dlatch.sv",
+                                                                            line: 20,
+                                                                            column: 45,
+                                                                        },
+                                                                        kind: Path(
+                                                                            [
+                                                                                "R_nmos_ohm",
+                                                                            ],
+                                                                        ),
+                                                                    },
+                                                                    args: [
+                                                                        Some(
+                                                                            Expr {
+                                                                                span: Span {
+                                                                                    path: "sv-cells/dmg_cpu_b/cells/dlatch.sv",
+                                                                                    line: 20,
+                                                                                    column: 56,
+                                                                                },
+                                                                                kind: Binary {
+                                                                                    op: Mul,
+                                                                                    left: Expr {
+                                                                                        span: Span {
+                                                                                            path: "sv-cells/dmg_cpu_b/cells/dlatch.sv",
+                                                                                            line: 20,
+                                                                                            column: 56,
+                                                                                        },
+                                                                                        kind: Integer(
+                                                                                            "10",
+                                                                                        ),
+                                                                                    },
+                                                                                    right: Expr {
+                                                                                        span: Span {
+                                                                                            path: "sv-cells/dmg_cpu_b/cells/dlatch.sv",
+                                                                                            line: 20,
+                                                                                            column: 59,
+                                                                                        },
+                                                                                        kind: Path(
+                                                                                            [
+                                                                                                "L_unit",
+                                                                                            ],
+                                                                                        ),
+                                                                                    },
+                                                                                },
+                                                                            },
+                                                                        ),
+                                                                    ],
+                                                                },
+                                                            },
+                                                        ),
+                                                    ],
+                                                },
+                                            },
+                                        },
+                                    ),
+                                    Specparam(
+                                        ParamDecl {
+                                            span: Span {
+                                                path: "sv-cells/dmg_cpu_b/cells/dlatch.sv",
+                                                line: 21,
+                                                column: 3,
+                                            },
+                                            kind: Specparam,
+                                            ty: None,
+                                            name: "T_rise_not1",
+                                            value: Expr {
+                                                span: Span {
+                                                    path: "sv-cells/dmg_cpu_b/cells/dlatch.sv",
+                                                    line: 21,
+                                                    column: 27,
+                                                },
+                                                kind: Call {
+                                                    callee: Expr {
+                                                        span: Span {
+                                                            path: "sv-cells/dmg_cpu_b/cells/dlatch.sv",
+                                                            line: 21,
+                                                            column: 27,
+                                                        },
+                                                        kind: Path(
+                                                            [
+                                                                "tpd_elmore",
+                                                            ],
+                                                        ),
+                                                    },
+                                                    args: [
+                                                        Some(
+                                                            Expr {
+                                                                span: Span {
+                                                                    path: "sv-cells/dmg_cpu_b/cells/dlatch.sv",
+                                                                    line: 21,
+                                                                    column: 40,
+                                                                },
+                                                                kind: Integer(
+                                                                    "102",
+                                                                ),
+                                                            },
+                                                        ),
+                                                        Some(
+                                                            Expr {
+                                                                span: Span {
+                                                                    path: "sv-cells/dmg_cpu_b/cells/dlatch.sv",
+                                                                    line: 21,
+                                                                    column: 45,
+                                                                },
+                                                                kind: Call {
+                                                                    callee: Expr {
+                                                                        span: Span {
+                                                                            path: "sv-cells/dmg_cpu_b/cells/dlatch.sv",
+                                                                            line: 21,
+                                                                            column: 45,
+                                                                        },
+                                                                        kind: Path(
+                                                                            [
+                                                                                "R_pmos_ohm",
+                                                                            ],
+                                                                        ),
+                                                                    },
+                                                                    args: [
+                                                                        Some(
+                                                                            Expr {
+                                                                                span: Span {
+                                                                                    path: "sv-cells/dmg_cpu_b/cells/dlatch.sv",
+                                                                                    line: 21,
+                                                                                    column: 56,
+                                                                                },
+                                                                                kind: Binary {
+                                                                                    op: Mul,
+                                                                                    left: Expr {
+                                                                                        span: Span {
+                                                                                            path: "sv-cells/dmg_cpu_b/cells/dlatch.sv",
+                                                                                            line: 21,
+                                                                                            column: 56,
+                                                                                        },
+                                                                                        kind: Integer(
+                                                                                            "12",
+                                                                                        ),
+                                                                                    },
+                                                                                    right: Expr {
+                                                                                        span: Span {
+                                                                                            path: "sv-cells/dmg_cpu_b/cells/dlatch.sv",
+                                                                                            line: 21,
+                                                                                            column: 59,
+                                                                                        },
+                                                                                        kind: Path(
+                                                                                            [
+                                                                                                "L_unit",
+                                                                                            ],
+                                                                                        ),
+                                                                                    },
+                                                                                },
+                                                                            },
+                                                                        ),
+                                                                    ],
+                                                                },
+                                                            },
+                                                        ),
+                                                    ],
+                                                },
+                                            },
+                                        },
+                                    ),
+                                    Specparam(
+                                        ParamDecl {
+                                            span: Span {
+                                                path: "sv-cells/dmg_cpu_b/cells/dlatch.sv",
+                                                line: 22,
+                                                column: 3,
+                                            },
+                                            kind: Specparam,
+                                            ty: None,
+                                            name: "T_fall_not1",
+                                            value: Expr {
+                                                span: Span {
+                                                    path: "sv-cells/dmg_cpu_b/cells/dlatch.sv",
+                                                    line: 22,
+                                                    column: 27,
+                                                },
+                                                kind: Call {
+                                                    callee: Expr {
+                                                        span: Span {
+                                                            path: "sv-cells/dmg_cpu_b/cells/dlatch.sv",
+                                                            line: 22,
+                                                            column: 27,
+                                                        },
+                                                        kind: Path(
+                                                            [
+                                                                "tpd_elmore",
+                                                            ],
+                                                        ),
+                                                    },
+                                                    args: [
+                                                        Some(
+                                                            Expr {
+                                                                span: Span {
+                                                                    path: "sv-cells/dmg_cpu_b/cells/dlatch.sv",
+                                                                    line: 22,
+                                                                    column: 40,
+                                                                },
+                                                                kind: Integer(
+                                                                    "102",
+                                                                ),
+                                                            },
+                                                        ),
+                                                        Some(
+                                                            Expr {
+                                                                span: Span {
+                                                                    path: "sv-cells/dmg_cpu_b/cells/dlatch.sv",
+                                                                    line: 22,
+                                                                    column: 45,
+                                                                },
+                                                                kind: Call {
+                                                                    callee: Expr {
+                                                                        span: Span {
+                                                                            path: "sv-cells/dmg_cpu_b/cells/dlatch.sv",
+                                                                            line: 22,
+                                                                            column: 45,
+                                                                        },
+                                                                        kind: Path(
+                                                                            [
+                                                                                "R_nmos_ohm",
+                                                                            ],
+                                                                        ),
+                                                                    },
+                                                                    args: [
+                                                                        Some(
+                                                                            Expr {
+                                                                                span: Span {
+                                                                                    path: "sv-cells/dmg_cpu_b/cells/dlatch.sv",
+                                                                                    line: 22,
+                                                                                    column: 56,
+                                                                                },
+                                                                                kind: Binary {
+                                                                                    op: Mul,
+                                                                                    left: Expr {
+                                                                                        span: Span {
+                                                                                            path: "sv-cells/dmg_cpu_b/cells/dlatch.sv",
+                                                                                            line: 22,
+                                                                                            column: 56,
+                                                                                        },
+                                                                                        kind: Integer(
+                                                                                            "12",
+                                                                                        ),
+                                                                                    },
+                                                                                    right: Expr {
+                                                                                        span: Span {
+                                                                                            path: "sv-cells/dmg_cpu_b/cells/dlatch.sv",
+                                                                                            line: 22,
+                                                                                            column: 59,
+                                                                                        },
+                                                                                        kind: Path(
+                                                                                            [
+                                                                                                "L_unit",
+                                                                                            ],
+                                                                                        ),
+                                                                                    },
+                                                                                },
+                                                                            },
+                                                                        ),
+                                                                    ],
+                                                                },
+                                                            },
+                                                        ),
+                                                    ],
+                                                },
+                                            },
+                                        },
+                                    ),
+                                    Specparam(
+                                        ParamDecl {
+                                            span: Span {
+                                                path: "sv-cells/dmg_cpu_b/cells/dlatch.sv",
+                                                line: 23,
+                                                column: 3,
+                                            },
+                                            kind: Specparam,
+                                            ty: None,
+                                            name: "T_rise_not2",
+                                            value: Expr {
+                                                span: Span {
+                                                    path: "sv-cells/dmg_cpu_b/cells/dlatch.sv",
+                                                    line: 23,
+                                                    column: 27,
+                                                },
+                                                kind: Call {
+                                                    callee: Expr {
+                                                        span: Span {
+                                                            path: "sv-cells/dmg_cpu_b/cells/dlatch.sv",
+                                                            line: 23,
+                                                            column: 27,
+                                                        },
+                                                        kind: Path(
+                                                            [
+                                                                "tpd_elmore",
+                                                            ],
+                                                        ),
+                                                    },
+                                                    args: [
+                                                        Some(
+                                                            Expr {
+                                                                span: Span {
+                                                                    path: "sv-cells/dmg_cpu_b/cells/dlatch.sv",
+                                                                    line: 23,
+                                                                    column: 41,
+                                                                },
+                                                                kind: Integer(
+                                                                    "58",
+                                                                ),
+                                                            },
+                                                        ),
+                                                        Some(
+                                                            Expr {
+                                                                span: Span {
+                                                                    path: "sv-cells/dmg_cpu_b/cells/dlatch.sv",
+                                                                    line: 23,
+                                                                    column: 45,
+                                                                },
+                                                                kind: Call {
+                                                                    callee: Expr {
+                                                                        span: Span {
+                                                                            path: "sv-cells/dmg_cpu_b/cells/dlatch.sv",
+                                                                            line: 23,
+                                                                            column: 45,
+                                                                        },
+                                                                        kind: Path(
+                                                                            [
+                                                                                "R_pmos_ohm",
+                                                                            ],
+                                                                        ),
+                                                                    },
+                                                                    args: [
+                                                                        Some(
+                                                                            Expr {
+                                                                                span: Span {
+                                                                                    path: "sv-cells/dmg_cpu_b/cells/dlatch.sv",
+                                                                                    line: 23,
+                                                                                    column: 56,
+                                                                                },
+                                                                                kind: Binary {
+                                                                                    op: Mul,
+                                                                                    left: Expr {
+                                                                                        span: Span {
+                                                                                            path: "sv-cells/dmg_cpu_b/cells/dlatch.sv",
+                                                                                            line: 23,
+                                                                                            column: 56,
+                                                                                        },
+                                                                                        kind: Integer(
+                                                                                            "12",
+                                                                                        ),
+                                                                                    },
+                                                                                    right: Expr {
+                                                                                        span: Span {
+                                                                                            path: "sv-cells/dmg_cpu_b/cells/dlatch.sv",
+                                                                                            line: 23,
+                                                                                            column: 59,
+                                                                                        },
+                                                                                        kind: Path(
+                                                                                            [
+                                                                                                "L_unit",
+                                                                                            ],
+                                                                                        ),
+                                                                                    },
+                                                                                },
+                                                                            },
+                                                                        ),
+                                                                    ],
+                                                                },
+                                                            },
+                                                        ),
+                                                    ],
+                                                },
+                                            },
+                                        },
+                                    ),
+                                    Specparam(
+                                        ParamDecl {
+                                            span: Span {
+                                                path: "sv-cells/dmg_cpu_b/cells/dlatch.sv",
+                                                line: 24,
+                                                column: 3,
+                                            },
+                                            kind: Specparam,
+                                            ty: None,
+                                            name: "T_fall_not2",
+                                            value: Expr {
+                                                span: Span {
+                                                    path: "sv-cells/dmg_cpu_b/cells/dlatch.sv",
+                                                    line: 24,
+                                                    column: 27,
+                                                },
+                                                kind: Call {
+                                                    callee: Expr {
+                                                        span: Span {
+                                                            path: "sv-cells/dmg_cpu_b/cells/dlatch.sv",
+                                                            line: 24,
+                                                            column: 27,
+                                                        },
+                                                        kind: Path(
+                                                            [
+                                                                "tpd_elmore",
+                                                            ],
+                                                        ),
+                                                    },
+                                                    args: [
+                                                        Some(
+                                                            Expr {
+                                                                span: Span {
+                                                                    path: "sv-cells/dmg_cpu_b/cells/dlatch.sv",
+                                                                    line: 24,
+                                                                    column: 41,
+                                                                },
+                                                                kind: Integer(
+                                                                    "58",
+                                                                ),
+                                                            },
+                                                        ),
+                                                        Some(
+                                                            Expr {
+                                                                span: Span {
+                                                                    path: "sv-cells/dmg_cpu_b/cells/dlatch.sv",
+                                                                    line: 24,
+                                                                    column: 45,
+                                                                },
+                                                                kind: Call {
+                                                                    callee: Expr {
+                                                                        span: Span {
+                                                                            path: "sv-cells/dmg_cpu_b/cells/dlatch.sv",
+                                                                            line: 24,
+                                                                            column: 45,
+                                                                        },
+                                                                        kind: Path(
+                                                                            [
+                                                                                "R_nmos_ohm",
+                                                                            ],
+                                                                        ),
+                                                                    },
+                                                                    args: [
+                                                                        Some(
+                                                                            Expr {
+                                                                                span: Span {
+                                                                                    path: "sv-cells/dmg_cpu_b/cells/dlatch.sv",
+                                                                                    line: 24,
+                                                                                    column: 56,
+                                                                                },
+                                                                                kind: Binary {
+                                                                                    op: Mul,
+                                                                                    left: Expr {
+                                                                                        span: Span {
+                                                                                            path: "sv-cells/dmg_cpu_b/cells/dlatch.sv",
+                                                                                            line: 24,
+                                                                                            column: 56,
+                                                                                        },
+                                                                                        kind: Integer(
+                                                                                            "12",
+                                                                                        ),
+                                                                                    },
+                                                                                    right: Expr {
+                                                                                        span: Span {
+                                                                                            path: "sv-cells/dmg_cpu_b/cells/dlatch.sv",
+                                                                                            line: 24,
+                                                                                            column: 59,
+                                                                                        },
+                                                                                        kind: Path(
+                                                                                            [
+                                                                                                "L_unit",
+                                                                                            ],
+                                                                                        ),
+                                                                                    },
+                                                                                },
+                                                                            },
+                                                                        ),
+                                                                    ],
+                                                                },
+                                                            },
+                                                        ),
+                                                    ],
+                                                },
+                                            },
+                                        },
+                                    ),
+                                    Specparam(
+                                        ParamDecl {
+                                            span: Span {
+                                                path: "sv-cells/dmg_cpu_b/cells/dlatch.sv",
+                                                line: 25,
+                                                column: 3,
+                                            },
+                                            kind: Specparam,
+                                            ty: None,
+                                            name: "T_rise_not3",
+                                            value: Expr {
+                                                span: Span {
+                                                    path: "sv-cells/dmg_cpu_b/cells/dlatch.sv",
+                                                    line: 25,
+                                                    column: 27,
+                                                },
+                                                kind: Call {
+                                                    callee: Expr {
+                                                        span: Span {
+                                                            path: "sv-cells/dmg_cpu_b/cells/dlatch.sv",
+                                                            line: 25,
+                                                            column: 27,
+                                                        },
+                                                        kind: Path(
+                                                            [
+                                                                "tpd_elmore",
+                                                            ],
+                                                        ),
+                                                    },
+                                                    args: [
+                                                        Some(
+                                                            Expr {
+                                                                span: Span {
+                                                                    path: "sv-cells/dmg_cpu_b/cells/dlatch.sv",
+                                                                    line: 25,
+                                                                    column: 40,
+                                                                },
+                                                                kind: Integer(
+                                                                    "101",
+                                                                ),
+                                                            },
+                                                        ),
+                                                        Some(
+                                                            Expr {
+                                                                span: Span {
+                                                                    path: "sv-cells/dmg_cpu_b/cells/dlatch.sv",
+                                                                    line: 25,
+                                                                    column: 45,
+                                                                },
+                                                                kind: Call {
+                                                                    callee: Expr {
+                                                                        span: Span {
+                                                                            path: "sv-cells/dmg_cpu_b/cells/dlatch.sv",
+                                                                            line: 25,
+                                                                            column: 45,
+                                                                        },
+                                                                        kind: Path(
+                                                                            [
+                                                                                "R_pmos_ohm",
+                                                                            ],
+                                                                        ),
+                                                                    },
+                                                                    args: [
+                                                                        Some(
+                                                                            Expr {
+                                                                                span: Span {
+                                                                                    path: "sv-cells/dmg_cpu_b/cells/dlatch.sv",
+                                                                                    line: 25,
+                                                                                    column: 56,
+                                                                                },
+                                                                                kind: Binary {
+                                                                                    op: Mul,
+                                                                                    left: Expr {
+                                                                                        span: Span {
+                                                                                            path: "sv-cells/dmg_cpu_b/cells/dlatch.sv",
+                                                                                            line: 25,
+                                                                                            column: 56,
+                                                                                        },
+                                                                                        kind: Integer(
+                                                                                            "10",
+                                                                                        ),
+                                                                                    },
+                                                                                    right: Expr {
+                                                                                        span: Span {
+                                                                                            path: "sv-cells/dmg_cpu_b/cells/dlatch.sv",
+                                                                                            line: 25,
+                                                                                            column: 59,
+                                                                                        },
+                                                                                        kind: Path(
+                                                                                            [
+                                                                                                "L_unit",
+                                                                                            ],
+                                                                                        ),
+                                                                                    },
+                                                                                },
+                                                                            },
+                                                                        ),
+                                                                    ],
+                                                                },
+                                                            },
+                                                        ),
+                                                    ],
+                                                },
+                                            },
+                                        },
+                                    ),
+                                    Specparam(
+                                        ParamDecl {
+                                            span: Span {
+                                                path: "sv-cells/dmg_cpu_b/cells/dlatch.sv",
+                                                line: 26,
+                                                column: 3,
+                                            },
+                                            kind: Specparam,
+                                            ty: None,
+                                            name: "T_fall_not3",
+                                            value: Expr {
+                                                span: Span {
+                                                    path: "sv-cells/dmg_cpu_b/cells/dlatch.sv",
+                                                    line: 26,
+                                                    column: 27,
+                                                },
+                                                kind: Call {
+                                                    callee: Expr {
+                                                        span: Span {
+                                                            path: "sv-cells/dmg_cpu_b/cells/dlatch.sv",
+                                                            line: 26,
+                                                            column: 27,
+                                                        },
+                                                        kind: Path(
+                                                            [
+                                                                "tpd_elmore",
+                                                            ],
+                                                        ),
+                                                    },
+                                                    args: [
+                                                        Some(
+                                                            Expr {
+                                                                span: Span {
+                                                                    path: "sv-cells/dmg_cpu_b/cells/dlatch.sv",
+                                                                    line: 26,
+                                                                    column: 40,
+                                                                },
+                                                                kind: Integer(
+                                                                    "101",
+                                                                ),
+                                                            },
+                                                        ),
+                                                        Some(
+                                                            Expr {
+                                                                span: Span {
+                                                                    path: "sv-cells/dmg_cpu_b/cells/dlatch.sv",
+                                                                    line: 26,
+                                                                    column: 45,
+                                                                },
+                                                                kind: Call {
+                                                                    callee: Expr {
+                                                                        span: Span {
+                                                                            path: "sv-cells/dmg_cpu_b/cells/dlatch.sv",
+                                                                            line: 26,
+                                                                            column: 45,
+                                                                        },
+                                                                        kind: Path(
+                                                                            [
+                                                                                "R_nmos_ohm",
+                                                                            ],
+                                                                        ),
+                                                                    },
+                                                                    args: [
+                                                                        Some(
+                                                                            Expr {
+                                                                                span: Span {
+                                                                                    path: "sv-cells/dmg_cpu_b/cells/dlatch.sv",
+                                                                                    line: 26,
+                                                                                    column: 56,
+                                                                                },
+                                                                                kind: Binary {
+                                                                                    op: Mul,
+                                                                                    left: Expr {
+                                                                                        span: Span {
+                                                                                            path: "sv-cells/dmg_cpu_b/cells/dlatch.sv",
+                                                                                            line: 26,
+                                                                                            column: 56,
+                                                                                        },
+                                                                                        kind: Integer(
+                                                                                            "10",
+                                                                                        ),
+                                                                                    },
+                                                                                    right: Expr {
+                                                                                        span: Span {
+                                                                                            path: "sv-cells/dmg_cpu_b/cells/dlatch.sv",
+                                                                                            line: 26,
+                                                                                            column: 59,
+                                                                                        },
+                                                                                        kind: Path(
+                                                                                            [
+                                                                                                "L_unit",
+                                                                                            ],
+                                                                                        ),
+                                                                                    },
+                                                                                },
+                                                                            },
+                                                                        ),
+                                                                    ],
+                                                                },
+                                                            },
+                                                        ),
+                                                    ],
+                                                },
+                                            },
+                                        },
+                                    ),
+                                    Specparam(
+                                        ParamDecl {
+                                            span: Span {
+                                                path: "sv-cells/dmg_cpu_b/cells/dlatch.sv",
+                                                line: 27,
+                                                column: 3,
+                                            },
+                                            kind: Specparam,
+                                            ty: None,
+                                            name: "T_rise_not4",
+                                            value: Expr {
+                                                span: Span {
+                                                    path: "sv-cells/dmg_cpu_b/cells/dlatch.sv",
+                                                    line: 27,
+                                                    column: 27,
+                                                },
+                                                kind: Call {
+                                                    callee: Expr {
+                                                        span: Span {
+                                                            path: "sv-cells/dmg_cpu_b/cells/dlatch.sv",
+                                                            line: 27,
+                                                            column: 27,
+                                                        },
+                                                        kind: Path(
+                                                            [
+                                                                "tpd_elmore",
+                                                            ],
+                                                        ),
+                                                    },
+                                                    args: [
+                                                        Some(
+                                                            Expr {
+                                                                span: Span {
+                                                                    path: "sv-cells/dmg_cpu_b/cells/dlatch.sv",
+                                                                    line: 27,
+                                                                    column: 40,
+                                                                },
+                                                                kind: Integer(
+                                                                    "127",
+                                                                ),
+                                                            },
+                                                        ),
+                                                        Some(
+                                                            Expr {
+                                                                span: Span {
+                                                                    path: "sv-cells/dmg_cpu_b/cells/dlatch.sv",
+                                                                    line: 27,
+                                                                    column: 45,
+                                                                },
+                                                                kind: Call {
+                                                                    callee: Expr {
+                                                                        span: Span {
+                                                                            path: "sv-cells/dmg_cpu_b/cells/dlatch.sv",
+                                                                            line: 27,
+                                                                            column: 45,
+                                                                        },
+                                                                        kind: Path(
+                                                                            [
+                                                                                "R_pmos_ohm",
+                                                                            ],
+                                                                        ),
+                                                                    },
+                                                                    args: [
+                                                                        Some(
+                                                                            Expr {
+                                                                                span: Span {
+                                                                                    path: "sv-cells/dmg_cpu_b/cells/dlatch.sv",
+                                                                                    line: 27,
+                                                                                    column: 56,
+                                                                                },
+                                                                                kind: Binary {
+                                                                                    op: Mul,
+                                                                                    left: Expr {
+                                                                                        span: Span {
+                                                                                            path: "sv-cells/dmg_cpu_b/cells/dlatch.sv",
+                                                                                            line: 27,
+                                                                                            column: 56,
+                                                                                        },
+                                                                                        kind: Integer(
+                                                                                            "10",
+                                                                                        ),
+                                                                                    },
+                                                                                    right: Expr {
+                                                                                        span: Span {
+                                                                                            path: "sv-cells/dmg_cpu_b/cells/dlatch.sv",
+                                                                                            line: 27,
+                                                                                            column: 59,
+                                                                                        },
+                                                                                        kind: Path(
+                                                                                            [
+                                                                                                "L_unit",
+                                                                                            ],
+                                                                                        ),
+                                                                                    },
+                                                                                },
+                                                                            },
+                                                                        ),
+                                                                    ],
+                                                                },
+                                                            },
+                                                        ),
+                                                    ],
+                                                },
+                                            },
+                                        },
+                                    ),
+                                    Specparam(
+                                        ParamDecl {
+                                            span: Span {
+                                                path: "sv-cells/dmg_cpu_b/cells/dlatch.sv",
+                                                line: 28,
+                                                column: 3,
+                                            },
+                                            kind: Specparam,
+                                            ty: None,
+                                            name: "T_fall_not4",
+                                            value: Expr {
+                                                span: Span {
+                                                    path: "sv-cells/dmg_cpu_b/cells/dlatch.sv",
+                                                    line: 28,
+                                                    column: 27,
+                                                },
+                                                kind: Call {
+                                                    callee: Expr {
+                                                        span: Span {
+                                                            path: "sv-cells/dmg_cpu_b/cells/dlatch.sv",
+                                                            line: 28,
+                                                            column: 27,
+                                                        },
+                                                        kind: Path(
+                                                            [
+                                                                "tpd_elmore",
+                                                            ],
+                                                        ),
+                                                    },
+                                                    args: [
+                                                        Some(
+                                                            Expr {
+                                                                span: Span {
+                                                                    path: "sv-cells/dmg_cpu_b/cells/dlatch.sv",
+                                                                    line: 28,
+                                                                    column: 40,
+                                                                },
+                                                                kind: Integer(
+                                                                    "127",
+                                                                ),
+                                                            },
+                                                        ),
+                                                        Some(
+                                                            Expr {
+                                                                span: Span {
+                                                                    path: "sv-cells/dmg_cpu_b/cells/dlatch.sv",
+                                                                    line: 28,
+                                                                    column: 45,
+                                                                },
+                                                                kind: Call {
+                                                                    callee: Expr {
+                                                                        span: Span {
+                                                                            path: "sv-cells/dmg_cpu_b/cells/dlatch.sv",
+                                                                            line: 28,
+                                                                            column: 45,
+                                                                        },
+                                                                        kind: Path(
+                                                                            [
+                                                                                "R_nmos_ohm",
+                                                                            ],
+                                                                        ),
+                                                                    },
+                                                                    args: [
+                                                                        Some(
+                                                                            Expr {
+                                                                                span: Span {
+                                                                                    path: "sv-cells/dmg_cpu_b/cells/dlatch.sv",
+                                                                                    line: 28,
+                                                                                    column: 56,
+                                                                                },
+                                                                                kind: Binary {
+                                                                                    op: Mul,
+                                                                                    left: Expr {
+                                                                                        span: Span {
+                                                                                            path: "sv-cells/dmg_cpu_b/cells/dlatch.sv",
+                                                                                            line: 28,
+                                                                                            column: 56,
+                                                                                        },
+                                                                                        kind: Integer(
+                                                                                            "10",
+                                                                                        ),
+                                                                                    },
+                                                                                    right: Expr {
+                                                                                        span: Span {
+                                                                                            path: "sv-cells/dmg_cpu_b/cells/dlatch.sv",
+                                                                                            line: 28,
+                                                                                            column: 59,
+                                                                                        },
+                                                                                        kind: Path(
+                                                                                            [
+                                                                                                "L_unit",
+                                                                                            ],
+                                                                                        ),
+                                                                                    },
+                                                                                },
+                                                                            },
+                                                                        ),
+                                                                    ],
+                                                                },
+                                                            },
+                                                        ),
+                                                    ],
+                                                },
+                                            },
+                                        },
+                                    ),
+                                    Specparam(
+                                        ParamDecl {
+                                            span: Span {
+                                                path: "sv-cells/dmg_cpu_b/cells/dlatch.sv",
+                                                line: 29,
+                                                column: 3,
+                                            },
+                                            kind: Specparam,
+                                            ty: None,
+                                            name: "T_rise_q",
+                                            value: Expr {
+                                                span: Span {
+                                                    path: "sv-cells/dmg_cpu_b/cells/dlatch.sv",
+                                                    line: 29,
+                                                    column: 27,
+                                                },
+                                                kind: Call {
+                                                    callee: Expr {
+                                                        span: Span {
+                                                            path: "sv-cells/dmg_cpu_b/cells/dlatch.sv",
+                                                            line: 29,
+                                                            column: 27,
+                                                        },
+                                                        kind: Path(
+                                                            [
+                                                                "tpd_elmore",
+                                                            ],
+                                                        ),
+                                                    },
+                                                    args: [
+                                                        Some(
+                                                            Expr {
+                                                                span: Span {
+                                                                    path: "sv-cells/dmg_cpu_b/cells/dlatch.sv",
+                                                                    line: 29,
+                                                                    column: 40,
+                                                                },
+                                                                kind: Path(
+                                                                    [
+                                                                        "L_q",
+                                                                    ],
+                                                                ),
+                                                            },
+                                                        ),
+                                                        Some(
+                                                            Expr {
+                                                                span: Span {
+                                                                    path: "sv-cells/dmg_cpu_b/cells/dlatch.sv",
+                                                                    line: 29,
+                                                                    column: 45,
+                                                                },
+                                                                kind: Call {
+                                                                    callee: Expr {
+                                                                        span: Span {
+                                                                            path: "sv-cells/dmg_cpu_b/cells/dlatch.sv",
+                                                                            line: 29,
+                                                                            column: 45,
+                                                                        },
+                                                                        kind: Path(
+                                                                            [
+                                                                                "R_pmos_ohm",
+                                                                            ],
+                                                                        ),
+                                                                    },
+                                                                    args: [
+                                                                        Some(
+                                                                            Expr {
+                                                                                span: Span {
+                                                                                    path: "sv-cells/dmg_cpu_b/cells/dlatch.sv",
+                                                                                    line: 29,
+                                                                                    column: 56,
+                                                                                },
+                                                                                kind: Binary {
+                                                                                    op: Mul,
+                                                                                    left: Expr {
+                                                                                        span: Span {
+                                                                                            path: "sv-cells/dmg_cpu_b/cells/dlatch.sv",
+                                                                                            line: 29,
+                                                                                            column: 56,
+                                                                                        },
+                                                                                        kind: Integer(
+                                                                                            "35",
+                                                                                        ),
+                                                                                    },
+                                                                                    right: Expr {
+                                                                                        span: Span {
+                                                                                            path: "sv-cells/dmg_cpu_b/cells/dlatch.sv",
+                                                                                            line: 29,
+                                                                                            column: 59,
+                                                                                        },
+                                                                                        kind: Path(
+                                                                                            [
+                                                                                                "L_unit",
+                                                                                            ],
+                                                                                        ),
+                                                                                    },
+                                                                                },
+                                                                            },
+                                                                        ),
+                                                                    ],
+                                                                },
+                                                            },
+                                                        ),
+                                                    ],
+                                                },
+                                            },
+                                        },
+                                    ),
+                                    Specparam(
+                                        ParamDecl {
+                                            span: Span {
+                                                path: "sv-cells/dmg_cpu_b/cells/dlatch.sv",
+                                                line: 30,
+                                                column: 3,
+                                            },
+                                            kind: Specparam,
+                                            ty: None,
+                                            name: "T_fall_q",
+                                            value: Expr {
+                                                span: Span {
+                                                    path: "sv-cells/dmg_cpu_b/cells/dlatch.sv",
+                                                    line: 30,
+                                                    column: 27,
+                                                },
+                                                kind: Call {
+                                                    callee: Expr {
+                                                        span: Span {
+                                                            path: "sv-cells/dmg_cpu_b/cells/dlatch.sv",
+                                                            line: 30,
+                                                            column: 27,
+                                                        },
+                                                        kind: Path(
+                                                            [
+                                                                "tpd_elmore",
+                                                            ],
+                                                        ),
+                                                    },
+                                                    args: [
+                                                        Some(
+                                                            Expr {
+                                                                span: Span {
+                                                                    path: "sv-cells/dmg_cpu_b/cells/dlatch.sv",
+                                                                    line: 30,
+                                                                    column: 40,
+                                                                },
+                                                                kind: Path(
+                                                                    [
+                                                                        "L_q",
+                                                                    ],
+                                                                ),
+                                                            },
+                                                        ),
+                                                        Some(
+                                                            Expr {
+                                                                span: Span {
+                                                                    path: "sv-cells/dmg_cpu_b/cells/dlatch.sv",
+                                                                    line: 30,
+                                                                    column: 45,
+                                                                },
+                                                                kind: Call {
+                                                                    callee: Expr {
+                                                                        span: Span {
+                                                                            path: "sv-cells/dmg_cpu_b/cells/dlatch.sv",
+                                                                            line: 30,
+                                                                            column: 45,
+                                                                        },
+                                                                        kind: Path(
+                                                                            [
+                                                                                "R_nmos_ohm",
+                                                                            ],
+                                                                        ),
+                                                                    },
+                                                                    args: [
+                                                                        Some(
+                                                                            Expr {
+                                                                                span: Span {
+                                                                                    path: "sv-cells/dmg_cpu_b/cells/dlatch.sv",
+                                                                                    line: 30,
+                                                                                    column: 56,
+                                                                                },
+                                                                                kind: Binary {
+                                                                                    op: Mul,
+                                                                                    left: Expr {
+                                                                                        span: Span {
+                                                                                            path: "sv-cells/dmg_cpu_b/cells/dlatch.sv",
+                                                                                            line: 30,
+                                                                                            column: 56,
+                                                                                        },
+                                                                                        kind: Integer(
+                                                                                            "35",
+                                                                                        ),
+                                                                                    },
+                                                                                    right: Expr {
+                                                                                        span: Span {
+                                                                                            path: "sv-cells/dmg_cpu_b/cells/dlatch.sv",
+                                                                                            line: 30,
+                                                                                            column: 59,
+                                                                                        },
+                                                                                        kind: Path(
+                                                                                            [
+                                                                                                "L_unit",
+                                                                                            ],
+                                                                                        ),
+                                                                                    },
+                                                                                },
+                                                                            },
+                                                                        ),
+                                                                    ],
+                                                                },
+                                                            },
+                                                        ),
+                                                    ],
+                                                },
+                                            },
+                                        },
+                                    ),
+                                    Specparam(
+                                        ParamDecl {
+                                            span: Span {
+                                                path: "sv-cells/dmg_cpu_b/cells/dlatch.sv",
+                                                line: 31,
+                                                column: 3,
+                                            },
+                                            kind: Specparam,
+                                            ty: None,
+                                            name: "T_rise_q_n",
+                                            value: Expr {
+                                                span: Span {
+                                                    path: "sv-cells/dmg_cpu_b/cells/dlatch.sv",
+                                                    line: 31,
+                                                    column: 27,
+                                                },
+                                                kind: Call {
+                                                    callee: Expr {
+                                                        span: Span {
+                                                            path: "sv-cells/dmg_cpu_b/cells/dlatch.sv",
+                                                            line: 31,
+                                                            column: 27,
+                                                        },
+                                                        kind: Path(
+                                                            [
+                                                                "tpd_elmore",
+                                                            ],
+                                                        ),
+                                                    },
+                                                    args: [
+                                                        Some(
+                                                            Expr {
+                                                                span: Span {
+                                                                    path: "sv-cells/dmg_cpu_b/cells/dlatch.sv",
+                                                                    line: 31,
+                                                                    column: 38,
+                                                                },
+                                                                kind: Path(
+                                                                    [
+                                                                        "L_q_n",
+                                                                    ],
+                                                                ),
+                                                            },
+                                                        ),
+                                                        Some(
+                                                            Expr {
+                                                                span: Span {
+                                                                    path: "sv-cells/dmg_cpu_b/cells/dlatch.sv",
+                                                                    line: 31,
+                                                                    column: 45,
+                                                                },
+                                                                kind: Call {
+                                                                    callee: Expr {
+                                                                        span: Span {
+                                                                            path: "sv-cells/dmg_cpu_b/cells/dlatch.sv",
+                                                                            line: 31,
+                                                                            column: 45,
+                                                                        },
+                                                                        kind: Path(
+                                                                            [
+                                                                                "R_pmos_ohm",
+                                                                            ],
+                                                                        ),
+                                                                    },
+                                                                    args: [
+                                                                        Some(
+                                                                            Expr {
+                                                                                span: Span {
+                                                                                    path: "sv-cells/dmg_cpu_b/cells/dlatch.sv",
+                                                                                    line: 31,
+                                                                                    column: 56,
+                                                                                },
+                                                                                kind: Binary {
+                                                                                    op: Mul,
+                                                                                    left: Expr {
+                                                                                        span: Span {
+                                                                                            path: "sv-cells/dmg_cpu_b/cells/dlatch.sv",
+                                                                                            line: 31,
+                                                                                            column: 56,
+                                                                                        },
+                                                                                        kind: Integer(
+                                                                                            "35",
+                                                                                        ),
+                                                                                    },
+                                                                                    right: Expr {
+                                                                                        span: Span {
+                                                                                            path: "sv-cells/dmg_cpu_b/cells/dlatch.sv",
+                                                                                            line: 31,
+                                                                                            column: 59,
+                                                                                        },
+                                                                                        kind: Path(
+                                                                                            [
+                                                                                                "L_unit",
+                                                                                            ],
+                                                                                        ),
+                                                                                    },
+                                                                                },
+                                                                            },
+                                                                        ),
+                                                                    ],
+                                                                },
+                                                            },
+                                                        ),
+                                                    ],
+                                                },
+                                            },
+                                        },
+                                    ),
+                                    Specparam(
+                                        ParamDecl {
+                                            span: Span {
+                                                path: "sv-cells/dmg_cpu_b/cells/dlatch.sv",
+                                                line: 32,
+                                                column: 3,
+                                            },
+                                            kind: Specparam,
+                                            ty: None,
+                                            name: "T_fall_q_n",
+                                            value: Expr {
+                                                span: Span {
+                                                    path: "sv-cells/dmg_cpu_b/cells/dlatch.sv",
+                                                    line: 32,
+                                                    column: 27,
+                                                },
+                                                kind: Call {
+                                                    callee: Expr {
+                                                        span: Span {
+                                                            path: "sv-cells/dmg_cpu_b/cells/dlatch.sv",
+                                                            line: 32,
+                                                            column: 27,
+                                                        },
+                                                        kind: Path(
+                                                            [
+                                                                "tpd_elmore",
+                                                            ],
+                                                        ),
+                                                    },
+                                                    args: [
+                                                        Some(
+                                                            Expr {
+                                                                span: Span {
+                                                                    path: "sv-cells/dmg_cpu_b/cells/dlatch.sv",
+                                                                    line: 32,
+                                                                    column: 38,
+                                                                },
+                                                                kind: Path(
+                                                                    [
+                                                                        "L_q_n",
+                                                                    ],
+                                                                ),
+                                                            },
+                                                        ),
+                                                        Some(
+                                                            Expr {
+                                                                span: Span {
+                                                                    path: "sv-cells/dmg_cpu_b/cells/dlatch.sv",
+                                                                    line: 32,
+                                                                    column: 45,
+                                                                },
+                                                                kind: Call {
+                                                                    callee: Expr {
+                                                                        span: Span {
+                                                                            path: "sv-cells/dmg_cpu_b/cells/dlatch.sv",
+                                                                            line: 32,
+                                                                            column: 45,
+                                                                        },
+                                                                        kind: Path(
+                                                                            [
+                                                                                "R_nmos_ohm",
+                                                                            ],
+                                                                        ),
+                                                                    },
+                                                                    args: [
+                                                                        Some(
+                                                                            Expr {
+                                                                                span: Span {
+                                                                                    path: "sv-cells/dmg_cpu_b/cells/dlatch.sv",
+                                                                                    line: 32,
+                                                                                    column: 56,
+                                                                                },
+                                                                                kind: Binary {
+                                                                                    op: Mul,
+                                                                                    left: Expr {
+                                                                                        span: Span {
+                                                                                            path: "sv-cells/dmg_cpu_b/cells/dlatch.sv",
+                                                                                            line: 32,
+                                                                                            column: 56,
+                                                                                        },
+                                                                                        kind: Integer(
+                                                                                            "35",
+                                                                                        ),
+                                                                                    },
+                                                                                    right: Expr {
+                                                                                        span: Span {
+                                                                                            path: "sv-cells/dmg_cpu_b/cells/dlatch.sv",
+                                                                                            line: 32,
+                                                                                            column: 59,
+                                                                                        },
+                                                                                        kind: Path(
+                                                                                            [
+                                                                                                "L_unit",
+                                                                                            ],
+                                                                                        ),
+                                                                                    },
+                                                                                },
+                                                                            },
+                                                                        ),
+                                                                    ],
+                                                                },
+                                                            },
+                                                        ),
+                                                    ],
+                                                },
+                                            },
+                                        },
+                                    ),
+                                    Path(
+                                        SpecPath {
+                                            span: Span {
+                                                path: "sv-cells/dmg_cpu_b/cells/dlatch.sv",
+                                                line: 34,
+                                                column: 3,
+                                            },
+                                            controls: [
+                                                Expr {
+                                                    span: Span {
+                                                        path: "sv-cells/dmg_cpu_b/cells/dlatch.sv",
+                                                        line: 34,
+                                                        column: 4,
+                                                    },
+                                                    kind: Path(
+                                                        [
+                                                            "d",
+                                                        ],
+                                                    ),
+                                                },
+                                            ],
+                                            target: Expr {
+                                                span: Span {
+                                                    path: "sv-cells/dmg_cpu_b/cells/dlatch.sv",
+                                                    line: 34,
+                                                    column: 11,
+                                                },
+                                                kind: Path(
+                                                    [
+                                                        "q",
+                                                    ],
+                                                ),
+                                            },
+                                            delays: [
+                                                Some(
+                                                    Expr {
+                                                        span: Span {
+                                                            path: "sv-cells/dmg_cpu_b/cells/dlatch.sv",
+                                                            line: 34,
+                                                            column: 19,
+                                                        },
+                                                        kind: Binary {
+                                                            op: Add,
+                                                            left: Expr {
+                                                                span: Span {
+                                                                    path: "sv-cells/dmg_cpu_b/cells/dlatch.sv",
+                                                                    line: 34,
+                                                                    column: 19,
+                                                                },
+                                                                kind: Binary {
+                                                                    op: Add,
+                                                                    left: Expr {
+                                                                        span: Span {
+                                                                            path: "sv-cells/dmg_cpu_b/cells/dlatch.sv",
+                                                                            line: 34,
+                                                                            column: 19,
+                                                                        },
+                                                                        kind: Path(
+                                                                            [
+                                                                                "T_rise_buf",
+                                                                            ],
+                                                                        ),
+                                                                    },
+                                                                    right: Expr {
+                                                                        span: Span {
+                                                                            path: "sv-cells/dmg_cpu_b/cells/dlatch.sv",
+                                                                            line: 34,
+                                                                            column: 32,
+                                                                        },
+                                                                        kind: Path(
+                                                                            [
+                                                                                "T_fall_not3",
+                                                                            ],
+                                                                        ),
+                                                                    },
+                                                                },
+                                                            },
+                                                            right: Expr {
+                                                                span: Span {
+                                                                    path: "sv-cells/dmg_cpu_b/cells/dlatch.sv",
+                                                                    line: 34,
+                                                                    column: 46,
+                                                                },
+                                                                kind: Path(
+                                                                    [
+                                                                        "T_rise_q",
+                                                                    ],
+                                                                ),
+                                                            },
+                                                        },
+                                                    },
+                                                ),
+                                                Some(
+                                                    Expr {
+                                                        span: Span {
+                                                            path: "sv-cells/dmg_cpu_b/cells/dlatch.sv",
+                                                            line: 34,
+                                                            column: 56,
+                                                        },
+                                                        kind: Binary {
+                                                            op: Add,
+                                                            left: Expr {
+                                                                span: Span {
+                                                                    path: "sv-cells/dmg_cpu_b/cells/dlatch.sv",
+                                                                    line: 34,
+                                                                    column: 56,
+                                                                },
+                                                                kind: Binary {
+                                                                    op: Add,
+                                                                    left: Expr {
+                                                                        span: Span {
+                                                                            path: "sv-cells/dmg_cpu_b/cells/dlatch.sv",
+                                                                            line: 34,
+                                                                            column: 56,
+                                                                        },
+                                                                        kind: Path(
+                                                                            [
+                                                                                "T_fall_buf",
+                                                                            ],
+                                                                        ),
+                                                                    },
+                                                                    right: Expr {
+                                                                        span: Span {
+                                                                            path: "sv-cells/dmg_cpu_b/cells/dlatch.sv",
+                                                                            line: 34,
+                                                                            column: 69,
+                                                                        },
+                                                                        kind: Path(
+                                                                            [
+                                                                                "T_rise_not3",
+                                                                            ],
+                                                                        ),
+                                                                    },
+                                                                },
+                                                            },
+                                                            right: Expr {
+                                                                span: Span {
+                                                                    path: "sv-cells/dmg_cpu_b/cells/dlatch.sv",
+                                                                    line: 34,
+                                                                    column: 83,
+                                                                },
+                                                                kind: Path(
+                                                                    [
+                                                                        "T_fall_q",
+                                                                    ],
+                                                                ),
+                                                            },
+                                                        },
+                                                    },
+                                                ),
+                                            ],
+                                        },
+                                    ),
+                                    Path(
+                                        SpecPath {
+                                            span: Span {
+                                                path: "sv-cells/dmg_cpu_b/cells/dlatch.sv",
+                                                line: 35,
+                                                column: 3,
+                                            },
+                                            controls: [
+                                                Expr {
+                                                    span: Span {
+                                                        path: "sv-cells/dmg_cpu_b/cells/dlatch.sv",
+                                                        line: 35,
+                                                        column: 4,
+                                                    },
+                                                    kind: Path(
+                                                        [
+                                                            "ena",
+                                                        ],
+                                                    ),
+                                                },
+                                            ],
+                                            target: Expr {
+                                                span: Span {
+                                                    path: "sv-cells/dmg_cpu_b/cells/dlatch.sv",
+                                                    line: 35,
+                                                    column: 11,
+                                                },
+                                                kind: Path(
+                                                    [
+                                                        "q",
+                                                    ],
+                                                ),
+                                            },
+                                            delays: [
+                                                Some(
+                                                    Expr {
+                                                        span: Span {
+                                                            path: "sv-cells/dmg_cpu_b/cells/dlatch.sv",
+                                                            line: 35,
+                                                            column: 19,
+                                                        },
+                                                        kind: Binary {
+                                                            op: Add,
+                                                            left: Expr {
+                                                                span: Span {
+                                                                    path: "sv-cells/dmg_cpu_b/cells/dlatch.sv",
+                                                                    line: 35,
+                                                                    column: 19,
+                                                                },
+                                                                kind: Binary {
+                                                                    op: Add,
+                                                                    left: Expr {
+                                                                        span: Span {
+                                                                            path: "sv-cells/dmg_cpu_b/cells/dlatch.sv",
+                                                                            line: 35,
+                                                                            column: 19,
+                                                                        },
+                                                                        kind: Binary {
+                                                                            op: Add,
+                                                                            left: Expr {
+                                                                                span: Span {
+                                                                                    path: "sv-cells/dmg_cpu_b/cells/dlatch.sv",
+                                                                                    line: 35,
+                                                                                    column: 19,
+                                                                                },
+                                                                                kind: Path(
+                                                                                    [
+                                                                                        "T_fall_not1",
+                                                                                    ],
+                                                                                ),
+                                                                            },
+                                                                            right: Expr {
+                                                                                span: Span {
+                                                                                    path: "sv-cells/dmg_cpu_b/cells/dlatch.sv",
+                                                                                    line: 35,
+                                                                                    column: 33,
+                                                                                },
+                                                                                kind: Path(
+                                                                                    [
+                                                                                        "T_rise_buf",
+                                                                                    ],
+                                                                                ),
+                                                                            },
+                                                                        },
+                                                                    },
+                                                                    right: Expr {
+                                                                        span: Span {
+                                                                            path: "sv-cells/dmg_cpu_b/cells/dlatch.sv",
+                                                                            line: 35,
+                                                                            column: 46,
+                                                                        },
+                                                                        kind: Path(
+                                                                            [
+                                                                                "T_fall_not3",
+                                                                            ],
+                                                                        ),
+                                                                    },
+                                                                },
+                                                            },
+                                                            right: Expr {
+                                                                span: Span {
+                                                                    path: "sv-cells/dmg_cpu_b/cells/dlatch.sv",
+                                                                    line: 35,
+                                                                    column: 60,
+                                                                },
+                                                                kind: Path(
+                                                                    [
+                                                                        "T_rise_q",
+                                                                    ],
+                                                                ),
+                                                            },
+                                                        },
+                                                    },
+                                                ),
+                                                Some(
+                                                    Expr {
+                                                        span: Span {
+                                                            path: "sv-cells/dmg_cpu_b/cells/dlatch.sv",
+                                                            line: 36,
+                                                            column: 19,
+                                                        },
+                                                        kind: Binary {
+                                                            op: Add,
+                                                            left: Expr {
+                                                                span: Span {
+                                                                    path: "sv-cells/dmg_cpu_b/cells/dlatch.sv",
+                                                                    line: 36,
+                                                                    column: 19,
+                                                                },
+                                                                kind: Binary {
+                                                                    op: Add,
+                                                                    left: Expr {
+                                                                        span: Span {
+                                                                            path: "sv-cells/dmg_cpu_b/cells/dlatch.sv",
+                                                                            line: 36,
+                                                                            column: 19,
+                                                                        },
+                                                                        kind: Binary {
+                                                                            op: Add,
+                                                                            left: Expr {
+                                                                                span: Span {
+                                                                                    path: "sv-cells/dmg_cpu_b/cells/dlatch.sv",
+                                                                                    line: 36,
+                                                                                    column: 19,
+                                                                                },
+                                                                                kind: Binary {
+                                                                                    op: Add,
+                                                                                    left: Expr {
+                                                                                        span: Span {
+                                                                                            path: "sv-cells/dmg_cpu_b/cells/dlatch.sv",
+                                                                                            line: 36,
+                                                                                            column: 19,
+                                                                                        },
+                                                                                        kind: Path(
+                                                                                            [
+                                                                                                "T_fall_not1",
+                                                                                            ],
+                                                                                        ),
+                                                                                    },
+                                                                                    right: Expr {
+                                                                                        span: Span {
+                                                                                            path: "sv-cells/dmg_cpu_b/cells/dlatch.sv",
+                                                                                            line: 36,
+                                                                                            column: 33,
+                                                                                        },
+                                                                                        kind: Path(
+                                                                                            [
+                                                                                                "T_rise_not2",
+                                                                                            ],
+                                                                                        ),
+                                                                                    },
+                                                                                },
+                                                                            },
+                                                                            right: Expr {
+                                                                                span: Span {
+                                                                                    path: "sv-cells/dmg_cpu_b/cells/dlatch.sv",
+                                                                                    line: 36,
+                                                                                    column: 47,
+                                                                                },
+                                                                                kind: Path(
+                                                                                    [
+                                                                                        "T_fall_buf",
+                                                                                    ],
+                                                                                ),
+                                                                            },
+                                                                        },
+                                                                    },
+                                                                    right: Expr {
+                                                                        span: Span {
+                                                                            path: "sv-cells/dmg_cpu_b/cells/dlatch.sv",
+                                                                            line: 36,
+                                                                            column: 60,
+                                                                        },
+                                                                        kind: Path(
+                                                                            [
+                                                                                "T_rise_not3",
+                                                                            ],
+                                                                        ),
+                                                                    },
+                                                                },
+                                                            },
+                                                            right: Expr {
+                                                                span: Span {
+                                                                    path: "sv-cells/dmg_cpu_b/cells/dlatch.sv",
+                                                                    line: 36,
+                                                                    column: 74,
+                                                                },
+                                                                kind: Path(
+                                                                    [
+                                                                        "T_fall_q",
+                                                                    ],
+                                                                ),
+                                                            },
+                                                        },
+                                                    },
+                                                ),
+                                            ],
+                                        },
+                                    ),
+                                    Path(
+                                        SpecPath {
+                                            span: Span {
+                                                path: "sv-cells/dmg_cpu_b/cells/dlatch.sv",
+                                                line: 37,
+                                                column: 3,
+                                            },
+                                            controls: [
+                                                Expr {
+                                                    span: Span {
+                                                        path: "sv-cells/dmg_cpu_b/cells/dlatch.sv",
+                                                        line: 37,
+                                                        column: 4,
+                                                    },
+                                                    kind: Path(
+                                                        [
+                                                            "d",
+                                                        ],
+                                                    ),
+                                                },
+                                            ],
+                                            target: Expr {
+                                                span: Span {
+                                                    path: "sv-cells/dmg_cpu_b/cells/dlatch.sv",
+                                                    line: 37,
+                                                    column: 11,
+                                                },
+                                                kind: Path(
+                                                    [
+                                                        "q_n",
+                                                    ],
+                                                ),
+                                            },
+                                            delays: [
+                                                Some(
+                                                    Expr {
+                                                        span: Span {
+                                                            path: "sv-cells/dmg_cpu_b/cells/dlatch.sv",
+                                                            line: 37,
+                                                            column: 19,
+                                                        },
+                                                        kind: Binary {
+                                                            op: Add,
+                                                            left: Expr {
+                                                                span: Span {
+                                                                    path: "sv-cells/dmg_cpu_b/cells/dlatch.sv",
+                                                                    line: 37,
+                                                                    column: 19,
+                                                                },
+                                                                kind: Binary {
+                                                                    op: Add,
+                                                                    left: Expr {
+                                                                        span: Span {
+                                                                            path: "sv-cells/dmg_cpu_b/cells/dlatch.sv",
+                                                                            line: 37,
+                                                                            column: 19,
+                                                                        },
+                                                                        kind: Binary {
+                                                                            op: Add,
+                                                                            left: Expr {
+                                                                                span: Span {
+                                                                                    path: "sv-cells/dmg_cpu_b/cells/dlatch.sv",
+                                                                                    line: 37,
+                                                                                    column: 19,
+                                                                                },
+                                                                                kind: Path(
+                                                                                    [
+                                                                                        "T_fall_buf",
+                                                                                    ],
+                                                                                ),
+                                                                            },
+                                                                            right: Expr {
+                                                                                span: Span {
+                                                                                    path: "sv-cells/dmg_cpu_b/cells/dlatch.sv",
+                                                                                    line: 37,
+                                                                                    column: 32,
+                                                                                },
+                                                                                kind: Path(
+                                                                                    [
+                                                                                        "T_rise_not3",
+                                                                                    ],
+                                                                                ),
+                                                                            },
+                                                                        },
+                                                                    },
+                                                                    right: Expr {
+                                                                        span: Span {
+                                                                            path: "sv-cells/dmg_cpu_b/cells/dlatch.sv",
+                                                                            line: 37,
+                                                                            column: 46,
+                                                                        },
+                                                                        kind: Path(
+                                                                            [
+                                                                                "T_fall_not4",
+                                                                            ],
+                                                                        ),
+                                                                    },
+                                                                },
+                                                            },
+                                                            right: Expr {
+                                                                span: Span {
+                                                                    path: "sv-cells/dmg_cpu_b/cells/dlatch.sv",
+                                                                    line: 37,
+                                                                    column: 60,
+                                                                },
+                                                                kind: Path(
+                                                                    [
+                                                                        "T_rise_q_n",
+                                                                    ],
+                                                                ),
+                                                            },
+                                                        },
+                                                    },
+                                                ),
+                                                Some(
+                                                    Expr {
+                                                        span: Span {
+                                                            path: "sv-cells/dmg_cpu_b/cells/dlatch.sv",
+                                                            line: 38,
+                                                            column: 19,
+                                                        },
+                                                        kind: Binary {
+                                                            op: Add,
+                                                            left: Expr {
+                                                                span: Span {
+                                                                    path: "sv-cells/dmg_cpu_b/cells/dlatch.sv",
+                                                                    line: 38,
+                                                                    column: 19,
+                                                                },
+                                                                kind: Binary {
+                                                                    op: Add,
+                                                                    left: Expr {
+                                                                        span: Span {
+                                                                            path: "sv-cells/dmg_cpu_b/cells/dlatch.sv",
+                                                                            line: 38,
+                                                                            column: 19,
+                                                                        },
+                                                                        kind: Binary {
+                                                                            op: Add,
+                                                                            left: Expr {
+                                                                                span: Span {
+                                                                                    path: "sv-cells/dmg_cpu_b/cells/dlatch.sv",
+                                                                                    line: 38,
+                                                                                    column: 19,
+                                                                                },
+                                                                                kind: Path(
+                                                                                    [
+                                                                                        "T_rise_buf",
+                                                                                    ],
+                                                                                ),
+                                                                            },
+                                                                            right: Expr {
+                                                                                span: Span {
+                                                                                    path: "sv-cells/dmg_cpu_b/cells/dlatch.sv",
+                                                                                    line: 38,
+                                                                                    column: 32,
+                                                                                },
+                                                                                kind: Path(
+                                                                                    [
+                                                                                        "T_fall_not3",
+                                                                                    ],
+                                                                                ),
+                                                                            },
+                                                                        },
+                                                                    },
+                                                                    right: Expr {
+                                                                        span: Span {
+                                                                            path: "sv-cells/dmg_cpu_b/cells/dlatch.sv",
+                                                                            line: 38,
+                                                                            column: 46,
+                                                                        },
+                                                                        kind: Path(
+                                                                            [
+                                                                                "T_rise_not4",
+                                                                            ],
+                                                                        ),
+                                                                    },
+                                                                },
+                                                            },
+                                                            right: Expr {
+                                                                span: Span {
+                                                                    path: "sv-cells/dmg_cpu_b/cells/dlatch.sv",
+                                                                    line: 38,
+                                                                    column: 60,
+                                                                },
+                                                                kind: Path(
+                                                                    [
+                                                                        "T_fall_q_n",
+                                                                    ],
+                                                                ),
+                                                            },
+                                                        },
+                                                    },
+                                                ),
+                                            ],
+                                        },
+                                    ),
+                                    Path(
+                                        SpecPath {
+                                            span: Span {
+                                                path: "sv-cells/dmg_cpu_b/cells/dlatch.sv",
+                                                line: 39,
+                                                column: 3,
+                                            },
+                                            controls: [
+                                                Expr {
+                                                    span: Span {
+                                                        path: "sv-cells/dmg_cpu_b/cells/dlatch.sv",
+                                                        line: 39,
+                                                        column: 4,
+                                                    },
+                                                    kind: Path(
+                                                        [
+                                                            "ena",
+                                                        ],
+                                                    ),
+                                                },
+                                            ],
+                                            target: Expr {
+                                                span: Span {
+                                                    path: "sv-cells/dmg_cpu_b/cells/dlatch.sv",
+                                                    line: 39,
+                                                    column: 11,
+                                                },
+                                                kind: Path(
+                                                    [
+                                                        "q_n",
+                                                    ],
+                                                ),
+                                            },
+                                            delays: [
+                                                Some(
+                                                    Expr {
+                                                        span: Span {
+                                                            path: "sv-cells/dmg_cpu_b/cells/dlatch.sv",
+                                                            line: 39,
+                                                            column: 19,
+                                                        },
+                                                        kind: Binary {
+                                                            op: Add,
+                                                            left: Expr {
+                                                                span: Span {
+                                                                    path: "sv-cells/dmg_cpu_b/cells/dlatch.sv",
+                                                                    line: 39,
+                                                                    column: 19,
+                                                                },
+                                                                kind: Binary {
+                                                                    op: Add,
+                                                                    left: Expr {
+                                                                        span: Span {
+                                                                            path: "sv-cells/dmg_cpu_b/cells/dlatch.sv",
+                                                                            line: 39,
+                                                                            column: 19,
+                                                                        },
+                                                                        kind: Binary {
+                                                                            op: Add,
+                                                                            left: Expr {
+                                                                                span: Span {
+                                                                                    path: "sv-cells/dmg_cpu_b/cells/dlatch.sv",
+                                                                                    line: 39,
+                                                                                    column: 19,
+                                                                                },
+                                                                                kind: Binary {
+                                                                                    op: Add,
+                                                                                    left: Expr {
+                                                                                        span: Span {
+                                                                                            path: "sv-cells/dmg_cpu_b/cells/dlatch.sv",
+                                                                                            line: 39,
+                                                                                            column: 19,
+                                                                                        },
+                                                                                        kind: Binary {
+                                                                                            op: Add,
+                                                                                            left: Expr {
+                                                                                                span: Span {
+                                                                                                    path: "sv-cells/dmg_cpu_b/cells/dlatch.sv",
+                                                                                                    line: 39,
+                                                                                                    column: 19,
+                                                                                                },
+                                                                                                kind: Path(
+                                                                                                    [
+                                                                                                        "T_fall_not1",
+                                                                                                    ],
+                                                                                                ),
+                                                                                            },
+                                                                                            right: Expr {
+                                                                                                span: Span {
+                                                                                                    path: "sv-cells/dmg_cpu_b/cells/dlatch.sv",
+                                                                                                    line: 39,
+                                                                                                    column: 33,
+                                                                                                },
+                                                                                                kind: Path(
+                                                                                                    [
+                                                                                                        "T_rise_not2",
+                                                                                                    ],
+                                                                                                ),
+                                                                                            },
+                                                                                        },
+                                                                                    },
+                                                                                    right: Expr {
+                                                                                        span: Span {
+                                                                                            path: "sv-cells/dmg_cpu_b/cells/dlatch.sv",
+                                                                                            line: 39,
+                                                                                            column: 47,
+                                                                                        },
+                                                                                        kind: Path(
+                                                                                            [
+                                                                                                "T_fall_buf",
+                                                                                            ],
+                                                                                        ),
+                                                                                    },
+                                                                                },
+                                                                            },
+                                                                            right: Expr {
+                                                                                span: Span {
+                                                                                    path: "sv-cells/dmg_cpu_b/cells/dlatch.sv",
+                                                                                    line: 39,
+                                                                                    column: 60,
+                                                                                },
+                                                                                kind: Path(
+                                                                                    [
+                                                                                        "T_rise_not3",
+                                                                                    ],
+                                                                                ),
+                                                                            },
+                                                                        },
+                                                                    },
+                                                                    right: Expr {
+                                                                        span: Span {
+                                                                            path: "sv-cells/dmg_cpu_b/cells/dlatch.sv",
+                                                                            line: 39,
+                                                                            column: 74,
+                                                                        },
+                                                                        kind: Path(
+                                                                            [
+                                                                                "T_fall_not4",
+                                                                            ],
+                                                                        ),
+                                                                    },
+                                                                },
+                                                            },
+                                                            right: Expr {
+                                                                span: Span {
+                                                                    path: "sv-cells/dmg_cpu_b/cells/dlatch.sv",
+                                                                    line: 39,
+                                                                    column: 88,
+                                                                },
+                                                                kind: Path(
+                                                                    [
+                                                                        "T_rise_q_n",
+                                                                    ],
+                                                                ),
+                                                            },
+                                                        },
+                                                    },
+                                                ),
+                                                Some(
+                                                    Expr {
+                                                        span: Span {
+                                                            path: "sv-cells/dmg_cpu_b/cells/dlatch.sv",
+                                                            line: 40,
+                                                            column: 19,
+                                                        },
+                                                        kind: Binary {
+                                                            op: Add,
+                                                            left: Expr {
+                                                                span: Span {
+                                                                    path: "sv-cells/dmg_cpu_b/cells/dlatch.sv",
+                                                                    line: 40,
+                                                                    column: 19,
+                                                                },
+                                                                kind: Binary {
+                                                                    op: Add,
+                                                                    left: Expr {
+                                                                        span: Span {
+                                                                            path: "sv-cells/dmg_cpu_b/cells/dlatch.sv",
+                                                                            line: 40,
+                                                                            column: 19,
+                                                                        },
+                                                                        kind: Binary {
+                                                                            op: Add,
+                                                                            left: Expr {
+                                                                                span: Span {
+                                                                                    path: "sv-cells/dmg_cpu_b/cells/dlatch.sv",
+                                                                                    line: 40,
+                                                                                    column: 19,
+                                                                                },
+                                                                                kind: Binary {
+                                                                                    op: Add,
+                                                                                    left: Expr {
+                                                                                        span: Span {
+                                                                                            path: "sv-cells/dmg_cpu_b/cells/dlatch.sv",
+                                                                                            line: 40,
+                                                                                            column: 19,
+                                                                                        },
+                                                                                        kind: Path(
+                                                                                            [
+                                                                                                "T_fall_not1",
+                                                                                            ],
+                                                                                        ),
+                                                                                    },
+                                                                                    right: Expr {
+                                                                                        span: Span {
+                                                                                            path: "sv-cells/dmg_cpu_b/cells/dlatch.sv",
+                                                                                            line: 40,
+                                                                                            column: 33,
+                                                                                        },
+                                                                                        kind: Path(
+                                                                                            [
+                                                                                                "T_rise_buf",
+                                                                                            ],
+                                                                                        ),
+                                                                                    },
+                                                                                },
+                                                                            },
+                                                                            right: Expr {
+                                                                                span: Span {
+                                                                                    path: "sv-cells/dmg_cpu_b/cells/dlatch.sv",
+                                                                                    line: 40,
+                                                                                    column: 46,
+                                                                                },
+                                                                                kind: Path(
+                                                                                    [
+                                                                                        "T_fall_not3",
+                                                                                    ],
+                                                                                ),
+                                                                            },
+                                                                        },
+                                                                    },
+                                                                    right: Expr {
+                                                                        span: Span {
+                                                                            path: "sv-cells/dmg_cpu_b/cells/dlatch.sv",
+                                                                            line: 40,
+                                                                            column: 60,
+                                                                        },
+                                                                        kind: Path(
+                                                                            [
+                                                                                "T_rise_not4",
+                                                                            ],
+                                                                        ),
+                                                                    },
+                                                                },
+                                                            },
+                                                            right: Expr {
+                                                                span: Span {
+                                                                    path: "sv-cells/dmg_cpu_b/cells/dlatch.sv",
+                                                                    line: 40,
+                                                                    column: 74,
+                                                                },
+                                                                kind: Path(
+                                                                    [
+                                                                        "T_fall_q_n",
+                                                                    ],
+                                                                ),
+                                                            },
+                                                        },
+                                                    },
+                                                ),
+                                            ],
+                                        },
+                                    ),
+                                ],
+                            },
+                        ),
+                    },
+                ],
+            },
+        ),
+        Directive(
+            Directive {
+                span: Span {
+                    path: "sv-cells/dmg_cpu_b/cells/dlatch.sv",
+                    line: 45,
+                    column: 1,
+                },
+                name: "default_nettype",
+                arguments: [
+                    "wire",
+                ],
+            },
+        ),
+    ],
+}

@@ -1,4 +1,4 @@
-1:1 directive                "`default_nettype"
+1:1 directive                "`default_nettype none"
 3:1 keyword.module           "module"
 3:8 identifier               "sm83_dffs_cc_ee_pch_d_reg_pc_bit"
 3:41 operator.hash            "#"
@@ -380,4 +380,4 @@
 43:65 punct.semicolon          ";"
 44:2 keyword.endspecify       "endspecify"
 46:1 keyword.endmodule        "endmodule"
-48:1 directive                "`default_nettype"
+48:1 directive                "`default_nettype wire"

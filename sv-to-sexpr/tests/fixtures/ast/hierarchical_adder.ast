@@ -1,0 +1,689 @@
+Design {
+    items: [
+        Directive(
+            Directive {
+                span: Span {
+                    path: "sv-cells/dmg_cpu_b/cells/full_add.sv",
+                    line: 1,
+                    column: 1,
+                },
+                name: "default_nettype",
+                arguments: [
+                    "none",
+                ],
+            },
+        ),
+        Module(
+            Module {
+                span: Span {
+                    path: "sv-cells/dmg_cpu_b/cells/full_add.sv",
+                    line: 3,
+                    column: 1,
+                },
+                name: "dmg_full_add",
+                parameters: [
+                    ParamDecl {
+                        span: Span {
+                            path: "sv-cells/dmg_cpu_b/cells/full_add.sv",
+                            line: 4,
+                            column: 3,
+                        },
+                        kind: Parameter,
+                        ty: Some(
+                            "real",
+                        ),
+                        name: "L_sum",
+                        value: Expr {
+                            span: Span {
+                                path: "sv-cells/dmg_cpu_b/cells/full_add.sv",
+                                line: 4,
+                                column: 27,
+                            },
+                            kind: Integer(
+                                "54",
+                            ),
+                        },
+                    },
+                    ParamDecl {
+                        span: Span {
+                            path: "sv-cells/dmg_cpu_b/cells/full_add.sv",
+                            line: 5,
+                            column: 3,
+                        },
+                        kind: Parameter,
+                        ty: Some(
+                            "real",
+                        ),
+                        name: "L_cout",
+                        value: Expr {
+                            span: Span {
+                                path: "sv-cells/dmg_cpu_b/cells/full_add.sv",
+                                line: 5,
+                                column: 27,
+                            },
+                            kind: Integer(
+                                "54",
+                            ),
+                        },
+                    },
+                ],
+                ports: [
+                    PortDecl {
+                        span: Span {
+                            path: "sv-cells/dmg_cpu_b/cells/full_add.sv",
+                            line: 7,
+                            column: 3,
+                        },
+                        direction: Input,
+                        modifiers: [
+                            "logic",
+                        ],
+                        names: [
+                            "a",
+                            "b",
+                            "cin",
+                        ],
+                    },
+                    PortDecl {
+                        span: Span {
+                            path: "sv-cells/dmg_cpu_b/cells/full_add.sv",
+                            line: 8,
+                            column: 3,
+                        },
+                        direction: Output,
+                        modifiers: [
+                            "logic",
+                        ],
+                        names: [
+                            "sum",
+                            "cout",
+                        ],
+                    },
+                ],
+                items: [
+                    Item {
+                        span: Span {
+                            path: "sv-cells/dmg_cpu_b/cells/full_add.sv",
+                            line: 11,
+                            column: 2,
+                        },
+                        kind: Decl(
+                            Decl {
+                                span: Span {
+                                    path: "sv-cells/dmg_cpu_b/cells/full_add.sv",
+                                    line: 11,
+                                    column: 2,
+                                },
+                                kind: Logic,
+                                ty: None,
+                                names: [
+                                    "axb",
+                                    "ab",
+                                    "caxb",
+                                ],
+                                value: None,
+                            },
+                        ),
+                    },
+                    Item {
+                        span: Span {
+                            path: "sv-cells/dmg_cpu_b/cells/full_add.sv",
+                            line: 13,
+                            column: 2,
+                        },
+                        kind: Instantiation(
+                            Instantiation {
+                                span: Span {
+                                    path: "sv-cells/dmg_cpu_b/cells/full_add.sv",
+                                    line: 13,
+                                    column: 2,
+                                },
+                                module: "dmg_xor",
+                                parameters: [
+                                    ParamOverride {
+                                        span: Span {
+                                            path: "sv-cells/dmg_cpu_b/cells/full_add.sv",
+                                            line: 13,
+                                            column: 14,
+                                        },
+                                        kind: Named {
+                                            name: "L_y",
+                                            value: Expr {
+                                                span: Span {
+                                                    path: "sv-cells/dmg_cpu_b/cells/full_add.sv",
+                                                    line: 13,
+                                                    column: 19,
+                                                },
+                                                kind: Path(
+                                                    [
+                                                        "L_sum",
+                                                    ],
+                                                ),
+                                            },
+                                        },
+                                    },
+                                ],
+                                instance: "xor_sum_inst",
+                                connections: [
+                                    Connection {
+                                        span: Span {
+                                            path: "sv-cells/dmg_cpu_b/cells/full_add.sv",
+                                            line: 13,
+                                            column: 44,
+                                        },
+                                        kind: Named {
+                                            name: "y",
+                                            value: Expr {
+                                                span: Span {
+                                                    path: "sv-cells/dmg_cpu_b/cells/full_add.sv",
+                                                    line: 13,
+                                                    column: 47,
+                                                },
+                                                kind: Path(
+                                                    [
+                                                        "sum",
+                                                    ],
+                                                ),
+                                            },
+                                        },
+                                    },
+                                    Connection {
+                                        span: Span {
+                                            path: "sv-cells/dmg_cpu_b/cells/full_add.sv",
+                                            line: 13,
+                                            column: 54,
+                                        },
+                                        kind: Named {
+                                            name: "in1",
+                                            value: Expr {
+                                                span: Span {
+                                                    path: "sv-cells/dmg_cpu_b/cells/full_add.sv",
+                                                    line: 13,
+                                                    column: 59,
+                                                },
+                                                kind: Path(
+                                                    [
+                                                        "axb",
+                                                    ],
+                                                ),
+                                            },
+                                        },
+                                    },
+                                    Connection {
+                                        span: Span {
+                                            path: "sv-cells/dmg_cpu_b/cells/full_add.sv",
+                                            line: 13,
+                                            column: 65,
+                                        },
+                                        kind: Named {
+                                            name: "in2",
+                                            value: Expr {
+                                                span: Span {
+                                                    path: "sv-cells/dmg_cpu_b/cells/full_add.sv",
+                                                    line: 13,
+                                                    column: 70,
+                                                },
+                                                kind: Path(
+                                                    [
+                                                        "cin",
+                                                    ],
+                                                ),
+                                            },
+                                        },
+                                    },
+                                ],
+                            },
+                        ),
+                    },
+                    Item {
+                        span: Span {
+                            path: "sv-cells/dmg_cpu_b/cells/full_add.sv",
+                            line: 14,
+                            column: 2,
+                        },
+                        kind: Instantiation(
+                            Instantiation {
+                                span: Span {
+                                    path: "sv-cells/dmg_cpu_b/cells/full_add.sv",
+                                    line: 14,
+                                    column: 2,
+                                },
+                                module: "dmg_nand2",
+                                parameters: [
+                                    ParamOverride {
+                                        span: Span {
+                                            path: "sv-cells/dmg_cpu_b/cells/full_add.sv",
+                                            line: 14,
+                                            column: 14,
+                                        },
+                                        kind: Named {
+                                            name: "L_y",
+                                            value: Expr {
+                                                span: Span {
+                                                    path: "sv-cells/dmg_cpu_b/cells/full_add.sv",
+                                                    line: 14,
+                                                    column: 19,
+                                                },
+                                                kind: Integer(
+                                                    "120",
+                                                ),
+                                            },
+                                        },
+                                    },
+                                ],
+                                instance: "nand2_caxb_inst",
+                                connections: [
+                                    Connection {
+                                        span: Span {
+                                            path: "sv-cells/dmg_cpu_b/cells/full_add.sv",
+                                            line: 14,
+                                            column: 44,
+                                        },
+                                        kind: Named {
+                                            name: "y",
+                                            value: Expr {
+                                                span: Span {
+                                                    path: "sv-cells/dmg_cpu_b/cells/full_add.sv",
+                                                    line: 14,
+                                                    column: 47,
+                                                },
+                                                kind: Path(
+                                                    [
+                                                        "caxb",
+                                                    ],
+                                                ),
+                                            },
+                                        },
+                                    },
+                                    Connection {
+                                        span: Span {
+                                            path: "sv-cells/dmg_cpu_b/cells/full_add.sv",
+                                            line: 14,
+                                            column: 54,
+                                        },
+                                        kind: Named {
+                                            name: "in1",
+                                            value: Expr {
+                                                span: Span {
+                                                    path: "sv-cells/dmg_cpu_b/cells/full_add.sv",
+                                                    line: 14,
+                                                    column: 59,
+                                                },
+                                                kind: Path(
+                                                    [
+                                                        "cin",
+                                                    ],
+                                                ),
+                                            },
+                                        },
+                                    },
+                                    Connection {
+                                        span: Span {
+                                            path: "sv-cells/dmg_cpu_b/cells/full_add.sv",
+                                            line: 14,
+                                            column: 65,
+                                        },
+                                        kind: Named {
+                                            name: "in2",
+                                            value: Expr {
+                                                span: Span {
+                                                    path: "sv-cells/dmg_cpu_b/cells/full_add.sv",
+                                                    line: 14,
+                                                    column: 70,
+                                                },
+                                                kind: Path(
+                                                    [
+                                                        "axb",
+                                                    ],
+                                                ),
+                                            },
+                                        },
+                                    },
+                                ],
+                            },
+                        ),
+                    },
+                    Item {
+                        span: Span {
+                            path: "sv-cells/dmg_cpu_b/cells/full_add.sv",
+                            line: 15,
+                            column: 2,
+                        },
+                        kind: Instantiation(
+                            Instantiation {
+                                span: Span {
+                                    path: "sv-cells/dmg_cpu_b/cells/full_add.sv",
+                                    line: 15,
+                                    column: 2,
+                                },
+                                module: "dmg_nand2",
+                                parameters: [
+                                    ParamOverride {
+                                        span: Span {
+                                            path: "sv-cells/dmg_cpu_b/cells/full_add.sv",
+                                            line: 15,
+                                            column: 14,
+                                        },
+                                        kind: Named {
+                                            name: "L_y",
+                                            value: Expr {
+                                                span: Span {
+                                                    path: "sv-cells/dmg_cpu_b/cells/full_add.sv",
+                                                    line: 15,
+                                                    column: 19,
+                                                },
+                                                kind: Path(
+                                                    [
+                                                        "L_cout",
+                                                    ],
+                                                ),
+                                            },
+                                        },
+                                    },
+                                ],
+                                instance: "nand2_cout_inst",
+                                connections: [
+                                    Connection {
+                                        span: Span {
+                                            path: "sv-cells/dmg_cpu_b/cells/full_add.sv",
+                                            line: 15,
+                                            column: 44,
+                                        },
+                                        kind: Named {
+                                            name: "y",
+                                            value: Expr {
+                                                span: Span {
+                                                    path: "sv-cells/dmg_cpu_b/cells/full_add.sv",
+                                                    line: 15,
+                                                    column: 47,
+                                                },
+                                                kind: Path(
+                                                    [
+                                                        "cout",
+                                                    ],
+                                                ),
+                                            },
+                                        },
+                                    },
+                                    Connection {
+                                        span: Span {
+                                            path: "sv-cells/dmg_cpu_b/cells/full_add.sv",
+                                            line: 15,
+                                            column: 54,
+                                        },
+                                        kind: Named {
+                                            name: "in1",
+                                            value: Expr {
+                                                span: Span {
+                                                    path: "sv-cells/dmg_cpu_b/cells/full_add.sv",
+                                                    line: 15,
+                                                    column: 59,
+                                                },
+                                                kind: Path(
+                                                    [
+                                                        "ab",
+                                                    ],
+                                                ),
+                                            },
+                                        },
+                                    },
+                                    Connection {
+                                        span: Span {
+                                            path: "sv-cells/dmg_cpu_b/cells/full_add.sv",
+                                            line: 15,
+                                            column: 65,
+                                        },
+                                        kind: Named {
+                                            name: "in2",
+                                            value: Expr {
+                                                span: Span {
+                                                    path: "sv-cells/dmg_cpu_b/cells/full_add.sv",
+                                                    line: 15,
+                                                    column: 70,
+                                                },
+                                                kind: Path(
+                                                    [
+                                                        "caxb",
+                                                    ],
+                                                ),
+                                            },
+                                        },
+                                    },
+                                ],
+                            },
+                        ),
+                    },
+                    Item {
+                        span: Span {
+                            path: "sv-cells/dmg_cpu_b/cells/full_add.sv",
+                            line: 16,
+                            column: 2,
+                        },
+                        kind: Instantiation(
+                            Instantiation {
+                                span: Span {
+                                    path: "sv-cells/dmg_cpu_b/cells/full_add.sv",
+                                    line: 16,
+                                    column: 2,
+                                },
+                                module: "dmg_nand2",
+                                parameters: [
+                                    ParamOverride {
+                                        span: Span {
+                                            path: "sv-cells/dmg_cpu_b/cells/full_add.sv",
+                                            line: 16,
+                                            column: 14,
+                                        },
+                                        kind: Named {
+                                            name: "L_y",
+                                            value: Expr {
+                                                span: Span {
+                                                    path: "sv-cells/dmg_cpu_b/cells/full_add.sv",
+                                                    line: 16,
+                                                    column: 19,
+                                                },
+                                                kind: Integer(
+                                                    "119",
+                                                ),
+                                            },
+                                        },
+                                    },
+                                ],
+                                instance: "nand2_ab_inst",
+                                connections: [
+                                    Connection {
+                                        span: Span {
+                                            path: "sv-cells/dmg_cpu_b/cells/full_add.sv",
+                                            line: 16,
+                                            column: 44,
+                                        },
+                                        kind: Named {
+                                            name: "y",
+                                            value: Expr {
+                                                span: Span {
+                                                    path: "sv-cells/dmg_cpu_b/cells/full_add.sv",
+                                                    line: 16,
+                                                    column: 47,
+                                                },
+                                                kind: Path(
+                                                    [
+                                                        "ab",
+                                                    ],
+                                                ),
+                                            },
+                                        },
+                                    },
+                                    Connection {
+                                        span: Span {
+                                            path: "sv-cells/dmg_cpu_b/cells/full_add.sv",
+                                            line: 16,
+                                            column: 54,
+                                        },
+                                        kind: Named {
+                                            name: "in1",
+                                            value: Expr {
+                                                span: Span {
+                                                    path: "sv-cells/dmg_cpu_b/cells/full_add.sv",
+                                                    line: 16,
+                                                    column: 59,
+                                                },
+                                                kind: Path(
+                                                    [
+                                                        "b",
+                                                    ],
+                                                ),
+                                            },
+                                        },
+                                    },
+                                    Connection {
+                                        span: Span {
+                                            path: "sv-cells/dmg_cpu_b/cells/full_add.sv",
+                                            line: 16,
+                                            column: 65,
+                                        },
+                                        kind: Named {
+                                            name: "in2",
+                                            value: Expr {
+                                                span: Span {
+                                                    path: "sv-cells/dmg_cpu_b/cells/full_add.sv",
+                                                    line: 16,
+                                                    column: 70,
+                                                },
+                                                kind: Path(
+                                                    [
+                                                        "a",
+                                                    ],
+                                                ),
+                                            },
+                                        },
+                                    },
+                                ],
+                            },
+                        ),
+                    },
+                    Item {
+                        span: Span {
+                            path: "sv-cells/dmg_cpu_b/cells/full_add.sv",
+                            line: 17,
+                            column: 2,
+                        },
+                        kind: Instantiation(
+                            Instantiation {
+                                span: Span {
+                                    path: "sv-cells/dmg_cpu_b/cells/full_add.sv",
+                                    line: 17,
+                                    column: 2,
+                                },
+                                module: "dmg_xor",
+                                parameters: [
+                                    ParamOverride {
+                                        span: Span {
+                                            path: "sv-cells/dmg_cpu_b/cells/full_add.sv",
+                                            line: 17,
+                                            column: 14,
+                                        },
+                                        kind: Named {
+                                            name: "L_y",
+                                            value: Expr {
+                                                span: Span {
+                                                    path: "sv-cells/dmg_cpu_b/cells/full_add.sv",
+                                                    line: 17,
+                                                    column: 19,
+                                                },
+                                                kind: Integer(
+                                                    "296",
+                                                ),
+                                            },
+                                        },
+                                    },
+                                ],
+                                instance: "xor_axb_inst",
+                                connections: [
+                                    Connection {
+                                        span: Span {
+                                            path: "sv-cells/dmg_cpu_b/cells/full_add.sv",
+                                            line: 17,
+                                            column: 44,
+                                        },
+                                        kind: Named {
+                                            name: "y",
+                                            value: Expr {
+                                                span: Span {
+                                                    path: "sv-cells/dmg_cpu_b/cells/full_add.sv",
+                                                    line: 17,
+                                                    column: 47,
+                                                },
+                                                kind: Path(
+                                                    [
+                                                        "axb",
+                                                    ],
+                                                ),
+                                            },
+                                        },
+                                    },
+                                    Connection {
+                                        span: Span {
+                                            path: "sv-cells/dmg_cpu_b/cells/full_add.sv",
+                                            line: 17,
+                                            column: 54,
+                                        },
+                                        kind: Named {
+                                            name: "in1",
+                                            value: Expr {
+                                                span: Span {
+                                                    path: "sv-cells/dmg_cpu_b/cells/full_add.sv",
+                                                    line: 17,
+                                                    column: 59,
+                                                },
+                                                kind: Path(
+                                                    [
+                                                        "a",
+                                                    ],
+                                                ),
+                                            },
+                                        },
+                                    },
+                                    Connection {
+                                        span: Span {
+                                            path: "sv-cells/dmg_cpu_b/cells/full_add.sv",
+                                            line: 17,
+                                            column: 65,
+                                        },
+                                        kind: Named {
+                                            name: "in2",
+                                            value: Expr {
+                                                span: Span {
+                                                    path: "sv-cells/dmg_cpu_b/cells/full_add.sv",
+                                                    line: 17,
+                                                    column: 70,
+                                                },
+                                                kind: Path(
+                                                    [
+                                                        "b",
+                                                    ],
+                                                ),
+                                            },
+                                        },
+                                    },
+                                ],
+                            },
+                        ),
+                    },
+                ],
+            },
+        ),
+        Directive(
+            Directive {
+                span: Span {
+                    path: "sv-cells/dmg_cpu_b/cells/full_add.sv",
+                    line: 21,
+                    column: 1,
+                },
+                name: "default_nettype",
+                arguments: [
+                    "wire",
+                ],
+            },
+        ),
+    ],
+}

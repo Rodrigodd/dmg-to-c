@@ -1,0 +1,769 @@
+Design {
+    items: [
+        Directive(
+            Directive {
+                span: Span {
+                    path: "sv-cells/dmg_cpu_b/cells/and2.sv",
+                    line: 1,
+                    column: 1,
+                },
+                name: "default_nettype",
+                arguments: [
+                    "none",
+                ],
+            },
+        ),
+        Module(
+            Module {
+                span: Span {
+                    path: "sv-cells/dmg_cpu_b/cells/and2.sv",
+                    line: 3,
+                    column: 1,
+                },
+                name: "dmg_and2",
+                parameters: [
+                    ParamDecl {
+                        span: Span {
+                            path: "sv-cells/dmg_cpu_b/cells/and2.sv",
+                            line: 4,
+                            column: 3,
+                        },
+                        kind: Parameter,
+                        ty: Some(
+                            "real",
+                        ),
+                        name: "L_y",
+                        value: Expr {
+                            span: Span {
+                                path: "sv-cells/dmg_cpu_b/cells/and2.sv",
+                                line: 4,
+                                column: 24,
+                            },
+                            kind: Integer(
+                                "54",
+                            ),
+                        },
+                    },
+                ],
+                ports: [
+                    PortDecl {
+                        span: Span {
+                            path: "sv-cells/dmg_cpu_b/cells/and2.sv",
+                            line: 6,
+                            column: 3,
+                        },
+                        direction: Input,
+                        modifiers: [
+                            "logic",
+                        ],
+                        names: [
+                            "in1",
+                            "in2",
+                        ],
+                    },
+                    PortDecl {
+                        span: Span {
+                            path: "sv-cells/dmg_cpu_b/cells/and2.sv",
+                            line: 7,
+                            column: 3,
+                        },
+                        direction: Output,
+                        modifiers: [
+                            "logic",
+                        ],
+                        names: [
+                            "y",
+                        ],
+                    },
+                ],
+                items: [
+                    Item {
+                        span: Span {
+                            path: "sv-cells/dmg_cpu_b/cells/and2.sv",
+                            line: 10,
+                            column: 2,
+                        },
+                        kind: Import(
+                            ImportDecl {
+                                span: Span {
+                                    path: "sv-cells/dmg_cpu_b/cells/and2.sv",
+                                    line: 10,
+                                    column: 2,
+                                },
+                                path: [
+                                    "dmg_timing",
+                                ],
+                                wildcard: true,
+                            },
+                        ),
+                    },
+                    Item {
+                        span: Span {
+                            path: "sv-cells/dmg_cpu_b/cells/and2.sv",
+                            line: 12,
+                            column: 2,
+                        },
+                        kind: Assign(
+                            AssignDecl {
+                                span: Span {
+                                    path: "sv-cells/dmg_cpu_b/cells/and2.sv",
+                                    line: 12,
+                                    column: 2,
+                                },
+                                strength: None,
+                                delay: None,
+                                target: Expr {
+                                    span: Span {
+                                        path: "sv-cells/dmg_cpu_b/cells/and2.sv",
+                                        line: 12,
+                                        column: 9,
+                                    },
+                                    kind: Path(
+                                        [
+                                            "y",
+                                        ],
+                                    ),
+                                },
+                                value: Expr {
+                                    span: Span {
+                                        path: "sv-cells/dmg_cpu_b/cells/and2.sv",
+                                        line: 12,
+                                        column: 13,
+                                    },
+                                    kind: Binary {
+                                        op: BitAnd,
+                                        left: Expr {
+                                            span: Span {
+                                                path: "sv-cells/dmg_cpu_b/cells/and2.sv",
+                                                line: 12,
+                                                column: 13,
+                                            },
+                                            kind: Path(
+                                                [
+                                                    "in1",
+                                                ],
+                                            ),
+                                        },
+                                        right: Expr {
+                                            span: Span {
+                                                path: "sv-cells/dmg_cpu_b/cells/and2.sv",
+                                                line: 12,
+                                                column: 19,
+                                            },
+                                            kind: Path(
+                                                [
+                                                    "in2",
+                                                ],
+                                            ),
+                                        },
+                                    },
+                                },
+                                op: Blocking,
+                            },
+                        ),
+                    },
+                    Item {
+                        span: Span {
+                            path: "sv-cells/dmg_cpu_b/cells/and2.sv",
+                            line: 14,
+                            column: 2,
+                        },
+                        kind: Specify(
+                            SpecifyBlock {
+                                span: Span {
+                                    path: "sv-cells/dmg_cpu_b/cells/and2.sv",
+                                    line: 14,
+                                    column: 2,
+                                },
+                                items: [
+                                    Specparam(
+                                        ParamDecl {
+                                            span: Span {
+                                                path: "sv-cells/dmg_cpu_b/cells/and2.sv",
+                                                line: 15,
+                                                column: 3,
+                                            },
+                                            kind: Specparam,
+                                            ty: None,
+                                            name: "T_rise_nand",
+                                            value: Expr {
+                                                span: Span {
+                                                    path: "sv-cells/dmg_cpu_b/cells/and2.sv",
+                                                    line: 15,
+                                                    column: 27,
+                                                },
+                                                kind: Call {
+                                                    callee: Expr {
+                                                        span: Span {
+                                                            path: "sv-cells/dmg_cpu_b/cells/and2.sv",
+                                                            line: 15,
+                                                            column: 27,
+                                                        },
+                                                        kind: Path(
+                                                            [
+                                                                "tpd_elmore",
+                                                            ],
+                                                        ),
+                                                    },
+                                                    args: [
+                                                        Some(
+                                                            Expr {
+                                                                span: Span {
+                                                                    path: "sv-cells/dmg_cpu_b/cells/and2.sv",
+                                                                    line: 15,
+                                                                    column: 38,
+                                                                },
+                                                                kind: Integer(
+                                                                    "122",
+                                                                ),
+                                                            },
+                                                        ),
+                                                        Some(
+                                                            Expr {
+                                                                span: Span {
+                                                                    path: "sv-cells/dmg_cpu_b/cells/and2.sv",
+                                                                    line: 15,
+                                                                    column: 43,
+                                                                },
+                                                                kind: Call {
+                                                                    callee: Expr {
+                                                                        span: Span {
+                                                                            path: "sv-cells/dmg_cpu_b/cells/and2.sv",
+                                                                            line: 15,
+                                                                            column: 43,
+                                                                        },
+                                                                        kind: Path(
+                                                                            [
+                                                                                "R_pmos_ohm",
+                                                                            ],
+                                                                        ),
+                                                                    },
+                                                                    args: [
+                                                                        Some(
+                                                                            Expr {
+                                                                                span: Span {
+                                                                                    path: "sv-cells/dmg_cpu_b/cells/and2.sv",
+                                                                                    line: 15,
+                                                                                    column: 54,
+                                                                                },
+                                                                                kind: Binary {
+                                                                                    op: Mul,
+                                                                                    left: Expr {
+                                                                                        span: Span {
+                                                                                            path: "sv-cells/dmg_cpu_b/cells/and2.sv",
+                                                                                            line: 15,
+                                                                                            column: 54,
+                                                                                        },
+                                                                                        kind: Integer(
+                                                                                            "35",
+                                                                                        ),
+                                                                                    },
+                                                                                    right: Expr {
+                                                                                        span: Span {
+                                                                                            path: "sv-cells/dmg_cpu_b/cells/and2.sv",
+                                                                                            line: 15,
+                                                                                            column: 57,
+                                                                                        },
+                                                                                        kind: Path(
+                                                                                            [
+                                                                                                "L_unit",
+                                                                                            ],
+                                                                                        ),
+                                                                                    },
+                                                                                },
+                                                                            },
+                                                                        ),
+                                                                    ],
+                                                                },
+                                                            },
+                                                        ),
+                                                    ],
+                                                },
+                                            },
+                                        },
+                                    ),
+                                    Specparam(
+                                        ParamDecl {
+                                            span: Span {
+                                                path: "sv-cells/dmg_cpu_b/cells/and2.sv",
+                                                line: 16,
+                                                column: 3,
+                                            },
+                                            kind: Specparam,
+                                            ty: None,
+                                            name: "T_fall_nand",
+                                            value: Expr {
+                                                span: Span {
+                                                    path: "sv-cells/dmg_cpu_b/cells/and2.sv",
+                                                    line: 16,
+                                                    column: 27,
+                                                },
+                                                kind: Call {
+                                                    callee: Expr {
+                                                        span: Span {
+                                                            path: "sv-cells/dmg_cpu_b/cells/and2.sv",
+                                                            line: 16,
+                                                            column: 27,
+                                                        },
+                                                        kind: Path(
+                                                            [
+                                                                "tpd_elmore",
+                                                            ],
+                                                        ),
+                                                    },
+                                                    args: [
+                                                        Some(
+                                                            Expr {
+                                                                span: Span {
+                                                                    path: "sv-cells/dmg_cpu_b/cells/and2.sv",
+                                                                    line: 16,
+                                                                    column: 38,
+                                                                },
+                                                                kind: Integer(
+                                                                    "122",
+                                                                ),
+                                                            },
+                                                        ),
+                                                        Some(
+                                                            Expr {
+                                                                span: Span {
+                                                                    path: "sv-cells/dmg_cpu_b/cells/and2.sv",
+                                                                    line: 16,
+                                                                    column: 43,
+                                                                },
+                                                                kind: Binary {
+                                                                    op: Mul,
+                                                                    left: Expr {
+                                                                        span: Span {
+                                                                            path: "sv-cells/dmg_cpu_b/cells/and2.sv",
+                                                                            line: 16,
+                                                                            column: 43,
+                                                                        },
+                                                                        kind: Call {
+                                                                            callee: Expr {
+                                                                                span: Span {
+                                                                                    path: "sv-cells/dmg_cpu_b/cells/and2.sv",
+                                                                                    line: 16,
+                                                                                    column: 43,
+                                                                                },
+                                                                                kind: Path(
+                                                                                    [
+                                                                                        "R_nmos_ohm",
+                                                                                    ],
+                                                                                ),
+                                                                            },
+                                                                            args: [
+                                                                                Some(
+                                                                                    Expr {
+                                                                                        span: Span {
+                                                                                            path: "sv-cells/dmg_cpu_b/cells/and2.sv",
+                                                                                            line: 16,
+                                                                                            column: 54,
+                                                                                        },
+                                                                                        kind: Binary {
+                                                                                            op: Mul,
+                                                                                            left: Expr {
+                                                                                                span: Span {
+                                                                                                    path: "sv-cells/dmg_cpu_b/cells/and2.sv",
+                                                                                                    line: 16,
+                                                                                                    column: 54,
+                                                                                                },
+                                                                                                kind: Integer(
+                                                                                                    "35",
+                                                                                                ),
+                                                                                            },
+                                                                                            right: Expr {
+                                                                                                span: Span {
+                                                                                                    path: "sv-cells/dmg_cpu_b/cells/and2.sv",
+                                                                                                    line: 16,
+                                                                                                    column: 57,
+                                                                                                },
+                                                                                                kind: Path(
+                                                                                                    [
+                                                                                                        "L_unit",
+                                                                                                    ],
+                                                                                                ),
+                                                                                            },
+                                                                                        },
+                                                                                    },
+                                                                                ),
+                                                                            ],
+                                                                        },
+                                                                    },
+                                                                    right: Expr {
+                                                                        span: Span {
+                                                                            path: "sv-cells/dmg_cpu_b/cells/and2.sv",
+                                                                            line: 16,
+                                                                            column: 67,
+                                                                        },
+                                                                        kind: Integer(
+                                                                            "2",
+                                                                        ),
+                                                                    },
+                                                                },
+                                                            },
+                                                        ),
+                                                    ],
+                                                },
+                                            },
+                                        },
+                                    ),
+                                    Specparam(
+                                        ParamDecl {
+                                            span: Span {
+                                                path: "sv-cells/dmg_cpu_b/cells/and2.sv",
+                                                line: 17,
+                                                column: 3,
+                                            },
+                                            kind: Specparam,
+                                            ty: None,
+                                            name: "T_rise_y",
+                                            value: Expr {
+                                                span: Span {
+                                                    path: "sv-cells/dmg_cpu_b/cells/and2.sv",
+                                                    line: 17,
+                                                    column: 27,
+                                                },
+                                                kind: Call {
+                                                    callee: Expr {
+                                                        span: Span {
+                                                            path: "sv-cells/dmg_cpu_b/cells/and2.sv",
+                                                            line: 17,
+                                                            column: 27,
+                                                        },
+                                                        kind: Path(
+                                                            [
+                                                                "tpd_elmore",
+                                                            ],
+                                                        ),
+                                                    },
+                                                    args: [
+                                                        Some(
+                                                            Expr {
+                                                                span: Span {
+                                                                    path: "sv-cells/dmg_cpu_b/cells/and2.sv",
+                                                                    line: 17,
+                                                                    column: 38,
+                                                                },
+                                                                kind: Path(
+                                                                    [
+                                                                        "L_y",
+                                                                    ],
+                                                                ),
+                                                            },
+                                                        ),
+                                                        Some(
+                                                            Expr {
+                                                                span: Span {
+                                                                    path: "sv-cells/dmg_cpu_b/cells/and2.sv",
+                                                                    line: 17,
+                                                                    column: 43,
+                                                                },
+                                                                kind: Call {
+                                                                    callee: Expr {
+                                                                        span: Span {
+                                                                            path: "sv-cells/dmg_cpu_b/cells/and2.sv",
+                                                                            line: 17,
+                                                                            column: 43,
+                                                                        },
+                                                                        kind: Path(
+                                                                            [
+                                                                                "R_pmos_ohm",
+                                                                            ],
+                                                                        ),
+                                                                    },
+                                                                    args: [
+                                                                        Some(
+                                                                            Expr {
+                                                                                span: Span {
+                                                                                    path: "sv-cells/dmg_cpu_b/cells/and2.sv",
+                                                                                    line: 17,
+                                                                                    column: 54,
+                                                                                },
+                                                                                kind: Binary {
+                                                                                    op: Mul,
+                                                                                    left: Expr {
+                                                                                        span: Span {
+                                                                                            path: "sv-cells/dmg_cpu_b/cells/and2.sv",
+                                                                                            line: 17,
+                                                                                            column: 54,
+                                                                                        },
+                                                                                        kind: Integer(
+                                                                                            "35",
+                                                                                        ),
+                                                                                    },
+                                                                                    right: Expr {
+                                                                                        span: Span {
+                                                                                            path: "sv-cells/dmg_cpu_b/cells/and2.sv",
+                                                                                            line: 17,
+                                                                                            column: 57,
+                                                                                        },
+                                                                                        kind: Path(
+                                                                                            [
+                                                                                                "L_unit",
+                                                                                            ],
+                                                                                        ),
+                                                                                    },
+                                                                                },
+                                                                            },
+                                                                        ),
+                                                                    ],
+                                                                },
+                                                            },
+                                                        ),
+                                                    ],
+                                                },
+                                            },
+                                        },
+                                    ),
+                                    Specparam(
+                                        ParamDecl {
+                                            span: Span {
+                                                path: "sv-cells/dmg_cpu_b/cells/and2.sv",
+                                                line: 18,
+                                                column: 3,
+                                            },
+                                            kind: Specparam,
+                                            ty: None,
+                                            name: "T_fall_y",
+                                            value: Expr {
+                                                span: Span {
+                                                    path: "sv-cells/dmg_cpu_b/cells/and2.sv",
+                                                    line: 18,
+                                                    column: 27,
+                                                },
+                                                kind: Call {
+                                                    callee: Expr {
+                                                        span: Span {
+                                                            path: "sv-cells/dmg_cpu_b/cells/and2.sv",
+                                                            line: 18,
+                                                            column: 27,
+                                                        },
+                                                        kind: Path(
+                                                            [
+                                                                "tpd_elmore",
+                                                            ],
+                                                        ),
+                                                    },
+                                                    args: [
+                                                        Some(
+                                                            Expr {
+                                                                span: Span {
+                                                                    path: "sv-cells/dmg_cpu_b/cells/and2.sv",
+                                                                    line: 18,
+                                                                    column: 38,
+                                                                },
+                                                                kind: Path(
+                                                                    [
+                                                                        "L_y",
+                                                                    ],
+                                                                ),
+                                                            },
+                                                        ),
+                                                        Some(
+                                                            Expr {
+                                                                span: Span {
+                                                                    path: "sv-cells/dmg_cpu_b/cells/and2.sv",
+                                                                    line: 18,
+                                                                    column: 43,
+                                                                },
+                                                                kind: Call {
+                                                                    callee: Expr {
+                                                                        span: Span {
+                                                                            path: "sv-cells/dmg_cpu_b/cells/and2.sv",
+                                                                            line: 18,
+                                                                            column: 43,
+                                                                        },
+                                                                        kind: Path(
+                                                                            [
+                                                                                "R_nmos_ohm",
+                                                                            ],
+                                                                        ),
+                                                                    },
+                                                                    args: [
+                                                                        Some(
+                                                                            Expr {
+                                                                                span: Span {
+                                                                                    path: "sv-cells/dmg_cpu_b/cells/and2.sv",
+                                                                                    line: 18,
+                                                                                    column: 54,
+                                                                                },
+                                                                                kind: Binary {
+                                                                                    op: Mul,
+                                                                                    left: Expr {
+                                                                                        span: Span {
+                                                                                            path: "sv-cells/dmg_cpu_b/cells/and2.sv",
+                                                                                            line: 18,
+                                                                                            column: 54,
+                                                                                        },
+                                                                                        kind: Integer(
+                                                                                            "35",
+                                                                                        ),
+                                                                                    },
+                                                                                    right: Expr {
+                                                                                        span: Span {
+                                                                                            path: "sv-cells/dmg_cpu_b/cells/and2.sv",
+                                                                                            line: 18,
+                                                                                            column: 57,
+                                                                                        },
+                                                                                        kind: Path(
+                                                                                            [
+                                                                                                "L_unit",
+                                                                                            ],
+                                                                                        ),
+                                                                                    },
+                                                                                },
+                                                                            },
+                                                                        ),
+                                                                    ],
+                                                                },
+                                                            },
+                                                        ),
+                                                    ],
+                                                },
+                                            },
+                                        },
+                                    ),
+                                    Path(
+                                        SpecPath {
+                                            span: Span {
+                                                path: "sv-cells/dmg_cpu_b/cells/and2.sv",
+                                                line: 20,
+                                                column: 3,
+                                            },
+                                            controls: [
+                                                Expr {
+                                                    span: Span {
+                                                        path: "sv-cells/dmg_cpu_b/cells/and2.sv",
+                                                        line: 20,
+                                                        column: 4,
+                                                    },
+                                                    kind: Path(
+                                                        [
+                                                            "in1",
+                                                        ],
+                                                    ),
+                                                },
+                                                Expr {
+                                                    span: Span {
+                                                        path: "sv-cells/dmg_cpu_b/cells/and2.sv",
+                                                        line: 20,
+                                                        column: 9,
+                                                    },
+                                                    kind: Path(
+                                                        [
+                                                            "in2",
+                                                        ],
+                                                    ),
+                                                },
+                                            ],
+                                            target: Expr {
+                                                span: Span {
+                                                    path: "sv-cells/dmg_cpu_b/cells/and2.sv",
+                                                    line: 20,
+                                                    column: 16,
+                                                },
+                                                kind: Path(
+                                                    [
+                                                        "y",
+                                                    ],
+                                                ),
+                                            },
+                                            delays: [
+                                                Some(
+                                                    Expr {
+                                                        span: Span {
+                                                            path: "sv-cells/dmg_cpu_b/cells/and2.sv",
+                                                            line: 20,
+                                                            column: 22,
+                                                        },
+                                                        kind: Binary {
+                                                            op: Add,
+                                                            left: Expr {
+                                                                span: Span {
+                                                                    path: "sv-cells/dmg_cpu_b/cells/and2.sv",
+                                                                    line: 20,
+                                                                    column: 22,
+                                                                },
+                                                                kind: Path(
+                                                                    [
+                                                                        "T_fall_nand",
+                                                                    ],
+                                                                ),
+                                                            },
+                                                            right: Expr {
+                                                                span: Span {
+                                                                    path: "sv-cells/dmg_cpu_b/cells/and2.sv",
+                                                                    line: 20,
+                                                                    column: 36,
+                                                                },
+                                                                kind: Path(
+                                                                    [
+                                                                        "T_rise_y",
+                                                                    ],
+                                                                ),
+                                                            },
+                                                        },
+                                                    },
+                                                ),
+                                                Some(
+                                                    Expr {
+                                                        span: Span {
+                                                            path: "sv-cells/dmg_cpu_b/cells/and2.sv",
+                                                            line: 20,
+                                                            column: 46,
+                                                        },
+                                                        kind: Binary {
+                                                            op: Add,
+                                                            left: Expr {
+                                                                span: Span {
+                                                                    path: "sv-cells/dmg_cpu_b/cells/and2.sv",
+                                                                    line: 20,
+                                                                    column: 46,
+                                                                },
+                                                                kind: Path(
+                                                                    [
+                                                                        "T_rise_nand",
+                                                                    ],
+                                                                ),
+                                                            },
+                                                            right: Expr {
+                                                                span: Span {
+                                                                    path: "sv-cells/dmg_cpu_b/cells/and2.sv",
+                                                                    line: 20,
+                                                                    column: 60,
+                                                                },
+                                                                kind: Path(
+                                                                    [
+                                                                        "T_fall_y",
+                                                                    ],
+                                                                ),
+                                                            },
+                                                        },
+                                                    },
+                                                ),
+                                            ],
+                                        },
+                                    ),
+                                ],
+                            },
+                        ),
+                    },
+                ],
+            },
+        ),
+        Directive(
+            Directive {
+                span: Span {
+                    path: "sv-cells/dmg_cpu_b/cells/and2.sv",
+                    line: 25,
+                    column: 1,
+                },
+                name: "default_nettype",
+                arguments: [
+                    "wire",
+                ],
+            },
+        ),
+    ],
+}

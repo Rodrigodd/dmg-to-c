@@ -13,7 +13,7 @@ pub fn analyze_file(path: &Path, input: &str) -> AnalyzeResult<AnalysisReport> {
 
 pub fn analyze_design(design: &Design) -> AnalysisReport {
     AnalysisReport {
-        modules: design.modules.iter().map(analyze_module).collect(),
+        modules: design.modules().map(analyze_module).collect(),
     }
 }
 
@@ -578,26 +578,26 @@ fn analyze_primitive(call: &PrimitiveCall, analysis: &mut ModuleAnalysis) {
 fn analyze_instantiation(inst: &Instantiation, analysis: &mut ModuleAnalysis) {
     let mut parameters = Vec::with_capacity(inst.parameters.len());
     for override_item in &inst.parameters {
-        match override_item {
-            ParamOverride::Named { value, .. } => {
+        match &override_item.kind {
+            ParamOverrideKind::Named { value, .. } => {
                 collect_expr_reads(value, analysis);
                 parameters.push(render_expr(value));
             }
-            ParamOverride::Positional(Some(value)) => {
+            ParamOverrideKind::Positional(Some(value)) => {
                 collect_expr_reads(value, analysis);
                 parameters.push(render_expr(value));
             }
-            ParamOverride::Positional(None) => parameters.push("_".to_string()),
+            ParamOverrideKind::Positional(None) => parameters.push("_".to_string()),
         }
     }
     let mut connections = Vec::with_capacity(inst.connections.len());
     for connection in &inst.connections {
-        match connection {
-            Connection::Named { value, .. } => {
+        match &connection.kind {
+            ConnectionKind::Named { value, .. } => {
                 collect_expr_reads(value, analysis);
                 connections.push(render_expr(value));
             }
-            Connection::Positional(value) => {
+            ConnectionKind::Positional(value) => {
                 collect_expr_reads(value, analysis);
                 connections.push(render_expr(value));
             }
@@ -652,9 +652,9 @@ pub(crate) fn sensitivity_is_stateful(sensitivity: &Sensitivity, kind: AlwaysKin
     match kind {
         AlwaysKind::Ff => true,
         AlwaysKind::Comb => false,
-        AlwaysKind::Plain => match sensitivity {
-            Sensitivity::Any => false,
-            Sensitivity::List(list) => list.iter().any(|item| item.edge.is_some()),
+        AlwaysKind::Plain => match &sensitivity.kind {
+            SensitivityKind::Any => false,
+            SensitivityKind::List(list) => list.iter().any(|item| item.edge.is_some()),
         },
     }
 }
