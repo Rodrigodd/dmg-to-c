@@ -1,0 +1,13 @@
+(cell
+  sm83_or3_b
+  (inputs in1 in2 in3)
+
+  (outputs y)
+
+  (registers )
+
+  (assignments
+
+    (y (or in1 in2 in3) 0)
+  )
+)

@@ -1,0 +1,8 @@
+cell: sm83_nor2_a
+inputs: [in1, in2]
+outputs: [y]
+registers: []
+assignments:
+  0: y
+    value: op(nor; atom(in1), atom(in2))
+    delay: atom(0)

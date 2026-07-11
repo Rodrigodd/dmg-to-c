@@ -1,0 +1,13 @@
+(cell
+  sm83_xor_idu_l
+  (inputs in1 in2)
+
+  (outputs y)
+
+  (registers )
+
+  (assignments
+
+    (y (xor in1 in2) 0)
+  )
+)

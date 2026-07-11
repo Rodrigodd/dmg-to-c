@@ -1,0 +1,8 @@
+cell: sm83_not_a
+inputs: [in]
+outputs: [y]
+registers: []
+assignments:
+  0: y
+    value: op(not; atom(in))
+    delay: atom(0)

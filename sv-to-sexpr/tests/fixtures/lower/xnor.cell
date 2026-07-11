@@ -1,0 +1,13 @@
+(cell
+  dmg_xnor
+  (inputs in1 in2)
+
+  (outputs y)
+
+  (registers )
+
+  (assignments
+
+    (y (xnor in1 in2) 0)
+  )
+)

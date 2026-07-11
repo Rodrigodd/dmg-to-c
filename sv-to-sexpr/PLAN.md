@@ -285,6 +285,12 @@ Acceptance conditions:
 
 ### Milestone 4: Flat SSA IR and Combinational Logic
 
+Status: complete as of 2026-07-11. Reviewed operator and compound-expression
+goldens use deterministic dependency-first temporaries, and a full-corpus audit
+proves all 182 currently successful lowerings contain only flat contracted value
+expressions. The remaining 24 files fail explicitly in later-milestone families
+with frozen source diagnostics.
+
 Implement the reusable IR and scalar combinational subset without timing.
 
 Expected to be working after this milestone:

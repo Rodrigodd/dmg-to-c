@@ -1,0 +1,13 @@
+(cell
+  sm83_not_a
+  (inputs in)
+
+  (outputs y)
+
+  (registers )
+
+  (assignments
+
+    (y (not in) 0)
+  )
+)

@@ -1,0 +1,13 @@
+(cell
+  sm83_and3
+  (inputs in1 in2 in3)
+
+  (outputs y)
+
+  (registers )
+
+  (assignments
+
+    (y (and in1 in2 in3) 0)
+  )
+)

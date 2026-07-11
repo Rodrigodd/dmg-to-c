@@ -7,7 +7,7 @@ a milestone acceptance condition changes or is completed.
 
 Last audited on 2026-07-11:
 
-- `cargo test` passes 78 unit tests and 20 integration tests.
+- `cargo test` passes 83 unit tests and 24 integration tests.
 - Lexing succeeds for all 206 curated files.
 - Parsing succeeds for all 206 curated files.
 - `survey sv-cells` deterministically inventories 63,240 tokens and 138 typed
@@ -16,18 +16,22 @@ Last audited on 2026-07-11:
   supported, 205 deferred, zero warned, and zero failed. It preserves distinct
   generate alternatives, resolves ordinary module interfaces without
   elaborating child behavior, and limits registers to modeled state.
-- Lowering returns success for 182 files and fails explicitly for 24 files.
+- Lowering returns success for 182 files and fails explicitly for 24 files. All
+  182 successful cells are deterministic, structurally valid, and contain only
+  flat contracted value expressions; the corpus audit covers 1,603 assignments
+  including 995 generated temporaries.
 - Nine failures are transistor-related. The other failures are five generated
   DFF/TFF variants, two hierarchical adders, four keeper users, three
   signal-valued high-Z drivers, and one unsupported timing factor.
 - Examined generated files are valid generic S-expressions and become stable
   after `sexpr-fmt`. Full-corpus formatter validation has not been performed.
-- Generated register lists, flat SSA structure, and delays have not completed
-  fixture review and are not accepted as correct.
-- The reference cell does not match the checked-in target: SSA temporaries and
-  specify-derived delays are missing. Delay tuples now select only their first
-  entry, but reference output under that policy has not completed fixture
-  review.
+- Flat SSA structure and combinational operator lowering have completed fixture
+  review. Generated register lists, stateful behavior, driver normalizations,
+  and timing semantics remain subject to their later milestone fixture reviews.
+- The reference cell now lowers with flat SSA values but does not yet match the
+  checked-in target because specify-derived delays have not completed fixture
+  review. Delay tuples select only their first entry, but reference output under
+  that policy is not yet accepted.
 - The current CLI has `lex`, `parse`, `analyze`, `lower`, `convert-file`,
   `survey`, and staged `check`. These diagnostic-capable commands accept the
   shared `--strict` warning policy, although current stages do not produce
@@ -53,8 +57,11 @@ Last audited on 2026-07-11:
   continuous and primitive nets remain non-state; full-adder connections
   resolve against child port directions; and analyze checks distinguish
   supported, deferred, warned, and failed files.
-- Milestone 4: partial. Combinational lowering exists, but flat SSA output,
-  complete fixtures, and fixture review are missing.
+- Milestone 4: complete. Reviewed goldens cover the required combinational
+  operator families and compound equality/mux expressions; deterministic
+  dependency-first `t0`, `t1`, ... assignments keep every value operation flat.
+  A full-corpus audit proves all 182 current successes are structurally valid
+  and freezes exact diagnostics for the 24 later-milestone failures.
 - Milestone 5: partial. Several flat latch/register cells lower, but complete
   family fixtures and review are missing.
 - Milestone 6: partial. Constant-drive tri-state and precharge subsets lower;

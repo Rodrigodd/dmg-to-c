@@ -507,6 +507,47 @@ mod tests {
     }
 
     #[test]
+    fn cell_validation_accepts_nested_delays_but_rejects_nested_values() {
+        let nested_delay = Expr::timing(
+            TimingOperator::Mux,
+            vec![
+                Expr::timing(
+                    TimingOperator::Greater,
+                    vec![Expr::atom("rise"), Expr::atom("minimum")],
+                ),
+                Expr::timing(
+                    TimingOperator::Add,
+                    vec![Expr::atom("rise"), Expr::atom("extra")],
+                ),
+                Expr::atom("minimum"),
+            ],
+        );
+        let mut cell = Cell {
+            name: "sample".to_string(),
+            inputs: vec!["a".to_string(), "b".to_string()],
+            outputs: vec!["y".to_string()],
+            registers: Vec::new(),
+            items: vec![CellItem::Assignment(assignment(
+                Expr::value(ValueOperator::And, vec![Expr::atom("a"), Expr::atom("b")]),
+                nested_delay,
+            ))],
+        };
+        cell.validate().unwrap();
+
+        cell.items = vec![CellItem::Assignment(assignment(
+            Expr::value(
+                ValueOperator::And,
+                vec![
+                    Expr::atom("a"),
+                    Expr::value(ValueOperator::Not, vec![Expr::atom("b")]),
+                ],
+            ),
+            Expr::atom("0"),
+        ))];
+        assert!(cell.validate().is_err());
+    }
+
+    #[test]
     fn timing_validation_rejects_unknown_and_wrong_arity_operators() {
         assert!(
             Expr::list(vec![Expr::atom("unknown"), Expr::atom("1")])

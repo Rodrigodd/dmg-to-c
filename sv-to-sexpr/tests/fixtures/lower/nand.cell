@@ -1,0 +1,13 @@
+(cell
+  dmg_nand2
+  (inputs in1 in2)
+
+  (outputs y)
+
+  (registers )
+
+  (assignments
+
+    (y (nand in1 in2) 0)
+  )
+)

@@ -1,0 +1,62 @@
+lowering corpus audit
+processed=206 succeeded=182 failed=24
+invariants:
+  invalid_successful_cells=0
+  nested_value_expressions=0
+  empty_value_operands=0
+  timing_validation_failures=0
+  nondeterministic_results=0
+  absolute_path_leaks=0
+  dependency_order_failures=0
+successful-cell-capabilities:
+  assignments=1603
+  atom_value_assignments=10
+  temporary_assignments=995
+  repeated_target_assignments=51
+  delayed_assignments=379
+  nested_timing_delay_assignments=379
+  cells_with_registers=21
+  registers=38
+value-operators:
+  and=627
+  bufif0=74
+  bufif1=302
+  caseeq=4
+  mux=44
+  nand=23
+  nor=28
+  not=203
+  or=282
+  xnor=1
+  xor=5
+failure-categories:
+  transistor-related files=9
+    sv-cells/sm83/cells/dlatch_ee_irq.sv:23:2: unsupported primitive rnmos
+    sv-cells/sm83/cells/idu_bit123456.sv:29:2: unsupported primitive nmos
+    sv-cells/sm83/cells/irq_prio_bit0.sv:44:2: unsupported primitive nmos
+    sv-cells/sm83/cells/irq_prio_bit1.sv:51:2: unsupported primitive nmos
+    sv-cells/sm83/cells/irq_prio_bit2.sv:52:2: unsupported primitive nmos
+    sv-cells/sm83/cells/irq_prio_bit3.sv:63:2: unsupported primitive nmos
+    sv-cells/sm83/cells/irq_prio_bit4.sv:61:2: unsupported primitive nmos
+    sv-cells/sm83/cells/irq_prio_bit5.sv:64:2: unsupported primitive nmos
+    sv-cells/sm83/cells/irq_prio_bit6.sv:62:2: unsupported primitive nmos
+  generated-dff-tff files=5
+    sv-cells/dmg_cpu_b/cells/dffr.sv:19:2: unsupported item for lowering
+    sv-cells/dmg_cpu_b/cells/dffr_cc.sv:13:2: unsupported item for lowering
+    sv-cells/dmg_cpu_b/cells/dffr_cc_q.sv:12:2: unsupported item for lowering
+    sv-cells/dmg_cpu_b/cells/dffsr.sv:21:2: unsupported item for lowering
+    sv-cells/dmg_cpu_b/cells/tffnl.sv:20:2: unsupported item for lowering
+  hierarchical-adder files=2
+    sv-cells/dmg_cpu_b/cells/full_add.sv:13:2: unsupported item for lowering
+    sv-cells/dmg_cpu_b/cells/half_add.sv:11:2: unsupported item for lowering
+  keeper-user files=4
+    sv-cells/dmg_cpu_b/cells/mux.sv:24:2: unsupported item for lowering
+    sv-cells/dmg_cpu_b/cells/muxi.sv:24:2: unsupported item for lowering
+    sv-cells/sm83/cells/idu_bit0.sv:35:2: unsupported item for lowering
+    sv-cells/sm83/cells/reg_wz_out.sv:54:2: unsupported item for lowering
+  signal-valued-high-z files=3
+    sv-cells/dmg_cpu_b/cells/buf_if0.sv:12:13: high-Z ternary is not yet a contracted polarity-equivalent driver form
+    sv-cells/dmg_cpu_b/cells/not_if0.sv:13:13: high-Z ternary is not yet a contracted polarity-equivalent driver form
+    sv-cells/dmg_cpu_b/cells/not_if1.sv:12:13: high-Z ternary is not yet a contracted polarity-equivalent driver form
+  unsupported-timing-factor files=1
+    sv-cells/dmg_cpu_b/cells/pad_xtal.sv:32:68: unsupported timing factor

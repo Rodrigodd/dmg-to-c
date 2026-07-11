@@ -2,7 +2,7 @@ use crate::analyze::{analyze_design, sensitivity_is_stateful};
 use crate::ast::*;
 use crate::diagnostic::{Diagnostic, Span};
 use crate::ir::{Assignment, Cell, CellItem, Expr, LoweredModule, TimingOperator, ValueOperator};
-use std::collections::BTreeMap;
+use std::collections::{BTreeMap, BTreeSet};
 use std::path::Path;
 
 pub type LowerResult<T> = Result<T, Diagnostic>;
@@ -39,10 +39,20 @@ struct Lowerer<'a> {
     module: &'a Module,
     cell: Cell,
     timing_aliases: BTreeMap<String, Expr>,
+    reserved_names: BTreeSet<String>,
+    next_temp_index: usize,
 }
 
 impl<'a> Lowerer<'a> {
     fn new(module: &'a Module, analysis: &crate::analyze::ModuleAnalysis) -> Self {
+        let mut reserved_names = analysis.symbols.keys().cloned().collect::<BTreeSet<_>>();
+        reserved_names.extend(analysis.parameters.keys().cloned());
+        reserved_names.extend(analysis.declarations.keys().cloned());
+        reserved_names.extend(analysis.localparams.keys().cloned());
+        reserved_names.extend(analysis.specparams.keys().cloned());
+        reserved_names.extend(analysis.inputs.iter().cloned());
+        reserved_names.extend(analysis.outputs.iter().cloned());
+        reserved_names.extend(analysis.registers.iter().cloned());
         Self {
             module,
             cell: Cell {
@@ -53,6 +63,8 @@ impl<'a> Lowerer<'a> {
                 items: Vec::new(),
             },
             timing_aliases: BTreeMap::new(),
+            reserved_names,
+            next_temp_index: 0,
         }
     }
 
@@ -61,6 +73,13 @@ impl<'a> Lowerer<'a> {
         for item in &self.module.items {
             self.lower_item(item)?;
         }
+
+        self.cell.validate().map_err(|error| {
+            Diagnostic::new(
+                self.module.span.clone(),
+                format!("invalid lowered cell: {error}"),
+            )
+        })?;
 
         Ok(LoweredModule {
             cell: self.cell.clone(),
@@ -201,12 +220,7 @@ impl<'a> Lowerer<'a> {
                 vec![condition.clone(), expr, Expr::atom(target.clone())],
             );
         }
-        self.cell.items.push(CellItem::Assignment(Assignment {
-            target,
-            expr,
-            delay: Expr::atom("0"),
-        }));
-        Ok(())
+        self.emit_assignment(target, expr, Expr::atom("0"), &stmt.span)
     }
 
     fn lower_continuous_assign(&mut self, assign: &AssignDecl) -> LowerResult<()> {
@@ -218,12 +232,7 @@ impl<'a> Lowerer<'a> {
         })?;
         let expr = self.lower_expr(&assign.value)?;
         let delay = self.lower_delay(assign.delay.as_ref())?;
-        self.cell.items.push(CellItem::Assignment(Assignment {
-            target,
-            expr,
-            delay,
-        }));
-        Ok(())
+        self.emit_assignment(target, expr, delay, &assign.span)
     }
 
     fn lower_expr(&mut self, expr: &SvExpr) -> LowerResult<Expr> {
@@ -432,11 +441,101 @@ impl<'a> Lowerer<'a> {
             vec![self.lower_expr(value)?, self.lower_expr(control)?],
         );
         let delay = self.lower_delay(call.delay.as_ref())?;
-        self.cell.items.push(CellItem::Assignment(Assignment {
+        self.emit_assignment(target, expr, delay, &call.span)
+    }
+
+    fn emit_assignment(
+        &mut self,
+        target: String,
+        expr: Expr,
+        delay: Expr,
+        source_span: &Span,
+    ) -> LowerResult<()> {
+        let expr = self.flatten_value_root(expr, source_span)?;
+        self.push_validated_assignment(target, expr, delay, source_span)
+    }
+
+    fn flatten_value_root(&mut self, expr: Expr, source_span: &Span) -> LowerResult<Expr> {
+        let Expr::List(items) = expr else {
+            return Ok(expr);
+        };
+        let mut items = items.into_iter();
+        let head = items.next().ok_or_else(|| {
+            Diagnostic::new(source_span.clone(), "value operator list must not be empty")
+        })?;
+        let Expr::Atom(head) = head else {
+            return Err(Diagnostic::new(
+                source_span.clone(),
+                "value operator must be an atom",
+            ));
+        };
+        let operator = ValueOperator::parse(&head).ok_or_else(|| {
+            Diagnostic::new(
+                source_span.clone(),
+                format!("uncontracted value operator `{head}`"),
+            )
+        })?;
+        let operands = items.collect::<Vec<_>>();
+        if !operator.accepts_arity(operands.len()) {
+            return Err(Diagnostic::new(
+                source_span.clone(),
+                format!(
+                    "wrong arity for value operator `{}`: got {}",
+                    operator.as_str(),
+                    operands.len()
+                ),
+            ));
+        }
+
+        let mut flat_operands = Vec::with_capacity(operands.len());
+        for operand in operands {
+            match operand {
+                Expr::Atom(_) => flat_operands.push(operand),
+                Expr::List(_) => {
+                    let nested = self.flatten_value_root(operand, source_span)?;
+                    let temporary = self.allocate_temporary();
+                    self.push_validated_assignment(
+                        temporary.clone(),
+                        nested,
+                        Expr::atom("0"),
+                        source_span,
+                    )?;
+                    flat_operands.push(Expr::atom(temporary));
+                }
+            }
+        }
+        Ok(Expr::value(operator, flat_operands))
+    }
+
+    fn allocate_temporary(&mut self) -> String {
+        loop {
+            let name = format!("t{}", self.next_temp_index);
+            self.next_temp_index += 1;
+            if self.reserved_names.insert(name.clone()) {
+                return name;
+            }
+        }
+    }
+
+    fn push_validated_assignment(
+        &mut self,
+        target: String,
+        expr: Expr,
+        delay: Expr,
+        source_span: &Span,
+    ) -> LowerResult<()> {
+        let assignment = Assignment {
             target,
             expr,
             delay,
-        }));
+        };
+        assignment.validate().map_err(|error| {
+            Diagnostic::new(
+                source_span.clone(),
+                format!("invalid lowered assignment: {error}"),
+            )
+        })?;
+        self.cell.items.push(CellItem::Assignment(assignment));
         Ok(())
     }
 
@@ -809,6 +908,72 @@ mod tests {
     }
 
     #[test]
+    fn compound_values_emit_dependencies_before_the_source_target() {
+        let lowered = lower_snippet(
+            "module sample(input logic a, b, c, output logic y); assign y = !(a & (b | c)); endmodule",
+        )
+        .unwrap();
+        assert_eq!(
+            assignment_strings(&lowered),
+            vec![
+                ("t0".to_string(), "(or b c)".to_string(), "0".to_string()),
+                ("y".to_string(), "(nand a t0)".to_string(), "0".to_string(),),
+            ]
+        );
+        lowered.cell.validate().unwrap();
+    }
+
+    #[test]
+    fn temporary_sequence_is_module_global_and_preserves_source_order() {
+        let lowered = lower_snippet(
+            "module sample(input logic a, b, c, d, output logic y, z);\
+             assign y = a & (b | c);\
+             assign z = !(d ^ (a & c));\
+             endmodule",
+        )
+        .unwrap();
+        assert_eq!(
+            assignment_strings(&lowered),
+            vec![
+                ("t0".to_string(), "(or b c)".to_string(), "0".to_string()),
+                ("y".to_string(), "(and a t0)".to_string(), "0".to_string(),),
+                ("t1".to_string(), "(and a c)".to_string(), "0".to_string(),),
+                ("z".to_string(), "(xnor d t1)".to_string(), "0".to_string(),),
+            ]
+        );
+    }
+
+    #[test]
+    fn temporary_names_skip_source_visible_symbols() {
+        let lowered = lower_snippet(
+            "module sample(input logic a, b, c, output logic t0, y); assign y = a & (b | c); endmodule",
+        )
+        .unwrap();
+        assert_eq!(
+            assignment_strings(&lowered),
+            vec![
+                ("t1".to_string(), "(or b c)".to_string(), "0".to_string()),
+                ("y".to_string(), "(and a t1)".to_string(), "0".to_string(),),
+            ]
+        );
+    }
+
+    #[test]
+    fn only_the_source_target_keeps_a_modeled_delay() {
+        let lowered = lower_snippet(
+            "module sample(input logic a, b, c, output logic y); assign #(7) y = a & (b | c); endmodule",
+        )
+        .unwrap();
+        assert_eq!(
+            assignment_strings(&lowered),
+            vec![
+                ("t0".to_string(), "(or b c)".to_string(), "0".to_string()),
+                ("y".to_string(), "(and a t0)".to_string(), "7".to_string(),),
+            ]
+        );
+    }
+
+    #[test]
     fn lowers_and_gate_cells() {
         assert!(
             rendered_exprs("../sv-cells/sm83/cells/and3.sv")
@@ -856,27 +1021,84 @@ mod tests {
             assignment_strings(&lowered),
             vec![
                 (
-                    "ff1".to_string(),
-                    "(mux (or (and d clk_n ena) (and (not d) (not clk) (not ena_n)) r) (and d (not r)) ff1)"
-                        .to_string(),
+                    "t0".to_string(),
+                    "(and d clk_n ena)".to_string(),
+                    "0".to_string(),
+                ),
+                ("t1".to_string(), "(not d)".to_string(), "0".to_string()),
+                ("t2".to_string(), "(not clk)".to_string(), "0".to_string()),
+                ("t3".to_string(), "(not ena_n)".to_string(), "0".to_string(),),
+                (
+                    "t4".to_string(),
+                    "(and t1 t2 t3)".to_string(),
                     "0".to_string(),
                 ),
                 (
+                    "t5".to_string(),
+                    "(or t0 t4 r)".to_string(),
+                    "0".to_string(),
+                ),
+                ("t6".to_string(), "(not r)".to_string(), "0".to_string()),
+                ("t7".to_string(), "(and d t6)".to_string(), "0".to_string(),),
+                (
+                    "ff1".to_string(),
+                    "(mux t5 t7 ff1)".to_string(),
+                    "0".to_string(),
+                ),
+                (
+                    "t8".to_string(),
+                    "(and ff1 clk)".to_string(),
+                    "0".to_string(),
+                ),
+                ("t9".to_string(), "(not ff1)".to_string(), "0".to_string()),
+                (
+                    "t10".to_string(),
+                    "(not clk_n)".to_string(),
+                    "0".to_string(),
+                ),
+                (
+                    "t11".to_string(),
+                    "(and t9 t10)".to_string(),
+                    "0".to_string(),
+                ),
+                (
+                    "t12".to_string(),
+                    "(or t8 t11)".to_string(),
+                    "0".to_string(),
+                ),
+                ("t13".to_string(), "(not ff1)".to_string(), "0".to_string(),),
+                (
                     "ff2".to_string(),
-                    "(mux (or (and ff1 clk) (and (not ff1) (not clk_n))) (not ff1) ff2)"
-                        .to_string(),
+                    "(mux t12 t13 ff2)".to_string(),
+                    "0".to_string(),
+                ),
+                (
+                    "t14".to_string(),
+                    "(and ff2 clk)".to_string(),
+                    "0".to_string(),
+                ),
+                ("t15".to_string(), "(not ff2)".to_string(), "0".to_string(),),
+                (
+                    "t16".to_string(),
+                    "(not clk_n)".to_string(),
+                    "0".to_string(),
+                ),
+                (
+                    "t17".to_string(),
+                    "(and t15 t16)".to_string(),
+                    "0".to_string(),
+                ),
+                (
+                    "t18".to_string(),
+                    "(or t14 t17)".to_string(),
                     "0".to_string(),
                 ),
                 (
                     "q_n".to_string(),
-                    "(mux (or (and ff2 clk) (and (not ff2) (not clk_n))) ff2 q_n)".to_string(),
+                    "(mux t18 ff2 q_n)".to_string(),
                     "0".to_string(),
                 ),
-                (
-                    "q".to_string(),
-                    "(not q_n)".to_string(),
-                    "0".to_string(),
-                ),
+                ("q".to_string(), "(not q_n)".to_string(), "0".to_string(),),
             ]
         );
     }
@@ -888,14 +1110,22 @@ mod tests {
         assert_eq!(
             assignment_strings(&lowered),
             vec![
+                ("t0".to_string(), "(not s_n)".to_string(), "0".to_string()),
+                ("t1".to_string(), "(not r_n)".to_string(), "0".to_string()),
+                ("t2".to_string(), "(or t0 t1)".to_string(), "0".to_string(),),
+                ("t3".to_string(), "(not s_n)".to_string(), "0".to_string()),
                 (
                     "q".to_string(),
-                    "(mux (or (not s_n) (not r_n)) (not s_n) q)".to_string(),
+                    "(mux t2 t3 q)".to_string(),
                     "0".to_string(),
                 ),
+                ("t4".to_string(), "(not s_n)".to_string(), "0".to_string()),
+                ("t5".to_string(), "(not r_n)".to_string(), "0".to_string()),
+                ("t6".to_string(), "(or t4 t5)".to_string(), "0".to_string(),),
+                ("t7".to_string(), "(not r_n)".to_string(), "0".to_string()),
                 (
                     "q_n".to_string(),
-                    "(mux (or (not s_n) (not r_n)) (not r_n) q_n)".to_string(),
+                    "(mux t6 t7 q_n)".to_string(),
                     "0".to_string(),
                 ),
             ]
@@ -954,9 +1184,22 @@ mod tests {
     fn lowers_tristate_assigns_with_repeated_drivers_in_source_order() {
         let lowered = lower_path("../sv-cells/sm83/cells/reg_pc_out_bit012.sv");
         let assignments = assignment_strings(&lowered);
-        assert!(assignments.iter().any(|(target, expr, _)| {
-            target == "y1" && expr == "(bufif1 0 (or (and in1 in2) (and in3 in4)))"
-        }));
+        let y1_index = assignments
+            .iter()
+            .position(|(target, _, _)| target == "y1")
+            .unwrap();
+        assert_eq!(
+            assignments[y1_index - 3..=y1_index]
+                .iter()
+                .map(|(target, expr, _)| (target.as_str(), expr.as_str()))
+                .collect::<Vec<_>>(),
+            vec![
+                ("t0", "(and in1 in2)"),
+                ("t1", "(and in3 in4)"),
+                ("t2", "(or t0 t1)"),
+                ("y1", "(bufif1 0 t2)"),
+            ]
+        );
         let y4_assignments = assignments
             .iter()
             .filter(|(target, _, _)| target == "y4")
@@ -964,10 +1207,7 @@ mod tests {
             .collect::<Vec<_>>();
         assert_eq!(
             y4_assignments,
-            vec![
-                "(bufif1 0 (and in7 in8))".to_string(),
-                "(bufif1 0 in9)".to_string(),
-            ]
+            vec!["(bufif1 0 t7)".to_string(), "(bufif1 0 in9)".to_string(),]
         );
     }
 
