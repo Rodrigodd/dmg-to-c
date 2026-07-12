@@ -3,6 +3,7 @@ pub mod ast;
 pub mod cli;
 pub mod diagnostic;
 pub mod elaborate;
+pub mod hierarchy;
 pub mod inventory;
 pub mod ir;
 pub mod lexer;

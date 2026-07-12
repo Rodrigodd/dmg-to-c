@@ -1,0 +1,23 @@
+(cell
+  dmg_full_add
+  (inputs a b cin)
+
+  (outputs sum cout)
+
+  (registers )
+
+  (assignments
+
+    (sum
+      (xor axb cin)
+      (+ (elmore (wire 122) (nmos 35)) (elmore (wire L_sum) (* (pmos 35) 2)))
+    )
+    (caxb (nand cin axb) (elmore (wire 120) (pmos 35)))
+    (cout (nand ab caxb) (elmore (wire L_cout) (pmos 35)))
+    (ab (nand b a) (elmore (wire 119) (pmos 35)))
+    (axb
+      (xor a b)
+      (+ (elmore (wire 122) (nmos 35)) (elmore (wire 296) (* (pmos 35) 2)))
+    )
+  )
+)

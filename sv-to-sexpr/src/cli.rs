@@ -1,13 +1,12 @@
 use crate::ast::render_design;
 use crate::diagnostic::{Diagnostic, DiagnosticPolicy};
 use crate::elaborate::GenerateMode;
-use crate::lower::lower_file_with_generate_mode;
 use crate::parser::parse_file;
 use crate::serialize::render_cell;
 use crate::survey::{
     AnalyzeCheckReport, CheckReport, analyze_file_with_sibling_catalog_and_generate_mode,
     check_analyze_dir_with_generate_mode, check_lex_dir, check_lower_dir_with_generate_mode,
-    check_parse_dir, survey_dir,
+    check_parse_dir, lower_file_with_sibling_catalog_and_generate_mode, survey_dir,
 };
 use std::env;
 use std::fs;
@@ -67,13 +66,8 @@ pub fn run() -> Result<(), Diagnostic> {
             let parsed = parse_configured_single_input(args, "lower", "<input.sv>")?;
             let input = parsed.input;
             let path = PathBuf::from(input);
-            let contents = fs::read_to_string(&path).map_err(|err| {
-                Diagnostic::new(
-                    crate::diagnostic::Span::new(&path, 1, 1),
-                    format!("failed to read file: {}", err),
-                )
-            })?;
-            let lowered = lower_file_with_generate_mode(&path, &contents, parsed.generate_mode)?;
+            let lowered =
+                lower_file_with_sibling_catalog_and_generate_mode(&path, parsed.generate_mode)?;
             surface_lowering_diagnostics(&lowered.diagnostics, parsed.policy)?;
             println!(
                 "cell:\n{:#?}\ntiming aliases:\n{:#?}",
@@ -85,14 +79,10 @@ pub fn run() -> Result<(), Diagnostic> {
             let parsed = parse_convert_file_args(args)?;
             let input_path = PathBuf::from(&parsed.input);
             let output_path = PathBuf::from(&parsed.output);
-            let contents = fs::read_to_string(&input_path).map_err(|err| {
-                Diagnostic::new(
-                    crate::diagnostic::Span::new(&input_path, 1, 1),
-                    format!("failed to read file: {}", err),
-                )
-            })?;
-            let lowered =
-                lower_file_with_generate_mode(&input_path, &contents, parsed.generate_mode)?;
+            let lowered = lower_file_with_sibling_catalog_and_generate_mode(
+                &input_path,
+                parsed.generate_mode,
+            )?;
             surface_lowering_diagnostics(&lowered.diagnostics, parsed.policy)?;
             let rendered = render_cell(&lowered.cell);
             if parsed.dry_run {

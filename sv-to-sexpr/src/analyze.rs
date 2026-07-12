@@ -87,7 +87,7 @@ pub fn analyze_design_with_catalog_and_generate_mode(
     mode: GenerateMode,
 ) -> AnalyzeResult<AnalysisReport> {
     let elaborated = elaborate_design(design, mode)?;
-    analyze_design_with_catalog_structural(&elaborated, catalog)
+    analyze_design_with_catalog_structural_mode(&elaborated, catalog, Some(mode))
 }
 
 /// Performs catalog-aware M3 structural inventory without generate selection.
@@ -95,9 +95,17 @@ pub fn analyze_design_with_catalog_structural(
     design: &Design,
     catalog: &ModuleCatalog,
 ) -> AnalyzeResult<AnalysisReport> {
+    analyze_design_with_catalog_structural_mode(design, catalog, None)
+}
+
+fn analyze_design_with_catalog_structural_mode(
+    design: &Design,
+    catalog: &ModuleCatalog,
+    generate_mode: Option<GenerateMode>,
+) -> AnalyzeResult<AnalysisReport> {
     let mut report = analyze_design_structural(design);
     for (module, analysis) in design.modules().zip(&mut report.modules) {
-        resolve_module_hierarchy(module, analysis, catalog)?;
+        resolve_module_hierarchy(module, analysis, catalog, generate_mode)?;
     }
     report.refresh_support_classification();
     Ok(report)
@@ -106,11 +114,13 @@ pub fn analyze_design_with_catalog_structural(
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct ModuleCatalog {
     pub modules: BTreeMap<String, ModuleInterface>,
+    definitions: BTreeMap<String, Module>,
 }
 
 impl ModuleCatalog {
     pub fn from_designs(designs: &[Design]) -> AnalyzeResult<Self> {
         let mut modules = BTreeMap::new();
+        let mut definitions = BTreeMap::new();
         for design in designs {
             for module in design.modules() {
                 let interface = ModuleInterface::from_module(module);
@@ -126,26 +136,44 @@ impl ModuleCatalog {
                         ),
                     ));
                 }
+                definitions.insert(module.name.clone(), module.clone());
             }
         }
-        Ok(Self { modules })
+        Ok(Self {
+            modules,
+            definitions,
+        })
     }
 
     pub fn get(&self, name: &str) -> Option<&ModuleInterface> {
         self.modules.get(name)
     }
 
-    fn reaches(&self, start: &str, target: &str) -> bool {
+    /// Returns the typed source definition owned by this catalog.
+    ///
+    /// Interfaces remain the stable hierarchy-analysis surface; flattening
+    /// uses definitions so it can transform the child's typed AST without
+    /// reparsing source text.
+    pub fn definition(&self, name: &str) -> Option<&Module> {
+        self.definitions.get(name)
+    }
+
+    fn reaches(
+        &self,
+        start: &str,
+        target: &str,
+        generate_mode: Option<GenerateMode>,
+    ) -> AnalyzeResult<bool> {
         let mut pending = vec![start.to_string()];
         let mut visited = BTreeSet::new();
         while let Some(name) = pending.pop() {
             if name == target {
-                return true;
+                return Ok(true);
             }
             if !visited.insert(name.clone()) {
                 continue;
             }
-            if let Some(interface) = self.modules.get(&name) {
+            if let Some(interface) = self.configured_interface(&name, generate_mode)? {
                 for reference in interface.references.iter().rev() {
                     if !is_special_instance(&reference.module) {
                         pending.push(reference.module.clone());
@@ -153,7 +181,25 @@ impl ModuleCatalog {
                 }
             }
         }
-        false
+        Ok(false)
+    }
+
+    fn configured_interface(
+        &self,
+        name: &str,
+        generate_mode: Option<GenerateMode>,
+    ) -> AnalyzeResult<Option<ModuleInterface>> {
+        let Some(mode) = generate_mode else {
+            return Ok(self.modules.get(name).cloned());
+        };
+        let Some(definition) = self.definitions.get(name) else {
+            return Ok(None);
+        };
+        let design = Design {
+            items: vec![DesignItem::Module(definition.clone())],
+        };
+        let configured = elaborate_design(&design, mode)?;
+        Ok(configured.first_module().map(ModuleInterface::from_module))
     }
 }
 
@@ -634,9 +680,8 @@ fn classify_support_parts(
 
     for instantiation in instantiations {
         match &instantiation.resolution {
-            InstantiationResolution::Special(special)
-                if matches!(special.kind, SpecialInstanceKind::Keeper) =>
-            {
+            InstantiationResolution::Resolved(_) => {}
+            InstantiationResolution::Special(_) => {
                 collector.defer(
                     "hierarchy.keeper",
                     TargetMilestone::M10Keeper,
@@ -652,7 +697,7 @@ fn classify_support_parts(
                     "keeper behavior is scheduled for Milestone 10",
                 );
             }
-            _ => collector.defer(
+            InstantiationResolution::Unresolved => collector.defer(
                 "hierarchy.ordinary",
                 TargetMilestone::M9OrdinaryHierarchy,
                 &instantiation.span,
@@ -1450,14 +1495,47 @@ fn collect_module_references(items: &[Item], references: &mut Vec<ModuleReferenc
     }
 }
 
-fn is_special_instance(module: &str) -> bool {
+pub(crate) fn is_special_instance(module: &str) -> bool {
     module == "keeper"
+}
+
+/// Resolves one typed AST instantiation using the same binding rules exposed
+/// by catalog-aware analysis.
+pub(crate) fn resolve_ast_instantiation(
+    current_module: &str,
+    instantiation: &Instantiation,
+    visible_signals: &BTreeMap<String, Span>,
+    catalog: &ModuleCatalog,
+    generate_mode: Option<GenerateMode>,
+) -> AnalyzeResult<InstantiationResolution> {
+    let analysis = InstantiationAnalysis {
+        span: instantiation.span.clone(),
+        source_order: 0,
+        module: instantiation.module.clone(),
+        instance: instantiation.instance.clone(),
+        // These rendered report-only fields are not consulted by resolution.
+        // Keep the hierarchy bridge entirely typed rather than manufacturing
+        // text for an AST that will immediately be transformed again.
+        parameters: Vec::new(),
+        connections: Vec::new(),
+        parameter_overrides: instantiation.parameters.clone(),
+        connection_items: instantiation.connections.clone(),
+        resolution: InstantiationResolution::Unresolved,
+    };
+    resolve_instantiation(
+        current_module,
+        &analysis,
+        visible_signals,
+        catalog,
+        generate_mode,
+    )
 }
 
 fn resolve_module_hierarchy(
     module: &Module,
     analysis: &mut ModuleAnalysis,
     catalog: &ModuleCatalog,
+    generate_mode: Option<GenerateMode>,
 ) -> AnalyzeResult<()> {
     let mut visible_signals = analysis
         .declarations
@@ -1483,6 +1561,7 @@ fn resolve_module_hierarchy(
         &mut analysis.ports,
         &mut port_usage,
         catalog,
+        generate_mode,
     )?;
     for alternative in &mut analysis.generate_alternatives {
         resolve_scope_hierarchy(
@@ -1492,6 +1571,7 @@ fn resolve_module_hierarchy(
             &mut port_usage,
             &visible_signals,
             catalog,
+            generate_mode,
         )?;
         if let Some(else_branch) = &mut alternative.else_branch {
             resolve_scope_hierarchy(
@@ -1501,6 +1581,7 @@ fn resolve_module_hierarchy(
                 &mut port_usage,
                 &visible_signals,
                 catalog,
+                generate_mode,
             )?;
         }
     }
@@ -1516,6 +1597,7 @@ fn resolve_scope_hierarchy(
     port_usage: &mut PortUsage,
     parent_visible_signals: &BTreeMap<String, Span>,
     catalog: &ModuleCatalog,
+    generate_mode: Option<GenerateMode>,
 ) -> AnalyzeResult<()> {
     let mut visible_signals = parent_visible_signals.clone();
     visible_signals.extend(
@@ -1533,6 +1615,7 @@ fn resolve_scope_hierarchy(
         ports,
         port_usage,
         catalog,
+        generate_mode,
     )?;
     for alternative in &mut scope.generate_alternatives {
         resolve_scope_hierarchy(
@@ -1542,6 +1625,7 @@ fn resolve_scope_hierarchy(
             port_usage,
             &visible_signals,
             catalog,
+            generate_mode,
         )?;
         if let Some(else_branch) = &mut alternative.else_branch {
             resolve_scope_hierarchy(
@@ -1551,6 +1635,7 @@ fn resolve_scope_hierarchy(
                 port_usage,
                 &visible_signals,
                 catalog,
+                generate_mode,
             )?;
         }
     }
@@ -1567,10 +1652,16 @@ fn resolve_instantiation_list(
     ports: &mut BTreeMap<String, PortAnalysis>,
     port_usage: &mut PortUsage,
     catalog: &ModuleCatalog,
+    generate_mode: Option<GenerateMode>,
 ) -> AnalyzeResult<()> {
     for instantiation in instantiations {
-        let resolution =
-            resolve_instantiation(current_module, instantiation, visible_signals, catalog)?;
+        let resolution = resolve_instantiation(
+            current_module,
+            instantiation,
+            visible_signals,
+            catalog,
+            generate_mode,
+        )?;
         if let InstantiationResolution::Resolved(resolved) = &resolution {
             for connection in &resolved.connections {
                 if let Some(name) = &connection.local_signal {
@@ -1643,6 +1734,7 @@ fn resolve_instantiation(
     instantiation: &InstantiationAnalysis,
     visible_signals: &BTreeMap<String, Span>,
     catalog: &ModuleCatalog,
+    generate_mode: Option<GenerateMode>,
 ) -> AnalyzeResult<InstantiationResolution> {
     if is_special_instance(&instantiation.module) {
         return Ok(InstantiationResolution::Special(SpecialInstantiation {
@@ -1660,7 +1752,7 @@ fn resolve_instantiation(
         )
     })?;
     if instantiation.module == current_module
-        || catalog.reaches(&instantiation.module, current_module)
+        || catalog.reaches(&instantiation.module, current_module, generate_mode)?
     {
         return Err(Diagnostic::new(
             instantiation.span.clone(),
@@ -3402,6 +3494,8 @@ endmodule
         let nand2 = parse_path("../sv-cells/dmg_cpu_b/cells/nand2.sv");
         let catalog = ModuleCatalog::from_designs(&[full_add.clone(), xor, nand2]).unwrap();
         let hierarchy = analyze_design_with_catalog_structural(&full_add, &catalog).unwrap();
+        assert_eq!(hierarchy.disposition, AnalysisDisposition::Supported);
+        assert!(hierarchy.requirements.is_empty());
 
         let mux = parse_path("../sv-cells/dmg_cpu_b/cells/mux.sv");
         let mux_catalog = ModuleCatalog::from_designs(std::slice::from_ref(&mux)).unwrap();
@@ -3428,7 +3522,6 @@ endmodule
                 analyze_path("../sv-cells/dmg_cpu_b/cells/dffr_cc.sv"),
                 TargetMilestone::M8GenerateSelection,
             ),
-            (hierarchy, TargetMilestone::M9OrdinaryHierarchy),
             (keeper, TargetMilestone::M10Keeper),
             (
                 analyze_path("../sv-cells/sm83/cells/irq_prio_bit0.sv"),

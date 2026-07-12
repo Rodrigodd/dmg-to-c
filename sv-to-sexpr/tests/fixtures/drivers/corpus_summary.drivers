@@ -1,6 +1,6 @@
 driver corpus audit
 corpus-files=206 relevant-files=67 relevant-successes=53 relevant-later-deferrals=14
-global-lowering: succeeded=190 failed=16
+global-lowering: succeeded=192 failed=14
 source-forms:
   high-z-bufif0=2
   high-z-bufif1=61

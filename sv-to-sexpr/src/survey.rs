@@ -7,8 +7,9 @@ use crate::elaborate::GenerateMode;
 use crate::inventory::{
     CapabilityInventory, ClassificationKind, InventoryWalker, record_token_capabilities,
 };
+use crate::ir::LoweredModule;
 use crate::lexer::{Keyword, Operator, Punct, TokenKind, lex_file};
-use crate::lower::{lower_file_structural, lower_file_with_generate_mode};
+use crate::lower::{lower_design_with_catalog_and_generate_mode, lower_file_structural};
 use crate::parser::parse_file;
 use std::collections::{BTreeMap, BTreeSet};
 use std::fs;
@@ -323,13 +324,51 @@ fn analyze_file_with_sibling_catalog_impl(
     path: &Path,
     mode: Option<GenerateMode>,
 ) -> Result<AnalysisReport, Diagnostic> {
+    let target = load_sibling_catalog_target(path)?;
+    match mode {
+        Some(mode) => analyze_design_with_catalog_and_generate_mode(
+            &target.designs[target.target_index],
+            &target.catalog,
+            mode,
+        ),
+        None => analyze_design_with_catalog_structural(
+            &target.designs[target.target_index],
+            &target.catalog,
+        ),
+    }
+}
+
+pub fn lower_file_with_sibling_catalog(path: &Path) -> Result<LoweredModule, Diagnostic> {
+    lower_file_with_sibling_catalog_and_generate_mode(path, GenerateMode::default())
+}
+
+pub fn lower_file_with_sibling_catalog_and_generate_mode(
+    path: &Path,
+    mode: GenerateMode,
+) -> Result<LoweredModule, Diagnostic> {
+    let target = load_sibling_catalog_target(path)?;
+    lower_design_with_catalog_and_generate_mode(
+        &target.designs[target.target_index],
+        &target.catalog,
+        mode,
+    )
+}
+
+struct SiblingCatalogTarget {
+    designs: Vec<crate::ast::Design>,
+    target_index: usize,
+    catalog: ModuleCatalog,
+}
+
+fn load_sibling_catalog_target(path: &Path) -> Result<SiblingCatalogTarget, Diagnostic> {
     let parent = sibling_catalog_parent(path);
     let mut files = collect_sv_files(parent)?;
-    if !files.iter().any(|candidate| candidate == path) {
-        files.push(path.to_path_buf());
-        files.sort();
-        files.dedup();
-    }
+    // Preserve the caller's exact path in spans while avoiding a second copy
+    // such as `./parent.sv` when the requested path is bare.
+    files.retain(|candidate| !lexically_same_path(candidate, path));
+    files.push(path.to_path_buf());
+    files.sort();
+    files.dedup();
     let mut parsed = Vec::new();
     let mut target_index = None;
     for file in files {
@@ -352,18 +391,25 @@ fn analyze_file_with_sibling_catalog_impl(
         )
     })?;
     let catalog = ModuleCatalog::from_designs(&parsed)?;
-    match mode {
-        Some(mode) => {
-            analyze_design_with_catalog_and_generate_mode(&parsed[target_index], &catalog, mode)
-        }
-        None => analyze_design_with_catalog_structural(&parsed[target_index], &catalog),
-    }
+    Ok(SiblingCatalogTarget {
+        designs: parsed,
+        target_index,
+        catalog,
+    })
 }
 
 fn sibling_catalog_parent(path: &Path) -> &Path {
     path.parent()
         .filter(|parent| !parent.as_os_str().is_empty())
         .unwrap_or_else(|| Path::new("."))
+}
+
+fn lexically_same_path(left: &Path, right: &Path) -> bool {
+    left.components()
+        .filter(|component| !matches!(component, std::path::Component::CurDir))
+        .eq(right
+            .components()
+            .filter(|component| !matches!(component, std::path::Component::CurDir)))
 }
 
 #[derive(Debug, Default, Clone, PartialEq, Eq)]
@@ -480,26 +526,62 @@ pub fn check_lower_dir_with_generate_mode(
     path: &Path,
     mode: GenerateMode,
 ) -> Result<CheckReport, Diagnostic> {
-    check_lower_dir_impl(path, Some(mode))
+    let files = collect_sv_files(path)?;
+    let mut report = CheckReport::new("lower");
+    report.processed = files.len();
+    let mut parsed = Vec::new();
+    for file in files {
+        match fs::read_to_string(&file) {
+            Ok(contents) => match parse_file(&file, &contents) {
+                Ok(design) => parsed.push((file, design)),
+                Err(diagnostic) => report.record(diagnostic),
+            },
+            Err(error) => report.record(Diagnostic::new(
+                crate::diagnostic::Span::new(&file, 1, 1),
+                format!("failed to read file: {error}"),
+            )),
+        }
+    }
+    let designs = parsed
+        .iter()
+        .map(|(_, design)| design.clone())
+        .collect::<Vec<_>>();
+    let catalog = match ModuleCatalog::from_designs(&designs) {
+        Ok(catalog) => catalog,
+        Err(diagnostic) => {
+            for (file, _) in parsed {
+                if diagnostic.span.path == file {
+                    report.record(diagnostic.clone());
+                } else {
+                    report.record(Diagnostic::new(
+                        crate::diagnostic::Span::new(&file, 1, 1),
+                        "module catalog construction failed",
+                    ));
+                }
+            }
+            return Ok(report);
+        }
+    };
+    for (_, design) in parsed {
+        match lower_design_with_catalog_and_generate_mode(&design, &catalog, mode) {
+            Ok(lowered) => {
+                for diagnostic in lowered.diagnostics {
+                    report.record(diagnostic);
+                }
+            }
+            Err(diagnostic) => report.record(diagnostic),
+        }
+    }
+    Ok(report)
 }
 
 /// Runs the M3-M7 lowering inventory without selecting generate branches.
 pub fn check_lower_dir_structural(path: &Path) -> Result<CheckReport, Diagnostic> {
-    check_lower_dir_impl(path, None)
-}
-
-fn check_lower_dir_impl(
-    path: &Path,
-    mode: Option<GenerateMode>,
-) -> Result<CheckReport, Diagnostic> {
     let mut report = CheckReport::new("lower");
     for file in collect_sv_files(path)? {
         report.processed += 1;
         match fs::read_to_string(&file) {
-            Ok(contents) => match match mode {
-                Some(mode) => lower_file_with_generate_mode(&file, &contents, mode),
-                None => lower_file_structural(&file, &contents),
-            } {
+            Ok(contents) => match lower_file_structural(&file, &contents) {
                 Ok(lowered) => {
                     for diagnostic in lowered.diagnostics {
                         report.record(diagnostic);
@@ -908,8 +990,8 @@ mod check_report_tests {
 
         let report = check_analyze_dir(&directory).unwrap();
         assert_eq!(report.processed, 3);
-        assert_eq!(report.supported(), 1);
-        assert_eq!(report.deferred(), 1);
+        assert_eq!(report.supported(), 2);
+        assert_eq!(report.deferred(), 0);
         assert_eq!(report.warned(), 0);
         assert_eq!(report.failed(), 1);
         assert_eq!(
@@ -927,12 +1009,8 @@ mod check_report_tests {
             .iter()
             .find(|file| file.path.ends_with("parent.sv"))
             .unwrap();
-        assert_eq!(parent.disposition, AnalysisDisposition::Deferred);
-        assert!(
-            parent.requirements.iter().any(|requirement| {
-                requirement.milestone == TargetMilestone::M9OrdinaryHierarchy
-            })
-        );
+        assert_eq!(parent.disposition, AnalysisDisposition::Supported);
+        assert!(parent.requirements.is_empty());
         let unknown = report
             .files
             .iter()
@@ -993,7 +1071,7 @@ mod check_report_tests {
         let directory = temporary_directory("sibling-catalog");
         std::fs::write(
             directory.join("child.sv"),
-            "module child(input logic i, output logic o); endmodule\n",
+            "module child(input logic i, output logic o); assign o = i; endmodule\n",
         )
         .unwrap();
         let parent_path = directory.join("parent.sv");
@@ -1004,12 +1082,8 @@ mod check_report_tests {
         .unwrap();
 
         let analysis = analyze_file_with_sibling_catalog(&parent_path).unwrap();
-        assert_eq!(analysis.disposition, AnalysisDisposition::Deferred);
-        assert!(
-            analysis.requirements.iter().any(|requirement| {
-                requirement.milestone == TargetMilestone::M9OrdinaryHierarchy
-            })
-        );
+        assert_eq!(analysis.disposition, AnalysisDisposition::Supported);
+        assert!(analysis.requirements.is_empty());
         assert!(matches!(
             analysis.modules[0].instantiations[0].resolution,
             InstantiationResolution::Resolved(_)
@@ -1019,6 +1093,12 @@ mod check_report_tests {
         assert!(rendered.contains("resolution=resolved"));
         assert!(rendered.contains("connection i direction=input source=Named value=i local=i"));
         assert!(rendered.contains("connection o direction=output source=Named value=o local=o"));
+        let default_lower = lower_file_with_sibling_catalog(&parent_path).unwrap();
+        let explicit_lower =
+            lower_file_with_sibling_catalog_and_generate_mode(&parent_path, GenerateMode::Nodelay)
+                .unwrap();
+        assert_eq!(default_lower, explicit_lower);
+        assert_eq!(default_lower.cell.items.len(), 1);
         std::fs::remove_dir_all(directory).unwrap();
     }
 

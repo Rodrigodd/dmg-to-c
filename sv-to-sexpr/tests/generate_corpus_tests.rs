@@ -12,7 +12,7 @@ use sv_to_sexpr::ast::{Design, ExprKind, Item, ItemKind};
 use sv_to_sexpr::diagnostic::DiagnosticKind;
 use sv_to_sexpr::elaborate::GenerateMode;
 use sv_to_sexpr::ir::{CellItem, LoweredModule};
-use sv_to_sexpr::lower::lower_file_with_generate_mode;
+use sv_to_sexpr::lower::lower_design_with_catalog_and_generate_mode;
 use sv_to_sexpr::parser::parse_file;
 use sv_to_sexpr::serialize::render_cell;
 use sv_to_sexpr::survey::collect_sv_files;
@@ -23,10 +23,6 @@ const GENERATE_PATHS: &[&str] = &[
     "sv-cells/dmg_cpu_b/cells/dffr_cc_q.sv",
     "sv-cells/dmg_cpu_b/cells/dffsr.sv",
     "sv-cells/dmg_cpu_b/cells/tffnl.sv",
-];
-const HIERARCHY_FAILURES: &[&str] = &[
-    "sv-cells/dmg_cpu_b/cells/full_add.sv",
-    "sv-cells/dmg_cpu_b/cells/half_add.sv",
 ];
 const KEEPER_FAILURES: &[&str] = &[
     "sv-cells/dmg_cpu_b/cells/mux.sv",
@@ -48,7 +44,6 @@ const TRANSISTOR_FAILURES: &[&str] = &[
 ];
 
 struct Corpus {
-    inputs: BTreeMap<String, String>,
     designs: BTreeMap<String, Design>,
     catalog: ModuleCatalog,
 }
@@ -121,14 +116,14 @@ fn dual_mode_generate_corpus_is_exact_selected_and_deterministic() {
             "mode affected analysis {path}"
         );
         assert_eq!(
-            lower_file_with_generate_mode(
-                Path::new(path),
-                &corpus.inputs[path],
+            lower_design_with_catalog_and_generate_mode(
+                design,
+                &corpus.catalog,
                 GenerateMode::Delayful,
             ),
-            lower_file_with_generate_mode(
-                Path::new(path),
-                &corpus.inputs[path],
+            lower_design_with_catalog_and_generate_mode(
+                design,
+                &corpus.catalog,
                 GenerateMode::Nodelay,
             ),
             "mode affected lowering {path}"
@@ -170,22 +165,22 @@ fn staged_cli_checks_report_exact_dual_mode_results() {
         let analyze = run_cli(&analyze_args);
         assert!(analyze.status.success());
         assert!(String::from_utf8(analyze.stdout).unwrap().starts_with(
-            "analyze check summary: processed=206 supported=1 deferred=205 warned=0 failed=0\n"
+            "analyze check summary: processed=206 supported=3 deferred=203 warned=0 failed=0\n"
         ));
         assert!(analyze.stderr.is_empty());
 
         let lower = run_cli(&lower_args);
         assert!(!lower.status.success());
         let expected_ignores = if mode == GenerateMode::Delayful {
-            1066
+            1073
         } else {
-            1056
+            1063
         };
         assert!(String::from_utf8(lower.stdout).unwrap().starts_with(&format!(
-            "lower check summary: processed=206 warned=47 intentional-ignored={expected_ignores} failed=16\n"
+            "lower check summary: processed=206 warned=47 intentional-ignored={expected_ignores} failed=14\n"
         )));
         let stderr = String::from_utf8(lower.stderr).unwrap();
-        assert!(stderr.ends_with("error: 16 files failed lowering\n"));
+        assert!(stderr.ends_with("error: 14 files failed lowering\n"));
     }
 }
 
@@ -223,9 +218,10 @@ fn audit_mode(
                 .or_default() += 1;
         }
 
-        let input = &corpus.inputs[path];
-        let first_lower = lower_file_with_generate_mode(Path::new(path), input, mode);
-        let second_lower = lower_file_with_generate_mode(Path::new(path), input, mode);
+        let first_lower =
+            lower_design_with_catalog_and_generate_mode(design, &corpus.catalog, mode);
+        let second_lower =
+            lower_design_with_catalog_and_generate_mode(design, &corpus.catalog, mode);
         assert_eq!(first_lower, second_lower, "lowering nondeterminism {path}");
         match first_lower {
             Ok(lowered) => {
@@ -281,7 +277,7 @@ fn audit_mode(
         render_map(&totals.requirements)
     )
     .unwrap();
-    for category in ["hierarchy", "keeper", "transistor"] {
+    for category in ["keeper", "transistor"] {
         writeln!(
             output,
             "  failures-{category}=[{}]",
@@ -298,15 +294,14 @@ fn audit_mode(
 }
 
 fn assert_mode_totals(totals: &ModeTotals) {
-    assert_eq!(totals.analysis_supported, 1);
-    assert_eq!(totals.analysis_deferred, 205);
+    assert_eq!(totals.analysis_supported, 3);
+    assert_eq!(totals.analysis_deferred, 203);
     assert_eq!(totals.analysis_warned, 0);
     assert_eq!(totals.analysis_failed, 0);
     assert!(!totals.requirements.contains_key("generate.alternative"));
-    assert_eq!(totals.lower_succeeded, 190);
+    assert_eq!(totals.lower_succeeded, 192);
     assert_eq!(totals.warnings, 47);
-    assert!(matches!(totals.intentional_ignores, 1056 | 1066));
-    assert_eq!(totals.failures["hierarchy"], HIERARCHY_FAILURES);
+    assert!(matches!(totals.intentional_ignores, 1063 | 1073));
     assert_eq!(totals.failures["keeper"], KEEPER_FAILURES);
     assert_eq!(totals.failures["transistor"], TRANSISTOR_FAILURES);
 }
@@ -474,10 +469,7 @@ fn has_generate(design: &Design) -> bool {
 }
 
 fn failure_category(path: &str, message: &str) -> &'static str {
-    if HIERARCHY_FAILURES.contains(&path) {
-        assert!(message.starts_with("unsupported item for lowering"));
-        "hierarchy"
-    } else if KEEPER_FAILURES.contains(&path) {
+    if KEEPER_FAILURES.contains(&path) {
         assert!(message.starts_with("unsupported item for lowering"));
         "keeper"
     } else if TRANSISTOR_FAILURES.contains(&path) {
@@ -498,7 +490,6 @@ fn render_map(values: &BTreeMap<String, usize>) -> String {
 
 fn load_corpus() -> Corpus {
     let root = repository_root();
-    let mut inputs = BTreeMap::new();
     let mut designs = BTreeMap::new();
     for source in collect_sv_files(&root.join("sv-cells")).unwrap() {
         let path = source
@@ -510,16 +501,11 @@ fn load_corpus() -> Corpus {
             .join("/");
         let input = fs::read_to_string(&source).unwrap();
         let design = parse_file(Path::new(&path), &input).unwrap();
-        inputs.insert(path.clone(), input);
         designs.insert(path, design);
     }
     let catalog =
         ModuleCatalog::from_designs(&designs.values().cloned().collect::<Vec<_>>()).unwrap();
-    Corpus {
-        inputs,
-        designs,
-        catalog,
-    }
+    Corpus { designs, catalog }
 }
 
 fn repository_root() -> PathBuf {

@@ -1,0 +1,44 @@
+analyze summary: modules=1 disposition=supported requirements=0
+module dmg_half_add @sv-cells/dmg_cpu_b/cells/half_add.sv:3:1
+  inputs: a b
+  outputs: sum cout
+  registers: <none>
+  symbols:
+    L_cout category=parameter @sv-cells/dmg_cpu_b/cells/half_add.sv:5:3
+    L_sum category=parameter @sv-cells/dmg_cpu_b/cells/half_add.sv:4:3
+    a category=port @sv-cells/dmg_cpu_b/cells/half_add.sv:7:3
+    b category=port @sv-cells/dmg_cpu_b/cells/half_add.sv:7:3
+    cout category=port @sv-cells/dmg_cpu_b/cells/half_add.sv:8:3
+    sum category=port @sv-cells/dmg_cpu_b/cells/half_add.sv:8:3
+  ports:
+    a direction=input use=input modifiers=[logic] @sv-cells/dmg_cpu_b/cells/half_add.sv:7:3
+    b direction=input use=input modifiers=[logic] @sv-cells/dmg_cpu_b/cells/half_add.sv:7:3
+    cout direction=output use=output modifiers=[logic] @sv-cells/dmg_cpu_b/cells/half_add.sv:8:3
+    sum direction=output use=output modifiers=[logic] @sv-cells/dmg_cpu_b/cells/half_add.sv:8:3
+  declarations:
+  signal_roles:
+    a roles=[HierarchicalConnection] declared=sv-cells/dmg_cpu_b/cells/half_add.sv:7:3
+    b roles=[HierarchicalConnection] declared=sv-cells/dmg_cpu_b/cells/half_add.sv:7:3
+    cout roles=[HierarchicalConnection] declared=sv-cells/dmg_cpu_b/cells/half_add.sv:8:3
+    sum roles=[HierarchicalConnection] declared=sv-cells/dmg_cpu_b/cells/half_add.sv:8:3
+  assignments:
+  drivers:
+    #0 target=cout source=hierarchical(module=dmg_and2,instance=and2_cout_inst,port=y) @sv-cells/dmg_cpu_b/cells/half_add.sv:11:42
+    #1 target=sum source=hierarchical(module=dmg_xor,instance=xor_sum_inst,port=y) @sv-cells/dmg_cpu_b/cells/half_add.sv:12:42
+  primitives:
+  instantiations:
+    #0 dmg_and2 and2_cout_inst @sv-cells/dmg_cpu_b/cells/half_add.sv:11:2
+      resolution=resolved
+      parameter L_y source=Named value=L_cout @sv-cells/dmg_cpu_b/cells/half_add.sv:11:13
+      connection y direction=output source=Named value=cout local=cout @sv-cells/dmg_cpu_b/cells/half_add.sv:11:42
+      connection in1 direction=input source=Named value=a local=a @sv-cells/dmg_cpu_b/cells/half_add.sv:11:52
+      connection in2 direction=input source=Named value=b local=b @sv-cells/dmg_cpu_b/cells/half_add.sv:11:61
+    #1 dmg_xor xor_sum_inst @sv-cells/dmg_cpu_b/cells/half_add.sv:12:2
+      resolution=resolved
+      parameter L_y source=Named value=L_sum @sv-cells/dmg_cpu_b/cells/half_add.sv:12:13
+      connection y direction=output source=Named value=sum local=sum @sv-cells/dmg_cpu_b/cells/half_add.sv:12:42
+      connection in1 direction=input source=Named value=a local=a @sv-cells/dmg_cpu_b/cells/half_add.sv:12:52
+      connection in2 direction=input source=Named value=b local=b @sv-cells/dmg_cpu_b/cells/half_add.sv:12:61
+  timing_aliases:
+  specify_paths:
+  generate_alternatives:

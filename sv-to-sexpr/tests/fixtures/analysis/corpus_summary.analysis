@@ -1,11 +1,10 @@
 analysis corpus summary
-processed=206 supported=1 deferred=205 warned=0 failed=0
+processed=206 supported=3 deferred=203 warned=0 failed=0
 milestones:
   M4 files=180
   M5 files=27
   M6 files=85
   M7 files=199
-  M9 files=2
   M10 files=6
   M11 files=10
 capabilities:
@@ -14,7 +13,6 @@ capabilities:
   driver.repeated | M6 | files=47
   driver.strength | M6 | files=15
   hierarchy.keeper | M10 | files=6
-  hierarchy.ordinary | M9 | files=2
   primitive.transistor | M11 | files=10
   state.initial | M5 | files=23
   state.procedural | M5 | files=27

@@ -177,14 +177,14 @@ fn corpus_analysis_summary_is_stable_by_disposition_milestone_and_capability() {
             .get(&AnalysisDisposition::Supported)
             .copied()
             .unwrap_or_default(),
-        1
+        3
     );
     assert_eq!(
         disposition_counts
             .get(&AnalysisDisposition::Deferred)
             .copied()
             .unwrap_or_default(),
-        205
+        203
     );
     assert_eq!(
         disposition_counts

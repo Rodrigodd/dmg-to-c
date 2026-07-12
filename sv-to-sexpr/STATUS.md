@@ -7,34 +7,34 @@ a milestone acceptance condition changes or is completed.
 
 Last audited on 2026-07-12:
 
-- `cargo test` passes 109 unit tests and 44 integration/corpus tests.
+- `cargo test` passes 118 unit tests and 49 integration/corpus tests.
 - Lexing succeeds for all 206 curated files.
 - Parsing succeeds for all 206 curated files.
 - `survey sv-cells` deterministically inventories 63,240 tokens and 138 typed
   capabilities: 128 deferred, 10 intentional ignores, and zero unsupported.
 - Configured catalog-aware semantic analysis succeeds for all 206 files in both
-  generate modes and reports 1 supported, 205 deferred, zero warned, and zero
+  generate modes and reports 3 supported, 203 deferred, zero warned, and zero
   failed. It selects exactly one `nodelay` branch before analysis, resolves
-  ordinary module interfaces without elaborating child behavior, and limits
-  registers to modeled state. Explicit structural APIs retain both alternatives
-  only for earlier source-inventory fixtures.
-- Default delayful lowering returns success for 190 files and fails explicitly
-  for 16 files. All 190 successful cells are deterministic, structurally valid,
+  ordinary module interfaces while retaining their typed parameter and port
+  bindings, and limits registers to modeled state. Explicit structural APIs
+  retain both generate alternatives or unresolved hierarchy only for earlier
+  source-inventory fixtures.
+- Default delayful lowering returns success for 192 files and fails explicitly
+  for 14 files. All 192 successful cells are deterministic, structurally valid,
   and contain only flat contracted value expressions; the configured corpus
-  audit covers 1,686 assignments including 1,046 generated temporaries and 581
+  audit covers 1,693 assignments including 1,046 generated temporaries and 588
   modeled nonzero delays. Nodelay mode has the same exact success/failure sets.
-- Default delayful lowering reports 1,066 visible intentional ignores: 41
-  literal initial events and 1,025 delay tuple entries after the first. Nodelay
-  reports 1,056. They remain non-failing under `--strict`; initial events
+- Default delayful lowering reports 1,073 visible intentional ignores: 41
+  literal initial events and 1,032 delay tuple entries after the first. Nodelay
+  reports 1,063. They remain non-failing under `--strict`; initial events
   classify their targets as modeled registers without serializing an initial
   event queue.
 - Target-only selection among multiple control-dependent specify paths emits
   47 documented warnings in the configured delayful corpus. Ordinary lowering
-  succeeds, while `--strict`
-  promotes those warnings to failures.
-- Nine failures are transistor-related; the other failures are two hierarchical
-  adders and five keeper users. No failure remains assigned to Milestone 7
-  timing or Milestone 8 generate selection.
+  succeeds, while `--strict` promotes those warnings to failures.
+- Nine failures are transistor-related and five are keeper users. No failure
+  remains assigned to Milestone 7 timing, Milestone 8 generate selection, or
+  Milestone 9 ordinary hierarchy.
 - Timing goldens are valid generic S-expressions, and the checked reference is
   canonical under `sexpr-fmt --check`. Full-corpus formatter validation has not
   been performed.
@@ -45,12 +45,14 @@ Last audited on 2026-07-12:
   first applicable source/specify entry policy, including all resistance
   multipliers, and the checked-in reference has been updated accordingly.
 - The current CLI has `lex`, `parse`, `analyze`, `lower`, `convert-file`,
-  `survey`, and staged `check`. Configured analysis, lowering, single-file
-  conversion, and analyze/lower checks accept `--nodelay`; delayful selection is
-  the default. Diagnostic-capable commands accept the shared `--strict` warning
-  policy, and lower/convert surface timing approximation warnings and
-  intentional ignores. The CLI does not yet have corpus `convert` or the
-  complete release diagnostic summary required by the plan.
+  `survey`, and staged `check`. Configured analysis, catalog-aware lowering,
+  single-file conversion, and analyze/lower checks accept `--nodelay`; delayful
+  selection is the default. Single-file and directory lowering build a sibling
+  or shared catalog for ordinary hierarchy. Diagnostic-capable commands accept
+  the shared `--strict` warning policy, and lower/convert surface timing
+  approximation warnings and intentional ignores. The CLI does not yet have
+  corpus `convert` or the complete release diagnostic summary required by the
+  plan.
 
 ## Milestone Status
 
@@ -74,8 +76,8 @@ Last audited on 2026-07-12:
 - Milestone 4: complete. Reviewed goldens cover the required combinational
   operator families and compound equality/mux expressions; deterministic
   dependency-first `t0`, `t1`, ... assignments keep every value operation flat.
-  The configured full-corpus audit proves all 190 current successes are
-  structurally valid and freezes exact diagnostics for the 16 later-milestone
+  The configured full-corpus audit proves all 192 current successes are
+  structurally valid and freezes exact diagnostics for the 14 later-milestone
   failures.
 - Milestone 5: complete. Reviewed stateful goldens cover simple, set/reset,
   blocking/nonblocking, nested-priority, and block-body latches. The configured
@@ -97,18 +99,24 @@ Last audited on 2026-07-12:
   warning for each used ambiguous target. Reviewed timing goldens include
   explicit precedence, procedural state, ambiguity diagnostics, and the exact
   reference `q_n`, `q`, and `d` assignments. The configured corpus audit
-  accounts for all 206 files, 266 structural specify paths, 640 selected source
-  targets, 381 preserved outer resistance multiplications, 47 warnings, and
+  accounts for all 206 files, 266 structural specify paths, 647 selected source
+  targets, 385 preserved outer resistance multiplications, 47 warnings, and
   zero M7 deferrals.
 - Milestone 8: complete. `GenerateMode::Delayful` is the default and
   `GenerateMode::Nodelay` is explicitly selectable through the configured APIs
   and CLI. Exact fixtures and a dual-mode 206-file audit prove that `dffr`,
   `dffr_cc`, `dffr_cc_q`, `dffsr`, and `tffnl` each select one branch with no
   unselected declarations, state, drivers, timing aliases, diagnostics, or
-  requirements. Both modes lower 190 files and leave exactly the 2 hierarchy,
-  5 keeper, and 9 transistor deferrals.
-- Milestone 9: pending apart from parser and analyzer scaffolding for ordinary
-  instantiations.
+  requirements. Both modes lower 192 files and leave exactly the 5 keeper and 9
+  transistor deferrals.
+- Milestone 9: complete. Catalog-owned typed module definitions and the
+  hierarchy transformer recursively substitutes named, positional, omitted,
+  and default parameter bindings plus named/positional port connections,
+  qualifies child-local names and timing aliases, preserves instance/child
+  driver order, and rejects collisions, unknown modules, and recursion.
+  Reviewed `half_add`/`full_add` fixtures cover all seven actual instances, and
+  the exact dual-mode corpus audit reports 192 successes with no configured M9
+  requirement or hierarchy-only failure.
 - Milestone 10: pending apart from parsing keepers as instantiations and the
   contracted direct keeper driver form.
 - Milestone 11: pending apart from parser/analyzer scaffolding and contracted

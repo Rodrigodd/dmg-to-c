@@ -146,10 +146,15 @@ the unresolved Generate node only for milestone inventory and compatibility
 fixtures. They are not conversion entrypoints and do not claim configured
 generate support. A missing `else`, a condition other than the scalar symbol
 `nodelay`, nested generate syntax, or another generate shape is a source-spanned
-error. Ordinary instances are flattened in Milestone 9 using deterministic
-instance-qualified names, with parameter overrides and named/positional
-connections resolved. Unknown or recursive modules are errors. Keepers use the
-direct form above rather than ordinary flattening.
+error. Ordinary instances are flattened after configured analysis has retained
+their typed parameter bindings and named/positional port connections. Child
+ports and parameters are substituted as typed expressions, child-local signals
+and timing aliases use the exact `<instance>__<child-name>` form, and nested
+instances extend that prefix recursively. Child drivers are spliced at the
+parent instance position in child source order; SSA temporaries remain one
+parent-wide deterministic `t0`, `t1`, ... sequence. A qualified-name collision,
+unknown module, or recursive reference is an error. Keepers use the direct form
+above rather than ordinary flattening.
 
 ## Timing
 

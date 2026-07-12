@@ -512,6 +512,14 @@ Acceptance conditions:
 
 ### Milestone 9: Hierarchical Cell Instantiations
 
+Status: complete as of 2026-07-12. Catalog-aware lowering recursively flattens
+ordinary instances with typed parameter/port substitution, deterministic
+`<instance>__<child-name>` qualification, parent-global SSA temporary order,
+and configured recursion checks. Reviewed `half_add` and `full_add` fixtures
+preserve all seven source-ordered instances, bindings, connections, drivers,
+and substituted delays; the exact dual-mode corpus audit lowers both adders and
+leaves only the 14 Milestone 10–11 deferrals.
+
 Resolve ordinary cell instances used to compose larger cells.
 
 Expected to be working after this milestone:

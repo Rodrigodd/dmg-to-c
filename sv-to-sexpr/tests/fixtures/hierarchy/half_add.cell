@@ -1,0 +1,20 @@
+(cell
+  dmg_half_add
+  (inputs a b)
+
+  (outputs sum cout)
+
+  (registers )
+
+  (assignments
+
+    (cout
+      (and a b)
+      (+ (elmore (wire 122) (* (nmos 35) 2)) (elmore (wire L_cout) (pmos 35)))
+    )
+    (sum
+      (xor a b)
+      (+ (elmore (wire 122) (nmos 35)) (elmore (wire L_sum) (* (pmos 35) 2)))
+    )
+  )
+)

@@ -1,0 +1,6 @@
+diagnostics:
+  intentional-ignore | sv-cells/dmg_cpu_b/cells/nand2.sv:16:3 | delay tuple entry 2 is intentionally ignored because the cell model selects only entry 1
+  intentional-ignore | sv-cells/dmg_cpu_b/cells/nand2.sv:16:3 | delay tuple entry 2 is intentionally ignored because the cell model selects only entry 1
+  intentional-ignore | sv-cells/dmg_cpu_b/cells/nand2.sv:16:3 | delay tuple entry 2 is intentionally ignored because the cell model selects only entry 1
+  intentional-ignore | sv-cells/dmg_cpu_b/cells/xor.sv:20:45 | delay tuple entry 2 is intentionally ignored because the cell model selects only entry 1
+  intentional-ignore | sv-cells/dmg_cpu_b/cells/xor.sv:20:45 | delay tuple entry 2 is intentionally ignored because the cell model selects only entry 1

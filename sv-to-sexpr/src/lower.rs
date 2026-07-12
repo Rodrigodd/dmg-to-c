@@ -1,4 +1,7 @@
-use crate::analyze::{analyze_design_structural, sensitivity_is_stateful};
+use crate::analyze::{
+    ModuleCatalog, analyze_design_structural, analyze_design_with_catalog_and_generate_mode,
+    sensitivity_is_stateful,
+};
 use crate::ast::*;
 use crate::diagnostic::{Diagnostic, DiagnosticKind, Span};
 use crate::elaborate::{GenerateMode, elaborate_design};
@@ -24,6 +27,24 @@ pub fn lower_file_with_generate_mode(
     lower_design_with_generate_mode(&design, mode)
 }
 
+pub fn lower_file_with_catalog_and_generate_mode(
+    path: &Path,
+    input: &str,
+    catalog: &ModuleCatalog,
+    mode: GenerateMode,
+) -> LowerResult<LoweredModule> {
+    let design = crate::parser::parse_file(path, input)?;
+    lower_design_with_catalog_and_generate_mode(&design, catalog, mode)
+}
+
+pub fn lower_file_with_catalog(
+    path: &Path,
+    input: &str,
+    catalog: &ModuleCatalog,
+) -> LowerResult<LoweredModule> {
+    lower_file_with_catalog_and_generate_mode(path, input, catalog, GenerateMode::default())
+}
+
 /// Lowers the unelaborated M3 structural view.
 ///
 /// This entrypoint exists for milestone inventory tests that must continue to
@@ -42,6 +63,34 @@ pub fn lower_design_with_generate_mode(
     let elaborated = elaborate_design(design, mode)?;
     let analysis = analyze_design_structural(&elaborated);
     lower_elaborated_design(&elaborated, &analysis)
+}
+
+pub fn lower_design_with_catalog_and_generate_mode(
+    design: &Design,
+    catalog: &ModuleCatalog,
+    mode: GenerateMode,
+) -> LowerResult<LoweredModule> {
+    // Preserve catalog-aware analysis as the pre-flattened record and validate
+    // bindings before the hierarchy transform consumes them.
+    let configured = analyze_design_with_catalog_and_generate_mode(design, catalog, mode)?;
+    if let Some(diagnostic) = configured
+        .diagnostics
+        .iter()
+        .find(|diagnostic| diagnostic.kind == DiagnosticKind::Error)
+    {
+        return Err(diagnostic.clone());
+    }
+    let flattened =
+        crate::hierarchy::flatten_design_with_catalog_and_generate_mode(design, catalog, mode)?;
+    let analysis = analyze_design_structural(&flattened);
+    lower_elaborated_design(&flattened, &analysis)
+}
+
+pub fn lower_design_with_catalog(
+    design: &Design,
+    catalog: &ModuleCatalog,
+) -> LowerResult<LoweredModule> {
+    lower_design_with_catalog_and_generate_mode(design, catalog, GenerateMode::default())
 }
 
 /// Lowers a design that has already had its generate configuration selected.

@@ -27,21 +27,21 @@ source-specify:
   target-multiplicity=1:154,2:36,3:12,4:1
   first-source-paths=203 witnesses=[sv-cells/dmg_cpu_b/cells/and2.sv:20:3:y,sv-cells/dmg_cpu_b/cells/and3.sv:20:3:y,sv-cells/dmg_cpu_b/cells/and4.sv:20:3:y,sv-cells/dmg_cpu_b/cells/ao21.sv:21:3:y,sv-cells/dmg_cpu_b/cells/ao22.sv:20:3:y,sv-cells/dmg_cpu_b/cells/ao222.sv:20:3:y]
 lowering:
-  succeeded=190 failed=16
-  assignments=1686 temps=1046 source-targets=640
-  source-dispositions explicit=403 explicit-nonzero=389 explicit-with-specify=0 specify=192 specify-nonzero=192 zero=45
-  emitted zero=1105 nonzero=581 nested=581
-  outer-resistance-multiplications expected=381 emitted=381
-  warnings=47 later-ignores=1025 initial-ignores=41
+  succeeded=192 failed=14
+  assignments=1693 temps=1046 source-targets=647
+  source-dispositions explicit=403 explicit-nonzero=389 explicit-with-specify=0 specify=199 specify-nonzero=199 zero=45
+  emitted zero=1105 nonzero=588 nested=588
+  outer-resistance-multiplications expected=385 emitted=385
+  warnings=47 later-ignores=1032 initial-ignores=41
 emitted-timing-operators:
-  +=221
+  +=225
   -=0
-  *=383
+  *=387
   /=0
-  elmore=728
-  wire=728
-  pmos=374
-  nmos=428
+  elmore=739
+  wire=739
+  pmos=381
+  nmos=432
   gt=0
   mux=0
 invariants:
@@ -68,8 +68,6 @@ acceptance-witnesses:
   explicit-precedence=sv-to-sexpr/tests/fixtures/timing/explicit_precedence.sv
   pad-xtal=M10-keeper:no-M7-failure
 deferrals:
-  sv-cells/dmg_cpu_b/cells/full_add.sv | M9-hierarchy | 13:2 | unsupported item for lowering
-  sv-cells/dmg_cpu_b/cells/half_add.sv | M9-hierarchy | 11:2 | unsupported item for lowering
   sv-cells/dmg_cpu_b/cells/mux.sv | M10-keeper | 24:2 | unsupported item for lowering
   sv-cells/dmg_cpu_b/cells/muxi.sv | M10-keeper | 24:2 | unsupported item for lowering
   sv-cells/dmg_cpu_b/cells/pad_xtal.sv | M10-keeper | 26:2 | unsupported item for lowering
