@@ -287,8 +287,8 @@ Acceptance conditions:
 
 Status: complete as of 2026-07-11. Reviewed operator and compound-expression
 goldens use deterministic dependency-first temporaries, and a full-corpus audit
-proves all 182 currently successful lowerings contain only flat contracted value
-expressions. The remaining 24 files fail explicitly in later-milestone families
+proves all 185 currently successful lowerings contain only flat contracted value
+expressions. The remaining 21 files fail explicitly in later-milestone families
 with frozen source diagnostics.
 
 Implement the reusable IR and scalar combinational subset without timing.
@@ -372,6 +372,13 @@ Acceptance conditions:
 - Combinational procedural targets are not listed as registers.
 
 ### Milestone 6: Tri-State, Precharge, Strength, and Multiple Drivers
+
+Status: complete as of 2026-07-12. Reviewed fixtures cover both high-Z
+polarities, open drain, precharge, direct signal primitives, bidirectional
+pads, supply ties, and repeated bus drivers with all four contracted strength
+pairs. A scope-aware corpus audit identifies 67 relevant files: all 53 current
+successes preserve flat driver form, strength, and source order, while 14 files
+remain explicitly blocked on M7, M10, or M11 behavior.
 
 Implement driver semantics independently from timing semantics.
 

@@ -21,7 +21,6 @@ enum FailureCategory {
     GeneratedDffTff,
     HierarchicalAdder,
     KeeperUser,
-    SignalValuedHighZ,
     UnsupportedTimingFactor,
 }
 
@@ -32,7 +31,6 @@ impl FailureCategory {
             Self::GeneratedDffTff => "generated-dff-tff",
             Self::HierarchicalAdder => "hierarchical-adder",
             Self::KeeperUser => "keeper-user",
-            Self::SignalValuedHighZ => "signal-valued-high-z",
             Self::UnsupportedTimingFactor => "unsupported-timing-factor",
         }
     }
@@ -95,11 +93,6 @@ const KEEPER_FAILURES: &[&str] = &[
     "sv-cells/dmg_cpu_b/cells/muxi.sv",
     "sv-cells/sm83/cells/idu_bit0.sv",
     "sv-cells/sm83/cells/reg_wz_out.sv",
-];
-const HIGH_Z_FAILURES: &[&str] = &[
-    "sv-cells/dmg_cpu_b/cells/buf_if0.sv",
-    "sv-cells/dmg_cpu_b/cells/not_if0.sv",
-    "sv-cells/dmg_cpu_b/cells/not_if1.sv",
 ];
 const TIMING_FACTOR_FAILURES: &[&str] = &["sv-cells/dmg_cpu_b/cells/pad_xtal.sv"];
 
@@ -188,7 +181,7 @@ fn full_corpus_lowering_baseline_is_deterministic_flat_and_explicit() {
 
     let summary = render_summary(&totals, &failures);
     assert!(!summary.contains(&absolute_root));
-    assert!(summary.contains("processed=206 succeeded=182 failed=24"));
+    assert!(summary.contains("processed=206 succeeded=185 failed=21"));
     assert!(summary.contains("invalid_successful_cells=0"));
     assert!(summary.contains("nested_value_expressions=0"));
     assert!(summary.contains("timing_validation_failures=0"));
@@ -198,7 +191,6 @@ fn full_corpus_lowering_baseline_is_deterministic_flat_and_explicit() {
         FailureCategory::GeneratedDffTff,
         FailureCategory::HierarchicalAdder,
         FailureCategory::KeeperUser,
-        FailureCategory::SignalValuedHighZ,
         FailureCategory::UnsupportedTimingFactor,
     ] {
         assert!(summary.contains(&format!("{} files=", category.label())));
@@ -314,7 +306,6 @@ fn classify_failure(path: &str, diagnostic: &Diagnostic) -> FailureCategory {
         GENERATED_FAILURES.contains(&path),
         HIERARCHY_FAILURES.contains(&path),
         KEEPER_FAILURES.contains(&path),
-        HIGH_Z_FAILURES.contains(&path),
         TIMING_FACTOR_FAILURES.contains(&path),
     ]
     .into_iter()
@@ -339,11 +330,6 @@ fn classify_failure(path: &str, diagnostic: &Diagnostic) -> FailureCategory {
         )
     } else if KEEPER_FAILURES.contains(&path) {
         (FailureCategory::KeeperUser, "unsupported item for lowering")
-    } else if HIGH_Z_FAILURES.contains(&path) {
-        (
-            FailureCategory::SignalValuedHighZ,
-            "high-Z ternary is not yet a contracted polarity-equivalent driver form",
-        )
     } else if TIMING_FACTOR_FAILURES.contains(&path) {
         (
             FailureCategory::UnsupportedTimingFactor,
@@ -361,9 +347,9 @@ fn classify_failure(path: &str, diagnostic: &Diagnostic) -> FailureCategory {
 
 fn assert_exact_baseline(totals: &AuditTotals, failures: &[FailedFile]) {
     assert_eq!(totals.processed, 206);
-    assert_eq!(totals.succeeded, 182);
-    assert_eq!(totals.failed, 24);
-    assert_eq!(failures.len(), 24);
+    assert_eq!(totals.succeeded, 185);
+    assert_eq!(totals.failed, 21);
+    assert_eq!(failures.len(), 21);
     assert_eq!(totals.invalid_successful_cells, 0);
     assert_eq!(totals.nested_value_expressions, 0);
     assert_eq!(totals.empty_value_operands, 0);
@@ -371,9 +357,9 @@ fn assert_exact_baseline(totals: &AuditTotals, failures: &[FailedFile]) {
     assert_eq!(totals.nondeterministic_results, 0);
     assert_eq!(totals.absolute_path_leaks, 0);
     assert_eq!(totals.dependency_order_failures, 0);
-    assert_eq!(totals.assignments, 1603);
-    assert_eq!(totals.atom_value_assignments, 10);
-    assert_eq!(totals.temporary_assignments, 995);
+    assert_eq!(totals.assignments, 1610);
+    assert_eq!(totals.atom_value_assignments, 5);
+    assert_eq!(totals.temporary_assignments, 999);
     assert_eq!(totals.repeated_target_assignments, 51);
     assert_eq!(totals.delayed_assignments, 379);
     assert_eq!(totals.nested_timing_delay_assignments, 379);
@@ -383,13 +369,16 @@ fn assert_exact_baseline(totals: &AuditTotals, failures: &[FailedFile]) {
         totals.operator_counts,
         BTreeMap::from([
             ("and".to_string(), 627),
-            ("bufif0".to_string(), 74),
-            ("bufif1".to_string(), 302),
+            ("bufif0".to_string(), 2),
+            ("bufif0-strength".to_string(), 74),
+            ("bufif1".to_string(), 10),
+            ("bufif1-strength".to_string(), 293),
             ("caseeq".to_string(), 4),
+            ("drive-strength".to_string(), 5),
             ("mux".to_string(), 44),
             ("nand".to_string(), 23),
             ("nor".to_string(), 28),
-            ("not".to_string(), 203),
+            ("not".to_string(), 207),
             ("or".to_string(), 282),
             ("xnor".to_string(), 1),
             ("xor".to_string(), 5),
@@ -401,7 +390,6 @@ fn assert_exact_baseline(totals: &AuditTotals, failures: &[FailedFile]) {
         (FailureCategory::GeneratedDffTff, GENERATED_FAILURES),
         (FailureCategory::HierarchicalAdder, HIERARCHY_FAILURES),
         (FailureCategory::KeeperUser, KEEPER_FAILURES),
-        (FailureCategory::SignalValuedHighZ, HIGH_Z_FAILURES),
         (
             FailureCategory::UnsupportedTimingFactor,
             TIMING_FACTOR_FAILURES,
@@ -476,7 +464,6 @@ fn render_summary(totals: &AuditTotals, failures: &[FailedFile]) -> String {
         FailureCategory::GeneratedDffTff,
         FailureCategory::HierarchicalAdder,
         FailureCategory::KeeperUser,
-        FailureCategory::SignalValuedHighZ,
         FailureCategory::UnsupportedTimingFactor,
     ] {
         let category_failures = failures

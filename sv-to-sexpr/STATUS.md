@@ -7,7 +7,7 @@ a milestone acceptance condition changes or is completed.
 
 Last audited on 2026-07-12:
 
-- `cargo test` passes 91 unit tests and 28 integration tests.
+- `cargo test` passes 98 unit tests and 32 integration tests.
 - Lexing succeeds for all 206 curated files.
 - Parsing succeeds for all 206 curated files.
 - `survey sv-cells` deterministically inventories 63,240 tokens and 138 typed
@@ -16,22 +16,22 @@ Last audited on 2026-07-12:
   supported, 205 deferred, zero warned, and zero failed. It preserves distinct
   generate alternatives, resolves ordinary module interfaces without
   elaborating child behavior, and limits registers to modeled state.
-- Lowering returns success for 182 files and fails explicitly for 24 files. All
-  182 successful cells are deterministic, structurally valid, and contain only
-  flat contracted value expressions; the corpus audit covers 1,603 assignments
-  including 995 generated temporaries.
+- Lowering returns success for 185 files and fails explicitly for 21 files. All
+  185 successful cells are deterministic, structurally valid, and contain only
+  flat contracted value expressions; the corpus audit covers 1,610 assignments
+  including 999 generated temporaries.
 - Successful lowering reports 32 literal initial events as visible
   intentional-ignore diagnostics. They remain non-failing under `--strict`,
   classify their targets as modeled registers, and do not serialize an initial
   event queue.
 - Nine failures are transistor-related. The other failures are five generated
-  DFF/TFF variants, two hierarchical adders, four keeper users, three
-  signal-valued high-Z drivers, and one unsupported timing factor.
+  DFF/TFF variants, two hierarchical adders, four keeper users, and one
+  unsupported timing factor.
 - Examined generated files are valid generic S-expressions and become stable
   after `sexpr-fmt`. Full-corpus formatter validation has not been performed.
-- Flat SSA, combinational operators, register lists, and supported stateful
-  behavior have completed fixture review. Driver normalizations and timing
-  semantics remain subject to their later milestone fixture reviews.
+- Flat SSA, combinational operators, register lists, supported stateful
+  behavior, and driver/strength normalizations have completed fixture review.
+  Timing semantics remain subject to their later milestone fixture review.
 - The reference cell now lowers with flat SSA values but does not yet match the
   checked-in target because specify-derived delays have not completed fixture
   review. Delay tuples select only their first entry, but reference output under
@@ -64,18 +64,22 @@ Last audited on 2026-07-12:
 - Milestone 4: complete. Reviewed goldens cover the required combinational
   operator families and compound equality/mux expressions; deterministic
   dependency-first `t0`, `t1`, ... assignments keep every value operation flat.
-  A full-corpus audit proves all 182 current successes are structurally valid
-  and freezes exact diagnostics for the 24 later-milestone failures.
+  A full-corpus audit proves all 185 current successes are structurally valid
+  and freezes exact diagnostics for the 21 later-milestone failures.
 - Milestone 5: complete. Reviewed stateful goldens cover simple, set/reset,
   blocking/nonblocking, nested-priority, and block-body latches. The recursive
   audit finds 27 stateful files: 21 emitted cells have 38 exact modeled
   registers and 38 flat retained mux equations; five generated DFF/TFF files
   remain M8 deferrals, and `dlatch_ee_irq` remains explicitly assigned to its
-  M6/M7/M10/M11 driver and timing work. All 13 combinational procedural writes
-  found in generated alternatives remain non-state.
-- Milestone 6: partial. Constant-drive tri-state and precharge subsets lower;
-  the strength representation is contracted, while signal-valued drives,
-  strength lowering, and reviewed fixtures remain.
+  M7/M10/M11 timing, keeper, and transistor work. All 13 combinational
+  procedural writes found in generated alternatives remain non-state.
+- Milestone 6: complete. Reviewed fixtures cover signal- and literal-valued
+  tri-state polarity, open drain, precharge, bidirectional pull-up pads, supply
+  ties, direct primitives, and repeated buses. Exact strength metadata uses
+  only the four contracted ordered pairs. The scope-aware audit accounts for
+  67 relevant files, proves all 53 current successes preserve flat driver
+  dependencies and source order, and keeps all 58 genuine repeated targets
+  separate without combining mutually exclusive generate alternatives.
 - Milestone 7: partial. First-entry tuple selection and the corpus timing clamp
   are enforced, but specify paths, resistance factors, complete alias handling,
   and reviewed timing fixtures remain.

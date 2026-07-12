@@ -1,0 +1,15 @@
+(cell
+  dmg_buf_if0
+  (inputs in ena_n)
+
+  (outputs y)
+
+  (registers )
+
+  (assignments
+
+    (t0 (not in) 0)
+    (t1 (not t0) 0)
+    (y (bufif0 t1 ena_n) 0)
+  )
+)

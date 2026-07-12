@@ -376,14 +376,7 @@ fn unsupported_value_and_timing_forms_report_exact_expression_spans() {
 }
 
 #[test]
-fn deferred_driver_forms_fail_at_their_source_constructs() {
-    let high_z = lower_error(
-        "diagnostics/high_z.sv",
-        "module sample(input logic a, s, output logic y);\n  assign y = s ? a : 'z;\nendmodule",
-    );
-    assert_eq!(high_z.span, Span::new("diagnostics/high_z.sv", 2, 14));
-    assert!(high_z.message.contains("high-Z ternary"));
-
+fn later_driver_forms_fail_at_their_source_constructs() {
     for primitive in ["nmos", "pmos", "rnmos"] {
         let path = format!("diagnostics/{primitive}.sv");
         let input = format!(

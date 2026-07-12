@@ -1,7 +1,9 @@
 use crate::analyze::{analyze_design, sensitivity_is_stateful};
 use crate::ast::*;
 use crate::diagnostic::{Diagnostic, DiagnosticKind, Span};
-use crate::ir::{Assignment, Cell, CellItem, Expr, LoweredModule, TimingOperator, ValueOperator};
+use crate::ir::{
+    Assignment, Cell, CellItem, Expr, LoweredModule, StrengthPair, TimingOperator, ValueOperator,
+};
 use std::collections::{BTreeMap, BTreeSet};
 use std::path::Path;
 
@@ -320,9 +322,34 @@ impl<'a> Lowerer<'a> {
                 "expected assignment target symbol",
             )
         })?;
-        let expr = self.lower_expr(&assign.value)?;
+        let mut expr = self.lower_continuous_value(&assign.value)?;
+        if let Some(strength) = &assign.strength {
+            expr = apply_strength(expr, lower_strength_pair(strength)?);
+        }
         let delay = self.lower_delay(assign.delay.as_ref())?;
         self.emit_assignment(target, expr, delay, &assign.span)
+    }
+
+    fn lower_continuous_value(&mut self, expr: &SvExpr) -> LowerResult<Expr> {
+        match &expr.kind {
+            ExprKind::Group(inner) => self.lower_continuous_value(inner),
+            ExprKind::Ternary {
+                condition,
+                then_expr,
+                else_expr,
+            } => {
+                if let Some(driver) = self.lower_tristate_ternary(
+                    condition.as_ref(),
+                    then_expr.as_ref(),
+                    else_expr.as_ref(),
+                )? {
+                    Ok(driver)
+                } else {
+                    self.lower_expr(expr)
+                }
+            }
+            _ => self.lower_expr(expr),
+        }
     }
 
     fn lower_expr(&mut self, expr: &SvExpr) -> LowerResult<Expr> {
@@ -410,17 +437,10 @@ impl<'a> Lowerer<'a> {
                 then_expr,
                 else_expr,
             } => {
-                if let Some(expr) = self.lower_tristate_ternary(
-                    condition.as_ref(),
-                    then_expr.as_ref(),
-                    else_expr.as_ref(),
-                )? {
-                    return Ok(expr);
-                }
                 if self.is_z_expr(then_expr) || self.is_z_expr(else_expr) {
                     return Err(Diagnostic::new(
                         expr.span.clone(),
-                        "high-Z ternary is not yet a contracted polarity-equivalent driver form",
+                        "high-Z ternary is legal only as the root value of a continuous driver",
                     ));
                 }
                 Ok(Expr::value(
@@ -453,34 +473,19 @@ impl<'a> Lowerer<'a> {
         then_expr: &SvExpr,
         else_expr: &SvExpr,
     ) -> LowerResult<Option<Expr>> {
-        if self.is_z_expr(else_expr)
-            && let Some(value) = self.tristate_drive_value(then_expr)
-        {
+        if self.is_z_expr(else_expr) {
             return Ok(Some(Expr::value(
                 ValueOperator::BufIf1,
-                vec![value, self.lower_expr(condition)?],
+                vec![self.lower_expr(then_expr)?, self.lower_expr(condition)?],
             )));
         }
-        if self.is_z_expr(then_expr)
-            && let Some(value) = self.tristate_drive_value(else_expr)
-        {
+        if self.is_z_expr(then_expr) {
             return Ok(Some(Expr::value(
                 ValueOperator::BufIf0,
-                vec![value, self.lower_expr(condition)?],
+                vec![self.lower_expr(else_expr)?, self.lower_expr(condition)?],
             )));
         }
         Ok(None)
-    }
-
-    fn tristate_drive_value(&mut self, expr: &SvExpr) -> Option<Expr> {
-        match &expr.kind {
-            ExprKind::Constant(ConstKind::Zero) => Some(Expr::atom("0")),
-            ExprKind::Constant(ConstKind::One) => Some(Expr::atom("1")),
-            ExprKind::Integer(value) if value == "0" => Some(Expr::atom("0")),
-            ExprKind::Integer(value) if value == "1" => Some(Expr::atom("1")),
-            ExprKind::Group(inner) => self.tristate_drive_value(inner),
-            _ => None,
-        }
     }
 
     fn is_z_expr(&self, expr: &SvExpr) -> bool {
@@ -523,13 +528,26 @@ impl<'a> Lowerer<'a> {
             .ok_or_else(|| Diagnostic::new(call.span.clone(), "expected bufif control argument"))?;
         let target = expr_symbol(target)
             .ok_or_else(|| Diagnostic::new(target.span.clone(), "expected bufif target symbol"))?;
-        let operator = ValueOperator::parse(&call.name).ok_or_else(|| {
-            Diagnostic::new(call.span.clone(), "uncontracted bufif value operator")
-        })?;
-        let expr = Expr::value(
-            operator,
-            vec![self.lower_expr(value)?, self.lower_expr(control)?],
-        );
+        let mut operands = vec![self.lower_expr(value)?, self.lower_expr(control)?];
+        let operator = match (call.name.as_str(), call.strength.as_ref()) {
+            ("bufif0", Some(strength)) => {
+                operands.extend(strength_operands(lower_strength_pair(strength)?));
+                ValueOperator::BufIf0Strength
+            }
+            ("bufif1", Some(strength)) => {
+                operands.extend(strength_operands(lower_strength_pair(strength)?));
+                ValueOperator::BufIf1Strength
+            }
+            ("bufif0", None) => ValueOperator::BufIf0,
+            ("bufif1", None) => ValueOperator::BufIf1,
+            _ => {
+                return Err(Diagnostic::new(
+                    call.span.clone(),
+                    "uncontracted bufif value operator",
+                ));
+            }
+        };
+        let expr = Expr::value(operator, operands);
         let delay = self.lower_delay(call.delay.as_ref())?;
         self.emit_assignment(target, expr, delay, &call.span)
     }
@@ -899,6 +917,64 @@ impl<'a> Lowerer<'a> {
                 "unsupported timing factor",
             )),
         }
+    }
+}
+
+fn lower_strength_pair(strength: &Strength) -> LowerResult<StrengthPair> {
+    if strength.values.len() != 2 {
+        return Err(Diagnostic::new(
+            strength.span.clone(),
+            format!(
+                "drive strength must contain exactly two values; got {}: `{}`",
+                strength.values.len(),
+                render_strength_values(&strength.values)
+            ),
+        ));
+    }
+    StrengthPair::parse(&strength.values[0], &strength.values[1]).ok_or_else(|| {
+        Diagnostic::new(
+            strength.span.clone(),
+            format!(
+                "unsupported drive strength pair `{}`",
+                render_strength_values(&strength.values)
+            ),
+        )
+    })
+}
+
+fn render_strength_values(values: &[String]) -> String {
+    format!("({})", values.join(", "))
+}
+
+fn strength_operands(pair: StrengthPair) -> [Expr; 2] {
+    let (first, second) = pair.atoms();
+    [Expr::atom(first), Expr::atom(second)]
+}
+
+fn apply_strength(expr: Expr, pair: StrengthPair) -> Expr {
+    let operator = match &expr {
+        Expr::List(items) => match items.first() {
+            Some(Expr::Atom(head)) if head == ValueOperator::BufIf0.as_str() => {
+                Some(ValueOperator::BufIf0Strength)
+            }
+            Some(Expr::Atom(head)) if head == ValueOperator::BufIf1.as_str() => {
+                Some(ValueOperator::BufIf1Strength)
+            }
+            _ => None,
+        },
+        Expr::Atom(_) => None,
+    };
+    if let Some(operator) = operator {
+        let Expr::List(mut items) = expr else {
+            unreachable!()
+        };
+        items.remove(0);
+        items.extend(strength_operands(pair));
+        Expr::value(operator, items)
+    } else {
+        let mut operands = vec![expr];
+        operands.extend(strength_operands(pair));
+        Expr::value(ValueOperator::DriveStrength, operands)
     }
 }
 
@@ -1415,7 +1491,10 @@ mod tests {
                 .collect::<Vec<_>>(),
             vec![
                 ("y".to_string(), "(not in)".to_string()),
-                ("in".to_string(), "(bufif0 1 pch_n)".to_string()),
+                (
+                    "in".to_string(),
+                    "(bufif0-strength 1 pch_n strong1 highz0)".to_string(),
+                ),
             ]
         );
     }
@@ -1429,8 +1508,14 @@ mod tests {
                 .map(|(target, expr, _)| (target, expr))
                 .collect::<Vec<_>>(),
             vec![
-                ("pad".to_string(), "(bufif1 0 ndrv)".to_string()),
-                ("pad".to_string(), "(bufif0 1 pdrv_n)".to_string()),
+                (
+                    "pad".to_string(),
+                    "(bufif1-strength 0 ndrv highz1 strong0)".to_string(),
+                ),
+                (
+                    "pad".to_string(),
+                    "(bufif0-strength 1 pdrv_n strong1 highz0)".to_string(),
+                ),
                 ("i_n".to_string(), "(not pad)".to_string()),
             ]
         );
@@ -1453,7 +1538,7 @@ mod tests {
                 ("t0", "(and in1 in2)"),
                 ("t1", "(and in3 in4)"),
                 ("t2", "(or t0 t1)"),
-                ("y1", "(bufif1 0 t2)"),
+                ("y1", "(bufif1-strength 0 t2 highz1 strong0)"),
             ]
         );
         let y4_assignments = assignments
@@ -1463,7 +1548,10 @@ mod tests {
             .collect::<Vec<_>>();
         assert_eq!(
             y4_assignments,
-            vec!["(bufif1 0 t7)".to_string(), "(bufif1 0 in9)".to_string(),]
+            vec![
+                "(bufif1-strength 0 t7 highz1 strong0)".to_string(),
+                "(bufif1-strength 0 in9 highz1 strong0)".to_string(),
+            ]
         );
     }
 
@@ -1524,7 +1612,7 @@ mod tests {
     }
 
     #[test]
-    fn high_z_lowers_only_as_an_equality_operand() {
+    fn high_z_lowers_as_equality_or_a_root_continuous_driver_only() {
         let equality = lower_snippet(
             "module sample(input logic a, output logic y); assign y = a === 'z; endmodule",
         )
@@ -1536,10 +1624,231 @@ mod tests {
                 .unwrap_err();
         assert!(direct.message.contains("high-Z"));
 
-        let unimplemented_tristate = lower_snippet(
+        let tristate = lower_snippet(
             "module sample(input logic a, input logic s, output logic y); assign y = s ? a : 'z; endmodule",
         )
+        .unwrap();
+        assert_eq!(assignment_strings(&tristate)[0].1, "(bufif1 a s)");
+
+        let nested = lower_snippet(
+            "module sample(input logic a, input logic s, output logic y); assign y = !(s ? a : 'z); endmodule",
+        )
         .unwrap_err();
-        assert!(unimplemented_tristate.message.contains("high-Z ternary"));
+        assert_eq!(nested.span, Span::new("snippet.sv", 1, 75));
+        assert_eq!(
+            nested.message,
+            "high-Z ternary is legal only as the root value of a continuous driver"
+        );
+    }
+
+    #[test]
+    fn signal_valued_high_z_polarities_and_compound_operands_are_flat() {
+        let lowered = lower_snippet(
+            "module sample(input logic a, b, c, d, ena, ena_n, input logic in, output tri logic y0, y1, y2);\n\
+             assign y0 = ena ? in : 'z;\n\
+             assign y1 = ena_n ? 'z : in;\n\
+             assign (strong1, highz0) y2 = (a & b) ? (c | d) : 'z;\n\
+             endmodule",
+        )
+        .unwrap();
+        assert_eq!(lowered.cell.registers, Vec::<String>::new());
+        assert_eq!(
+            assignment_strings(&lowered),
+            vec![
+                (
+                    "y0".to_string(),
+                    "(bufif1 in ena)".to_string(),
+                    "0".to_string()
+                ),
+                (
+                    "y1".to_string(),
+                    "(bufif0 in ena_n)".to_string(),
+                    "0".to_string()
+                ),
+                ("t0".to_string(), "(or c d)".to_string(), "0".to_string()),
+                ("t1".to_string(), "(and a b)".to_string(), "0".to_string()),
+                (
+                    "y2".to_string(),
+                    "(bufif1-strength t0 t1 strong1 highz0)".to_string(),
+                    "0".to_string(),
+                ),
+            ]
+        );
+        lowered.cell.validate().unwrap();
+    }
+
+    #[test]
+    fn direct_bufif_accepts_literal_signal_and_compound_values() {
+        let lowered = lower_snippet(
+            "module sample(input logic a, b, ena, output tri logic y0, y1, y2);\n\
+             bufif0 (y0, '1, ena);\n\
+             bufif1 (y1, a, ena);\n\
+             bufif0 (pull1, highz0) (y2, a | b, ena & b);\n\
+             endmodule",
+        )
+        .unwrap();
+        assert_eq!(
+            assignment_strings(&lowered),
+            vec![
+                (
+                    "y0".to_string(),
+                    "(bufif0 1 ena)".to_string(),
+                    "0".to_string()
+                ),
+                (
+                    "y1".to_string(),
+                    "(bufif1 a ena)".to_string(),
+                    "0".to_string()
+                ),
+                ("t0".to_string(), "(or a b)".to_string(), "0".to_string()),
+                ("t1".to_string(), "(and ena b)".to_string(), "0".to_string()),
+                (
+                    "y2".to_string(),
+                    "(bufif0-strength t0 t1 pull1 highz0)".to_string(),
+                    "0".to_string(),
+                ),
+            ]
+        );
+        lowered.cell.validate().unwrap();
+    }
+
+    #[test]
+    fn all_strength_pairs_and_driver_operators_preserve_source_atom_order() {
+        let lowered = lower_snippet(
+            "module sample(input logic a, ena, output tri logic y0, y1, y2, y3, y4, y5);\n\
+             assign (strong1, highz0) y0 = a & ena;\n\
+             assign (highz1, strong0) y1 = a;\n\
+             assign (pull1, highz0) y2 = a;\n\
+             assign (supply1, supply0) y3 = 1;\n\
+             bufif0 (strong1, highz0) (y4, a, ena);\n\
+             bufif1 (highz1, strong0) (y5, a, ena);\n\
+             endmodule",
+        )
+        .unwrap();
+        assert_eq!(
+            assignment_strings(&lowered),
+            vec![
+                ("t0".to_string(), "(and a ena)".to_string(), "0".to_string()),
+                (
+                    "y0".to_string(),
+                    "(drive-strength t0 strong1 highz0)".to_string(),
+                    "0".to_string()
+                ),
+                (
+                    "y1".to_string(),
+                    "(drive-strength a highz1 strong0)".to_string(),
+                    "0".to_string()
+                ),
+                (
+                    "y2".to_string(),
+                    "(drive-strength a pull1 highz0)".to_string(),
+                    "0".to_string()
+                ),
+                (
+                    "y3".to_string(),
+                    "(drive-strength 1 supply1 supply0)".to_string(),
+                    "0".to_string()
+                ),
+                (
+                    "y4".to_string(),
+                    "(bufif0-strength a ena strong1 highz0)".to_string(),
+                    "0".to_string()
+                ),
+                (
+                    "y5".to_string(),
+                    "(bufif1-strength a ena highz1 strong0)".to_string(),
+                    "0".to_string()
+                ),
+            ]
+        );
+        lowered.cell.validate().unwrap();
+    }
+
+    #[test]
+    fn invalid_strength_shapes_and_pairs_fail_at_the_strength_span() {
+        for (values, expected) in [
+            (
+                "strong1",
+                "drive strength must contain exactly two values; got 1: `(strong1)`",
+            ),
+            (
+                "strong1, highz0, weak1",
+                "drive strength must contain exactly two values; got 3: `(strong1, highz0, weak1)`",
+            ),
+            (
+                "highz0, strong1",
+                "unsupported drive strength pair `(highz0, strong1)`",
+            ),
+            (
+                "weak1, highz0",
+                "unsupported drive strength pair `(weak1, highz0)`",
+            ),
+        ] {
+            let input = format!(
+                "module sample(input logic a, output logic y);\n  assign ({values}) y = a;\nendmodule"
+            );
+            let error = lower_snippet(&input).unwrap_err();
+            assert_eq!(error.span, Span::new("snippet.sv", 2, 10), "{values}");
+            assert_eq!(error.message, expected, "{values}");
+        }
+    }
+
+    #[test]
+    fn repeated_precharge_and_open_drain_drivers_stay_separate_and_ordered() {
+        let lowered = lower_snippet(
+            "module sample(input logic pch_n, a, b, output tri logic y);\n\
+             bufif0 (strong1, highz0) (y, '1, pch_n);\n\
+             assign (highz1, strong0) y = a ? 0 : 'z;\n\
+             assign (highz1, strong0) y = (a & b) ? 0 : 'z;\n\
+             endmodule",
+        )
+        .unwrap();
+        assert!(lowered.cell.registers.is_empty());
+        assert_eq!(
+            assignment_strings(&lowered),
+            vec![
+                (
+                    "y".to_string(),
+                    "(bufif0-strength 1 pch_n strong1 highz0)".to_string(),
+                    "0".to_string(),
+                ),
+                (
+                    "y".to_string(),
+                    "(bufif1-strength 0 a highz1 strong0)".to_string(),
+                    "0".to_string(),
+                ),
+                ("t0".to_string(), "(and a b)".to_string(), "0".to_string()),
+                (
+                    "y".to_string(),
+                    "(bufif1-strength 0 t0 highz1 strong0)".to_string(),
+                    "0".to_string(),
+                ),
+            ]
+        );
+        lowered.cell.validate().unwrap();
+    }
+
+    #[test]
+    fn bufif_shape_diagnostics_remain_precise() {
+        let wrong_arity = lower_snippet(
+            "module sample(input logic a, output tri logic y);\n  bufif0 (y, a);\nendmodule",
+        )
+        .unwrap_err();
+        assert_eq!(wrong_arity.span, Span::new("snippet.sv", 2, 3));
+        assert_eq!(wrong_arity.message, "expected bufif0 arity");
+
+        let omitted = lower_snippet(
+            "module sample(input logic a, output tri logic y);\n  bufif1 (y, , a);\nendmodule",
+        )
+        .unwrap_err();
+        assert_eq!(omitted.span, Span::new("snippet.sv", 2, 3));
+        assert_eq!(omitted.message, "expected bufif drive argument");
+
+        let target = lower_snippet(
+            "module sample(input logic a, b, output tri logic y);\n  bufif0 (y & b, a, b);\nendmodule",
+        )
+        .unwrap_err();
+        assert_eq!(target.span, Span::new("snippet.sv", 2, 11));
+        assert_eq!(target.message, "expected bufif target symbol");
     }
 }

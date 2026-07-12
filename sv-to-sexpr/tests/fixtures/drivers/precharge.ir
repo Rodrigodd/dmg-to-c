@@ -1,0 +1,9 @@
+source: sv-cells/sm83/cells/pch_dec2_a.sv
+cell: sm83_pch_dec2_a
+inputs: [pch_n]
+outputs: [y]
+registers: []
+assignments:
+  0: y
+    value: op(bufif0-strength; atom(1), atom(pch_n), strength(strong1, highz0))
+    delay: op(elmore; op(wire; atom(L_y)), op(pmos; atom(7)))

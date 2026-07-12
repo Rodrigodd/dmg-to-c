@@ -68,6 +68,42 @@ pub enum ValueOperator {
     Rnmos,
 }
 
+/// The exact, source-ordered drive-strength pairs represented by the cell DSL.
+///
+/// Keeping this contract typed prevents a lowered driver from carrying arbitrary
+/// strength atoms that happen to satisfy the operator arity.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum StrengthPair {
+    Strong1Highz0,
+    Highz1Strong0,
+    Pull1Highz0,
+    Supply1Supply0,
+}
+
+impl StrengthPair {
+    pub const ALL: [Self; 4] = [
+        Self::Strong1Highz0,
+        Self::Highz1Strong0,
+        Self::Pull1Highz0,
+        Self::Supply1Supply0,
+    ];
+
+    pub const fn atoms(self) -> (&'static str, &'static str) {
+        match self {
+            Self::Strong1Highz0 => ("strong1", "highz0"),
+            Self::Highz1Strong0 => ("highz1", "strong0"),
+            Self::Pull1Highz0 => ("pull1", "highz0"),
+            Self::Supply1Supply0 => ("supply1", "supply0"),
+        }
+    }
+
+    pub fn parse(first: &str, second: &str) -> Option<Self> {
+        Self::ALL
+            .into_iter()
+            .find(|pair| pair.atoms() == (first, second))
+    }
+}
+
 impl ValueOperator {
     pub const ALL: [Self; 21] = [
         Self::Not,
@@ -340,8 +376,34 @@ impl Expr {
                         ));
                     }
                 }
+                if matches!(
+                    operator,
+                    ValueOperator::DriveStrength
+                        | ValueOperator::BufIf0Strength
+                        | ValueOperator::BufIf1Strength
+                ) {
+                    let first = operands[operands.len() - 2]
+                        .as_atom()
+                        .expect("validated atom");
+                    let second = operands[operands.len() - 1]
+                        .as_atom()
+                        .expect("validated atom");
+                    if StrengthPair::parse(first, second).is_none() {
+                        return Err(ValidationError::new(
+                            context,
+                            format!("unsupported drive strength pair `({first}, {second})`"),
+                        ));
+                    }
+                }
                 Ok(())
             }
+        }
+    }
+
+    fn as_atom(&self) -> Option<&str> {
+        match self {
+            Self::Atom(atom) => Some(atom),
+            Self::List(_) => None,
         }
     }
 
@@ -438,14 +500,68 @@ mod tests {
                 );
             }
             let arity = (0..=5).find(|&arity| accepts(arity)).unwrap();
-            Expr::value(
+            let mut operands = (0..arity)
+                .map(|index| Expr::atom(format!("a{index}")))
+                .collect::<Vec<_>>();
+            if matches!(
                 operator,
-                (0..arity)
-                    .map(|index| Expr::atom(format!("a{index}")))
-                    .collect(),
-            )
-            .validate_value("test")
-            .unwrap();
+                ValueOperator::DriveStrength
+                    | ValueOperator::BufIf0Strength
+                    | ValueOperator::BufIf1Strength
+            ) {
+                let (first, second) = StrengthPair::Strong1Highz0.atoms();
+                operands[arity - 2] = Expr::atom(first);
+                operands[arity - 1] = Expr::atom(second);
+            }
+            Expr::value(operator, operands)
+                .validate_value("test")
+                .unwrap();
+        }
+    }
+
+    #[test]
+    fn strength_operators_accept_only_exact_source_ordered_pairs() {
+        for operator in [
+            ValueOperator::DriveStrength,
+            ValueOperator::BufIf0Strength,
+            ValueOperator::BufIf1Strength,
+        ] {
+            for pair in StrengthPair::ALL {
+                let (first, second) = pair.atoms();
+                let mut operands = match operator {
+                    ValueOperator::DriveStrength => vec![Expr::atom("value")],
+                    ValueOperator::BufIf0Strength | ValueOperator::BufIf1Strength => {
+                        vec![Expr::atom("value"), Expr::atom("control")]
+                    }
+                    _ => unreachable!(),
+                };
+                operands.extend([Expr::atom(first), Expr::atom(second)]);
+                Expr::value(operator, operands)
+                    .validate_value("test")
+                    .unwrap();
+            }
+
+            for (first, second) in [
+                ("highz0", "strong1"),
+                ("strong1", "strong0"),
+                ("weak1", "highz0"),
+            ] {
+                let mut operands = match operator {
+                    ValueOperator::DriveStrength => vec![Expr::atom("value")],
+                    ValueOperator::BufIf0Strength | ValueOperator::BufIf1Strength => {
+                        vec![Expr::atom("value"), Expr::atom("control")]
+                    }
+                    _ => unreachable!(),
+                };
+                operands.extend([Expr::atom(first), Expr::atom(second)]);
+                let error = Expr::value(operator, operands)
+                    .validate_value("test")
+                    .unwrap_err();
+                assert_eq!(
+                    error.message,
+                    format!("unsupported drive strength pair `({first}, {second})`")
+                );
+            }
         }
     }
 

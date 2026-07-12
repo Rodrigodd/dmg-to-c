@@ -1,0 +1,12 @@
+source: sv-cells/sm83/cells/nand2_od_a_dbus.sv
+cell: sm83_nand2_od_a_dbus
+inputs: [in1, in2]
+outputs: [y]
+registers: []
+assignments:
+  0: t0
+    value: op(and; atom(in1), atom(in2))
+    delay: atom(0)
+  1: y
+    value: op(bufif1-strength; atom(0), atom(t0), strength(highz1, strong0))
+    delay: op(elmore; op(wire; atom(L_y)), op(nmos; atom(12)))
