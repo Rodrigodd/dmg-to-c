@@ -1,13 +1,14 @@
 use crate::analyze::{
     AnalysisDisposition, AnalysisReport, CapabilityRequirement, ModuleCatalog,
-    analyze_design_with_catalog,
+    analyze_design_with_catalog_and_generate_mode, analyze_design_with_catalog_structural,
 };
 use crate::diagnostic::{Diagnostic, DiagnosticCollection, DiagnosticKind, DiagnosticPolicy};
+use crate::elaborate::GenerateMode;
 use crate::inventory::{
     CapabilityInventory, ClassificationKind, InventoryWalker, record_token_capabilities,
 };
 use crate::lexer::{Keyword, Operator, Punct, TokenKind, lex_file};
-use crate::lower::lower_file;
+use crate::lower::{lower_file_structural, lower_file_with_generate_mode};
 use crate::parser::parse_file;
 use std::collections::{BTreeMap, BTreeSet};
 use std::fs;
@@ -216,6 +217,25 @@ pub fn check_parse_dir(path: &Path) -> Result<CheckReport, Diagnostic> {
 }
 
 pub fn check_analyze_dir(path: &Path) -> Result<AnalyzeCheckReport, Diagnostic> {
+    check_analyze_dir_with_generate_mode(path, GenerateMode::default())
+}
+
+pub fn check_analyze_dir_with_generate_mode(
+    path: &Path,
+    mode: GenerateMode,
+) -> Result<AnalyzeCheckReport, Diagnostic> {
+    check_analyze_dir_impl(path, Some(mode))
+}
+
+/// Runs the M3 inventory analysis without selecting generate branches.
+pub fn check_analyze_dir_structural(path: &Path) -> Result<AnalyzeCheckReport, Diagnostic> {
+    check_analyze_dir_impl(path, None)
+}
+
+fn check_analyze_dir_impl(
+    path: &Path,
+    mode: Option<GenerateMode>,
+) -> Result<AnalyzeCheckReport, Diagnostic> {
     let files = collect_sv_files(path)?;
     let mut report = AnalyzeCheckReport {
         processed: files.len(),
@@ -264,7 +284,11 @@ pub fn check_analyze_dir(path: &Path) -> Result<AnalyzeCheckReport, Diagnostic> 
         }
     };
     for (file, design) in parsed {
-        match analyze_design_with_catalog(&design, &catalog) {
+        let analysis = match mode {
+            Some(mode) => analyze_design_with_catalog_and_generate_mode(&design, &catalog, mode),
+            None => analyze_design_with_catalog_structural(&design, &catalog),
+        };
+        match analysis {
             Ok(analysis) => report
                 .files
                 .push(AnalyzeFileReport::from_analysis(file, analysis)),
@@ -278,6 +302,27 @@ pub fn check_analyze_dir(path: &Path) -> Result<AnalyzeCheckReport, Diagnostic> 
 }
 
 pub fn analyze_file_with_sibling_catalog(path: &Path) -> Result<AnalysisReport, Diagnostic> {
+    analyze_file_with_sibling_catalog_and_generate_mode(path, GenerateMode::default())
+}
+
+pub fn analyze_file_with_sibling_catalog_and_generate_mode(
+    path: &Path,
+    mode: GenerateMode,
+) -> Result<AnalysisReport, Diagnostic> {
+    analyze_file_with_sibling_catalog_impl(path, Some(mode))
+}
+
+/// Runs the M3 inventory analysis without selecting generate branches.
+pub fn analyze_file_with_sibling_catalog_structural(
+    path: &Path,
+) -> Result<AnalysisReport, Diagnostic> {
+    analyze_file_with_sibling_catalog_impl(path, None)
+}
+
+fn analyze_file_with_sibling_catalog_impl(
+    path: &Path,
+    mode: Option<GenerateMode>,
+) -> Result<AnalysisReport, Diagnostic> {
     let parent = sibling_catalog_parent(path);
     let mut files = collect_sv_files(parent)?;
     if !files.iter().any(|candidate| candidate == path) {
@@ -307,7 +352,12 @@ pub fn analyze_file_with_sibling_catalog(path: &Path) -> Result<AnalysisReport, 
         )
     })?;
     let catalog = ModuleCatalog::from_designs(&parsed)?;
-    analyze_design_with_catalog(&parsed[target_index], &catalog)
+    match mode {
+        Some(mode) => {
+            analyze_design_with_catalog_and_generate_mode(&parsed[target_index], &catalog, mode)
+        }
+        None => analyze_design_with_catalog_structural(&parsed[target_index], &catalog),
+    }
 }
 
 fn sibling_catalog_parent(path: &Path) -> &Path {
@@ -423,11 +473,33 @@ impl AnalyzeFileReport {
 }
 
 pub fn check_lower_dir(path: &Path) -> Result<CheckReport, Diagnostic> {
+    check_lower_dir_with_generate_mode(path, GenerateMode::default())
+}
+
+pub fn check_lower_dir_with_generate_mode(
+    path: &Path,
+    mode: GenerateMode,
+) -> Result<CheckReport, Diagnostic> {
+    check_lower_dir_impl(path, Some(mode))
+}
+
+/// Runs the M3-M7 lowering inventory without selecting generate branches.
+pub fn check_lower_dir_structural(path: &Path) -> Result<CheckReport, Diagnostic> {
+    check_lower_dir_impl(path, None)
+}
+
+fn check_lower_dir_impl(
+    path: &Path,
+    mode: Option<GenerateMode>,
+) -> Result<CheckReport, Diagnostic> {
     let mut report = CheckReport::new("lower");
     for file in collect_sv_files(path)? {
         report.processed += 1;
         match fs::read_to_string(&file) {
-            Ok(contents) => match lower_file(&file, &contents) {
+            Ok(contents) => match match mode {
+                Some(mode) => lower_file_with_generate_mode(&file, &contents, mode),
+                None => lower_file_structural(&file, &contents),
+            } {
                 Ok(lowered) => {
                     for diagnostic in lowered.diagnostics {
                         report.record(diagnostic);
@@ -875,6 +947,40 @@ mod check_report_tests {
             "unknown instantiated module `missing` for instance `u`"
         );
         assert_eq!(report.render(), report.render());
+        std::fs::remove_dir_all(directory).unwrap();
+    }
+
+    #[test]
+    fn configured_checks_analyze_and_lower_only_the_selected_generate_branch() {
+        let directory = temporary_directory("configured-generate-check");
+        std::fs::write(
+            directory.join("generated.sv"),
+            "module generated(input logic a, output logic y);\n  generate\n    if (nodelay) begin\n      logic selected;\n    end else begin\n      missing u(.a(a), .y(y));\n    end\n  endgenerate\nendmodule\n",
+        )
+        .unwrap();
+
+        let default_analysis = check_analyze_dir(&directory).unwrap();
+        let delayful_analysis =
+            check_analyze_dir_with_generate_mode(&directory, GenerateMode::Delayful).unwrap();
+        let nodelay_analysis =
+            check_analyze_dir_with_generate_mode(&directory, GenerateMode::Nodelay).unwrap();
+        assert_eq!(default_analysis, delayful_analysis);
+        assert_eq!(delayful_analysis.failed(), 1);
+        assert_eq!(nodelay_analysis.supported(), 1);
+        assert_eq!(nodelay_analysis.failed(), 0);
+        assert!(nodelay_analysis.files[0].requirements.is_empty());
+        assert!(nodelay_analysis.files[0].diagnostics.is_empty());
+
+        let default_lower = check_lower_dir(&directory).unwrap();
+        let delayful_lower =
+            check_lower_dir_with_generate_mode(&directory, GenerateMode::Delayful).unwrap();
+        let nodelay_lower =
+            check_lower_dir_with_generate_mode(&directory, GenerateMode::Nodelay).unwrap();
+        assert_eq!(default_lower, delayful_lower);
+        assert_eq!(delayful_lower.failed(), 1);
+        assert_eq!(nodelay_lower.failed(), 0);
+        assert_eq!(nodelay_lower.intentional_ignores(), 0);
+
         std::fs::remove_dir_all(directory).unwrap();
     }
 

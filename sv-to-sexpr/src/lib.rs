@@ -2,6 +2,7 @@ pub mod analyze;
 pub mod ast;
 pub mod cli;
 pub mod diagnostic;
+pub mod elaborate;
 pub mod inventory;
 pub mod ir;
 pub mod lexer;

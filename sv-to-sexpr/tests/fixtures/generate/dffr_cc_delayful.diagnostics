@@ -1,0 +1,9 @@
+diagnostics:
+  intentional-ignore | sv-cells/dmg_cpu_b/cells/dffr_cc.sv:50:4 | literal initial value/event is intentionally omitted because the cell model has no initial event queue
+  intentional-ignore | sv-cells/dmg_cpu_b/cells/dffr_cc.sv:51:4 | literal initial value/event is intentionally omitted because the cell model has no initial event queue
+  intentional-ignore | sv-cells/dmg_cpu_b/cells/dffr_cc.sv:55:26 | delay tuple entry 2 is intentionally ignored because the cell model selects only entry 1
+  intentional-ignore | sv-cells/dmg_cpu_b/cells/dffr_cc.sv:56:26 | delay tuple entry 2 is intentionally ignored because the cell model selects only entry 1
+  intentional-ignore | sv-cells/dmg_cpu_b/cells/dffr_cc.sv:57:41 | delay tuple entry 2 is intentionally ignored because the cell model selects only entry 1
+  intentional-ignore | sv-cells/dmg_cpu_b/cells/dffr_cc.sv:58:27 | delay tuple entry 2 is intentionally ignored because the cell model selects only entry 1
+  intentional-ignore | sv-cells/dmg_cpu_b/cells/dffr_cc.sv:59:23 | delay tuple entry 2 is intentionally ignored because the cell model selects only entry 1
+  intentional-ignore | sv-cells/dmg_cpu_b/cells/dffr_cc.sv:60:39 | delay tuple entry 2 is intentionally ignored because the cell model selects only entry 1

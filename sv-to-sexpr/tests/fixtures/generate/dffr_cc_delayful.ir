@@ -1,0 +1,1224 @@
+LoweredModule {
+    cell: Cell {
+        name: "dmg_dffr_cc",
+        inputs: [
+            "d",
+            "clk",
+            "clk_n",
+            "r_n",
+        ],
+        outputs: [
+            "q",
+            "q_n",
+        ],
+        registers: [
+            "mux1",
+            "mux2",
+        ],
+        items: [
+            Assignment(
+                Assignment {
+                    target: "t0",
+                    expr: List(
+                        [
+                            Atom(
+                                "not",
+                            ),
+                            Atom(
+                                "clk",
+                            ),
+                        ],
+                    ),
+                    delay: Atom(
+                        "0",
+                    ),
+                },
+            ),
+            Assignment(
+                Assignment {
+                    target: "t1",
+                    expr: List(
+                        [
+                            Atom(
+                                "and",
+                            ),
+                            Atom(
+                                "d",
+                            ),
+                            Atom(
+                                "t0",
+                            ),
+                        ],
+                    ),
+                    delay: Atom(
+                        "0",
+                    ),
+                },
+            ),
+            Assignment(
+                Assignment {
+                    target: "t2",
+                    expr: List(
+                        [
+                            Atom(
+                                "not",
+                            ),
+                            Atom(
+                                "d",
+                            ),
+                        ],
+                    ),
+                    delay: Atom(
+                        "0",
+                    ),
+                },
+            ),
+            Assignment(
+                Assignment {
+                    target: "t3",
+                    expr: List(
+                        [
+                            Atom(
+                                "and",
+                            ),
+                            Atom(
+                                "t2",
+                            ),
+                            Atom(
+                                "clk_n",
+                            ),
+                        ],
+                    ),
+                    delay: Atom(
+                        "0",
+                    ),
+                },
+            ),
+            Assignment(
+                Assignment {
+                    target: "t4",
+                    expr: List(
+                        [
+                            Atom(
+                                "not",
+                            ),
+                            Atom(
+                                "r_n",
+                            ),
+                        ],
+                    ),
+                    delay: Atom(
+                        "0",
+                    ),
+                },
+            ),
+            Assignment(
+                Assignment {
+                    target: "t5",
+                    expr: List(
+                        [
+                            Atom(
+                                "or",
+                            ),
+                            Atom(
+                                "t1",
+                            ),
+                            Atom(
+                                "t3",
+                            ),
+                            Atom(
+                                "t4",
+                            ),
+                        ],
+                    ),
+                    delay: Atom(
+                        "0",
+                    ),
+                },
+            ),
+            Assignment(
+                Assignment {
+                    target: "t6",
+                    expr: List(
+                        [
+                            Atom(
+                                "and",
+                            ),
+                            Atom(
+                                "d",
+                            ),
+                            Atom(
+                                "r_n",
+                            ),
+                        ],
+                    ),
+                    delay: Atom(
+                        "0",
+                    ),
+                },
+            ),
+            Assignment(
+                Assignment {
+                    target: "mux1",
+                    expr: List(
+                        [
+                            Atom(
+                                "mux",
+                            ),
+                            Atom(
+                                "t5",
+                            ),
+                            Atom(
+                                "t6",
+                            ),
+                            Atom(
+                                "mux1",
+                            ),
+                        ],
+                    ),
+                    delay: Atom(
+                        "0",
+                    ),
+                },
+            ),
+            Assignment(
+                Assignment {
+                    target: "t7",
+                    expr: List(
+                        [
+                            Atom(
+                                "not",
+                            ),
+                            Atom(
+                                "clk_n",
+                            ),
+                        ],
+                    ),
+                    delay: Atom(
+                        "0",
+                    ),
+                },
+            ),
+            Assignment(
+                Assignment {
+                    target: "t8",
+                    expr: List(
+                        [
+                            Atom(
+                                "and",
+                            ),
+                            Atom(
+                                "and1",
+                            ),
+                            Atom(
+                                "t7",
+                            ),
+                        ],
+                    ),
+                    delay: Atom(
+                        "0",
+                    ),
+                },
+            ),
+            Assignment(
+                Assignment {
+                    target: "t9",
+                    expr: List(
+                        [
+                            Atom(
+                                "not",
+                            ),
+                            Atom(
+                                "and1",
+                            ),
+                        ],
+                    ),
+                    delay: Atom(
+                        "0",
+                    ),
+                },
+            ),
+            Assignment(
+                Assignment {
+                    target: "t10",
+                    expr: List(
+                        [
+                            Atom(
+                                "and",
+                            ),
+                            Atom(
+                                "t9",
+                            ),
+                            Atom(
+                                "clk",
+                            ),
+                        ],
+                    ),
+                    delay: Atom(
+                        "0",
+                    ),
+                },
+            ),
+            Assignment(
+                Assignment {
+                    target: "t11",
+                    expr: List(
+                        [
+                            Atom(
+                                "not",
+                            ),
+                            Atom(
+                                "r_n",
+                            ),
+                        ],
+                    ),
+                    delay: Atom(
+                        "0",
+                    ),
+                },
+            ),
+            Assignment(
+                Assignment {
+                    target: "t12",
+                    expr: List(
+                        [
+                            Atom(
+                                "or",
+                            ),
+                            Atom(
+                                "t8",
+                            ),
+                            Atom(
+                                "t10",
+                            ),
+                            Atom(
+                                "t11",
+                            ),
+                        ],
+                    ),
+                    delay: Atom(
+                        "0",
+                    ),
+                },
+            ),
+            Assignment(
+                Assignment {
+                    target: "t13",
+                    expr: List(
+                        [
+                            Atom(
+                                "and",
+                            ),
+                            Atom(
+                                "and1",
+                            ),
+                            Atom(
+                                "r_n",
+                            ),
+                        ],
+                    ),
+                    delay: Atom(
+                        "0",
+                    ),
+                },
+            ),
+            Assignment(
+                Assignment {
+                    target: "mux2",
+                    expr: List(
+                        [
+                            Atom(
+                                "mux",
+                            ),
+                            Atom(
+                                "t12",
+                            ),
+                            Atom(
+                                "t13",
+                            ),
+                            Atom(
+                                "mux2",
+                            ),
+                        ],
+                    ),
+                    delay: Atom(
+                        "0",
+                    ),
+                },
+            ),
+            Assignment(
+                Assignment {
+                    target: "mux1_buf",
+                    expr: Atom(
+                        "mux1",
+                    ),
+                    delay: List(
+                        [
+                            Atom(
+                                "elmore",
+                            ),
+                            List(
+                                [
+                                    Atom(
+                                        "wire",
+                                    ),
+                                    Atom(
+                                        "44",
+                                    ),
+                                ],
+                            ),
+                            List(
+                                [
+                                    Atom(
+                                        "*",
+                                    ),
+                                    List(
+                                        [
+                                            Atom(
+                                                "pmos",
+                                            ),
+                                            Atom(
+                                                "8",
+                                            ),
+                                        ],
+                                    ),
+                                    Atom(
+                                        "1.5",
+                                    ),
+                                ],
+                            ),
+                        ],
+                    ),
+                },
+            ),
+            Assignment(
+                Assignment {
+                    target: "mux2_buf",
+                    expr: Atom(
+                        "mux2",
+                    ),
+                    delay: List(
+                        [
+                            Atom(
+                                "elmore",
+                            ),
+                            List(
+                                [
+                                    Atom(
+                                        "wire",
+                                    ),
+                                    Atom(
+                                        "59",
+                                    ),
+                                ],
+                            ),
+                            List(
+                                [
+                                    Atom(
+                                        "pmos",
+                                    ),
+                                    Atom(
+                                        "8",
+                                    ),
+                                ],
+                            ),
+                        ],
+                    ),
+                },
+            ),
+            Assignment(
+                Assignment {
+                    target: "and1",
+                    expr: List(
+                        [
+                            Atom(
+                                "and",
+                            ),
+                            Atom(
+                                "r_n",
+                            ),
+                            Atom(
+                                "mux1_buf",
+                            ),
+                        ],
+                    ),
+                    delay: List(
+                        [
+                            Atom(
+                                "+",
+                            ),
+                            List(
+                                [
+                                    Atom(
+                                        "elmore",
+                                    ),
+                                    List(
+                                        [
+                                            Atom(
+                                                "wire",
+                                            ),
+                                            Atom(
+                                                "42",
+                                            ),
+                                        ],
+                                    ),
+                                    List(
+                                        [
+                                            Atom(
+                                                "*",
+                                            ),
+                                            List(
+                                                [
+                                                    Atom(
+                                                        "nmos",
+                                                    ),
+                                                    Atom(
+                                                        "8",
+                                                    ),
+                                                ],
+                                            ),
+                                            Atom(
+                                                "2",
+                                            ),
+                                        ],
+                                    ),
+                                ],
+                            ),
+                            List(
+                                [
+                                    Atom(
+                                        "elmore",
+                                    ),
+                                    List(
+                                        [
+                                            Atom(
+                                                "wire",
+                                            ),
+                                            Atom(
+                                                "63",
+                                            ),
+                                        ],
+                                    ),
+                                    List(
+                                        [
+                                            Atom(
+                                                "pmos",
+                                            ),
+                                            Atom(
+                                                "8",
+                                            ),
+                                        ],
+                                    ),
+                                ],
+                            ),
+                        ],
+                    ),
+                },
+            ),
+            Assignment(
+                Assignment {
+                    target: "nand2",
+                    expr: List(
+                        [
+                            Atom(
+                                "nand",
+                            ),
+                            Atom(
+                                "r_n",
+                            ),
+                            Atom(
+                                "mux2_buf",
+                            ),
+                        ],
+                    ),
+                    delay: List(
+                        [
+                            Atom(
+                                "elmore",
+                            ),
+                            List(
+                                [
+                                    Atom(
+                                        "wire",
+                                    ),
+                                    Atom(
+                                        "122",
+                                    ),
+                                ],
+                            ),
+                            List(
+                                [
+                                    Atom(
+                                        "pmos",
+                                    ),
+                                    Atom(
+                                        "8",
+                                    ),
+                                ],
+                            ),
+                        ],
+                    ),
+                },
+            ),
+            Assignment(
+                Assignment {
+                    target: "q",
+                    expr: List(
+                        [
+                            Atom(
+                                "not",
+                            ),
+                            Atom(
+                                "nand2",
+                            ),
+                        ],
+                    ),
+                    delay: List(
+                        [
+                            Atom(
+                                "elmore",
+                            ),
+                            List(
+                                [
+                                    Atom(
+                                        "wire",
+                                    ),
+                                    Atom(
+                                        "L_q",
+                                    ),
+                                ],
+                            ),
+                            List(
+                                [
+                                    Atom(
+                                        "pmos",
+                                    ),
+                                    Atom(
+                                        "35",
+                                    ),
+                                ],
+                            ),
+                        ],
+                    ),
+                },
+            ),
+            Assignment(
+                Assignment {
+                    target: "q_n",
+                    expr: Atom(
+                        "nand2",
+                    ),
+                    delay: List(
+                        [
+                            Atom(
+                                "+",
+                            ),
+                            List(
+                                [
+                                    Atom(
+                                        "elmore",
+                                    ),
+                                    List(
+                                        [
+                                            Atom(
+                                                "wire",
+                                            ),
+                                            Atom(
+                                                "130",
+                                            ),
+                                        ],
+                                    ),
+                                    List(
+                                        [
+                                            Atom(
+                                                "nmos",
+                                            ),
+                                            Atom(
+                                                "8",
+                                            ),
+                                        ],
+                                    ),
+                                ],
+                            ),
+                            List(
+                                [
+                                    Atom(
+                                        "elmore",
+                                    ),
+                                    List(
+                                        [
+                                            Atom(
+                                                "wire",
+                                            ),
+                                            Atom(
+                                                "L_q_n",
+                                            ),
+                                        ],
+                                    ),
+                                    List(
+                                        [
+                                            Atom(
+                                                "pmos",
+                                            ),
+                                            Atom(
+                                                "35",
+                                            ),
+                                        ],
+                                    ),
+                                ],
+                            ),
+                        ],
+                    ),
+                },
+            ),
+        ],
+    },
+    timing_aliases: {
+        "T_fall_mux1": List(
+            [
+                Atom(
+                    "elmore",
+                ),
+                List(
+                    [
+                        Atom(
+                            "wire",
+                        ),
+                        Atom(
+                            "44",
+                        ),
+                    ],
+                ),
+                List(
+                    [
+                        Atom(
+                            "*",
+                        ),
+                        List(
+                            [
+                                Atom(
+                                    "nmos",
+                                ),
+                                Atom(
+                                    "8",
+                                ),
+                            ],
+                        ),
+                        Atom(
+                            "1.5",
+                        ),
+                    ],
+                ),
+            ],
+        ),
+        "T_fall_mux2": List(
+            [
+                Atom(
+                    "elmore",
+                ),
+                List(
+                    [
+                        Atom(
+                            "wire",
+                        ),
+                        Atom(
+                            "59",
+                        ),
+                    ],
+                ),
+                List(
+                    [
+                        Atom(
+                            "nmos",
+                        ),
+                        Atom(
+                            "8",
+                        ),
+                    ],
+                ),
+            ],
+        ),
+        "T_fall_nand1": List(
+            [
+                Atom(
+                    "elmore",
+                ),
+                List(
+                    [
+                        Atom(
+                            "wire",
+                        ),
+                        Atom(
+                            "42",
+                        ),
+                    ],
+                ),
+                List(
+                    [
+                        Atom(
+                            "*",
+                        ),
+                        List(
+                            [
+                                Atom(
+                                    "nmos",
+                                ),
+                                Atom(
+                                    "8",
+                                ),
+                            ],
+                        ),
+                        Atom(
+                            "2",
+                        ),
+                    ],
+                ),
+            ],
+        ),
+        "T_fall_nand2": List(
+            [
+                Atom(
+                    "elmore",
+                ),
+                List(
+                    [
+                        Atom(
+                            "wire",
+                        ),
+                        Atom(
+                            "122",
+                        ),
+                    ],
+                ),
+                List(
+                    [
+                        Atom(
+                            "*",
+                        ),
+                        List(
+                            [
+                                Atom(
+                                    "nmos",
+                                ),
+                                Atom(
+                                    "8",
+                                ),
+                            ],
+                        ),
+                        Atom(
+                            "2",
+                        ),
+                    ],
+                ),
+            ],
+        ),
+        "T_fall_not1": List(
+            [
+                Atom(
+                    "elmore",
+                ),
+                List(
+                    [
+                        Atom(
+                            "wire",
+                        ),
+                        Atom(
+                            "63",
+                        ),
+                    ],
+                ),
+                List(
+                    [
+                        Atom(
+                            "nmos",
+                        ),
+                        Atom(
+                            "8",
+                        ),
+                    ],
+                ),
+            ],
+        ),
+        "T_fall_not2": List(
+            [
+                Atom(
+                    "elmore",
+                ),
+                List(
+                    [
+                        Atom(
+                            "wire",
+                        ),
+                        Atom(
+                            "130",
+                        ),
+                    ],
+                ),
+                List(
+                    [
+                        Atom(
+                            "nmos",
+                        ),
+                        Atom(
+                            "8",
+                        ),
+                    ],
+                ),
+            ],
+        ),
+        "T_fall_q": List(
+            [
+                Atom(
+                    "elmore",
+                ),
+                List(
+                    [
+                        Atom(
+                            "wire",
+                        ),
+                        Atom(
+                            "L_q",
+                        ),
+                    ],
+                ),
+                List(
+                    [
+                        Atom(
+                            "nmos",
+                        ),
+                        Atom(
+                            "35",
+                        ),
+                    ],
+                ),
+            ],
+        ),
+        "T_fall_q_n": List(
+            [
+                Atom(
+                    "elmore",
+                ),
+                List(
+                    [
+                        Atom(
+                            "wire",
+                        ),
+                        Atom(
+                            "L_q_n",
+                        ),
+                    ],
+                ),
+                List(
+                    [
+                        Atom(
+                            "nmos",
+                        ),
+                        Atom(
+                            "35",
+                        ),
+                    ],
+                ),
+            ],
+        ),
+        "T_rise_mux1": List(
+            [
+                Atom(
+                    "elmore",
+                ),
+                List(
+                    [
+                        Atom(
+                            "wire",
+                        ),
+                        Atom(
+                            "44",
+                        ),
+                    ],
+                ),
+                List(
+                    [
+                        Atom(
+                            "*",
+                        ),
+                        List(
+                            [
+                                Atom(
+                                    "pmos",
+                                ),
+                                Atom(
+                                    "8",
+                                ),
+                            ],
+                        ),
+                        Atom(
+                            "1.5",
+                        ),
+                    ],
+                ),
+            ],
+        ),
+        "T_rise_mux2": List(
+            [
+                Atom(
+                    "elmore",
+                ),
+                List(
+                    [
+                        Atom(
+                            "wire",
+                        ),
+                        Atom(
+                            "59",
+                        ),
+                    ],
+                ),
+                List(
+                    [
+                        Atom(
+                            "pmos",
+                        ),
+                        Atom(
+                            "8",
+                        ),
+                    ],
+                ),
+            ],
+        ),
+        "T_rise_nand1": List(
+            [
+                Atom(
+                    "elmore",
+                ),
+                List(
+                    [
+                        Atom(
+                            "wire",
+                        ),
+                        Atom(
+                            "42",
+                        ),
+                    ],
+                ),
+                List(
+                    [
+                        Atom(
+                            "pmos",
+                        ),
+                        Atom(
+                            "8",
+                        ),
+                    ],
+                ),
+            ],
+        ),
+        "T_rise_nand2": List(
+            [
+                Atom(
+                    "elmore",
+                ),
+                List(
+                    [
+                        Atom(
+                            "wire",
+                        ),
+                        Atom(
+                            "122",
+                        ),
+                    ],
+                ),
+                List(
+                    [
+                        Atom(
+                            "pmos",
+                        ),
+                        Atom(
+                            "8",
+                        ),
+                    ],
+                ),
+            ],
+        ),
+        "T_rise_not1": List(
+            [
+                Atom(
+                    "elmore",
+                ),
+                List(
+                    [
+                        Atom(
+                            "wire",
+                        ),
+                        Atom(
+                            "63",
+                        ),
+                    ],
+                ),
+                List(
+                    [
+                        Atom(
+                            "pmos",
+                        ),
+                        Atom(
+                            "8",
+                        ),
+                    ],
+                ),
+            ],
+        ),
+        "T_rise_not2": List(
+            [
+                Atom(
+                    "elmore",
+                ),
+                List(
+                    [
+                        Atom(
+                            "wire",
+                        ),
+                        Atom(
+                            "130",
+                        ),
+                    ],
+                ),
+                List(
+                    [
+                        Atom(
+                            "pmos",
+                        ),
+                        Atom(
+                            "8",
+                        ),
+                    ],
+                ),
+            ],
+        ),
+        "T_rise_q": List(
+            [
+                Atom(
+                    "elmore",
+                ),
+                List(
+                    [
+                        Atom(
+                            "wire",
+                        ),
+                        Atom(
+                            "L_q",
+                        ),
+                    ],
+                ),
+                List(
+                    [
+                        Atom(
+                            "pmos",
+                        ),
+                        Atom(
+                            "35",
+                        ),
+                    ],
+                ),
+            ],
+        ),
+        "T_rise_q_n": List(
+            [
+                Atom(
+                    "elmore",
+                ),
+                List(
+                    [
+                        Atom(
+                            "wire",
+                        ),
+                        Atom(
+                            "L_q_n",
+                        ),
+                    ],
+                ),
+                List(
+                    [
+                        Atom(
+                            "pmos",
+                        ),
+                        Atom(
+                            "35",
+                        ),
+                    ],
+                ),
+            ],
+        ),
+    },
+    diagnostics: [
+        Diagnostic {
+            kind: IntentionalIgnore,
+            span: Span {
+                path: "sv-cells/dmg_cpu_b/cells/dffr_cc.sv",
+                line: 50,
+                column: 4,
+            },
+            message: "literal initial value/event is intentionally omitted because the cell model has no initial event queue",
+        },
+        Diagnostic {
+            kind: IntentionalIgnore,
+            span: Span {
+                path: "sv-cells/dmg_cpu_b/cells/dffr_cc.sv",
+                line: 51,
+                column: 4,
+            },
+            message: "literal initial value/event is intentionally omitted because the cell model has no initial event queue",
+        },
+        Diagnostic {
+            kind: IntentionalIgnore,
+            span: Span {
+                path: "sv-cells/dmg_cpu_b/cells/dffr_cc.sv",
+                line: 55,
+                column: 26,
+            },
+            message: "delay tuple entry 2 is intentionally ignored because the cell model selects only entry 1",
+        },
+        Diagnostic {
+            kind: IntentionalIgnore,
+            span: Span {
+                path: "sv-cells/dmg_cpu_b/cells/dffr_cc.sv",
+                line: 56,
+                column: 26,
+            },
+            message: "delay tuple entry 2 is intentionally ignored because the cell model selects only entry 1",
+        },
+        Diagnostic {
+            kind: IntentionalIgnore,
+            span: Span {
+                path: "sv-cells/dmg_cpu_b/cells/dffr_cc.sv",
+                line: 57,
+                column: 41,
+            },
+            message: "delay tuple entry 2 is intentionally ignored because the cell model selects only entry 1",
+        },
+        Diagnostic {
+            kind: IntentionalIgnore,
+            span: Span {
+                path: "sv-cells/dmg_cpu_b/cells/dffr_cc.sv",
+                line: 58,
+                column: 27,
+            },
+            message: "delay tuple entry 2 is intentionally ignored because the cell model selects only entry 1",
+        },
+        Diagnostic {
+            kind: IntentionalIgnore,
+            span: Span {
+                path: "sv-cells/dmg_cpu_b/cells/dffr_cc.sv",
+                line: 59,
+                column: 23,
+            },
+            message: "delay tuple entry 2 is intentionally ignored because the cell model selects only entry 1",
+        },
+        Diagnostic {
+            kind: IntentionalIgnore,
+            span: Span {
+                path: "sv-cells/dmg_cpu_b/cells/dffr_cc.sv",
+                line: 60,
+                column: 39,
+            },
+            message: "delay tuple entry 2 is intentionally ignored because the cell model selects only entry 1",
+        },
+    ],
+}

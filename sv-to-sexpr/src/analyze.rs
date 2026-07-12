@@ -1,5 +1,6 @@
 use crate::ast::*;
 use crate::diagnostic::{Diagnostic, Span};
+use crate::elaborate::{GenerateMode, elaborate_design};
 use crate::parser::parse_file;
 use std::collections::{BTreeMap, BTreeSet};
 use std::path::Path;
@@ -7,8 +8,22 @@ use std::path::Path;
 pub type AnalyzeResult<T> = Result<T, Diagnostic>;
 
 pub fn analyze_file(path: &Path, input: &str) -> AnalyzeResult<AnalysisReport> {
+    analyze_file_with_generate_mode(path, input, GenerateMode::default())
+}
+
+pub fn analyze_file_with_generate_mode(
+    path: &Path,
+    input: &str,
+    mode: GenerateMode,
+) -> AnalyzeResult<AnalysisReport> {
     let design = parse_file(path, input)?;
-    Ok(analyze_design(&design))
+    analyze_design_with_generate_mode(&design, mode)
+}
+
+/// Performs the M3 structural inventory without selecting generate branches.
+pub fn analyze_file_structural(path: &Path, input: &str) -> AnalyzeResult<AnalysisReport> {
+    let design = parse_file(path, input)?;
+    Ok(analyze_design_structural(&design))
 }
 
 pub fn analyze_file_with_catalog(
@@ -16,11 +31,39 @@ pub fn analyze_file_with_catalog(
     input: &str,
     catalog: &ModuleCatalog,
 ) -> AnalyzeResult<AnalysisReport> {
-    let design = parse_file(path, input)?;
-    analyze_design_with_catalog(&design, catalog)
+    analyze_file_with_catalog_and_generate_mode(path, input, catalog, GenerateMode::default())
 }
 
-pub fn analyze_design(design: &Design) -> AnalysisReport {
+pub fn analyze_file_with_catalog_and_generate_mode(
+    path: &Path,
+    input: &str,
+    catalog: &ModuleCatalog,
+    mode: GenerateMode,
+) -> AnalyzeResult<AnalysisReport> {
+    let design = parse_file(path, input)?;
+    analyze_design_with_catalog_and_generate_mode(&design, catalog, mode)
+}
+
+/// Performs catalog-aware M3 structural inventory without generate selection.
+pub fn analyze_file_with_catalog_structural(
+    path: &Path,
+    input: &str,
+    catalog: &ModuleCatalog,
+) -> AnalyzeResult<AnalysisReport> {
+    let design = parse_file(path, input)?;
+    analyze_design_with_catalog_structural(&design, catalog)
+}
+
+pub fn analyze_design_with_generate_mode(
+    design: &Design,
+    mode: GenerateMode,
+) -> AnalyzeResult<AnalysisReport> {
+    let elaborated = elaborate_design(design, mode)?;
+    Ok(analyze_design_structural(&elaborated))
+}
+
+/// Performs the M3 structural inventory without selecting generate branches.
+pub fn analyze_design_structural(design: &Design) -> AnalysisReport {
     let mut report = AnalysisReport {
         modules: design.modules().map(analyze_module).collect(),
         disposition: AnalysisDisposition::Supported,
@@ -35,7 +78,24 @@ pub fn analyze_design_with_catalog(
     design: &Design,
     catalog: &ModuleCatalog,
 ) -> AnalyzeResult<AnalysisReport> {
-    let mut report = analyze_design(design);
+    analyze_design_with_catalog_and_generate_mode(design, catalog, GenerateMode::default())
+}
+
+pub fn analyze_design_with_catalog_and_generate_mode(
+    design: &Design,
+    catalog: &ModuleCatalog,
+    mode: GenerateMode,
+) -> AnalyzeResult<AnalysisReport> {
+    let elaborated = elaborate_design(design, mode)?;
+    analyze_design_with_catalog_structural(&elaborated, catalog)
+}
+
+/// Performs catalog-aware M3 structural inventory without generate selection.
+pub fn analyze_design_with_catalog_structural(
+    design: &Design,
+    catalog: &ModuleCatalog,
+) -> AnalyzeResult<AnalysisReport> {
+    let mut report = analyze_design_structural(design);
     for (module, analysis) in design.modules().zip(&mut report.modules) {
         resolve_module_hierarchy(module, analysis, catalog)?;
     }
@@ -2919,7 +2979,7 @@ mod tests {
     fn analyze_path(path: &str) -> AnalysisReport {
         let path = Path::new(path);
         let input = fs::read_to_string(path).unwrap();
-        analyze_file(path, &input).unwrap()
+        analyze_file_structural(path, &input).unwrap()
     }
 
     fn parse_path(path: &str) -> Design {
@@ -2931,7 +2991,7 @@ mod tests {
     fn analyze_catalog_source(source: &str) -> AnalyzeResult<AnalysisReport> {
         let design = parse_file(Path::new("catalog_test.sv"), source).unwrap();
         let catalog = ModuleCatalog::from_designs(std::slice::from_ref(&design)).unwrap();
-        analyze_design_with_catalog(&design, &catalog)
+        analyze_design_with_catalog_structural(&design, &catalog)
     }
 
     fn assert_analysis_error(
@@ -3135,7 +3195,7 @@ endmodule
                 .collect::<Vec<_>>(),
             vec!["dmg_full_add", "dmg_nand2", "dmg_xor"]
         );
-        let report = analyze_design_with_catalog(&full_add, &catalog).unwrap();
+        let report = analyze_design_with_catalog_structural(&full_add, &catalog).unwrap();
         let module = &report.modules[0];
         assert_eq!(module.instantiations.len(), 5);
         assert!(module.registers.is_empty());
@@ -3203,7 +3263,7 @@ endmodule
     fn keeper_is_an_explicit_special_instance() {
         let design = parse_path("../sv-cells/dmg_cpu_b/cells/mux.sv");
         let catalog = ModuleCatalog::from_designs(std::slice::from_ref(&design)).unwrap();
-        let report = analyze_design_with_catalog(&design, &catalog).unwrap();
+        let report = analyze_design_with_catalog_structural(&design, &catalog).unwrap();
         let module = &report.modules[0];
         assert_eq!(module.instantiations.len(), 1);
         let InstantiationResolution::Special(special) = &module.instantiations[0].resolution else {
@@ -3341,11 +3401,11 @@ endmodule
         let xor = parse_path("../sv-cells/dmg_cpu_b/cells/xor.sv");
         let nand2 = parse_path("../sv-cells/dmg_cpu_b/cells/nand2.sv");
         let catalog = ModuleCatalog::from_designs(&[full_add.clone(), xor, nand2]).unwrap();
-        let hierarchy = analyze_design_with_catalog(&full_add, &catalog).unwrap();
+        let hierarchy = analyze_design_with_catalog_structural(&full_add, &catalog).unwrap();
 
         let mux = parse_path("../sv-cells/dmg_cpu_b/cells/mux.sv");
         let mux_catalog = ModuleCatalog::from_designs(std::slice::from_ref(&mux)).unwrap();
-        let keeper = analyze_design_with_catalog(&mux, &mux_catalog).unwrap();
+        let keeper = analyze_design_with_catalog_structural(&mux, &mux_catalog).unwrap();
 
         let reports = [
             (

@@ -7,7 +7,7 @@ use driver_support::{
     assert_or_update_fixture, lower_repository_file, read_repository_file, render_diagnostics,
     render_typed_ir, repository_root,
 };
-use sv_to_sexpr::analyze::{DriverSource, analyze_design};
+use sv_to_sexpr::analyze::{DriverSource, analyze_design_structural};
 use sv_to_sexpr::diagnostic::DiagnosticKind;
 use sv_to_sexpr::ir::{Assignment, Cell, CellItem, Expr, StrengthPair, ValueOperator};
 use sv_to_sexpr::parser::parse_file;
@@ -225,7 +225,7 @@ fn driver_goldens_are_typed_flat_deterministic_and_source_complete() {
 
         let source = read_repository_file(case.source);
         let design = parse_file(Path::new(case.source), &source).unwrap();
-        let analysis = analyze_design(&design);
+        let analysis = analyze_design_structural(&design);
         let module = &analysis.modules[0];
         assert_source_driver_topology(case, module, &first.cell);
 

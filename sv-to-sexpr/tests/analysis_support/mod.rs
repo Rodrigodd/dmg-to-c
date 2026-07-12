@@ -3,8 +3,12 @@ use std::fs;
 use std::path::{Path, PathBuf};
 use std::sync::OnceLock;
 
-use sv_to_sexpr::analyze::{AnalysisReport, ModuleCatalog, analyze_design_with_catalog};
+use sv_to_sexpr::analyze::{
+    AnalysisReport, ModuleCatalog, analyze_design_with_catalog_and_generate_mode,
+    analyze_design_with_catalog_structural,
+};
 use sv_to_sexpr::ast::Design;
+use sv_to_sexpr::elaborate::GenerateMode;
 use sv_to_sexpr::parser::parse_file;
 use sv_to_sexpr::survey::collect_sv_files;
 
@@ -20,7 +24,16 @@ impl CorpusAnalysis {
             .designs
             .get(logical_path)
             .unwrap_or_else(|| panic!("missing parsed corpus design {logical_path}"));
-        analyze_design_with_catalog(design, &self.catalog).unwrap()
+        analyze_design_with_catalog_and_generate_mode(design, &self.catalog, GenerateMode::Delayful)
+            .unwrap()
+    }
+
+    pub fn analyze_structural(&self, logical_path: &str) -> AnalysisReport {
+        let design = self
+            .designs
+            .get(logical_path)
+            .unwrap_or_else(|| panic!("missing parsed corpus design {logical_path}"));
+        analyze_design_with_catalog_structural(design, &self.catalog).unwrap()
     }
 }
 

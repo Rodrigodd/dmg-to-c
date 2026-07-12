@@ -1,6 +1,7 @@
-use crate::analyze::{analyze_design, sensitivity_is_stateful};
+use crate::analyze::{analyze_design_structural, sensitivity_is_stateful};
 use crate::ast::*;
 use crate::diagnostic::{Diagnostic, DiagnosticKind, Span};
+use crate::elaborate::{GenerateMode, elaborate_design};
 use crate::ir::{
     Assignment, Cell, CellItem, Expr, LoweredModule, StrengthPair, TimingOperator, ValueOperator,
 };
@@ -11,12 +12,41 @@ pub type LowerResult<T> = Result<T, Diagnostic>;
 type SvExpr = crate::ast::Expr;
 
 pub fn lower_file(path: &Path, input: &str) -> LowerResult<LoweredModule> {
-    let design = crate::parser::parse_file(path, input)?;
-    let analysis = analyze_design(&design);
-    lower_design(&design, &analysis)
+    lower_file_with_generate_mode(path, input, GenerateMode::default())
 }
 
-pub fn lower_design(
+pub fn lower_file_with_generate_mode(
+    path: &Path,
+    input: &str,
+    mode: GenerateMode,
+) -> LowerResult<LoweredModule> {
+    let design = crate::parser::parse_file(path, input)?;
+    lower_design_with_generate_mode(&design, mode)
+}
+
+/// Lowers the unelaborated M3 structural view.
+///
+/// This entrypoint exists for milestone inventory tests that must continue to
+/// observe an unresolved generate as a lowering deferral. Configured conversion
+/// code should use [`lower_file`] or [`lower_file_with_generate_mode`].
+pub fn lower_file_structural(path: &Path, input: &str) -> LowerResult<LoweredModule> {
+    let design = crate::parser::parse_file(path, input)?;
+    let analysis = analyze_design_structural(&design);
+    lower_elaborated_design(&design, &analysis)
+}
+
+pub fn lower_design_with_generate_mode(
+    design: &Design,
+    mode: GenerateMode,
+) -> LowerResult<LoweredModule> {
+    let elaborated = elaborate_design(design, mode)?;
+    let analysis = analyze_design_structural(&elaborated);
+    lower_elaborated_design(&elaborated, &analysis)
+}
+
+/// Lowers a design that has already had its generate configuration selected.
+/// The supplied analysis must describe that exact elaborated design.
+pub fn lower_elaborated_design(
     design: &Design,
     analysis: &crate::analyze::AnalysisReport,
 ) -> LowerResult<LoweredModule> {

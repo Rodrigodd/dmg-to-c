@@ -1,0 +1,45 @@
+(cell
+  dmg_dffr_cc
+  (inputs
+    d
+    clk
+    clk_n
+    r_n
+  )
+
+  (outputs q q_n)
+
+  (registers mux1 mux2)
+
+  (assignments
+
+    (t0 (not clk) 0)
+    (t1 (and d t0) 0)
+    (t2 (not d) 0)
+    (t3 (and t2 clk_n) 0)
+    (t4 (not r_n) 0)
+    (t5 (or t1 t3 t4) 0)
+    (t6 (and d r_n) 0)
+    (mux1 (mux t5 t6 mux1) 0)
+    (t7 (not clk_n) 0)
+    (t8 (and and1 t7) 0)
+    (t9 (not and1) 0)
+    (t10 (and t9 clk) 0)
+    (t11 (not r_n) 0)
+    (t12 (or t8 t10 t11) 0)
+    (t13 (and and1 r_n) 0)
+    (mux2 (mux t12 t13 mux2) 0)
+    (mux1_buf mux1 (elmore (wire 44) (* (pmos 8) 1.5)))
+    (mux2_buf mux2 (elmore (wire 59) (pmos 8)))
+    (and1
+      (and r_n mux1_buf)
+      (+ (elmore (wire 42) (* (nmos 8) 2)) (elmore (wire 63) (pmos 8)))
+    )
+    (nand2 (nand r_n mux2_buf) (elmore (wire 122) (pmos 8)))
+    (q (not nand2) (elmore (wire L_q) (pmos 35)))
+    (q_n
+      nand2
+      (+ (elmore (wire 130) (nmos 8)) (elmore (wire L_q_n) (pmos 35)))
+    )
+  )
+)

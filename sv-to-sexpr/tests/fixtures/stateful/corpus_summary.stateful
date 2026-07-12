@@ -1,23 +1,23 @@
 stateful corpus audit
 corpus-files=206
 stateful-files=27
-stateful-lowering: succeeded=21 deferred=6
+stateful-lowering: succeeded=26 deferred=1
 recursive-analysis:
-  modeled-registers=52
-  state-assignments=52
-  combinational-procedural-nonregisters=13
+  modeled-registers=48
+  state-assignments=48
+  combinational-procedural-nonregisters=0
 source-state-syntax:
   blocking=17
-  nonblocking=35
+  nonblocking=31
 successful-topology:
-  modeled-registers=38
-  state-assignments=38
-  retained-muxes=38
-  direct-state-assignments=0
-  initial-intentional-ignores=32
-  delay-tuple-intentional-ignores=49
-  specify-warnings=8
-  modeled-state-delays=22
+  modeled-registers=47
+  state-assignments=47
+  retained-muxes=46
+  direct-state-assignments=1
+  initial-intentional-ignores=41
+  delay-tuple-intentional-ignores=75
+  specify-warnings=14
+  modeled-state-delays=25
 invariant-failures:
   invalid_cells=0
   nested_state_values=0
@@ -31,6 +31,10 @@ invariant-failures:
   nondeterministic_results=0
   absolute_path_leaks=0
 successful-stateful-files:
+  sv-cells/dmg_cpu_b/cells/dffr.sv | registers=[q] | state-targets=[q] | initial-ignores=1
+  sv-cells/dmg_cpu_b/cells/dffr_cc.sv | registers=[mux1,mux2] | state-targets=[mux1,mux2] | initial-ignores=2
+  sv-cells/dmg_cpu_b/cells/dffr_cc_q.sv | registers=[mux1,mux2] | state-targets=[mux1,mux2] | initial-ignores=2
+  sv-cells/dmg_cpu_b/cells/dffsr.sv | registers=[ff,q] | state-targets=[ff,q] | initial-ignores=2
   sv-cells/dmg_cpu_b/cells/dlatch.sv | registers=[q] | state-targets=[q] | initial-ignores=1
   sv-cells/dmg_cpu_b/cells/dlatch_ee.sv | registers=[q] | state-targets=[q] | initial-ignores=1
   sv-cells/dmg_cpu_b/cells/dlatch_ee_q.sv | registers=[q] | state-targets=[q] | initial-ignores=1
@@ -38,6 +42,7 @@ successful-stateful-files:
   sv-cells/dmg_cpu_b/cells/nand_latch.sv | registers=[q,q_n] | state-targets=[q,q_n] | initial-ignores=0
   sv-cells/dmg_cpu_b/cells/nor_latch.sv | registers=[q,q_n] | state-targets=[q,q_n] | initial-ignores=0
   sv-cells/dmg_cpu_b/cells/pad_bidir_pu_latch.sv | registers=[ff] | state-targets=[ff] | initial-ignores=1
+  sv-cells/dmg_cpu_b/cells/tffnl.sv | registers=[ff,q] | state-targets=[q,ff] | initial-ignores=2
   sv-cells/sm83/cells/dff_cc_ee_pch_d_reg_sp_bit.sv | registers=[ff1,ff2,q_n] | state-targets=[ff1,ff2,q_n] | initial-ignores=3
   sv-cells/sm83/cells/dff_cc_ee_q_n_reg_wz_bit.sv | registers=[ff,q_n] | state-targets=[ff,q_n] | initial-ignores=2
   sv-cells/sm83/cells/dff_cc_ee_q_x1_reg_bit.sv | registers=[ff,q] | state-targets=[ff,q] | initial-ignores=2
@@ -53,6 +58,10 @@ successful-stateful-files:
   sv-cells/sm83/cells/srlatch_r_n.sv | registers=[q] | state-targets=[q] | initial-ignores=0
   sv-cells/sm83/cells/srlatch_r_n_alt.sv | registers=[q] | state-targets=[q] | initial-ignores=0
 successful-flat-dff-dlatch-files:
+  sv-cells/dmg_cpu_b/cells/dffr.sv
+  sv-cells/dmg_cpu_b/cells/dffr_cc.sv
+  sv-cells/dmg_cpu_b/cells/dffr_cc_q.sv
+  sv-cells/dmg_cpu_b/cells/dffsr.sv
   sv-cells/dmg_cpu_b/cells/dlatch.sv
   sv-cells/dmg_cpu_b/cells/dlatch_ee.sv
   sv-cells/dmg_cpu_b/cells/dlatch_ee_q.sv
@@ -69,9 +78,4 @@ successful-flat-dff-dlatch-files:
   sv-cells/sm83/cells/dffs_cc_ee_pch_d_reg_pc_bit.sv
   sv-cells/sm83/cells/dlatch_ee_q_n.sv
 whole-file-deferrals:
-  sv-cells/dmg_cpu_b/cells/dffr.sv:19:2 | unsupported item for lowering | category=M8-generated-state | rationale=M8 generate.alternative: select exactly one nodelay branch before whole-file lowering
-  sv-cells/dmg_cpu_b/cells/dffr_cc.sv:13:2 | unsupported item for lowering | category=M8-generated-state | rationale=M8 generate.alternative: select exactly one nodelay branch before whole-file lowering
-  sv-cells/dmg_cpu_b/cells/dffr_cc_q.sv:12:2 | unsupported item for lowering | category=M8-generated-state | rationale=M8 generate.alternative: select exactly one nodelay branch before whole-file lowering
-  sv-cells/dmg_cpu_b/cells/dffsr.sv:21:2 | unsupported item for lowering | category=M8-generated-state | rationale=M8 generate.alternative: select exactly one nodelay branch before whole-file lowering
-  sv-cells/dmg_cpu_b/cells/tffnl.sv:20:2 | unsupported item for lowering | category=M8-generated-state | rationale=M8 generate.alternative: select exactly one nodelay branch before whole-file lowering
   sv-cells/sm83/cells/dlatch_ee_irq.sv:23:2 | unsupported primitive rnmos | category=later-driver-state | rationale=M6 driver.primitive-tristate+driver.repeated; M7 timing.alias+timing.specify-path; M10 hierarchy.keeper; M11 primitive.transistor (current blocker: rnmos)

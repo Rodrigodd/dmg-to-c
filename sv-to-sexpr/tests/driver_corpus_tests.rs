@@ -9,24 +9,18 @@ use std::path::Path;
 use driver_support::{assert_or_update_fixture, repository_root};
 use sv_to_sexpr::analyze::{
     AssignmentAnalysis, DriverAnalysis, DriverSource, GenerateAlternativeAnalysis, ModuleAnalysis,
-    PrimitiveAnalysis, ScopeAnalysis, analyze_design,
+    PrimitiveAnalysis, ScopeAnalysis, analyze_design_structural, analyze_design_with_generate_mode,
 };
 use sv_to_sexpr::ast::{BinaryOp, ConstKind, Expr as SvExpr, ExprKind, Strength, UnaryOp};
 use sv_to_sexpr::diagnostic::Diagnostic;
+use sv_to_sexpr::elaborate::GenerateMode;
 use sv_to_sexpr::ir::{Assignment, Cell, CellItem, Expr, StrengthPair, ValueOperator};
-use sv_to_sexpr::lower::lower_file;
+use sv_to_sexpr::lower::{lower_file, lower_file_structural};
 use sv_to_sexpr::parser::parse_file;
 use sv_to_sexpr::serialize::render_cell;
 use sv_to_sexpr::survey::collect_sv_files;
 
 const M7_FAILURES: &[&str] = &[];
-const M8_FAILURES: &[&str] = &[
-    "sv-cells/dmg_cpu_b/cells/dffr.sv",
-    "sv-cells/dmg_cpu_b/cells/dffr_cc.sv",
-    "sv-cells/dmg_cpu_b/cells/dffr_cc_q.sv",
-    "sv-cells/dmg_cpu_b/cells/dffsr.sv",
-    "sv-cells/dmg_cpu_b/cells/tffnl.sv",
-];
 const M9_FAILURES: &[&str] = &[
     "sv-cells/dmg_cpu_b/cells/full_add.sv",
     "sv-cells/dmg_cpu_b/cells/half_add.sv",
@@ -375,7 +369,7 @@ fn structural_m6_relevance_and_disposition_sets_are_exact() {
     for path in paths {
         let input = fs::read_to_string(root.join(&path)).unwrap();
         let design = parse_file(Path::new(&path), &input).unwrap();
-        let analysis = analyze_design(&design);
+        let analysis = analyze_design_structural(&design);
         let inventory = source_inventory(&analysis.modules[0]);
         let repeated = repeated_targets(&inventory);
         let relevant = inventory.contains_z_continuous > 0
@@ -383,7 +377,7 @@ fn structural_m6_relevance_and_disposition_sets_are_exact() {
             || inventory.direct_bufif0 > 0
             || inventory.direct_bufif1 > 0
             || !repeated.is_empty();
-        match lower_file(Path::new(&path), &input) {
+        match lower_file_structural(Path::new(&path), &input) {
             Ok(_) => {
                 global_successes += 1;
                 if relevant {
@@ -424,7 +418,7 @@ fn generate_alternatives_keep_repeated_driver_scopes_isolated() {
                  endgenerate\n\
                  endmodule\n";
     let design = parse_file(path, input).unwrap();
-    let analysis = analyze_design(&design);
+    let analysis = analyze_design_structural(&design);
     let inventory = source_inventory(&analysis.modules[0]);
 
     assert_eq!(
@@ -461,7 +455,7 @@ fn complete_driver_corpus_is_accounted_flat_and_source_ordered() {
         audit.processed += 1;
         let input = fs::read_to_string(root.join(path)).unwrap();
         let design = parse_file(Path::new(path), &input).unwrap();
-        let analysis = analyze_design(&design);
+        let analysis = analyze_design_with_generate_mode(&design, GenerateMode::Delayful).unwrap();
         let module = &analysis.modules[0];
         let inventory = source_inventory(module);
         let repeated = repeated_targets(&inventory);
@@ -1365,7 +1359,6 @@ fn pair_label(pair: StrengthPair) -> String {
 fn later_blocker(path: &str) -> (&'static str, &'static str) {
     let matches = [
         M7_FAILURES.contains(&path),
-        M8_FAILURES.contains(&path),
         M9_FAILURES.contains(&path),
         M10_FAILURES.contains(&path),
         M11_FAILURES.contains(&path),
@@ -1379,11 +1372,6 @@ fn later_blocker(path: &str) -> (&'static str, &'static str) {
         (
             "M7",
             "M7 timing-factor lowering remains; M6 bufif polarity and strength are structurally inventoried",
-        )
-    } else if M8_FAILURES.contains(&path) {
-        (
-            "M8",
-            "M8 generate/state branch lowering remains; repeated source drivers are structurally inventoried",
         )
     } else if M9_FAILURES.contains(&path) {
         (
@@ -1407,8 +1395,8 @@ fn later_blocker(path: &str) -> (&'static str, &'static str) {
 
 fn assert_exact_audit(audit: &Audit) {
     assert_eq!(audit.processed, 206);
-    assert_eq!(audit.succeeded, 185);
-    assert_eq!(audit.failed, 21);
+    assert_eq!(audit.succeeded, 190);
+    assert_eq!(audit.failed, 16);
     assert_eq!(audit.relevant_successes.len(), 53);
     assert_eq!(audit.relevant_deferrals.len(), 14);
     assert_eq!(
@@ -1558,7 +1546,6 @@ fn assert_exact_audit(audit: &Audit) {
 
     for (category, expected) in [
         ("M7", M7_FAILURES),
-        ("M8", &[][..]),
         ("M9", &[][..]),
         ("M10", M10_FAILURES),
         ("M11", M11_FAILURES),

@@ -1,0 +1,66 @@
+analyze summary: modules=1 disposition=deferred requirements=5
+module dmg_dffr_cc @sv-cells/dmg_cpu_b/cells/dffr_cc.sv:3:1
+  inputs: d clk clk_n r_n
+  outputs: q q_n
+  registers: ff q
+  symbols:
+    L_q category=parameter @sv-cells/dmg_cpu_b/cells/dffr_cc.sv:4:3
+    L_q_n category=parameter @sv-cells/dmg_cpu_b/cells/dffr_cc.sv:5:3
+    clk category=port @sv-cells/dmg_cpu_b/cells/dffr_cc.sv:7:3
+    clk_buf category=declaration @sv-cells/dmg_cpu_b/cells/dffr_cc.sv:16:4
+    clk_n category=port @sv-cells/dmg_cpu_b/cells/dffr_cc.sv:7:3
+    clk_n_buf category=declaration @sv-cells/dmg_cpu_b/cells/dffr_cc.sv:16:4
+    d category=port @sv-cells/dmg_cpu_b/cells/dffr_cc.sv:7:3
+    ff category=declaration @sv-cells/dmg_cpu_b/cells/dffr_cc.sv:16:4
+    q category=port @sv-cells/dmg_cpu_b/cells/dffr_cc.sv:8:3
+    q_n category=port @sv-cells/dmg_cpu_b/cells/dffr_cc.sv:8:3
+    r_n category=port @sv-cells/dmg_cpu_b/cells/dffr_cc.sv:7:3
+    r_n_buf category=declaration @sv-cells/dmg_cpu_b/cells/dffr_cc.sv:16:4
+  ports:
+    clk direction=input use=input modifiers=[logic] @sv-cells/dmg_cpu_b/cells/dffr_cc.sv:7:3
+    clk_n direction=input use=input modifiers=[logic] @sv-cells/dmg_cpu_b/cells/dffr_cc.sv:7:3
+    d direction=input use=input modifiers=[logic] @sv-cells/dmg_cpu_b/cells/dffr_cc.sv:7:3
+    q direction=output use=output modifiers=[logic] @sv-cells/dmg_cpu_b/cells/dffr_cc.sv:8:3
+    q_n direction=output use=output modifiers=[logic] @sv-cells/dmg_cpu_b/cells/dffr_cc.sv:8:3
+    r_n direction=input use=input modifiers=[logic] @sv-cells/dmg_cpu_b/cells/dffr_cc.sv:7:3
+  declarations:
+    clk_buf kind=Logic type=<implicit> value=<none> @sv-cells/dmg_cpu_b/cells/dffr_cc.sv:16:4
+    clk_n_buf kind=Logic type=<implicit> value=<none> @sv-cells/dmg_cpu_b/cells/dffr_cc.sv:16:4
+    ff kind=Logic type=<implicit> value=<none> @sv-cells/dmg_cpu_b/cells/dffr_cc.sv:16:4
+    r_n_buf kind=Logic type=<implicit> value=<none> @sv-cells/dmg_cpu_b/cells/dffr_cc.sv:16:4
+  signal_roles:
+    clk_buf roles=[ProceduralDriven] declared=sv-cells/dmg_cpu_b/cells/dffr_cc.sv:16:4
+    clk_n_buf roles=[ProceduralDriven] declared=sv-cells/dmg_cpu_b/cells/dffr_cc.sv:16:4
+    ff roles=[ModeledState] declared=sv-cells/dmg_cpu_b/cells/dffr_cc.sv:16:4
+    q roles=[ModeledState] declared=sv-cells/dmg_cpu_b/cells/dffr_cc.sv:8:3
+    q_n roles=[ContinuousDriven] declared=sv-cells/dmg_cpu_b/cells/dffr_cc.sv:8:3
+    r_n_buf roles=[ProceduralDriven] declared=sv-cells/dmg_cpu_b/cells/dffr_cc.sv:16:4
+  assignments:
+    #7 (q_n continuous (not q)) @sv-cells/dmg_cpu_b/cells/dffr_cc.sv:27:4 strength=<none> syntax=Continuous
+    #0 (ff initial 0) @sv-cells/dmg_cpu_b/cells/dffr_cc.sv:18:12 strength=<none> syntax=Initial
+    #1 (q initial 0) @sv-cells/dmg_cpu_b/cells/dffr_cc.sv:19:12 strength=<none> syntax=Initial
+    #2 (clk_buf procedural clk) @sv-cells/dmg_cpu_b/cells/dffr_cc.sv:21:14 strength=<none> syntax=Procedural { state: false, source: Always }
+    #3 (clk_n_buf procedural clk_n) @sv-cells/dmg_cpu_b/cells/dffr_cc.sv:22:14 strength=<none> syntax=Procedural { state: false, source: Always }
+    #4 (r_n_buf procedural r_n) @sv-cells/dmg_cpu_b/cells/dffr_cc.sv:23:14 strength=<none> syntax=Procedural { state: false, source: Always }
+    #5 (ff state (and d r_n_buf)) @sv-cells/dmg_cpu_b/cells/dffr_cc.sv:25:73 strength=<none> syntax=Procedural { state: true, source: AlwaysLatch }
+    #6 (q state (and ff r_n_buf)) @sv-cells/dmg_cpu_b/cells/dffr_cc.sv:26:73 strength=<none> syntax=Procedural { state: true, source: AlwaysLatch }
+  drivers:
+    #0 target=ff source=initial @sv-cells/dmg_cpu_b/cells/dffr_cc.sv:18:12
+    #1 target=q source=initial @sv-cells/dmg_cpu_b/cells/dffr_cc.sv:19:12
+    #2 target=clk_buf source=procedural(state=false,source=Always) @sv-cells/dmg_cpu_b/cells/dffr_cc.sv:21:14
+    #3 target=clk_n_buf source=procedural(state=false,source=Always) @sv-cells/dmg_cpu_b/cells/dffr_cc.sv:22:14
+    #4 target=r_n_buf source=procedural(state=false,source=Always) @sv-cells/dmg_cpu_b/cells/dffr_cc.sv:23:14
+    #5 target=ff source=procedural(state=true,source=AlwaysLatch) @sv-cells/dmg_cpu_b/cells/dffr_cc.sv:25:73
+    #6 target=q source=procedural(state=true,source=AlwaysLatch) @sv-cells/dmg_cpu_b/cells/dffr_cc.sv:26:73
+    #7 target=q_n source=continuous @sv-cells/dmg_cpu_b/cells/dffr_cc.sv:27:4
+  primitives:
+  instantiations:
+  timing_aliases:
+  specify_paths:
+  generate_alternatives:
+requirements:
+  driver.repeated | M6 | sv-cells/dmg_cpu_b/cells/dffr_cc.sv:18:12 | repeated source drivers are scheduled for Milestone 6
+  state.initial | M5 | sv-cells/dmg_cpu_b/cells/dffr_cc.sv:18:12 | literal initialization and modeled state are scheduled for Milestone 5
+  state.procedural | M5 | sv-cells/dmg_cpu_b/cells/dffr_cc.sv:25:73 | stateful procedural lowering is scheduled for Milestone 5
+  value.combinational | M4 | sv-cells/dmg_cpu_b/cells/dffr_cc.sv:27:4 | combinational value lowering is scheduled for Milestone 4
+  value.procedural-combinational | M4 | sv-cells/dmg_cpu_b/cells/dffr_cc.sv:21:14 | combinational procedural lowering is scheduled for Milestone 4

@@ -1,0 +1,3 @@
+diagnostics:
+  intentional-ignore | sv-cells/dmg_cpu_b/cells/dffr_cc.sv:18:4 | literal initial value/event is intentionally omitted because the cell model has no initial event queue
+  intentional-ignore | sv-cells/dmg_cpu_b/cells/dffr_cc.sv:19:4 | literal initial value/event is intentionally omitted because the cell model has no initial event queue

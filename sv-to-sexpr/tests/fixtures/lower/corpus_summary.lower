@@ -1,5 +1,5 @@
 lowering corpus audit
-processed=206 succeeded=185 failed=21
+processed=206 succeeded=190 failed=16
 invariants:
   invalid_successful_cells=0
   nested_value_expressions=0
@@ -9,27 +9,27 @@ invariants:
   absolute_path_leaks=0
   dependency_order_failures=0
 successful-cell-capabilities:
-  assignments=1610
-  atom_value_assignments=5
-  temporary_assignments=999
+  assignments=1686
+  atom_value_assignments=17
+  temporary_assignments=1046
   repeated_target_assignments=51
-  delayed_assignments=565
-  nested_timing_delay_assignments=565
-  cells_with_registers=21
-  registers=38
+  delayed_assignments=581
+  nested_timing_delay_assignments=581
+  cells_with_registers=26
+  registers=47
 value-operators:
-  and=627
+  and=645
   bufif0=2
   bufif0-strength=74
   bufif1=10
   bufif1-strength=293
   caseeq=4
   drive-strength=5
-  mux=44
-  nand=23
+  mux=54
+  nand=24
   nor=28
-  not=207
-  or=282
+  not=232
+  or=292
   xnor=1
   xor=5
 failure-categories:
@@ -43,12 +43,6 @@ failure-categories:
     sv-cells/sm83/cells/irq_prio_bit4.sv:61:2: unsupported primitive nmos
     sv-cells/sm83/cells/irq_prio_bit5.sv:64:2: unsupported primitive nmos
     sv-cells/sm83/cells/irq_prio_bit6.sv:62:2: unsupported primitive nmos
-  generated-dff-tff files=5
-    sv-cells/dmg_cpu_b/cells/dffr.sv:19:2: unsupported item for lowering
-    sv-cells/dmg_cpu_b/cells/dffr_cc.sv:13:2: unsupported item for lowering
-    sv-cells/dmg_cpu_b/cells/dffr_cc_q.sv:12:2: unsupported item for lowering
-    sv-cells/dmg_cpu_b/cells/dffsr.sv:21:2: unsupported item for lowering
-    sv-cells/dmg_cpu_b/cells/tffnl.sv:20:2: unsupported item for lowering
   hierarchical-adder files=2
     sv-cells/dmg_cpu_b/cells/full_add.sv:13:2: unsupported item for lowering
     sv-cells/dmg_cpu_b/cells/half_add.sv:11:2: unsupported item for lowering

@@ -1,0 +1,423 @@
+LoweredModule {
+    cell: Cell {
+        name: "dmg_dffr_cc",
+        inputs: [
+            "d",
+            "clk",
+            "clk_n",
+            "r_n",
+        ],
+        outputs: [
+            "q",
+            "q_n",
+        ],
+        registers: [
+            "ff",
+            "q",
+        ],
+        items: [
+            Assignment(
+                Assignment {
+                    target: "clk_buf",
+                    expr: Atom(
+                        "clk",
+                    ),
+                    delay: Atom(
+                        "0",
+                    ),
+                },
+            ),
+            Assignment(
+                Assignment {
+                    target: "clk_n_buf",
+                    expr: Atom(
+                        "clk_n",
+                    ),
+                    delay: Atom(
+                        "0",
+                    ),
+                },
+            ),
+            Assignment(
+                Assignment {
+                    target: "r_n_buf",
+                    expr: Atom(
+                        "r_n",
+                    ),
+                    delay: Atom(
+                        "0",
+                    ),
+                },
+            ),
+            Assignment(
+                Assignment {
+                    target: "t0",
+                    expr: List(
+                        [
+                            Atom(
+                                "not",
+                            ),
+                            Atom(
+                                "clk_buf",
+                            ),
+                        ],
+                    ),
+                    delay: Atom(
+                        "0",
+                    ),
+                },
+            ),
+            Assignment(
+                Assignment {
+                    target: "t1",
+                    expr: List(
+                        [
+                            Atom(
+                                "and",
+                            ),
+                            Atom(
+                                "d",
+                            ),
+                            Atom(
+                                "t0",
+                            ),
+                        ],
+                    ),
+                    delay: Atom(
+                        "0",
+                    ),
+                },
+            ),
+            Assignment(
+                Assignment {
+                    target: "t2",
+                    expr: List(
+                        [
+                            Atom(
+                                "not",
+                            ),
+                            Atom(
+                                "d",
+                            ),
+                        ],
+                    ),
+                    delay: Atom(
+                        "0",
+                    ),
+                },
+            ),
+            Assignment(
+                Assignment {
+                    target: "t3",
+                    expr: List(
+                        [
+                            Atom(
+                                "and",
+                            ),
+                            Atom(
+                                "t2",
+                            ),
+                            Atom(
+                                "clk_n_buf",
+                            ),
+                        ],
+                    ),
+                    delay: Atom(
+                        "0",
+                    ),
+                },
+            ),
+            Assignment(
+                Assignment {
+                    target: "t4",
+                    expr: List(
+                        [
+                            Atom(
+                                "not",
+                            ),
+                            Atom(
+                                "r_n_buf",
+                            ),
+                        ],
+                    ),
+                    delay: Atom(
+                        "0",
+                    ),
+                },
+            ),
+            Assignment(
+                Assignment {
+                    target: "t5",
+                    expr: List(
+                        [
+                            Atom(
+                                "or",
+                            ),
+                            Atom(
+                                "t1",
+                            ),
+                            Atom(
+                                "t3",
+                            ),
+                            Atom(
+                                "t4",
+                            ),
+                        ],
+                    ),
+                    delay: Atom(
+                        "0",
+                    ),
+                },
+            ),
+            Assignment(
+                Assignment {
+                    target: "t6",
+                    expr: List(
+                        [
+                            Atom(
+                                "and",
+                            ),
+                            Atom(
+                                "d",
+                            ),
+                            Atom(
+                                "r_n_buf",
+                            ),
+                        ],
+                    ),
+                    delay: Atom(
+                        "0",
+                    ),
+                },
+            ),
+            Assignment(
+                Assignment {
+                    target: "ff",
+                    expr: List(
+                        [
+                            Atom(
+                                "mux",
+                            ),
+                            Atom(
+                                "t5",
+                            ),
+                            Atom(
+                                "t6",
+                            ),
+                            Atom(
+                                "ff",
+                            ),
+                        ],
+                    ),
+                    delay: Atom(
+                        "0",
+                    ),
+                },
+            ),
+            Assignment(
+                Assignment {
+                    target: "t7",
+                    expr: List(
+                        [
+                            Atom(
+                                "not",
+                            ),
+                            Atom(
+                                "clk_n_buf",
+                            ),
+                        ],
+                    ),
+                    delay: Atom(
+                        "0",
+                    ),
+                },
+            ),
+            Assignment(
+                Assignment {
+                    target: "t8",
+                    expr: List(
+                        [
+                            Atom(
+                                "and",
+                            ),
+                            Atom(
+                                "ff",
+                            ),
+                            Atom(
+                                "t7",
+                            ),
+                        ],
+                    ),
+                    delay: Atom(
+                        "0",
+                    ),
+                },
+            ),
+            Assignment(
+                Assignment {
+                    target: "t9",
+                    expr: List(
+                        [
+                            Atom(
+                                "not",
+                            ),
+                            Atom(
+                                "ff",
+                            ),
+                        ],
+                    ),
+                    delay: Atom(
+                        "0",
+                    ),
+                },
+            ),
+            Assignment(
+                Assignment {
+                    target: "t10",
+                    expr: List(
+                        [
+                            Atom(
+                                "and",
+                            ),
+                            Atom(
+                                "t9",
+                            ),
+                            Atom(
+                                "clk_buf",
+                            ),
+                        ],
+                    ),
+                    delay: Atom(
+                        "0",
+                    ),
+                },
+            ),
+            Assignment(
+                Assignment {
+                    target: "t11",
+                    expr: List(
+                        [
+                            Atom(
+                                "not",
+                            ),
+                            Atom(
+                                "r_n_buf",
+                            ),
+                        ],
+                    ),
+                    delay: Atom(
+                        "0",
+                    ),
+                },
+            ),
+            Assignment(
+                Assignment {
+                    target: "t12",
+                    expr: List(
+                        [
+                            Atom(
+                                "or",
+                            ),
+                            Atom(
+                                "t8",
+                            ),
+                            Atom(
+                                "t10",
+                            ),
+                            Atom(
+                                "t11",
+                            ),
+                        ],
+                    ),
+                    delay: Atom(
+                        "0",
+                    ),
+                },
+            ),
+            Assignment(
+                Assignment {
+                    target: "t13",
+                    expr: List(
+                        [
+                            Atom(
+                                "and",
+                            ),
+                            Atom(
+                                "ff",
+                            ),
+                            Atom(
+                                "r_n_buf",
+                            ),
+                        ],
+                    ),
+                    delay: Atom(
+                        "0",
+                    ),
+                },
+            ),
+            Assignment(
+                Assignment {
+                    target: "q",
+                    expr: List(
+                        [
+                            Atom(
+                                "mux",
+                            ),
+                            Atom(
+                                "t12",
+                            ),
+                            Atom(
+                                "t13",
+                            ),
+                            Atom(
+                                "q",
+                            ),
+                        ],
+                    ),
+                    delay: Atom(
+                        "0",
+                    ),
+                },
+            ),
+            Assignment(
+                Assignment {
+                    target: "q_n",
+                    expr: List(
+                        [
+                            Atom(
+                                "not",
+                            ),
+                            Atom(
+                                "q",
+                            ),
+                        ],
+                    ),
+                    delay: Atom(
+                        "0",
+                    ),
+                },
+            ),
+        ],
+    },
+    timing_aliases: {},
+    diagnostics: [
+        Diagnostic {
+            kind: IntentionalIgnore,
+            span: Span {
+                path: "sv-cells/dmg_cpu_b/cells/dffr_cc.sv",
+                line: 18,
+                column: 4,
+            },
+            message: "literal initial value/event is intentionally omitted because the cell model has no initial event queue",
+        },
+        Diagnostic {
+            kind: IntentionalIgnore,
+            span: Span {
+                path: "sv-cells/dmg_cpu_b/cells/dffr_cc.sv",
+                line: 19,
+                column: 4,
+            },
+            message: "literal initial value/event is intentionally omitted because the cell model has no initial event queue",
+        },
+    ],
+}

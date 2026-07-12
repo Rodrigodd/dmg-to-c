@@ -3,12 +3,13 @@ use std::fmt::Write as _;
 use std::fs;
 use std::path::{Path, PathBuf};
 
-use sv_to_sexpr::analyze::analyze_design;
+use sv_to_sexpr::analyze::analyze_design_structural;
 use sv_to_sexpr::ast::{
     BinaryOp, ConstKind, Delay, Design, Expr as SvExpr, ExprKind, Item, ItemKind, ParamKind,
     SpecifyItem, UnaryOp,
 };
 use sv_to_sexpr::diagnostic::{Diagnostic, DiagnosticKind, DiagnosticPolicy, Span};
+use sv_to_sexpr::elaborate::{GenerateMode, elaborate_design};
 use sv_to_sexpr::ir::{CellItem, Expr, TimingOperator};
 use sv_to_sexpr::lower::lower_file;
 use sv_to_sexpr::parser::parse_file;
@@ -31,13 +32,6 @@ const TRANSISTOR_DEFERRALS: &[&str] = &[
     "sv-cells/sm83/cells/irq_prio_bit4.sv",
     "sv-cells/sm83/cells/irq_prio_bit5.sv",
     "sv-cells/sm83/cells/irq_prio_bit6.sv",
-];
-const GENERATE_DEFERRALS: &[&str] = &[
-    "sv-cells/dmg_cpu_b/cells/dffr.sv",
-    "sv-cells/dmg_cpu_b/cells/dffr_cc.sv",
-    "sv-cells/dmg_cpu_b/cells/dffr_cc_q.sv",
-    "sv-cells/dmg_cpu_b/cells/dffsr.sv",
-    "sv-cells/dmg_cpu_b/cells/tffnl.sv",
 ];
 const HIERARCHY_DEFERRALS: &[&str] = &[
     "sv-cells/dmg_cpu_b/cells/full_add.sv",
@@ -127,7 +121,6 @@ struct SourceInventory {
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
 enum DeferralCategory {
-    Generate,
     Hierarchy,
     Keeper,
     Transistor,
@@ -136,7 +129,6 @@ enum DeferralCategory {
 impl DeferralCategory {
     fn label(self) -> &'static str {
         match self {
-            Self::Generate => "M8-generate",
             Self::Hierarchy => "M9-hierarchy",
             Self::Keeper => "M10-keeper",
             Self::Transistor => "M11-transistor",
@@ -220,11 +212,11 @@ fn complete_timing_corpus_is_structurally_accounted_and_deterministic() {
         let input = fs::read_to_string(root.join(path)).unwrap();
         let design = parse_file(Path::new(path), &input).unwrap();
         inventory_design(path, &design, &mut source);
-        audit_lower_result(path, &input, &design, &mut lower);
+        let selected = elaborate_design(&design, GenerateMode::Delayful).unwrap();
+        audit_lower_result(path, &input, &selected, &mut lower);
     }
     finalize_source_inventory(&paths, &mut source);
     assert_exact_contract(&source, &lower);
-
     let summary = render_summary(&source, &lower);
     assert!(!summary.contains(&root.to_string_lossy().to_string()));
     assert_or_update_fixture(&summary);
@@ -613,7 +605,7 @@ fn audit_success(
     audit: &mut LowerAudit,
 ) {
     let module = design.first_module().unwrap();
-    let analysis = analyze_design(design);
+    let analysis = analyze_design_structural(design);
     let module_analysis = &analysis.modules[0];
     let source_names = module_analysis
         .symbols
@@ -1110,9 +1102,7 @@ fn inventory_ir_timing(expr: &Expr, audit: &mut LowerAudit) {
 }
 
 fn deferral_category(path: &str) -> Option<DeferralCategory> {
-    if GENERATE_DEFERRALS.contains(&path) {
-        Some(DeferralCategory::Generate)
-    } else if HIERARCHY_DEFERRALS.contains(&path) {
+    if HIERARCHY_DEFERRALS.contains(&path) {
         Some(DeferralCategory::Hierarchy)
     } else if KEEPER_DEFERRALS.contains(&path) {
         Some(DeferralCategory::Keeper)
@@ -1125,9 +1115,7 @@ fn deferral_category(path: &str) -> Option<DeferralCategory> {
 
 fn assert_expected_deferral(category: DeferralCategory, diagnostic: &Diagnostic) {
     let expected = match category {
-        DeferralCategory::Generate | DeferralCategory::Hierarchy | DeferralCategory::Keeper => {
-            "unsupported item for lowering"
-        }
+        DeferralCategory::Hierarchy | DeferralCategory::Keeper => "unsupported item for lowering",
         DeferralCategory::Transistor => "unsupported primitive",
     };
     assert!(diagnostic.message.starts_with(expected));
@@ -1160,31 +1148,31 @@ fn is_resistance_call(expr: &SvExpr) -> bool {
 
 fn assert_exact_contract(source: &SourceInventory, lower: &LowerAudit) {
     assert_eq!(source.files, 206);
-    assert_eq!(lower.succeeded, 185);
-    assert_eq!(lower.failed, 21);
-    assert_eq!(lower.assignments, 1_610);
-    assert_eq!(lower.temporaries, 999);
-    assert_eq!(lower.source_assignments, 611);
+    assert_eq!(lower.succeeded, 190);
+    assert_eq!(lower.failed, 16);
+    assert_eq!(lower.assignments, 1_686);
+    assert_eq!(lower.temporaries, 1_046);
+    assert_eq!(lower.source_assignments, 640);
     assert_eq!(lower.temp_nonzero_delays, 0);
     assert_eq!(
         lower.explicit_delays + lower.specify_delays + lower.zero_delays,
-        611
+        640
     );
-    assert_eq!(lower.explicit_delays, 393);
-    assert_eq!(lower.explicit_nonzero_delays, 379);
-    assert_eq!(lower.specify_delays, 186);
-    assert_eq!(lower.specify_nonzero_delays, 186);
-    assert_eq!(lower.zero_delays, 32);
+    assert_eq!(lower.explicit_delays, 403);
+    assert_eq!(lower.explicit_nonzero_delays, 389);
+    assert_eq!(lower.specify_delays, 192);
+    assert_eq!(lower.specify_nonzero_delays, 192);
+    assert_eq!(lower.zero_delays, 45);
     assert_eq!(
         lower.explicit_nonzero_delays + lower.specify_nonzero_delays,
-        565
+        581
     );
-    assert_eq!(lower.emitted_nonzero_delays, 565);
-    assert_eq!(lower.emitted_zero_delays, 1_045);
-    assert_eq!(lower.emitted_nested_delays, 565);
-    assert_eq!(lower.warnings, 41);
-    assert_eq!(lower.later_ignores, 999);
-    assert_eq!(lower.initial_ignores, 32);
+    assert_eq!(lower.emitted_nonzero_delays, 581);
+    assert_eq!(lower.emitted_zero_delays, 1_105);
+    assert_eq!(lower.emitted_nested_delays, 581);
+    assert_eq!(lower.warnings, 47);
+    assert_eq!(lower.later_ignores, 1_025);
+    assert_eq!(lower.initial_ignores, 41);
     assert_eq!(lower.warning_contract_failures, 0);
     assert_eq!(lower.diagnostic_mismatches, 0);
     assert_eq!(lower.source_delay_mismatches, 0);
@@ -1197,7 +1185,7 @@ fn assert_exact_contract(source: &SourceInventory, lower: &LowerAudit) {
         lower.emitted_outer_resistance_multiplications,
         lower.expected_outer_resistance_multiplications
     );
-    assert_eq!(lower.deferrals.len(), 21);
+    assert_eq!(lower.deferrals.len(), 16);
     assert_eq!(
         lower
             .deferrals
@@ -1218,10 +1206,7 @@ fn assert_exact_contract(source: &SourceInventory, lower: &LowerAudit) {
     assert!(lower.deferrals.iter().all(|deferral| {
         matches!(
             deferral.category,
-            DeferralCategory::Generate
-                | DeferralCategory::Hierarchy
-                | DeferralCategory::Keeper
-                | DeferralCategory::Transistor
+            DeferralCategory::Hierarchy | DeferralCategory::Keeper | DeferralCategory::Transistor
         )
     }));
 }

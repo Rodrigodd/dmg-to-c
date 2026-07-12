@@ -31,7 +31,11 @@ fn representative_analysis_goldens_are_deterministic_and_semantically_complete()
         ),
     ];
     for (fixture, source) in fixtures {
-        let report = corpus.analyze(source);
+        let report = if fixture == "generated_dff.analysis" {
+            corpus.analyze_structural(source)
+        } else {
+            corpus.analyze(source)
+        };
         let rendered = report.render();
         assert_eq!(rendered, report.render());
         assert!(rendered.contains(source));
@@ -103,7 +107,7 @@ fn representative_analysis_goldens_are_deterministic_and_semantically_complete()
         4
     );
 
-    let generated = corpus.analyze("sv-cells/dmg_cpu_b/cells/dffr_cc.sv");
+    let generated = corpus.analyze_structural("sv-cells/dmg_cpu_b/cells/dffr_cc.sv");
     let module = &generated.modules[0];
     assert!(module.registers.is_empty());
     assert!(module.drivers.is_empty());

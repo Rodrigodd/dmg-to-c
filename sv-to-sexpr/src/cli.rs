@@ -1,11 +1,13 @@
 use crate::ast::render_design;
 use crate::diagnostic::{Diagnostic, DiagnosticPolicy};
-use crate::lower::lower_file;
+use crate::elaborate::GenerateMode;
+use crate::lower::lower_file_with_generate_mode;
 use crate::parser::parse_file;
 use crate::serialize::render_cell;
 use crate::survey::{
-    AnalyzeCheckReport, CheckReport, analyze_file_with_sibling_catalog, check_analyze_dir,
-    check_lex_dir, check_lower_dir, check_parse_dir, survey_dir,
+    AnalyzeCheckReport, CheckReport, analyze_file_with_sibling_catalog_and_generate_mode,
+    check_analyze_dir_with_generate_mode, check_lex_dir, check_lower_dir_with_generate_mode,
+    check_parse_dir, survey_dir,
 };
 use std::env;
 use std::fs;
@@ -44,11 +46,13 @@ pub fn run() -> Result<(), Diagnostic> {
             Ok(())
         }
         "analyze" => {
-            let (input, policy) = parse_single_input(args, "analyze", "<input.sv>")?;
+            let parsed = parse_configured_single_input(args, "analyze", "<input.sv>")?;
+            let input = parsed.input;
             let path = PathBuf::from(input);
-            let report = analyze_file_with_sibling_catalog(&path)?;
+            let report =
+                analyze_file_with_sibling_catalog_and_generate_mode(&path, parsed.generate_mode)?;
             print!("{}", report.render());
-            if report.fails(policy) {
+            if report.fails(parsed.policy) {
                 Err(report.diagnostics.first().cloned().unwrap_or_else(|| {
                     Diagnostic::new(
                         crate::diagnostic::Span::new(&path, 1, 1),
@@ -60,7 +64,8 @@ pub fn run() -> Result<(), Diagnostic> {
             }
         }
         "lower" => {
-            let (input, policy) = parse_single_input(args, "lower", "<input.sv>")?;
+            let parsed = parse_configured_single_input(args, "lower", "<input.sv>")?;
+            let input = parsed.input;
             let path = PathBuf::from(input);
             let contents = fs::read_to_string(&path).map_err(|err| {
                 Diagnostic::new(
@@ -68,8 +73,8 @@ pub fn run() -> Result<(), Diagnostic> {
                     format!("failed to read file: {}", err),
                 )
             })?;
-            let lowered = lower_file(&path, &contents)?;
-            surface_lowering_diagnostics(&lowered.diagnostics, policy)?;
+            let lowered = lower_file_with_generate_mode(&path, &contents, parsed.generate_mode)?;
+            surface_lowering_diagnostics(&lowered.diagnostics, parsed.policy)?;
             println!(
                 "cell:\n{:#?}\ntiming aliases:\n{:#?}",
                 lowered.cell, lowered.timing_aliases
@@ -86,7 +91,8 @@ pub fn run() -> Result<(), Diagnostic> {
                     format!("failed to read file: {}", err),
                 )
             })?;
-            let lowered = lower_file(&input_path, &contents)?;
+            let lowered =
+                lower_file_with_generate_mode(&input_path, &contents, parsed.generate_mode)?;
             surface_lowering_diagnostics(&lowered.diagnostics, parsed.policy)?;
             let rendered = render_cell(&lowered.cell);
             if parsed.dry_run {
@@ -122,9 +128,11 @@ pub fn run() -> Result<(), Diagnostic> {
                 CheckStage::Parse => {
                     run_check(&parsed.input, "parsing", parsed.policy, check_parse_dir)
                 }
-                CheckStage::Analyze => run_analyze_check(&parsed.input, parsed.policy),
+                CheckStage::Analyze => {
+                    run_analyze_check(&parsed.input, parsed.policy, parsed.generate_mode)
+                }
                 CheckStage::Lower => {
-                    run_check(&parsed.input, "lowering", parsed.policy, check_lower_dir)
+                    run_lower_check(&parsed.input, parsed.policy, parsed.generate_mode)
                 }
             }
         }
@@ -152,13 +160,34 @@ fn lowering_policy_failure(
         .cloned()
 }
 
-fn run_analyze_check(input: &str, policy: DiagnosticPolicy) -> Result<(), Diagnostic> {
-    let report = check_analyze_dir(Path::new(input))?;
+fn run_analyze_check(
+    input: &str,
+    policy: DiagnosticPolicy,
+    mode: GenerateMode,
+) -> Result<(), Diagnostic> {
+    let report = check_analyze_dir_with_generate_mode(Path::new(input), mode)?;
     print!("{}", report.render());
     if report.fails(policy) {
         Err(Diagnostic::new(
             crate::diagnostic::Span::new(input, 1, 1),
             analyze_check_failure_message(&report, policy),
+        ))
+    } else {
+        Ok(())
+    }
+}
+
+fn run_lower_check(
+    input: &str,
+    policy: DiagnosticPolicy,
+    mode: GenerateMode,
+) -> Result<(), Diagnostic> {
+    let report = check_lower_dir_with_generate_mode(Path::new(input), mode)?;
+    print!("{}", report.render());
+    if report.fails(policy) {
+        Err(Diagnostic::new(
+            crate::diagnostic::Span::new(input, 1, 1),
+            check_failure_message(&report, "lowering", policy),
         ))
     } else {
         Ok(())
@@ -205,11 +234,56 @@ fn parse_single_input(
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
+struct ConfiguredSingleInputArgs {
+    input: String,
+    policy: DiagnosticPolicy,
+    generate_mode: GenerateMode,
+}
+
+fn parse_configured_single_input(
+    args: impl Iterator<Item = String>,
+    command: &str,
+    operand: &str,
+) -> Result<ConfiguredSingleInputArgs, Diagnostic> {
+    let mut input = None;
+    let mut strict = false;
+    let mut nodelay = false;
+    for arg in args {
+        match arg.as_str() {
+            "--strict" if !strict => strict = true,
+            "--strict" => return Err(usage_error("--strict may be specified only once")),
+            "--nodelay" if !nodelay => nodelay = true,
+            "--nodelay" => return Err(usage_error("--nodelay may be specified only once")),
+            _ if arg.starts_with('-') => {
+                return Err(usage_error(&format!("unknown option `{arg}`")));
+            }
+            _ if input.is_none() => input = Some(arg),
+            _ => {
+                return Err(usage_error(&format!(
+                    "{command} accepts exactly one input path"
+                )));
+            }
+        }
+    }
+    let input = input.ok_or_else(|| usage_error(&format!("{command} requires {operand}")))?;
+    Ok(ConfiguredSingleInputArgs {
+        input,
+        policy: DiagnosticPolicy::new(strict),
+        generate_mode: if nodelay {
+            GenerateMode::Nodelay
+        } else {
+            GenerateMode::Delayful
+        },
+    })
+}
+
+#[derive(Debug, Clone, PartialEq, Eq)]
 struct ConvertFileArgs {
     input: String,
     output: String,
     dry_run: bool,
     policy: DiagnosticPolicy,
+    generate_mode: GenerateMode,
 }
 
 fn parse_convert_file_args(
@@ -218,12 +292,15 @@ fn parse_convert_file_args(
     let mut positionals = Vec::new();
     let mut dry_run = false;
     let mut strict = false;
+    let mut nodelay = false;
     for arg in args {
         match arg.as_str() {
             "--dry-run" if !dry_run => dry_run = true,
             "--dry-run" => return Err(usage_error("--dry-run may be specified only once")),
             "--strict" if !strict => strict = true,
             "--strict" => return Err(usage_error("--strict may be specified only once")),
+            "--nodelay" if !nodelay => nodelay = true,
+            "--nodelay" => return Err(usage_error("--nodelay may be specified only once")),
             _ if arg.starts_with('-') => {
                 return Err(usage_error(&format!("unknown option `{arg}`")));
             }
@@ -245,6 +322,11 @@ fn parse_convert_file_args(
         output: positionals.remove(0),
         dry_run,
         policy: DiagnosticPolicy::new(strict),
+        generate_mode: if nodelay {
+            GenerateMode::Nodelay
+        } else {
+            GenerateMode::Delayful
+        },
     })
 }
 
@@ -276,6 +358,7 @@ struct CheckArgs {
     input: String,
     stage: CheckStage,
     policy: DiagnosticPolicy,
+    generate_mode: GenerateMode,
 }
 
 fn parse_check_args(args: impl Iterator<Item = String>) -> Result<CheckArgs, Diagnostic> {
@@ -283,10 +366,13 @@ fn parse_check_args(args: impl Iterator<Item = String>) -> Result<CheckArgs, Dia
     let mut input = None;
     let mut stage = None;
     let mut strict = false;
+    let mut nodelay = false;
     while let Some(arg) = args.next() {
         match arg.as_str() {
             "--strict" if !strict => strict = true,
             "--strict" => return Err(usage_error("--strict may be specified only once")),
+            "--nodelay" if !nodelay => nodelay = true,
+            "--nodelay" => return Err(usage_error("--nodelay may be specified only once")),
             "--stage" if stage.is_some() => {
                 return Err(usage_error("--stage may be specified only once"));
             }
@@ -305,10 +391,21 @@ fn parse_check_args(args: impl Iterator<Item = String>) -> Result<CheckArgs, Dia
         }
     }
     let input = input.ok_or_else(|| usage_error("check requires <input-dir>"))?;
+    let stage = stage.unwrap_or_default();
+    if nodelay && matches!(stage, CheckStage::Lex | CheckStage::Parse) {
+        return Err(usage_error(
+            "--nodelay is only applicable to check stages analyze and lower",
+        ));
+    }
     Ok(CheckArgs {
         input,
-        stage: stage.unwrap_or_default(),
+        stage,
         policy: DiagnosticPolicy::new(strict),
+        generate_mode: if nodelay {
+            GenerateMode::Nodelay
+        } else {
+            GenerateMode::Delayful
+        },
     })
 }
 
@@ -352,7 +449,7 @@ fn usage_error(message: &str) -> Diagnostic {
     Diagnostic::new(
         crate::diagnostic::Span::new("<cli>", 1, 1),
         format!(
-            "{}; supported commands: lex, parse, analyze, lower, convert-file, survey, check --stage lex|parse|analyze|lower; diagnostic-capable commands accept --strict",
+            "{}; supported commands: lex, parse, analyze [--nodelay], lower [--nodelay], convert-file [--nodelay], survey, check --stage lex|parse|analyze|lower [--nodelay for analyze/lower]; diagnostic-capable commands accept --strict",
             message
         ),
     )
@@ -413,6 +510,52 @@ mod tests {
             ))
             .starts_with("lower accepts exactly one input path")
         );
+        for (command, operand) in [
+            ("lex", "<input.sv>"),
+            ("parse", "<input.sv>"),
+            ("survey", "<input-dir>"),
+        ] {
+            assert!(
+                message(parse_single_input(
+                    args(&["source.sv", "--nodelay"]),
+                    command,
+                    operand,
+                ))
+                .starts_with("unknown option `--nodelay`")
+            );
+        }
+    }
+
+    #[test]
+    fn configured_single_input_accepts_nodelay_in_any_order_and_rejects_duplicates() {
+        let parsed = parse_configured_single_input(
+            args(&["--nodelay", "--strict", "gate.sv"]),
+            "lower",
+            "<input.sv>",
+        )
+        .unwrap();
+        assert_eq!(parsed.input, "gate.sv");
+        assert!(parsed.policy.strict);
+        assert_eq!(parsed.generate_mode, GenerateMode::Nodelay);
+
+        let parsed =
+            parse_configured_single_input(args(&["gate.sv", "--nodelay"]), "analyze", "<input.sv>")
+                .unwrap();
+        assert_eq!(parsed.generate_mode, GenerateMode::Nodelay);
+        assert_eq!(
+            parse_configured_single_input(args(&["gate.sv"]), "lower", "<input.sv>")
+                .unwrap()
+                .generate_mode,
+            GenerateMode::Delayful
+        );
+        assert!(
+            message(parse_configured_single_input(
+                args(&["gate.sv", "--nodelay", "--nodelay"]),
+                "lower",
+                "<input.sv>",
+            ))
+            .starts_with("--nodelay may be specified only once")
+        );
     }
 
     #[test]
@@ -424,6 +567,12 @@ mod tests {
         assert_eq!(parsed.output, "output.cell");
         assert!(parsed.dry_run);
         assert!(parsed.policy.strict);
+        assert_eq!(parsed.generate_mode, GenerateMode::Delayful);
+
+        let parsed =
+            parse_convert_file_args(args(&["input.sv", "--nodelay", "output.cell", "--dry-run"]))
+                .unwrap();
+        assert_eq!(parsed.generate_mode, GenerateMode::Nodelay);
     }
 
     #[test]
@@ -477,6 +626,15 @@ mod tests {
         );
         assert!(
             message(parse_convert_file_args(args(&[
+                "input.sv",
+                "output.cell",
+                "--nodelay",
+                "--nodelay",
+            ])))
+            .starts_with("--nodelay may be specified only once")
+        );
+        assert!(
+            message(parse_convert_file_args(args(&[
                 "--mystery",
                 "input.sv",
                 "output.cell",
@@ -511,6 +669,12 @@ mod tests {
             parse_check_args(args(&["sv-cells"])).unwrap().stage,
             CheckStage::Lex
         );
+
+        let analyze =
+            parse_check_args(args(&["--nodelay", "sv-cells", "--stage", "analyze"])).unwrap();
+        assert_eq!(analyze.generate_mode, GenerateMode::Nodelay);
+        let lower = parse_check_args(args(&["--stage", "lower", "sv-cells", "--nodelay"])).unwrap();
+        assert_eq!(lower.generate_mode, GenerateMode::Nodelay);
     }
 
     #[test]
@@ -526,6 +690,29 @@ mod tests {
                 "sv-cells", "--stage", "lex", "--stage", "parse",
             ])))
             .starts_with("--stage may be specified only once")
+        );
+        assert!(
+            message(parse_check_args(args(&[
+                "sv-cells",
+                "--stage",
+                "lower",
+                "--nodelay",
+                "--nodelay",
+            ])))
+            .starts_with("--nodelay may be specified only once")
+        );
+        assert!(
+            message(parse_check_args(args(&[
+                "sv-cells",
+                "--stage",
+                "parse",
+                "--nodelay",
+            ])))
+            .starts_with("--nodelay is only applicable to check stages analyze and lower")
+        );
+        assert!(
+            message(parse_check_args(args(&["sv-cells", "--nodelay"])))
+                .starts_with("--nodelay is only applicable to check stages analyze and lower")
         );
         assert!(
             message(parse_check_args(args(&["--mystery", "sv-cells"])))

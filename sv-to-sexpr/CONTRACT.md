@@ -131,12 +131,25 @@ error; a functional-only conversion is not silently substituted. If future
 transistor syntax carries a source strength, Milestone 11 must either add an
 equally explicit contracted operator before emitting it or reject the source.
 
-Generate alternatives remain structural until Milestone 8 selects exactly one
-configured `nodelay` branch; branches are never combined. Ordinary instances
-are flattened in Milestone 9 using deterministic instance-qualified names,
-with parameter overrides and named/positional connections resolved. Unknown or
-recursive modules are errors. Keepers use the direct form above rather than
-ordinary flattening.
+The only contracted generate form is a module-level `generate if (nodelay)`
+with `begin ... end else begin ... end endgenerate`. Configured analysis and
+lowering select exactly one branch before symbol, driver, state, timing, or
+requirement analysis; branches are never combined and no content from the
+unselected branch may contribute a declaration, port use, driver, register,
+timing alias, diagnostic, or requirement. `GenerateMode::Delayful` selects the
+false/`else` branch and is the API and CLI default. `GenerateMode::Nodelay`,
+exposed by the explicit `--nodelay` option on `analyze`, `lower`, `convert-file`,
+and `check --stage analyze|lower`, is the sole true-branch selection.
+
+The explicitly named structural analysis/lowering APIs retain both branches or
+the unresolved Generate node only for milestone inventory and compatibility
+fixtures. They are not conversion entrypoints and do not claim configured
+generate support. A missing `else`, a condition other than the scalar symbol
+`nodelay`, nested generate syntax, or another generate shape is a source-spanned
+error. Ordinary instances are flattened in Milestone 9 using deterministic
+instance-qualified names, with parameter overrides and named/positional
+connections resolved. Unknown or recursive modules are errors. Keepers use the
+direct form above rather than ordinary flattening.
 
 ## Timing
 

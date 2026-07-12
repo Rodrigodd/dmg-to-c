@@ -398,11 +398,6 @@ fn later_driver_forms_fail_at_their_source_constructs() {
             "unsupported item for lowering",
         ),
         (
-            "diagnostics/generate.sv",
-            "generate if (a) assign y = a; endgenerate",
-            "unsupported item for lowering",
-        ),
-        (
             "diagnostics/keeper.sv",
             "keeper held(y);",
             "unsupported item for lowering",

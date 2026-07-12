@@ -471,6 +471,14 @@ Acceptance conditions:
 
 ### Milestone 8: Generate Branch Selection
 
+Status: complete as of 2026-07-12. Typed elaboration selects exactly one
+module-level `if (nodelay)` branch before configured analysis and lowering;
+delayful selection is the default and `--nodelay` explicitly selects the true
+branch. Reviewed dual-mode fixtures and an exact 206-file audit cover all five
+generate cells, prove that no unselected declaration, state, driver, timing
+alias, diagnostic, or requirement leaks into output, and leave only the 16
+Milestone 9–11 corpus deferrals in either mode.
+
 Resolve the conditional generate forms used by the curated corpus.
 
 Expected to be working after this milestone:

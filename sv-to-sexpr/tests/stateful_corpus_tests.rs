@@ -9,10 +9,11 @@ use std::path::Path;
 use stateful_support::{assert_or_update_fixture, repository_root};
 use sv_to_sexpr::analyze::{
     AnalysisReport, AssignmentAnalysis, AssignmentKind, GenerateAlternativeAnalysis,
-    ModuleAnalysis, ScopeAnalysis, TargetMilestone, analyze_design,
+    ModuleAnalysis, ScopeAnalysis, TargetMilestone, analyze_design_structural,
 };
 use sv_to_sexpr::ast::{AssignOp, ExprKind, Item, ItemKind};
 use sv_to_sexpr::diagnostic::{Diagnostic, DiagnosticKind, DiagnosticPolicy, Span};
+use sv_to_sexpr::elaborate::{GenerateMode, elaborate_design};
 use sv_to_sexpr::ir::{Assignment, Cell, CellItem, Expr, LoweredModule, ValueOperator};
 use sv_to_sexpr::lower::lower_file;
 use sv_to_sexpr::parser::parse_file;
@@ -52,6 +53,10 @@ const STATEFUL_PATHS: &[&str] = &[
 ];
 
 const SUCCESSFUL_STATEFUL_PATHS: &[&str] = &[
+    "sv-cells/dmg_cpu_b/cells/dffr.sv",
+    "sv-cells/dmg_cpu_b/cells/dffr_cc.sv",
+    "sv-cells/dmg_cpu_b/cells/dffr_cc_q.sv",
+    "sv-cells/dmg_cpu_b/cells/dffsr.sv",
     "sv-cells/dmg_cpu_b/cells/dlatch.sv",
     "sv-cells/dmg_cpu_b/cells/dlatch_ee.sv",
     "sv-cells/dmg_cpu_b/cells/dlatch_ee_q.sv",
@@ -59,6 +64,7 @@ const SUCCESSFUL_STATEFUL_PATHS: &[&str] = &[
     "sv-cells/dmg_cpu_b/cells/nand_latch.sv",
     "sv-cells/dmg_cpu_b/cells/nor_latch.sv",
     "sv-cells/dmg_cpu_b/cells/pad_bidir_pu_latch.sv",
+    "sv-cells/dmg_cpu_b/cells/tffnl.sv",
     "sv-cells/sm83/cells/dff_cc_ee_pch_d_reg_sp_bit.sv",
     "sv-cells/sm83/cells/dff_cc_ee_q_n_reg_wz_bit.sv",
     "sv-cells/sm83/cells/dff_cc_ee_q_x1_reg_bit.sv",
@@ -76,6 +82,10 @@ const SUCCESSFUL_STATEFUL_PATHS: &[&str] = &[
 ];
 
 const SUCCESSFUL_FLAT_DFF_DLATCH_PATHS: &[&str] = &[
+    "sv-cells/dmg_cpu_b/cells/dffr.sv",
+    "sv-cells/dmg_cpu_b/cells/dffr_cc.sv",
+    "sv-cells/dmg_cpu_b/cells/dffr_cc_q.sv",
+    "sv-cells/dmg_cpu_b/cells/dffsr.sv",
     "sv-cells/dmg_cpu_b/cells/dlatch.sv",
     "sv-cells/dmg_cpu_b/cells/dlatch_ee.sv",
     "sv-cells/dmg_cpu_b/cells/dlatch_ee_q.sv",
@@ -93,41 +103,6 @@ const SUCCESSFUL_FLAT_DFF_DLATCH_PATHS: &[&str] = &[
     "sv-cells/sm83/cells/dlatch_ee_q_n.sv",
 ];
 
-const GENERATED_STATE_DEFERRALS: &[&str] = &[
-    "sv-cells/dmg_cpu_b/cells/dffr.sv",
-    "sv-cells/dmg_cpu_b/cells/dffr_cc.sv",
-    "sv-cells/dmg_cpu_b/cells/dffr_cc_q.sv",
-    "sv-cells/dmg_cpu_b/cells/dffsr.sv",
-    "sv-cells/dmg_cpu_b/cells/tffnl.sv",
-];
-
-const GENERATED_DFF_DEFERRALS: &[&str] = &[
-    "sv-cells/dmg_cpu_b/cells/dffr.sv",
-    "sv-cells/dmg_cpu_b/cells/dffr_cc.sv",
-    "sv-cells/dmg_cpu_b/cells/dffr_cc_q.sv",
-    "sv-cells/dmg_cpu_b/cells/dffsr.sv",
-];
-
-const GENERATED_COMBINATIONAL_TARGETS: &[(&str, &[&str])] = &[
-    ("sv-cells/dmg_cpu_b/cells/dffr.sv", &["clk_buf", "r_n_buf"]),
-    (
-        "sv-cells/dmg_cpu_b/cells/dffr_cc.sv",
-        &["clk_buf", "clk_n_buf", "r_n_buf"],
-    ),
-    (
-        "sv-cells/dmg_cpu_b/cells/dffr_cc_q.sv",
-        &["clk_buf", "clk_n_buf", "r_n_buf"],
-    ),
-    (
-        "sv-cells/dmg_cpu_b/cells/dffsr.sv",
-        &["clk_buf", "s_n_buf", "r_n_buf"],
-    ),
-    (
-        "sv-cells/dmg_cpu_b/cells/tffnl.sv",
-        &["l_buf", "tclk_n_buf"],
-    ),
-];
-
 const LATER_DRIVER_DEFERRALS: &[&str] = &["sv-cells/sm83/cells/dlatch_ee_irq.sv"];
 
 struct ExpectedSuccess {
@@ -138,6 +113,30 @@ struct ExpectedSuccess {
 }
 
 const EXPECTED_SUCCESSES: &[ExpectedSuccess] = &[
+    ExpectedSuccess {
+        path: "sv-cells/dmg_cpu_b/cells/dffr.sv",
+        registers: &["q"],
+        state_targets: &["q"],
+        initial_ignores: 1,
+    },
+    ExpectedSuccess {
+        path: "sv-cells/dmg_cpu_b/cells/dffr_cc.sv",
+        registers: &["mux1", "mux2"],
+        state_targets: &["mux1", "mux2"],
+        initial_ignores: 2,
+    },
+    ExpectedSuccess {
+        path: "sv-cells/dmg_cpu_b/cells/dffr_cc_q.sv",
+        registers: &["mux1", "mux2"],
+        state_targets: &["mux1", "mux2"],
+        initial_ignores: 2,
+    },
+    ExpectedSuccess {
+        path: "sv-cells/dmg_cpu_b/cells/dffsr.sv",
+        registers: &["ff", "q"],
+        state_targets: &["ff", "q"],
+        initial_ignores: 2,
+    },
     ExpectedSuccess {
         path: "sv-cells/dmg_cpu_b/cells/dlatch.sv",
         registers: &["q"],
@@ -179,6 +178,12 @@ const EXPECTED_SUCCESSES: &[ExpectedSuccess] = &[
         registers: &["ff"],
         state_targets: &["ff"],
         initial_ignores: 1,
+    },
+    ExpectedSuccess {
+        path: "sv-cells/dmg_cpu_b/cells/tffnl.sv",
+        registers: &["ff", "q"],
+        state_targets: &["q", "ff"],
+        initial_ignores: 2,
     },
     ExpectedSuccess {
         path: "sv-cells/sm83/cells/dff_cc_ee_pch_d_reg_sp_bit.sv",
@@ -268,14 +273,12 @@ const EXPECTED_SUCCESSES: &[ExpectedSuccess] = &[
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 enum DeferralCategory {
-    M8Generate,
     LaterDriver,
 }
 
 impl DeferralCategory {
     fn label(self) -> &'static str {
         match self {
-            Self::M8Generate => "M8-generated-state",
             Self::LaterDriver => "later-driver-state",
         }
     }
@@ -290,56 +293,14 @@ struct DeferredExpectation {
     rationale: &'static str,
 }
 
-const DEFERRED_EXPECTATIONS: &[DeferredExpectation] = &[
-    DeferredExpectation {
-        path: "sv-cells/dmg_cpu_b/cells/dffr.sv",
-        line: 19,
-        column: 2,
-        message: "unsupported item for lowering",
-        category: DeferralCategory::M8Generate,
-        rationale: "M8 generate.alternative: select exactly one nodelay branch before whole-file lowering",
-    },
-    DeferredExpectation {
-        path: "sv-cells/dmg_cpu_b/cells/dffr_cc.sv",
-        line: 13,
-        column: 2,
-        message: "unsupported item for lowering",
-        category: DeferralCategory::M8Generate,
-        rationale: "M8 generate.alternative: select exactly one nodelay branch before whole-file lowering",
-    },
-    DeferredExpectation {
-        path: "sv-cells/dmg_cpu_b/cells/dffr_cc_q.sv",
-        line: 12,
-        column: 2,
-        message: "unsupported item for lowering",
-        category: DeferralCategory::M8Generate,
-        rationale: "M8 generate.alternative: select exactly one nodelay branch before whole-file lowering",
-    },
-    DeferredExpectation {
-        path: "sv-cells/dmg_cpu_b/cells/dffsr.sv",
-        line: 21,
-        column: 2,
-        message: "unsupported item for lowering",
-        category: DeferralCategory::M8Generate,
-        rationale: "M8 generate.alternative: select exactly one nodelay branch before whole-file lowering",
-    },
-    DeferredExpectation {
-        path: "sv-cells/dmg_cpu_b/cells/tffnl.sv",
-        line: 20,
-        column: 2,
-        message: "unsupported item for lowering",
-        category: DeferralCategory::M8Generate,
-        rationale: "M8 generate.alternative: select exactly one nodelay branch before whole-file lowering",
-    },
-    DeferredExpectation {
-        path: "sv-cells/sm83/cells/dlatch_ee_irq.sv",
-        line: 23,
-        column: 2,
-        message: "unsupported primitive rnmos",
-        category: DeferralCategory::LaterDriver,
-        rationale: "M6 driver.primitive-tristate+driver.repeated; M7 timing.alias+timing.specify-path; M10 hierarchy.keeper; M11 primitive.transistor (current blocker: rnmos)",
-    },
-];
+const DEFERRED_EXPECTATIONS: &[DeferredExpectation] = &[DeferredExpectation {
+    path: "sv-cells/sm83/cells/dlatch_ee_irq.sv",
+    line: 23,
+    column: 2,
+    message: "unsupported primitive rnmos",
+    category: DeferralCategory::LaterDriver,
+    rationale: "M6 driver.primitive-tristate+driver.repeated; M7 timing.alias+timing.specify-path; M10 hierarchy.keeper; M11 primitive.transistor (current blocker: rnmos)",
+}];
 
 #[derive(Default)]
 struct AuditTotals {
@@ -411,8 +372,6 @@ fn complete_stateful_corpus_is_flat_or_explicitly_deferred() {
     assert_sorted_unique(STATEFUL_PATHS);
     assert_sorted_unique(SUCCESSFUL_STATEFUL_PATHS);
     assert_sorted_unique(SUCCESSFUL_FLAT_DFF_DLATCH_PATHS);
-    assert_sorted_unique(GENERATED_STATE_DEFERRALS);
-    assert_sorted_unique(GENERATED_DFF_DEFERRALS);
 
     let root = repository_root();
     let absolute_root = root.to_string_lossy().to_string();
@@ -435,7 +394,8 @@ fn complete_stateful_corpus_is_flat_or_explicitly_deferred() {
     for path in &paths {
         let input = fs::read_to_string(root.join(path)).unwrap();
         let design = parse_file(Path::new(path), &input).unwrap();
-        let analysis = analyze_design(&design);
+        let selected = elaborate_design(&design, GenerateMode::Delayful).unwrap();
+        let analysis = analyze_design_structural(&selected);
         assert_eq!(analysis.modules.len(), 1, "{path} must contain one module");
         let module = &analysis.modules[0];
 
@@ -452,7 +412,7 @@ fn complete_stateful_corpus_is_flat_or_explicitly_deferred() {
 
         let mut source_procedures = BTreeMap::new();
         collect_source_procedures(
-            &design.first_module().unwrap().items,
+            &selected.first_module().unwrap().items,
             false,
             &mut source_procedures,
         );
@@ -465,21 +425,6 @@ fn complete_stateful_corpus_is_flat_or_explicitly_deferred() {
         let is_stateful = recursive.modeled_registers > 0 || recursive.state_assignments > 0;
         if !is_stateful {
             continue;
-        }
-        if let Some((_, expected_targets)) = GENERATED_COMBINATIONAL_TARGETS
-            .iter()
-            .find(|(generated_path, _)| generated_path == path)
-        {
-            assert_eq!(
-                recursive.combinational_procedural_targets, *expected_targets,
-                "generated nodelay buffer targets changed in {path}"
-            );
-            assert!(
-                recursive
-                    .combinational_procedural_targets
-                    .iter()
-                    .all(|target| !recursive.modeled_register_names.contains(target))
-            );
         }
         derived_stateful_paths.push(path.clone());
         totals.stateful_files += 1;
@@ -505,7 +450,7 @@ fn complete_stateful_corpus_is_flat_or_explicitly_deferred() {
                 }
                 let record = audit_success(
                     path,
-                    &design.first_module().unwrap().items,
+                    &selected.first_module().unwrap().items,
                     module,
                     &recursive,
                     &source_procedures,
@@ -1058,12 +1003,6 @@ fn assert_deferral_requirements(report: &AnalysisReport, expectation: &DeferredE
         })
     };
     match expectation.category {
-        DeferralCategory::M8Generate => {
-            assert!(has(
-                "generate.alternative",
-                TargetMilestone::M8GenerateSelection
-            ));
-        }
         DeferralCategory::LaterDriver => {
             for (capability, milestone) in [
                 (
@@ -1105,15 +1044,6 @@ fn assert_exact_filename_families(
         .collect::<Vec<_>>();
     assert_eq!(flat_successes, SUCCESSFUL_FLAT_DFF_DLATCH_PATHS);
 
-    let generated = deferrals
-        .iter()
-        .filter(|record| record.category == DeferralCategory::M8Generate)
-        .map(|record| record.path.as_str())
-        .collect::<Vec<_>>();
-    assert_eq!(generated, GENERATED_STATE_DEFERRALS);
-    assert_eq!(&generated[..4], GENERATED_DFF_DEFERRALS);
-    assert_eq!(generated[4], "sv-cells/dmg_cpu_b/cells/tffnl.sv");
-
     let later_driver = deferrals
         .iter()
         .filter(|record| record.category == DeferralCategory::LaterDriver)
@@ -1131,7 +1061,6 @@ fn assert_exact_filename_families(
         .collect::<BTreeSet<_>>();
     let accounted = SUCCESSFUL_FLAT_DFF_DLATCH_PATHS
         .iter()
-        .chain(GENERATED_DFF_DEFERRALS)
         .chain(LATER_DRIVER_DEFERRALS)
         .copied()
         .collect::<BTreeSet<_>>();
@@ -1151,21 +1080,21 @@ fn assert_success_records(records: &[SuccessRecord]) {
 fn assert_zero_invariant_failures(totals: &AuditTotals) {
     assert_eq!(totals.corpus_files, 206);
     assert_eq!(totals.stateful_files, 27);
-    assert_eq!(totals.succeeded, 21);
-    assert_eq!(totals.deferred, 6);
-    assert_eq!(totals.recursive_modeled_registers, 52);
-    assert_eq!(totals.recursive_state_assignments, 52);
+    assert_eq!(totals.succeeded, 26);
+    assert_eq!(totals.deferred, 1);
+    assert_eq!(totals.recursive_modeled_registers, 48);
+    assert_eq!(totals.recursive_state_assignments, 48);
     assert_eq!(totals.blocking_state_assignments, 17);
-    assert_eq!(totals.nonblocking_state_assignments, 35);
-    assert_eq!(totals.successful_modeled_registers, 38);
-    assert_eq!(totals.successful_state_assignments, 38);
-    assert_eq!(totals.retained_muxes, 38);
-    assert_eq!(totals.direct_state_assignments, 0);
-    assert_eq!(totals.successful_initial_omissions, 32);
-    assert_eq!(totals.successful_delay_tuple_omissions, 49);
-    assert_eq!(totals.successful_specify_warnings, 8);
-    assert_eq!(totals.nonzero_state_delays, 22);
-    assert_eq!(totals.combinational_procedural_nonregisters, 13);
+    assert_eq!(totals.nonblocking_state_assignments, 31);
+    assert_eq!(totals.successful_modeled_registers, 47);
+    assert_eq!(totals.successful_state_assignments, 47);
+    assert_eq!(totals.retained_muxes, 46);
+    assert_eq!(totals.direct_state_assignments, 1);
+    assert_eq!(totals.successful_initial_omissions, 41);
+    assert_eq!(totals.successful_delay_tuple_omissions, 75);
+    assert_eq!(totals.successful_specify_warnings, 14);
+    assert_eq!(totals.nonzero_state_delays, 25);
+    assert_eq!(totals.combinational_procedural_nonregisters, 0);
     for (name, value) in invariant_failures(totals) {
         assert_eq!(value, 0, "stateful invariant failed: {name}");
     }

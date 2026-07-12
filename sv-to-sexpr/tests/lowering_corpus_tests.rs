@@ -7,8 +7,9 @@ use std::fs;
 use std::path::Path;
 
 use lowering_support::{assert_or_update_fixture, repository_root};
-use sv_to_sexpr::analyze::analyze_design;
+use sv_to_sexpr::analyze::analyze_design_with_generate_mode;
 use sv_to_sexpr::diagnostic::Diagnostic;
+use sv_to_sexpr::elaborate::GenerateMode;
 use sv_to_sexpr::ir::{Cell, CellItem, Expr, ValueOperator};
 use sv_to_sexpr::lower::lower_file;
 use sv_to_sexpr::parser::parse_file;
@@ -18,7 +19,6 @@ use sv_to_sexpr::survey::collect_sv_files;
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
 enum FailureCategory {
     TransistorRelated,
-    GeneratedDffTff,
     HierarchicalAdder,
     KeeperUser,
     UnsupportedTimingFactor,
@@ -28,7 +28,6 @@ impl FailureCategory {
     fn label(self) -> &'static str {
         match self {
             Self::TransistorRelated => "transistor-related",
-            Self::GeneratedDffTff => "generated-dff-tff",
             Self::HierarchicalAdder => "hierarchical-adder",
             Self::KeeperUser => "keeper-user",
             Self::UnsupportedTimingFactor => "unsupported-timing-factor",
@@ -76,13 +75,6 @@ const TRANSISTOR_FAILURES: &[&str] = &[
     "sv-cells/sm83/cells/irq_prio_bit4.sv",
     "sv-cells/sm83/cells/irq_prio_bit5.sv",
     "sv-cells/sm83/cells/irq_prio_bit6.sv",
-];
-const GENERATED_FAILURES: &[&str] = &[
-    "sv-cells/dmg_cpu_b/cells/dffr.sv",
-    "sv-cells/dmg_cpu_b/cells/dffr_cc.sv",
-    "sv-cells/dmg_cpu_b/cells/dffr_cc_q.sv",
-    "sv-cells/dmg_cpu_b/cells/dffsr.sv",
-    "sv-cells/dmg_cpu_b/cells/tffnl.sv",
 ];
 const HIERARCHY_FAILURES: &[&str] = &[
     "sv-cells/dmg_cpu_b/cells/full_add.sv",
@@ -142,7 +134,8 @@ fn full_corpus_lowering_baseline_is_deterministic_flat_and_explicit() {
                 }
 
                 let design = parse_file(Path::new(logical_path), &input).unwrap();
-                let analysis = analyze_design(&design);
+                let analysis =
+                    analyze_design_with_generate_mode(&design, GenerateMode::Delayful).unwrap();
                 let source_names = analysis.modules[0]
                     .symbols
                     .keys()
@@ -179,17 +172,15 @@ fn full_corpus_lowering_baseline_is_deterministic_flat_and_explicit() {
             .then_with(|| left.path.cmp(&right.path))
     });
     assert_exact_baseline(&totals, &failures);
-
     let summary = render_summary(&totals, &failures);
     assert!(!summary.contains(&absolute_root));
-    assert!(summary.contains("processed=206 succeeded=185 failed=21"));
+    assert!(summary.contains("processed=206 succeeded=190 failed=16"));
     assert!(summary.contains("invalid_successful_cells=0"));
     assert!(summary.contains("nested_value_expressions=0"));
     assert!(summary.contains("timing_validation_failures=0"));
     assert!(summary.contains("nondeterministic_results=0"));
     for category in [
         FailureCategory::TransistorRelated,
-        FailureCategory::GeneratedDffTff,
         FailureCategory::HierarchicalAdder,
         FailureCategory::KeeperUser,
         FailureCategory::UnsupportedTimingFactor,
@@ -304,7 +295,6 @@ fn timing_has_nested_operation(expr: &Expr) -> bool {
 fn classify_failure(path: &str, diagnostic: &Diagnostic) -> FailureCategory {
     let membership_count = [
         TRANSISTOR_FAILURES.contains(&path),
-        GENERATED_FAILURES.contains(&path),
         HIERARCHY_FAILURES.contains(&path),
         KEEPER_FAILURES.contains(&path),
         TIMING_FACTOR_FAILURES.contains(&path),
@@ -319,11 +309,6 @@ fn classify_failure(path: &str, diagnostic: &Diagnostic) -> FailureCategory {
 
     let (category, expected_message) = if TRANSISTOR_FAILURES.contains(&path) {
         (FailureCategory::TransistorRelated, "unsupported primitive")
-    } else if GENERATED_FAILURES.contains(&path) {
-        (
-            FailureCategory::GeneratedDffTff,
-            "unsupported item for lowering",
-        )
     } else if HIERARCHY_FAILURES.contains(&path) {
         (
             FailureCategory::HierarchicalAdder,
@@ -348,9 +333,9 @@ fn classify_failure(path: &str, diagnostic: &Diagnostic) -> FailureCategory {
 
 fn assert_exact_baseline(totals: &AuditTotals, failures: &[FailedFile]) {
     assert_eq!(totals.processed, 206);
-    assert_eq!(totals.succeeded, 185);
-    assert_eq!(totals.failed, 21);
-    assert_eq!(failures.len(), 21);
+    assert_eq!(totals.succeeded, 190);
+    assert_eq!(totals.failed, 16);
+    assert_eq!(failures.len(), 16);
     assert_eq!(totals.invalid_successful_cells, 0);
     assert_eq!(totals.nested_value_expressions, 0);
     assert_eq!(totals.empty_value_operands, 0);
@@ -358,29 +343,29 @@ fn assert_exact_baseline(totals: &AuditTotals, failures: &[FailedFile]) {
     assert_eq!(totals.nondeterministic_results, 0);
     assert_eq!(totals.absolute_path_leaks, 0);
     assert_eq!(totals.dependency_order_failures, 0);
-    assert_eq!(totals.assignments, 1610);
-    assert_eq!(totals.atom_value_assignments, 5);
-    assert_eq!(totals.temporary_assignments, 999);
+    assert_eq!(totals.assignments, 1686);
+    assert_eq!(totals.atom_value_assignments, 17);
+    assert_eq!(totals.temporary_assignments, 1046);
     assert_eq!(totals.repeated_target_assignments, 51);
-    assert_eq!(totals.delayed_assignments, 565);
-    assert_eq!(totals.nested_timing_delay_assignments, 565);
-    assert_eq!(totals.cells_with_registers, 21);
-    assert_eq!(totals.registers, 38);
+    assert_eq!(totals.delayed_assignments, 581);
+    assert_eq!(totals.nested_timing_delay_assignments, 581);
+    assert_eq!(totals.cells_with_registers, 26);
+    assert_eq!(totals.registers, 47);
     assert_eq!(
         totals.operator_counts,
         BTreeMap::from([
-            ("and".to_string(), 627),
+            ("and".to_string(), 645),
             ("bufif0".to_string(), 2),
             ("bufif0-strength".to_string(), 74),
             ("bufif1".to_string(), 10),
             ("bufif1-strength".to_string(), 293),
             ("caseeq".to_string(), 4),
             ("drive-strength".to_string(), 5),
-            ("mux".to_string(), 44),
-            ("nand".to_string(), 23),
+            ("mux".to_string(), 54),
+            ("nand".to_string(), 24),
             ("nor".to_string(), 28),
-            ("not".to_string(), 207),
-            ("or".to_string(), 282),
+            ("not".to_string(), 232),
+            ("or".to_string(), 292),
             ("xnor".to_string(), 1),
             ("xor".to_string(), 5),
         ])
@@ -388,7 +373,6 @@ fn assert_exact_baseline(totals: &AuditTotals, failures: &[FailedFile]) {
 
     for (category, expected_paths) in [
         (FailureCategory::TransistorRelated, TRANSISTOR_FAILURES),
-        (FailureCategory::GeneratedDffTff, GENERATED_FAILURES),
         (FailureCategory::HierarchicalAdder, HIERARCHY_FAILURES),
         (FailureCategory::KeeperUser, KEEPER_FAILURES),
         (
@@ -462,7 +446,6 @@ fn render_summary(totals: &AuditTotals, failures: &[FailedFile]) -> String {
     writeln!(&mut output, "failure-categories:").unwrap();
     for category in [
         FailureCategory::TransistorRelated,
-        FailureCategory::GeneratedDffTff,
         FailureCategory::HierarchicalAdder,
         FailureCategory::KeeperUser,
         FailureCategory::UnsupportedTimingFactor,
