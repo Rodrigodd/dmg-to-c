@@ -9,4 +9,4 @@ assignments:
     delay: atom(0)
   1: y
     value: op(bufif1-strength; atom(0), atom(t0), strength(highz1, strong0))
-    delay: op(elmore; op(wire; atom(L_y)), op(nmos; atom(12)))
+    delay: op(elmore; op(wire; atom(L_y)), op(*; op(nmos; atom(12)), atom(2)))

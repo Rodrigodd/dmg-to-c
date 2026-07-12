@@ -15,4 +15,4 @@ assignments:
     delay: atom(0)
   3: q
     value: op(mux; atom(t1), atom(t2), atom(q))
-    delay: atom(0)
+    delay: op(+; op(elmore; op(wire; atom(51)), op(*; op(nmos; atom(16.5)), atom(2))), op(elmore; op(wire; atom(L_q)), op(pmos; atom(11.0))))

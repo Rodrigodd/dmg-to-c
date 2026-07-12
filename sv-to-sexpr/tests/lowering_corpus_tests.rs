@@ -91,10 +91,11 @@ const HIERARCHY_FAILURES: &[&str] = &[
 const KEEPER_FAILURES: &[&str] = &[
     "sv-cells/dmg_cpu_b/cells/mux.sv",
     "sv-cells/dmg_cpu_b/cells/muxi.sv",
+    "sv-cells/dmg_cpu_b/cells/pad_xtal.sv",
     "sv-cells/sm83/cells/idu_bit0.sv",
     "sv-cells/sm83/cells/reg_wz_out.sv",
 ];
-const TIMING_FACTOR_FAILURES: &[&str] = &["sv-cells/dmg_cpu_b/cells/pad_xtal.sv"];
+const TIMING_FACTOR_FAILURES: &[&str] = &[];
 
 #[test]
 fn full_corpus_lowering_baseline_is_deterministic_flat_and_explicit() {
@@ -361,8 +362,8 @@ fn assert_exact_baseline(totals: &AuditTotals, failures: &[FailedFile]) {
     assert_eq!(totals.atom_value_assignments, 5);
     assert_eq!(totals.temporary_assignments, 999);
     assert_eq!(totals.repeated_target_assignments, 51);
-    assert_eq!(totals.delayed_assignments, 379);
-    assert_eq!(totals.nested_timing_delay_assignments, 379);
+    assert_eq!(totals.delayed_assignments, 565);
+    assert_eq!(totals.nested_timing_delay_assignments, 565);
     assert_eq!(totals.cells_with_registers, 21);
     assert_eq!(totals.registers, 38);
     assert_eq!(

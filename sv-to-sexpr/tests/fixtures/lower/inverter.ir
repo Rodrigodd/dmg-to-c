@@ -5,4 +5,4 @@ registers: []
 assignments:
   0: y
     value: op(not; atom(in))
-    delay: atom(0)
+    delay: op(elmore; op(wire; atom(L_y)), op(pmos; atom(3)))

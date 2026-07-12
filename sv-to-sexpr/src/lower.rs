@@ -75,11 +75,27 @@ impl ProceduralContext {
 struct Lowerer<'a> {
     module: &'a Module,
     cell: Cell,
+    timing_alias_sources: BTreeMap<String, TimingAliasSource>,
     timing_aliases: BTreeMap<String, Expr>,
+    timing_alias_stack: Vec<String>,
+    specify_delays: BTreeMap<String, Vec<SpecifyDelay>>,
+    warned_specify_targets: BTreeSet<String>,
     diagnostics: Vec<Diagnostic>,
     reserved_names: BTreeSet<String>,
     signal_names: BTreeSet<String>,
     next_temp_index: usize,
+}
+
+#[derive(Debug, Clone)]
+struct TimingAliasSource {
+    span: Span,
+    value: SvExpr,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+struct SpecifyDelay {
+    path_span: Span,
+    delay: Expr,
 }
 
 impl<'a> Lowerer<'a> {
@@ -113,7 +129,11 @@ impl<'a> Lowerer<'a> {
                 registers: analysis.registers.clone(),
                 items: Vec::new(),
             },
+            timing_alias_sources: BTreeMap::new(),
             timing_aliases: BTreeMap::new(),
+            timing_alias_stack: Vec::new(),
+            specify_delays: BTreeMap::new(),
+            warned_specify_targets: BTreeSet::new(),
             diagnostics: Vec::new(),
             reserved_names,
             signal_names,
@@ -123,6 +143,7 @@ impl<'a> Lowerer<'a> {
 
     fn lower_module(&mut self) -> LowerResult<LoweredModule> {
         self.collect_timing_aliases()?;
+        self.collect_specify_delays()?;
         for item in &self.module.items {
             self.lower_item(item)?;
         }
@@ -134,6 +155,14 @@ impl<'a> Lowerer<'a> {
             )
         })?;
 
+        self.diagnostics.sort_by(|left, right| {
+            left.span
+                .path
+                .cmp(&right.span.path)
+                .then_with(|| left.span.line.cmp(&right.span.line))
+                .then_with(|| left.span.column.cmp(&right.span.column))
+        });
+
         Ok(LoweredModule {
             cell: self.cell.clone(),
             timing_aliases: self.timing_aliases.clone(),
@@ -142,30 +171,174 @@ impl<'a> Lowerer<'a> {
     }
 
     fn collect_timing_aliases(&mut self) -> LowerResult<()> {
+        for parameter in &self.module.parameters {
+            if matches!(parameter.kind, ParamKind::Localparam | ParamKind::Specparam) {
+                self.insert_timing_alias(&parameter.name, &parameter.span, Some(&parameter.value))?;
+            }
+        }
         for item in &self.module.items {
             match &item.kind {
                 ItemKind::Decl(decl)
                     if matches!(decl.kind, DeclKind::Localparam | DeclKind::Specparam) =>
                 {
-                    if let Some(value) = &decl.value {
-                        for name in &decl.names {
-                            let lowered = self.lower_timing_expr(value)?;
-                            self.timing_aliases.insert(name.clone(), lowered);
-                        }
+                    for name in &decl.names {
+                        self.insert_timing_alias(name, &decl.span, decl.value.as_ref())?;
                     }
                 }
                 ItemKind::Specify(specify) => {
                     for specify_item in &specify.items {
                         if let SpecifyItem::Specparam(param) = specify_item {
-                            let lowered = self.lower_timing_expr(&param.value)?;
-                            self.timing_aliases.insert(param.name.clone(), lowered);
+                            self.insert_timing_alias(&param.name, &param.span, Some(&param.value))?;
                         }
                     }
                 }
                 _ => {}
             }
         }
+
+        // Resolve from the complete source map so forward references behave the
+        // same as backward references. BTreeMap order also makes cycle errors
+        // deterministic rather than dependent on source traversal order.
+        let names = self
+            .timing_alias_sources
+            .keys()
+            .cloned()
+            .collect::<Vec<_>>();
+        for name in names {
+            let span = self.timing_alias_sources[&name].span.clone();
+            self.resolve_timing_alias(&name, &span)?;
+        }
         Ok(())
+    }
+
+    fn insert_timing_alias(
+        &mut self,
+        name: &str,
+        span: &Span,
+        value: Option<&SvExpr>,
+    ) -> LowerResult<()> {
+        let value = value.ok_or_else(|| {
+            Diagnostic::new(
+                span.clone(),
+                format!("timing alias `{name}` must have a value"),
+            )
+        })?;
+        if let Some(previous) = self.timing_alias_sources.get(name) {
+            return Err(Diagnostic::new(
+                span.clone(),
+                format!(
+                    "duplicate timing alias `{name}`; first declared at {}:{}:{}",
+                    previous.span.path.display(),
+                    previous.span.line,
+                    previous.span.column
+                ),
+            ));
+        }
+        self.timing_alias_sources.insert(
+            name.to_string(),
+            TimingAliasSource {
+                span: span.clone(),
+                value: value.clone(),
+            },
+        );
+        Ok(())
+    }
+
+    fn resolve_timing_alias(&mut self, name: &str, reference_span: &Span) -> LowerResult<Expr> {
+        if let Some(resolved) = self.timing_aliases.get(name) {
+            return Ok(resolved.clone());
+        }
+        if let Some(position) = self
+            .timing_alias_stack
+            .iter()
+            .position(|active| active == name)
+        {
+            let mut cycle = self.timing_alias_stack[position..].to_vec();
+            cycle.push(name.to_string());
+            return Err(Diagnostic::new(
+                reference_span.clone(),
+                format!("cyclic timing alias dependency: {}", cycle.join(" -> ")),
+            ));
+        }
+        let source = self
+            .timing_alias_sources
+            .get(name)
+            .cloned()
+            .ok_or_else(|| {
+                Diagnostic::new(
+                    reference_span.clone(),
+                    format!("unresolvable timing alias `{name}`"),
+                )
+            })?;
+        self.timing_alias_stack.push(name.to_string());
+        let lowered = self.lower_timing_expr(&source.value);
+        self.timing_alias_stack.pop();
+        let lowered = lowered?;
+        self.timing_aliases
+            .insert(name.to_string(), lowered.clone());
+        Ok(lowered)
+    }
+
+    fn collect_specify_delays(&mut self) -> LowerResult<()> {
+        for item in &self.module.items {
+            let ItemKind::Specify(specify) = &item.kind else {
+                continue;
+            };
+            for specify_item in &specify.items {
+                let SpecifyItem::Path(path) = specify_item else {
+                    continue;
+                };
+                for control in &path.controls {
+                    if scalar_expr_symbol(control).is_none() {
+                        return Err(Diagnostic::new(
+                            control.span.clone(),
+                            "specify path control must be a scalar symbol",
+                        ));
+                    }
+                }
+                let target = scalar_expr_symbol(&path.target).ok_or_else(|| {
+                    Diagnostic::new(
+                        path.target.span.clone(),
+                        "specify path target must be a scalar symbol",
+                    )
+                })?;
+                let delay = self.lower_timing_tuple(&path.span, &path.delays)?;
+                self.specify_delays
+                    .entry(target)
+                    .or_default()
+                    .push(SpecifyDelay {
+                        path_span: path.span.clone(),
+                        delay,
+                    });
+            }
+        }
+        Ok(())
+    }
+
+    fn source_delay_for(&mut self, target: &str, explicit: Option<&Delay>) -> LowerResult<Expr> {
+        match explicit {
+            Some(delay) => self.lower_timing_expr_from_delay(delay),
+            None => Ok(self.specify_delay_for(target)),
+        }
+    }
+
+    fn specify_delay_for(&mut self, target: &str) -> Expr {
+        let Some(matches) = self.specify_delays.get(target) else {
+            return Expr::atom("0");
+        };
+        let first = matches[0].delay.clone();
+        let warning_span = matches.get(1).map(|candidate| candidate.path_span.clone());
+        if let Some(span) = warning_span
+            && self.warned_specify_targets.insert(target.to_string())
+        {
+            self.diagnostics.push(Diagnostic::warning(
+                span,
+                format!(
+                    "multiple control-dependent specify paths target `{target}`; the one-delay cell DSL selects the first source-ordered path"
+                ),
+            ));
+        }
+        first
     }
 
     fn lower_item(&mut self, item: &Item) -> LowerResult<()> {
@@ -312,7 +485,8 @@ impl<'a> Lowerer<'a> {
                 vec![condition.clone(), expr, Expr::atom(target.clone())],
             );
         }
-        self.emit_assignment(target, expr, Expr::atom("0"), &stmt.span)
+        let delay = self.source_delay_for(&target, None)?;
+        self.emit_assignment(target, expr, delay, &stmt.span)
     }
 
     fn lower_continuous_assign(&mut self, assign: &AssignDecl) -> LowerResult<()> {
@@ -326,7 +500,7 @@ impl<'a> Lowerer<'a> {
         if let Some(strength) = &assign.strength {
             expr = apply_strength(expr, lower_strength_pair(strength)?);
         }
-        let delay = self.lower_delay(assign.delay.as_ref())?;
+        let delay = self.source_delay_for(&target, assign.delay.as_ref())?;
         self.emit_assignment(target, expr, delay, &assign.span)
     }
 
@@ -548,7 +722,7 @@ impl<'a> Lowerer<'a> {
             }
         };
         let expr = Expr::value(operator, operands);
-        let delay = self.lower_delay(call.delay.as_ref())?;
+        let delay = self.source_delay_for(&target, call.delay.as_ref())?;
         self.emit_assignment(target, expr, delay, &call.span)
     }
 
@@ -696,10 +870,11 @@ impl<'a> Lowerer<'a> {
     fn lower_timing_expr(&mut self, expr: &SvExpr) -> LowerResult<Expr> {
         match &expr.kind {
             ExprKind::Path(segments) => {
-                if segments.len() == 1
-                    && let Some(alias) = self.timing_aliases.get(&segments[0])
-                {
-                    return Ok(alias.clone());
+                if segments.len() == 1 {
+                    let name = &segments[0];
+                    if self.timing_alias_sources.contains_key(name) {
+                        return self.resolve_timing_alias(name, &expr.span);
+                    }
                 }
                 Ok(Expr::atom(segments.join("::")))
             }
@@ -782,23 +957,37 @@ impl<'a> Lowerer<'a> {
         }
     }
 
-    fn lower_delay(&mut self, delay: Option<&Delay>) -> LowerResult<Expr> {
-        match delay {
-            Some(delay) => self.lower_timing_expr_from_delay(delay),
-            None => Ok(Expr::atom("0")),
-        }
+    fn lower_timing_expr_from_delay(&mut self, delay: &Delay) -> LowerResult<Expr> {
+        self.lower_timing_tuple(&delay.span, &delay.values)
     }
 
-    fn lower_timing_expr_from_delay(&mut self, delay: &Delay) -> LowerResult<Expr> {
-        let Some(first) = delay.values.first() else {
+    fn lower_timing_tuple(
+        &mut self,
+        tuple_span: &Span,
+        values: &[Option<SvExpr>],
+    ) -> LowerResult<Expr> {
+        for (index, ignored) in values.iter().enumerate().skip(1) {
+            let span = ignored
+                .as_ref()
+                .map(|expression| expression.span.clone())
+                .unwrap_or_else(|| tuple_span.clone());
+            self.diagnostics.push(Diagnostic::intentional_ignore(
+                span,
+                format!(
+                    "delay tuple entry {} is intentionally ignored because the cell model selects only entry 1",
+                    index + 1
+                ),
+            ));
+        }
+        let Some(first) = values.first() else {
             return Err(Diagnostic::new(
-                delay.span.clone(),
+                tuple_span.clone(),
                 "delay tuple must contain a first entry",
             ));
         };
         let first = first.as_ref().ok_or_else(|| {
             Diagnostic::new(
-                delay.span.clone(),
+                tuple_span.clone(),
                 "explicitly omitted first delay tuple entry is unsupported",
             )
         })?;
@@ -848,37 +1037,10 @@ impl<'a> Lowerer<'a> {
     }
 
     fn lower_timing_resistance(&mut self, expr: &SvExpr) -> LowerResult<Expr> {
-        match &expr.kind {
-            ExprKind::Call { callee, args } => {
-                let name = expr_symbol(callee).unwrap_or_else(|| render_call_callee(callee));
-                match name.as_str() {
-                    "R_pmos_ohm" => {
-                        self.lower_timing_resistance_call(TimingOperator::Pmos, callee, args)
-                    }
-                    "R_nmos_ohm" => {
-                        self.lower_timing_resistance_call(TimingOperator::Nmos, callee, args)
-                    }
-                    _ => self.lower_timing_expr(expr),
-                }
-            }
-            ExprKind::Binary {
-                op: BinaryOp::Mul,
-                left,
-                right,
-            } => {
-                if matches!(&left.kind, ExprKind::Call { .. }) {
-                    return self.lower_timing_resistance(left);
-                }
-                if matches!(&right.kind, ExprKind::Call { .. }) {
-                    return self.lower_timing_resistance(right);
-                }
-                if let Some(value) = multiply_unit_factor(left, right) {
-                    return Ok(Expr::atom(value.to_string()));
-                }
-                self.lower_timing_expr(expr)
-            }
-            _ => self.lower_timing_expr(expr),
-        }
+        // Resistance networks use the ordinary recursive timing grammar. In
+        // particular, do not peel off a resistance call from multiplication:
+        // the outer factor is part of the modeled expression.
+        self.lower_timing_expr(expr)
     }
 
     fn lower_timing_resistance_call(
@@ -887,6 +1049,12 @@ impl<'a> Lowerer<'a> {
         callee: &SvExpr,
         args: &[Option<SvExpr>],
     ) -> LowerResult<Expr> {
+        if args.len() != 1 {
+            return Err(Diagnostic::new(
+                callee.span.clone(),
+                "expected resistance function arity 1",
+            ));
+        }
         let Some(arg) = args.first().and_then(|arg| arg.as_ref()) else {
             return Err(Diagnostic::new(
                 callee.span.clone(),
@@ -898,23 +1066,44 @@ impl<'a> Lowerer<'a> {
             operator,
             TimingOperator::Pmos | TimingOperator::Nmos
         ));
-        Ok(Expr::timing(operator, vec![Expr::atom(value.to_string())]))
+        Ok(Expr::timing(operator, vec![value]))
     }
 
-    fn extract_unit_factor(&self, expr: &SvExpr) -> LowerResult<i64> {
+    fn extract_unit_factor(&mut self, expr: &SvExpr) -> LowerResult<Expr> {
         match &expr.kind {
+            ExprKind::Group(inner) => self.extract_unit_factor(inner),
             ExprKind::Binary {
                 op: BinaryOp::Mul,
                 left,
                 right,
-            } => multiply_unit_factor(left, right)
-                .ok_or_else(|| Diagnostic::new(expr.span.clone(), "unsupported timing factor")),
-            ExprKind::Integer(value) => value
-                .parse::<i64>()
-                .map_err(|_| Diagnostic::new(expr.span.clone(), "invalid integer factor")),
+            } if is_l_unit(left) => self.lower_resistance_factor(right),
+            ExprKind::Binary {
+                op: BinaryOp::Mul,
+                left,
+                right,
+            } if is_l_unit(right) => self.lower_resistance_factor(left),
+            ExprKind::Integer(_) | ExprKind::Real(_) | ExprKind::Path(_) => {
+                self.lower_resistance_factor(expr)
+            }
             _ => Err(Diagnostic::new(
                 expr.span.clone(),
                 "unsupported timing factor",
+            )),
+        }
+    }
+
+    fn lower_resistance_factor(&mut self, expr: &SvExpr) -> LowerResult<Expr> {
+        match &expr.kind {
+            ExprKind::Group(inner) => self.lower_resistance_factor(inner),
+            ExprKind::Path(segments) if segments.len() == 1 && segments[0] == "L_unit" => {
+                Ok(Expr::atom("1"))
+            }
+            ExprKind::Integer(_) | ExprKind::Real(_) | ExprKind::Path(_) => {
+                self.lower_timing_expr(expr)
+            }
+            _ => Err(Diagnostic::new(
+                expr.span.clone(),
+                "resistance factor must be an integer, real, or scalar timing atom",
             )),
         }
     }
@@ -986,6 +1175,14 @@ fn expr_symbol(expr: &SvExpr) -> Option<String> {
     }
 }
 
+fn scalar_expr_symbol(expr: &SvExpr) -> Option<String> {
+    match &expr.kind {
+        ExprKind::Path(segments) if segments.len() == 1 => Some(segments[0].clone()),
+        ExprKind::Group(inner) => scalar_expr_symbol(inner),
+        _ => None,
+    }
+}
+
 fn is_contracted_initial_literal(expr: &SvExpr) -> bool {
     match &expr.kind {
         ExprKind::Constant(ConstKind::Zero | ConstKind::One | ConstKind::X | ConstKind::Z) => true,
@@ -1027,20 +1224,12 @@ fn collect_or_operands<'a>(expr: &'a SvExpr, out: &mut Vec<&'a SvExpr>) {
     }
 }
 
-fn multiply_unit_factor(left: &SvExpr, right: &SvExpr) -> Option<i64> {
-    fn factor(expr: &SvExpr) -> Option<i64> {
-        match &expr.kind {
-            ExprKind::Integer(value) => value.parse::<i64>().ok(),
-            ExprKind::Path(segments) if segments.len() == 1 && segments[0] == "L_unit" => Some(1),
-            ExprKind::Binary {
-                op: BinaryOp::Mul,
-                left,
-                right,
-            } => factor(left).and_then(|left| factor(right).map(|right| left * right)),
-            _ => None,
-        }
+fn is_l_unit(expr: &SvExpr) -> bool {
+    match &expr.kind {
+        ExprKind::Path(segments) => segments.len() == 1 && segments[0] == "L_unit",
+        ExprKind::Group(inner) => is_l_unit(inner),
+        _ => false,
     }
-    factor(left).or_else(|| factor(right))
 }
 
 #[cfg(test)]
@@ -1428,9 +1617,13 @@ mod tests {
                 (
                     "q_n".to_string(),
                     "(mux t18 ff2 q_n)".to_string(),
-                    "0".to_string(),
+                    "(+ (+ (elmore (wire 55) (* (pmos 3) 2)) (elmore (wire 23) (* (nmos 3) 2))) (elmore (wire L_q_n) (pmos 13)))".to_string(),
                 ),
-                ("q".to_string(), "(not q_n)".to_string(), "0".to_string(),),
+                (
+                    "q".to_string(),
+                    "(not q_n)".to_string(),
+                    "(+ (+ (+ (elmore (wire 55) (* (nmos 3) 2)) (elmore (wire 23) (* (pmos 3) 2))) (elmore (wire L_q_n) (nmos 6))) (elmore (wire L_q) (pmos 13)))".to_string(),
+                ),
             ]
         );
     }
@@ -1449,7 +1642,7 @@ mod tests {
                 (
                     "q".to_string(),
                     "(mux t2 t3 q)".to_string(),
-                    "0".to_string(),
+                    "(elmore (wire L_q) (pmos 35))".to_string(),
                 ),
                 ("t4".to_string(), "(not s_n)".to_string(), "0".to_string()),
                 ("t5".to_string(), "(not r_n)".to_string(), "0".to_string()),
@@ -1458,7 +1651,7 @@ mod tests {
                 (
                     "q_n".to_string(),
                     "(mux t6 t7 q_n)".to_string(),
-                    "0".to_string(),
+                    "(+ (elmore (wire L_q) (nmos 35)) (elmore (wire L_q_n) (pmos 35)))".to_string(),
                 ),
             ]
         );
@@ -1474,9 +1667,13 @@ mod tests {
                 (
                     "q".to_string(),
                     "(mux ena d q)".to_string(),
-                    "0".to_string(),
+                    "(+ (+ (elmore (wire 73) (pmos 10)) (elmore (wire 101) (nmos 10))) (elmore (wire L_q) (pmos 35)))".to_string(),
                 ),
-                ("q_n".to_string(), "(not q)".to_string(), "0".to_string(),),
+                (
+                    "q_n".to_string(),
+                    "(not q)".to_string(),
+                    "(+ (+ (+ (elmore (wire 73) (nmos 10)) (elmore (wire 101) (pmos 10))) (elmore (wire 127) (nmos 10))) (elmore (wire L_q_n) (pmos 35)))".to_string(),
+                ),
             ]
         );
     }
@@ -1557,17 +1754,152 @@ mod tests {
 
     #[test]
     fn delay_tuples_select_exactly_the_first_entry() {
-        for (delay, expected) in [("#(1)", "1"), ("#(1, 2)", "1"), ("#(1, 2, 3)", "1")] {
+        for (delay, expected, ignored) in [
+            ("#(1)", "1", 0),
+            ("#(1, 2)", "1", 1),
+            ("#(1, 2, 3)", "1", 2),
+        ] {
             let input = format!(
                 "module sample(input logic a, output logic y); assign {delay} y = a; endmodule"
             );
             let lowered = lower_snippet(&input).unwrap();
             assert_eq!(assignment_strings(&lowered)[0].2, expected);
+            assert_eq!(lowered.diagnostics.len(), ignored);
+            assert!(
+                lowered
+                    .diagnostics
+                    .iter()
+                    .all(|diagnostic| diagnostic.kind == DiagnosticKind::IntentionalIgnore)
+            );
         }
         let lowered =
             lower_snippet("module sample(input logic a, output logic y); assign y = a; endmodule")
                 .unwrap();
         assert_eq!(assignment_strings(&lowered)[0].2, "0");
+        assert!(lowered.diagnostics.is_empty());
+    }
+
+    #[test]
+    fn symbolic_precharge_and_high_z_tuples_keep_only_entry_zero() {
+        let lowered = lower_snippet(
+            "module sample(input logic a, ena_n, output logic y0, y1);\n\
+             bufif0 #(T_rise, T_Z, T_Z) (y0, a, ena_n);\n\
+             assign #(T_Z, T_fall, T_off) y1 = a;\n\
+             endmodule",
+        )
+        .unwrap();
+        assert_eq!(
+            assignment_strings(&lowered),
+            vec![
+                ("y0".into(), "(bufif0 a ena_n)".into(), "T_rise".into()),
+                ("y1".into(), "a".into(), "T_Z".into()),
+            ]
+        );
+        assert_eq!(lowered.diagnostics.len(), 4);
+    }
+
+    #[test]
+    fn omitted_later_delay_entries_are_visible_non_failing_ignores() {
+        let lowered = lower_snippet(
+            "module sample(input logic a, output logic y); assign #(1, , 3) y = a; endmodule",
+        )
+        .unwrap();
+        assert_eq!(assignment_strings(&lowered)[0].2, "1");
+        assert_eq!(lowered.diagnostics.len(), 2);
+        assert_eq!(lowered.diagnostics[0].span, Span::new("snippet.sv", 1, 55));
+        assert_eq!(lowered.diagnostics[1].span, Span::new("snippet.sv", 1, 61));
+        assert!(
+            lowered
+                .diagnostics
+                .iter()
+                .all(|diagnostic| diagnostic.kind == DiagnosticKind::IntentionalIgnore)
+        );
+    }
+
+    #[test]
+    fn timing_aliases_resolve_forward_references_and_preserve_resistance_factors() {
+        let lowered = lower_snippet(
+            "module sample(input logic a, output logic y0, y1, y2, y3);\n\
+             localparam realtime T_FORWARD = T_BASE + 1;\n\
+             localparam realtime T_BASE = tpd_elmore(L_y, R_nmos_ohm(8*L_unit) * 2);\n\
+             localparam realtime T_REAL = tpd_elmore(L_y, R_nmos_ohm(8*L_unit) * 1.5);\n\
+             localparam realtime T_SUM = tpd_elmore(L_y, R_pmos_ohm(3*L_unit) + R_nmos_ohm(W_y*L_unit));\n\
+             assign #(T_FORWARD) y0 = a;\n\
+             assign #(T_REAL) y1 = a;\n\
+             assign #(T_SUM) y2 = a;\n\
+             assign #(tpd_z(, T_REAL, T_BASE)) y3 = a;\n\
+             endmodule",
+        )
+        .unwrap();
+        assert_eq!(
+            assignment_strings(&lowered),
+            vec![
+                (
+                    "y0".into(),
+                    "a".into(),
+                    "(+ (elmore (wire L_y) (* (nmos 8) 2)) 1)".into(),
+                ),
+                (
+                    "y1".into(),
+                    "a".into(),
+                    "(elmore (wire L_y) (* (nmos 8) 1.5))".into(),
+                ),
+                (
+                    "y2".into(),
+                    "a".into(),
+                    "(elmore (wire L_y) (+ (pmos 3) (nmos W_y)))".into(),
+                ),
+                (
+                    "y3".into(),
+                    "a".into(),
+                    "(elmore (wire L_y) (* (nmos 8) 1.5))".into(),
+                ),
+            ]
+        );
+        assert!(lowered.diagnostics.is_empty());
+    }
+
+    #[test]
+    fn direct_real_resistance_factors_are_preserved() {
+        let lowered = lower_snippet(
+            "module sample(input logic a, output logic y0, y1);\n\
+             assign #(tpd_elmore(L_y, R_pmos_ohm(13.5))) y0 = a;\n\
+             assign #(tpd_elmore(L_y, R_nmos_ohm(10.8))) y1 = a;\n\
+             endmodule",
+        )
+        .unwrap();
+        assert_eq!(
+            assignment_strings(&lowered),
+            vec![
+                (
+                    "y0".into(),
+                    "a".into(),
+                    "(elmore (wire L_y) (pmos 13.5))".into(),
+                ),
+                (
+                    "y1".into(),
+                    "a".into(),
+                    "(elmore (wire L_y) (nmos 10.8))".into(),
+                ),
+            ]
+        );
+    }
+
+    #[test]
+    fn cyclic_timing_aliases_fail_deterministically() {
+        let error = lower_snippet(
+            "module sample(input logic a, output logic y);\n\
+             localparam realtime T_B = T_A + 1;\n\
+             localparam realtime T_A = T_B + 2;\n\
+             assign #(T_A) y = a;\n\
+             endmodule",
+        )
+        .unwrap_err();
+        assert_eq!(error.span, Span::new("snippet.sv", 2, 27));
+        assert_eq!(
+            error.message,
+            "cyclic timing alias dependency: T_A -> T_B -> T_A"
+        );
     }
 
     #[test]

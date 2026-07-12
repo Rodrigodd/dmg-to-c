@@ -21,6 +21,9 @@
     (t9 (and t7 t8) 0)
     (t10 (or t6 t9) 0)
     (t11 (not ff) 0)
-    (q (mux t10 t11 q) 0)
+    (q
+      (mux t10 t11 q)
+      (+ (+ (elmore (wire 57) (* (pmos 3) 2)) (elmore (wire 60) (nmos 3))) (elmore (wire L_q) (pmos 11)))
+    )
   )
 )

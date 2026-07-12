@@ -1,1 +1,17 @@
-diagnostics: []
+diagnostics:
+  intentional-ignore | sv-cells/sm83/cells/reg_pc_out_bit67.sv:20:37 | delay tuple entry 2 is intentionally ignored because the cell model selects only entry 1
+  intentional-ignore | sv-cells/sm83/cells/reg_pc_out_bit67.sv:20:48 | delay tuple entry 3 is intentionally ignored because the cell model selects only entry 1
+  intentional-ignore | sv-cells/sm83/cells/reg_pc_out_bit67.sv:24:37 | delay tuple entry 2 is intentionally ignored because the cell model selects only entry 1
+  intentional-ignore | sv-cells/sm83/cells/reg_pc_out_bit67.sv:24:48 | delay tuple entry 3 is intentionally ignored because the cell model selects only entry 1
+  intentional-ignore | sv-cells/sm83/cells/reg_pc_out_bit67.sv:28:37 | delay tuple entry 2 is intentionally ignored because the cell model selects only entry 1
+  intentional-ignore | sv-cells/sm83/cells/reg_pc_out_bit67.sv:28:48 | delay tuple entry 3 is intentionally ignored because the cell model selects only entry 1
+  intentional-ignore | sv-cells/sm83/cells/reg_pc_out_bit67.sv:33:37 | delay tuple entry 2 is intentionally ignored because the cell model selects only entry 1
+  intentional-ignore | sv-cells/sm83/cells/reg_pc_out_bit67.sv:33:48 | delay tuple entry 3 is intentionally ignored because the cell model selects only entry 1
+  intentional-ignore | sv-cells/sm83/cells/reg_pc_out_bit67.sv:34:37 | delay tuple entry 2 is intentionally ignored because the cell model selects only entry 1
+  intentional-ignore | sv-cells/sm83/cells/reg_pc_out_bit67.sv:34:49 | delay tuple entry 3 is intentionally ignored because the cell model selects only entry 1
+  intentional-ignore | sv-cells/sm83/cells/reg_pc_out_bit67.sv:39:37 | delay tuple entry 2 is intentionally ignored because the cell model selects only entry 1
+  intentional-ignore | sv-cells/sm83/cells/reg_pc_out_bit67.sv:39:48 | delay tuple entry 3 is intentionally ignored because the cell model selects only entry 1
+  intentional-ignore | sv-cells/sm83/cells/reg_pc_out_bit67.sv:40:37 | delay tuple entry 2 is intentionally ignored because the cell model selects only entry 1
+  intentional-ignore | sv-cells/sm83/cells/reg_pc_out_bit67.sv:40:49 | delay tuple entry 3 is intentionally ignored because the cell model selects only entry 1
+  intentional-ignore | sv-cells/sm83/cells/reg_pc_out_bit67.sv:44:37 | delay tuple entry 2 is intentionally ignored because the cell model selects only entry 1
+  intentional-ignore | sv-cells/sm83/cells/reg_pc_out_bit67.sv:44:48 | delay tuple entry 3 is intentionally ignored because the cell model selects only entry 1

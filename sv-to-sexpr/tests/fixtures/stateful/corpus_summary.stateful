@@ -15,14 +15,17 @@ successful-topology:
   retained-muxes=38
   direct-state-assignments=0
   initial-intentional-ignores=32
+  delay-tuple-intentional-ignores=49
+  specify-warnings=8
+  modeled-state-delays=22
 invariant-failures:
   invalid_cells=0
   nested_state_values=0
   register_mismatches=0
   state_target_order_mismatches=0
   wrong_retention_operands=0
-  nonzero_state_delays=0
   initial_diagnostic_mismatches=0
+  delay_diagnostic_mismatches=0
   temp_dependency_or_collision_failures=0
   combinational_procedural_register_leaks=0
   nondeterministic_results=0

@@ -1,0 +1,13 @@
+(cell
+  timing_explicit_precedence
+  (inputs a)
+
+  (outputs y)
+
+  (registers )
+
+  (assignments
+
+    (y a T_explicit)
+  )
+)

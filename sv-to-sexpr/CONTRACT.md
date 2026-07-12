@@ -173,6 +173,19 @@ typed representation. Localparam/specparam aliases may remain atoms or resolve
 to these forms. Resistance factors such as `* 2` and `* 1.5` must remain in the
 selected expression and may not be dropped. Arbitrary timing calls are errors.
 
+An explicit continuous-assignment or primitive delay takes precedence over
+specify timing. When a source-level continuous, primitive, or procedural
+assignment has no explicit delay, specify lookup uses only its scalar target
+symbol; generated SSA temporaries always retain delay `0`. A single matching
+specify path contributes its selected first tuple entry. If multiple
+control-dependent paths target the same symbol, the one-delay DSL selects the
+first path in source order and emits one warning for that target at the second
+matching path. This target-only selection is a documented approximation:
+ordinary lowering succeeds with the warning, while strict mode promotes it to
+a failure. Every specify tuple is still validated and every entry after the
+first is recorded as an intentional ignore, even when that path is not selected
+by an assignment.
+
 ## Diagnostics and strict mode
 
 - **Error:** unsupported, ambiguous, malformed, or unrepresentable behavior.

@@ -7,7 +7,7 @@ a milestone acceptance condition changes or is completed.
 
 Last audited on 2026-07-12:
 
-- `cargo test` passes 98 unit tests and 32 integration tests.
+- `cargo test` passes 103 unit tests and 38 integration tests.
 - Lexing succeeds for all 206 curated files.
 - Parsing succeeds for all 206 curated files.
 - `survey sv-cells` deterministically inventories 63,240 tokens and 138 typed
@@ -19,28 +19,31 @@ Last audited on 2026-07-12:
 - Lowering returns success for 185 files and fails explicitly for 21 files. All
   185 successful cells are deterministic, structurally valid, and contain only
   flat contracted value expressions; the corpus audit covers 1,610 assignments
-  including 999 generated temporaries.
-- Successful lowering reports 32 literal initial events as visible
-  intentional-ignore diagnostics. They remain non-failing under `--strict`,
-  classify their targets as modeled registers, and do not serialize an initial
-  event queue.
+  including 999 generated temporaries and 565 modeled nonzero delays.
+- Successful lowering reports 1,031 visible intentional ignores: 32 literal
+  initial events and 999 delay tuple entries after the first. They remain
+  non-failing under `--strict`; the initial events classify their targets as
+  modeled registers without serializing an initial event queue.
+- Target-only selection among multiple control-dependent specify paths emits
+  41 documented warnings. Ordinary lowering succeeds, while `--strict`
+  promotes those warnings to failures.
 - Nine failures are transistor-related. The other failures are five generated
-  DFF/TFF variants, two hierarchical adders, four keeper users, and one
-  unsupported timing factor.
-- Examined generated files are valid generic S-expressions and become stable
-  after `sexpr-fmt`. Full-corpus formatter validation has not been performed.
+  DFF/TFF variants, two hierarchical adders, and five keeper users. No failure
+  remains assigned to Milestone 7 timing.
+- Timing goldens are valid generic S-expressions, and the checked reference is
+  canonical under `sexpr-fmt --check`. Full-corpus formatter validation has not
+  been performed.
 - Flat SSA, combinational operators, register lists, supported stateful
-  behavior, and driver/strength normalizations have completed fixture review.
-  Timing semantics remain subject to their later milestone fixture review.
-- The reference cell now lowers with flat SSA values but does not yet match the
-  checked-in target because specify-derived delays have not completed fixture
-  review. Delay tuples select only their first entry, but reference output under
-  that policy is not yet accepted.
+  behavior, driver/strength normalizations, and first-entry symbolic timing
+  have completed fixture and corpus review.
+- The reference cell's `q_n`, `q`, and `d` assignments now match the accepted
+  first applicable source/specify entry policy, including all resistance
+  multipliers, and the checked-in reference has been updated accordingly.
 - The current CLI has `lex`, `parse`, `analyze`, `lower`, `convert-file`,
   `survey`, and staged `check`. These diagnostic-capable commands accept the
-  shared `--strict` warning policy, although current stages do not produce
-  warnings yet. It does not yet have corpus `convert` or the complete release
-  diagnostic summary required by the plan.
+  shared `--strict` warning policy; lower/convert now surface timing
+  approximation warnings and intentional ignores. It does not yet have corpus
+  `convert` or the complete release diagnostic summary required by the plan.
 
 ## Milestone Status
 
@@ -71,7 +74,7 @@ Last audited on 2026-07-12:
   audit finds 27 stateful files: 21 emitted cells have 38 exact modeled
   registers and 38 flat retained mux equations; five generated DFF/TFF files
   remain M8 deferrals, and `dlatch_ee_irq` remains explicitly assigned to its
-  M7/M10/M11 timing, keeper, and transistor work. All 13 combinational
+  M10/M11 keeper and transistor work. All 13 combinational
   procedural writes found in generated alternatives remain non-state.
 - Milestone 6: complete. Reviewed fixtures cover signal- and literal-valued
   tri-state polarity, open drain, precharge, bidirectional pull-up pads, supply
@@ -80,9 +83,16 @@ Last audited on 2026-07-12:
   67 relevant files, proves all 53 current successes preserve flat driver
   dependencies and source order, and keeps all 58 genuine repeated targets
   separate without combining mutually exclusive generate alternatives.
-- Milestone 7: partial. First-entry tuple selection and the corpus timing clamp
-  are enforced, but specify paths, resistance factors, complete alias handling,
-  and reviewed timing fixtures remain.
+- Milestone 7: complete. Timing aliases resolve deterministically without
+  dropping resistance sums, real factors, or outer multipliers; assignments and
+  primitives use exactly tuple entry zero, and every later entry is tracked as
+  an intentional ignore. Source-level writes without an explicit delay use the
+  first source-ordered specify path for their scalar target, with one strict-mode
+  warning for each used ambiguous target. Reviewed timing goldens include
+  explicit precedence, procedural state, ambiguity diagnostics, and the exact
+  reference `q_n`, `q`, and `d` assignments. The typed corpus audit accounts for
+  all 206 files, 266 specify paths, 611 source assignments, 372 preserved outer
+  resistance multiplications, 41 warnings, and zero M7 deferrals.
 - Milestone 8: pending apart from parser and analyzer scaffolding for generate
   nodes.
 - Milestone 9: pending apart from parser and analyzer scaffolding for ordinary

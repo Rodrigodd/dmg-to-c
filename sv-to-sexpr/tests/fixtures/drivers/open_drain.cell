@@ -11,7 +11,7 @@
     (t0 (and in1 in2) 0)
     (y
       (bufif1-strength 0 t0 highz1 strong0)
-      (elmore (wire L_y) (nmos 12))
+      (elmore (wire L_y) (* (nmos 12) 2))
     )
   )
 )

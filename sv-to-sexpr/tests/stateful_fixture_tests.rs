@@ -242,12 +242,6 @@ fn assert_state_topology(cell: &Cell, assignments: &[&Assignment], case: &Fixtur
             );
         };
         assert_eq!(false_value, &assignment.target);
-        assert_eq!(
-            assignment.delay,
-            Expr::atom("0"),
-            "state assignment {} acquired nonzero timing before M7",
-            assignment.target
-        );
     }
 }
 
@@ -293,6 +287,12 @@ fn assert_temporary_order(cell: &Cell, assignments: &[&Assignment], case: &Fixtu
             }
         }
         if temp_index(&assignment.target).is_some() && !source_names.contains(&assignment.target) {
+            assert_eq!(
+                assignment.delay,
+                Expr::atom("0"),
+                "generated SSA temporary {} acquired source timing",
+                assignment.target
+            );
             available.insert(assignment.target.clone());
         }
     }
@@ -330,8 +330,13 @@ fn assert_initial_contract(case: &FixtureCase, lowered: &sv_to_sexpr::ir::Lowere
             .map(|(target, _, _)| *target)
             .collect::<Vec<_>>()
     );
-    assert_eq!(lowered.diagnostics.len(), case.initials.len());
-    for (diagnostic, (target, line, column)) in lowered.diagnostics.iter().zip(case.initials.iter())
+    let initial_diagnostics = lowered
+        .diagnostics
+        .iter()
+        .filter(|diagnostic| diagnostic.message == INITIAL_OMISSION)
+        .collect::<Vec<_>>();
+    assert_eq!(initial_diagnostics.len(), case.initials.len());
+    for (diagnostic, (target, line, column)) in initial_diagnostics.iter().zip(case.initials.iter())
     {
         assert!(
             lowered
@@ -366,7 +371,11 @@ fn assert_case_semantics(case: &FixtureCase, assignments: &[&Assignment]) {
             assert_eq!(assignments.len(), 2);
             assert_eq!(
                 triplets[0],
-                ("q".into(), "(mux ena d q)".into(), "0".into())
+                (
+                    "q".into(),
+                    "(mux ena d q)".into(),
+                    "(+ (+ (elmore (wire 73) (pmos 10)) (elmore (wire 101) (nmos 10))) (elmore (wire L_q) (pmos 35)))".into(),
+                )
             );
             assert_eq!(assignments[1].target, "q_n");
             assert_eq!(render_expr(&assignments[1].expr), "(not q)");
@@ -377,7 +386,12 @@ fn assert_case_semantics(case: &FixtureCase, assignments: &[&Assignment]) {
                 ("t0".into(), "(not r_n)".into(), "0".into()),
                 ("t1".into(), "(or t0 s)".into(), "0".into()),
                 ("t2".into(), "(and s r_n)".into(), "0".into()),
-                ("q".into(), "(mux t1 t2 q)".into(), "0".into()),
+                (
+                    "q".into(),
+                    "(mux t1 t2 q)".into(),
+                    "(+ (elmore (wire 51) (* (nmos 16.5) 2)) (elmore (wire L_q) (pmos 11.0)))"
+                        .into(),
+                ),
             ]
         ),
         "nested_priority" => assert_eq!(

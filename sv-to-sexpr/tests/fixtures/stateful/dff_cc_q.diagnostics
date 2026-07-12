@@ -1,3 +1,4 @@
 diagnostics:
   intentional-ignore | sv-cells/sm83/cells/dff_cc_q.sv:14:2 | literal initial value/event is intentionally omitted because the cell model has no initial event queue
   intentional-ignore | sv-cells/sm83/cells/dff_cc_q.sv:15:2 | literal initial value/event is intentionally omitted because the cell model has no initial event queue
+  intentional-ignore | sv-cells/sm83/cells/dff_cc_q.sv:28:60 | delay tuple entry 2 is intentionally ignored because the cell model selects only entry 1

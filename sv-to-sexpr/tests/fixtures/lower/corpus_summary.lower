@@ -13,8 +13,8 @@ successful-cell-capabilities:
   atom_value_assignments=5
   temporary_assignments=999
   repeated_target_assignments=51
-  delayed_assignments=379
-  nested_timing_delay_assignments=379
+  delayed_assignments=565
+  nested_timing_delay_assignments=565
   cells_with_registers=21
   registers=38
 value-operators:
@@ -52,10 +52,10 @@ failure-categories:
   hierarchical-adder files=2
     sv-cells/dmg_cpu_b/cells/full_add.sv:13:2: unsupported item for lowering
     sv-cells/dmg_cpu_b/cells/half_add.sv:11:2: unsupported item for lowering
-  keeper-user files=4
+  keeper-user files=5
     sv-cells/dmg_cpu_b/cells/mux.sv:24:2: unsupported item for lowering
     sv-cells/dmg_cpu_b/cells/muxi.sv:24:2: unsupported item for lowering
+    sv-cells/dmg_cpu_b/cells/pad_xtal.sv:26:2: unsupported item for lowering
     sv-cells/sm83/cells/idu_bit0.sv:35:2: unsupported item for lowering
     sv-cells/sm83/cells/reg_wz_out.sv:54:2: unsupported item for lowering
-  unsupported-timing-factor files=1
-    sv-cells/dmg_cpu_b/cells/pad_xtal.sv:32:68: unsupported timing factor
+  unsupported-timing-factor files=0

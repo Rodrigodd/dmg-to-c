@@ -19,7 +19,7 @@ use sv_to_sexpr::parser::parse_file;
 use sv_to_sexpr::serialize::render_cell;
 use sv_to_sexpr::survey::collect_sv_files;
 
-const M7_FAILURES: &[&str] = &["sv-cells/dmg_cpu_b/cells/pad_xtal.sv"];
+const M7_FAILURES: &[&str] = &[];
 const M8_FAILURES: &[&str] = &[
     "sv-cells/dmg_cpu_b/cells/dffr.sv",
     "sv-cells/dmg_cpu_b/cells/dffr_cc.sv",
@@ -34,6 +34,7 @@ const M9_FAILURES: &[&str] = &[
 const M10_FAILURES: &[&str] = &[
     "sv-cells/dmg_cpu_b/cells/mux.sv",
     "sv-cells/dmg_cpu_b/cells/muxi.sv",
+    "sv-cells/dmg_cpu_b/cells/pad_xtal.sv",
     "sv-cells/sm83/cells/idu_bit0.sv",
     "sv-cells/sm83/cells/reg_wz_out.sv",
 ];

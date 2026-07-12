@@ -1,1 +1,3 @@
-diagnostics: []
+diagnostics:
+  intentional-ignore | sv-cells/sm83/cells/pch_dec2_a.sv:14:41 | delay tuple entry 2 is intentionally ignored because the cell model selects only entry 1
+  intentional-ignore | sv-cells/sm83/cells/pch_dec2_a.sv:14:50 | delay tuple entry 3 is intentionally ignored because the cell model selects only entry 1

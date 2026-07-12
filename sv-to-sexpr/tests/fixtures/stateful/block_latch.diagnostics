@@ -1,1 +1,7 @@
-diagnostics: []
+diagnostics:
+  intentional-ignore | sv-cells/dmg_cpu_b/cells/nand_latch.sv:24:29 | delay tuple entry 2 is intentionally ignored because the cell model selects only entry 1
+  warning | sv-cells/dmg_cpu_b/cells/nand_latch.sv:25:3 | multiple control-dependent specify paths target `q`; the one-delay cell DSL selects the first source-ordered path
+  intentional-ignore | sv-cells/dmg_cpu_b/cells/nand_latch.sv:25:42 | delay tuple entry 2 is intentionally ignored because the cell model selects only entry 1
+  intentional-ignore | sv-cells/dmg_cpu_b/cells/nand_latch.sv:26:42 | delay tuple entry 2 is intentionally ignored because the cell model selects only entry 1
+  warning | sv-cells/dmg_cpu_b/cells/nand_latch.sv:27:3 | multiple control-dependent specify paths target `q_n`; the one-delay cell DSL selects the first source-ordered path
+  intentional-ignore | sv-cells/dmg_cpu_b/cells/nand_latch.sv:27:31 | delay tuple entry 2 is intentionally ignored because the cell model selects only entry 1

@@ -1,0 +1,3 @@
+diagnostics:
+  intentional-ignore | sv-to-sexpr/tests/fixtures/timing/procedural_state.sv:5:5 | literal initial value/event is intentionally omitted because the cell model has no initial event queue
+  intentional-ignore | sv-to-sexpr/tests/fixtures/timing/procedural_state.sv:9:32 | delay tuple entry 2 is intentionally ignored because the cell model selects only entry 1

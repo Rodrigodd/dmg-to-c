@@ -11,6 +11,9 @@
     (t0 (not r_n) 0)
     (t1 (or t0 s) 0)
     (t2 (and s r_n) 0)
-    (q (mux t1 t2 q) 0)
+    (q
+      (mux t1 t2 q)
+      (+ (elmore (wire 51) (* (nmos 16.5) 2)) (elmore (wire L_q) (pmos 11.0)))
+    )
   )
 )

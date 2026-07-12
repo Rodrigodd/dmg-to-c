@@ -378,7 +378,7 @@ polarities, open drain, precharge, direct signal primitives, bidirectional
 pads, supply ties, and repeated bus drivers with all four contracted strength
 pairs. A scope-aware corpus audit identifies 67 relevant files: all 53 current
 successes preserve flat driver form, strength, and source order, while 14 files
-remain explicitly blocked on M7, M10, or M11 behavior.
+remain explicitly blocked on M10 or M11 behavior.
 
 Implement driver semantics independently from timing semantics.
 
@@ -416,6 +416,17 @@ Acceptance conditions:
   rather than discarding unverified fields.
 
 ### Milestone 7: First-Entry Timing and Specify Paths
+
+Status: complete as of 2026-07-12. Deterministic alias resolution preserves
+resistance sums, real device factors, and outer multipliers; every later tuple
+entry is a visible intentional ignore. Reviewed goldens cover explicit-delay
+precedence, single and ambiguous specify paths, procedural state timing, and the
+reference cell's exact `q_n`, `q`, and `d` assignments. A typed 206-file audit
+reconciles 393 explicit-delay, 186 specify-derived, and 32 zero-default source
+assignments, with 41 documented approximation warnings, 999 later-entry
+ignores, and 372 preserved emitted resistance multiplications. The corpus has
+no one-entry delay tuple, so that required case remains covered by its focused
+unit test while two- and three-entry forms are covered by corpus witnesses.
 
 Implement nested delay expressions using the DSL's first-entry-only policy.
 

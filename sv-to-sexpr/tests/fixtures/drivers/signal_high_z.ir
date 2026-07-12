@@ -12,4 +12,4 @@ assignments:
     delay: atom(0)
   2: y
     value: op(bufif0; atom(t1), atom(ena_n))
-    delay: atom(0)
+    delay: op(+; op(elmore; op(wire; atom(152)), op(*; op(nmos; atom(35)), atom(2))), op(elmore; op(wire; atom(L_y)), op(pmos; atom(70))))

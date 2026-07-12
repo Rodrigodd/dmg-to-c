@@ -1,0 +1,13 @@
+(cell
+  timing_ambiguous_paths
+  (inputs a b)
+
+  (outputs y)
+
+  (registers )
+
+  (assignments
+
+    (y (or a b) T_first)
+  )
+)

@@ -120,7 +120,7 @@ fn combinational_operator_family_goldens_are_flat_stable_and_contracted() {
         );
 
         let assignments = assignments(&first);
-        assert_flat_values_and_zero_delays(&assignments, case.source);
+        assert_flat_values_and_temporary_delays(&assignments, case);
         assert_source_and_dependency_order(&assignments, case);
 
         if let Some(expected) = case.direct_operator {
@@ -192,7 +192,9 @@ fn temp_index(name: &str) -> Option<usize> {
         .and_then(|digits| digits.parse().ok())
 }
 
-fn assert_flat_values_and_zero_delays(assignments: &[&Assignment], source: &str) {
+fn assert_flat_values_and_temporary_delays(assignments: &[&Assignment], case: &FixtureCase) {
+    let source = case.source;
+    let source_targets = case.source_targets.iter().copied().collect::<BTreeSet<_>>();
     for assignment in assignments {
         assignment
             .expr
@@ -210,12 +212,14 @@ fn assert_flat_values_and_zero_delays(assignments: &[&Assignment], source: &str)
             .delay
             .validate_timing(&format!("{source}:{} delay", assignment.target))
             .unwrap();
-        assert_eq!(
-            assignment.delay,
-            Expr::atom("0"),
-            "Milestone 4 fixture unexpectedly attached timing to {} in {source}",
-            assignment.target
-        );
+        if !source_targets.contains(assignment.target.as_str()) {
+            assert_eq!(
+                assignment.delay,
+                Expr::atom("0"),
+                "generated SSA timing leaked onto {} in {source}",
+                assignment.target
+            );
+        }
     }
 }
 

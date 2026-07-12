@@ -18,7 +18,7 @@ assignments:
     delay: atom(0)
   4: q
     value: op(mux; atom(t2), atom(t3), atom(q))
-    delay: atom(0)
+    delay: op(elmore; op(wire; atom(L_q)), op(pmos; atom(35)))
   5: t4
     value: op(not; atom(s_n))
     delay: atom(0)
@@ -33,4 +33,4 @@ assignments:
     delay: atom(0)
   9: q_n
     value: op(mux; atom(t6), atom(t7), atom(q_n))
-    delay: atom(0)
+    delay: op(+; op(elmore; op(wire; atom(L_q)), op(nmos; atom(35))), op(elmore; op(wire; atom(L_q_n)), op(pmos; atom(35))))

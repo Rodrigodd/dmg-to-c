@@ -1,0 +1,13 @@
+(cell
+  timing_single_path
+  (inputs a b)
+
+  (outputs y)
+
+  (registers )
+
+  (assignments
+
+    (y (and a b) T_single)
+  )
+)

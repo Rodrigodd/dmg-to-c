@@ -1,0 +1,14 @@
+(cell
+  timing_procedural_state
+  (inputs ena a b)
+
+  (outputs q)
+
+  (registers q)
+
+  (assignments
+
+    (t0 (and a b) 0)
+    (q (mux ena t0 q) T_state)
+  )
+)

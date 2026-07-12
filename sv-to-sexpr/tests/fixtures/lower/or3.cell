@@ -8,6 +8,9 @@
 
   (assignments
 
-    (y (or in1 in2 in3) 0)
+    (y
+      (or in1 in2 in3)
+      (+ (elmore (wire 51) (nmos 3)) (elmore (wire L_y) (pmos 5)))
+    )
   )
 )

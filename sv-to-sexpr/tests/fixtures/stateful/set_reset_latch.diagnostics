@@ -1,1 +1,2 @@
-diagnostics: []
+diagnostics:
+  intentional-ignore | sv-cells/sm83/cells/srlatch_r_n.sv:20:42 | delay tuple entry 2 is intentionally ignored because the cell model selects only entry 1

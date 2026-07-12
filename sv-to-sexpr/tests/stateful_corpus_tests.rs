@@ -356,6 +356,8 @@ struct AuditTotals {
     retained_muxes: usize,
     direct_state_assignments: usize,
     successful_initial_omissions: usize,
+    successful_delay_tuple_omissions: usize,
+    successful_specify_warnings: usize,
     combinational_procedural_nonregisters: usize,
     invalid_cells: usize,
     nested_state_values: usize,
@@ -364,6 +366,7 @@ struct AuditTotals {
     wrong_retention_operands: usize,
     nonzero_state_delays: usize,
     initial_diagnostic_mismatches: usize,
+    delay_diagnostic_mismatches: usize,
     temp_dependency_or_collision_failures: usize,
     combinational_procedural_register_leaks: usize,
     nondeterministic_results: usize,
@@ -762,12 +765,17 @@ fn audit_success(
     }
 
     let initial_items = collect_initial_items(source_items);
-    if initial_items.len() != lowered.diagnostics.len()
+    let initial_diagnostics = lowered
+        .diagnostics
+        .iter()
+        .filter(|diagnostic| diagnostic.message == INITIAL_OMISSION)
+        .collect::<Vec<_>>();
+    if initial_items.len() != initial_diagnostics.len()
         || initial_items.len() != recursive.initial_assignments
     {
         totals.initial_diagnostic_mismatches += 1;
     }
-    for ((span, target), diagnostic) in initial_items.iter().zip(&lowered.diagnostics) {
+    for ((span, target), diagnostic) in initial_items.iter().zip(initial_diagnostics.iter()) {
         if diagnostic.kind != DiagnosticKind::IntentionalIgnore
             || diagnostic.span != *span
             || diagnostic.message != INITIAL_OMISSION
@@ -777,7 +785,39 @@ fn audit_success(
             totals.initial_diagnostic_mismatches += 1;
         }
     }
-    totals.successful_initial_omissions += lowered.diagnostics.len();
+    totals.successful_initial_omissions += initial_diagnostics.len();
+
+    let expected_delay_ignores = count_later_timing_entries(source_items);
+    let delay_diagnostics = lowered
+        .diagnostics
+        .iter()
+        .filter(|diagnostic| diagnostic.message.starts_with("delay tuple entry "))
+        .collect::<Vec<_>>();
+    if delay_diagnostics.len() != expected_delay_ignores
+        || delay_diagnostics.iter().any(|diagnostic| {
+            diagnostic.kind != DiagnosticKind::IntentionalIgnore
+                || DiagnosticPolicy::new(true).is_failure(diagnostic)
+        })
+    {
+        totals.delay_diagnostic_mismatches += 1;
+    }
+    totals.successful_delay_tuple_omissions += delay_diagnostics.len();
+    let warnings = lowered
+        .diagnostics
+        .iter()
+        .filter(|diagnostic| diagnostic.kind == DiagnosticKind::Warning)
+        .collect::<Vec<_>>();
+    if warnings.iter().any(|diagnostic| {
+        !diagnostic
+            .message
+            .starts_with("multiple control-dependent specify paths target `")
+            || !DiagnosticPolicy::new(true).is_failure(diagnostic)
+    }) || initial_diagnostics.len() + delay_diagnostics.len() + warnings.len()
+        != lowered.diagnostics.len()
+    {
+        totals.delay_diagnostic_mismatches += 1;
+    }
+    totals.successful_specify_warnings += warnings.len();
 
     let serialized = render_cell(&lowered.cell);
     if serialized.contains(absolute_root)
@@ -793,8 +833,55 @@ fn audit_success(
         path: path.to_string(),
         registers: lowered.cell.registers.clone(),
         state_targets: emitted_targets.into_iter().map(str::to_string).collect(),
-        initial_ignores: lowered.diagnostics.len(),
+        initial_ignores: initial_diagnostics.len(),
     }
+}
+
+fn count_later_timing_entries(items: &[Item]) -> usize {
+    items
+        .iter()
+        .map(|item| match &item.kind {
+            ItemKind::Assign(assign) => assign
+                .delay
+                .as_ref()
+                .map(|delay| delay.values.len().saturating_sub(1))
+                .unwrap_or(0),
+            ItemKind::Primitive(call) => call
+                .delay
+                .as_ref()
+                .map(|delay| delay.values.len().saturating_sub(1))
+                .unwrap_or(0),
+            ItemKind::Generate(block) | ItemKind::Block(block) => {
+                count_later_timing_entries(&block.items)
+            }
+            ItemKind::If(if_stmt) => {
+                count_later_timing_entries(std::slice::from_ref(&if_stmt.then_branch))
+                    + if_stmt
+                        .else_branch
+                        .as_ref()
+                        .map(|item| count_later_timing_entries(std::slice::from_ref(item)))
+                        .unwrap_or(0)
+            }
+            ItemKind::Specify(specify) => specify
+                .items
+                .iter()
+                .map(|item| match item {
+                    sv_to_sexpr::ast::SpecifyItem::Path(path) => {
+                        path.delays.len().saturating_sub(1)
+                    }
+                    sv_to_sexpr::ast::SpecifyItem::Specparam(_) => 0,
+                })
+                .sum(),
+            ItemKind::Import(_)
+            | ItemKind::Decl(_)
+            | ItemKind::Initial(_)
+            | ItemKind::ProcAssign(_)
+            | ItemKind::AlwaysLatch(_)
+            | ItemKind::Always(_)
+            | ItemKind::Instantiation(_)
+            | ItemKind::Empty => 0,
+        })
+        .sum()
 }
 
 fn assignments(cell: &Cell) -> Vec<&Assignment> {
@@ -1075,6 +1162,9 @@ fn assert_zero_invariant_failures(totals: &AuditTotals) {
     assert_eq!(totals.retained_muxes, 38);
     assert_eq!(totals.direct_state_assignments, 0);
     assert_eq!(totals.successful_initial_omissions, 32);
+    assert_eq!(totals.successful_delay_tuple_omissions, 49);
+    assert_eq!(totals.successful_specify_warnings, 8);
+    assert_eq!(totals.nonzero_state_delays, 22);
     assert_eq!(totals.combinational_procedural_nonregisters, 13);
     for (name, value) in invariant_failures(totals) {
         assert_eq!(value, 0, "stateful invariant failed: {name}");
@@ -1091,10 +1181,13 @@ fn invariant_failures(totals: &AuditTotals) -> [(&'static str, usize); 11] {
             totals.state_target_order_mismatches,
         ),
         ("wrong_retention_operands", totals.wrong_retention_operands),
-        ("nonzero_state_delays", totals.nonzero_state_delays),
         (
             "initial_diagnostic_mismatches",
             totals.initial_diagnostic_mismatches,
+        ),
+        (
+            "delay_diagnostic_mismatches",
+            totals.delay_diagnostic_mismatches,
         ),
         (
             "temp_dependency_or_collision_failures",
@@ -1158,6 +1251,12 @@ fn render_summary(
             "initial-intentional-ignores",
             totals.successful_initial_omissions,
         ),
+        (
+            "delay-tuple-intentional-ignores",
+            totals.successful_delay_tuple_omissions,
+        ),
+        ("specify-warnings", totals.successful_specify_warnings),
+        ("modeled-state-delays", totals.nonzero_state_delays),
     ] {
         writeln!(&mut output, "  {name}={value}").unwrap();
     }

@@ -10,6 +10,9 @@
 
     (t0 (not in) 0)
     (t1 (not t0) 0)
-    (y (bufif0 t1 ena_n) 0)
+    (y
+      (bufif0 t1 ena_n)
+      (+ (elmore (wire 152) (* (nmos 35) 2)) (elmore (wire L_y) (pmos 70)))
+    )
   )
 )

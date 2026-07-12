@@ -131,7 +131,7 @@ assignments:
     delay: atom(0)
   42: cout0
     value: op(mux; atom(t32), atom(t33), atom(x))
-    delay: atom(0)
+    delay: op(+; op(elmore; op(wire; atom(70)), op(*; op(nmos; atom(11)), atom(2))), op(elmore; op(wire; atom(L_cout0)), op(pmos; atom(11))))
   43: t34
     value: op(caseeq; atom(cout1_n_p), atom(cout1_n_n))
     delay: atom(0)
@@ -140,7 +140,7 @@ assignments:
     delay: atom(0)
   45: cout1
     value: op(mux; atom(t34), atom(t35), atom(x))
-    delay: atom(0)
+    delay: op(+; op(elmore; op(wire; atom(94)), op(*; op(nmos; atom(11)), atom(3))), op(elmore; op(wire; atom(L_cout1)), op(pmos; atom(11))))
   46: t36
     value: op(caseeq; atom(cout2_n_p), atom(cout2_n_n))
     delay: atom(0)
@@ -149,7 +149,7 @@ assignments:
     delay: atom(0)
   48: cout2
     value: op(mux; atom(t36), atom(t37), atom(x))
-    delay: atom(0)
+    delay: op(+; op(elmore; op(wire; atom(122)), op(*; op(nmos; atom(11)), atom(4))), op(elmore; op(wire; atom(L_cout2)), op(pmos; atom(11))))
   49: t38
     value: op(caseeq; atom(cout3_n_p), atom(cout3_n_n))
     delay: atom(0)
@@ -158,4 +158,4 @@ assignments:
     delay: atom(0)
   51: cout3
     value: op(mux; atom(t38), atom(t39), atom(x))
-    delay: atom(0)
+    delay: op(+; op(elmore; op(wire; atom(152)), op(*; op(nmos; atom(11)), atom(5))), op(elmore; op(wire; atom(L_cout3)), op(pmos; atom(23))))

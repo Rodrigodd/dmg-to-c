@@ -8,6 +8,6 @@
 
   (assignments
 
-    (y (not in) 0)
+    (y (not in) (elmore (wire L_y) (pmos 3)))
   )
 )

@@ -1,2 +1,8 @@
 diagnostics:
   intentional-ignore | sv-cells/dmg_cpu_b/cells/dlatch.sv:13:2 | literal initial value/event is intentionally omitted because the cell model has no initial event queue
+  intentional-ignore | sv-cells/dmg_cpu_b/cells/dlatch.sv:34:56 | delay tuple entry 2 is intentionally ignored because the cell model selects only entry 1
+  warning | sv-cells/dmg_cpu_b/cells/dlatch.sv:35:3 | multiple control-dependent specify paths target `q`; the one-delay cell DSL selects the first source-ordered path
+  intentional-ignore | sv-cells/dmg_cpu_b/cells/dlatch.sv:36:19 | delay tuple entry 2 is intentionally ignored because the cell model selects only entry 1
+  intentional-ignore | sv-cells/dmg_cpu_b/cells/dlatch.sv:38:19 | delay tuple entry 2 is intentionally ignored because the cell model selects only entry 1
+  warning | sv-cells/dmg_cpu_b/cells/dlatch.sv:39:3 | multiple control-dependent specify paths target `q_n`; the one-delay cell DSL selects the first source-ordered path
+  intentional-ignore | sv-cells/dmg_cpu_b/cells/dlatch.sv:40:19 | delay tuple entry 2 is intentionally ignored because the cell model selects only entry 1

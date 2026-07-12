@@ -6,7 +6,7 @@ registers: [q]
 assignments:
   0: q
     value: op(mux; atom(ena), atom(d), atom(q))
-    delay: atom(0)
+    delay: op(+; op(+; op(elmore; op(wire; atom(73)), op(pmos; atom(10))), op(elmore; op(wire; atom(101)), op(nmos; atom(10)))), op(elmore; op(wire; atom(L_q)), op(pmos; atom(35))))
   1: q_n
     value: op(not; atom(q))
-    delay: atom(0)
+    delay: op(+; op(+; op(+; op(elmore; op(wire; atom(73)), op(nmos; atom(10))), op(elmore; op(wire; atom(101)), op(pmos; atom(10)))), op(elmore; op(wire; atom(127)), op(nmos; atom(10)))), op(elmore; op(wire; atom(L_q_n)), op(pmos; atom(35))))
