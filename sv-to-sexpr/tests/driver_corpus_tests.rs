@@ -22,15 +22,9 @@ use sv_to_sexpr::serialize::render_cell;
 use sv_to_sexpr::survey::collect_sv_files;
 
 const M7_FAILURES: &[&str] = &[];
-const M10_FAILURES: &[&str] = &[
-    "sv-cells/dmg_cpu_b/cells/mux.sv",
-    "sv-cells/dmg_cpu_b/cells/muxi.sv",
-    "sv-cells/dmg_cpu_b/cells/pad_xtal.sv",
-    "sv-cells/sm83/cells/idu_bit0.sv",
-    "sv-cells/sm83/cells/reg_wz_out.sv",
-];
 const M11_FAILURES: &[&str] = &[
     "sv-cells/sm83/cells/dlatch_ee_irq.sv",
+    "sv-cells/sm83/cells/idu_bit0.sv",
     "sv-cells/sm83/cells/idu_bit123456.sv",
     "sv-cells/sm83/cells/irq_prio_bit0.sv",
     "sv-cells/sm83/cells/irq_prio_bit1.sv",
@@ -43,6 +37,8 @@ const M11_FAILURES: &[&str] = &[
 
 const EXPECTED_RELEVANT_SUCCESSES: &[&str] = &[
     "sv-cells/dmg_cpu_b/cells/buf_if0.sv",
+    "sv-cells/dmg_cpu_b/cells/mux.sv",
+    "sv-cells/dmg_cpu_b/cells/muxi.sv",
     "sv-cells/dmg_cpu_b/cells/not_if0.sv",
     "sv-cells/dmg_cpu_b/cells/not_if1.sv",
     "sv-cells/dmg_cpu_b/cells/pad_bidir.sv",
@@ -50,6 +46,7 @@ const EXPECTED_RELEVANT_SUCCESSES: &[&str] = &[
     "sv-cells/dmg_cpu_b/cells/pad_bidir_pu_latch.sv",
     "sv-cells/dmg_cpu_b/cells/pad_in_pu.sv",
     "sv-cells/dmg_cpu_b/cells/pad_out_diff.sv",
+    "sv-cells/dmg_cpu_b/cells/pad_xtal.sv",
     "sv-cells/dmg_cpu_b/cells/tie.sv",
     "sv-cells/sm83/cells/alu_decoder.sv",
     "sv-cells/sm83/cells/alu_pggen.sv",
@@ -94,13 +91,11 @@ const EXPECTED_RELEVANT_SUCCESSES: &[&str] = &[
     "sv-cells/sm83/cells/reg_pc_out_bit345.sv",
     "sv-cells/sm83/cells/reg_pc_out_bit67.sv",
     "sv-cells/sm83/cells/reg_sp_out.sv",
+    "sv-cells/sm83/cells/reg_wz_out.sv",
     "sv-cells/sm83/cells/tie.sv",
 ];
 
 const EXPECTED_RELEVANT_DEFERRALS: &[&str] = &[
-    "sv-cells/dmg_cpu_b/cells/mux.sv",
-    "sv-cells/dmg_cpu_b/cells/muxi.sv",
-    "sv-cells/dmg_cpu_b/cells/pad_xtal.sv",
     "sv-cells/sm83/cells/dlatch_ee_irq.sv",
     "sv-cells/sm83/cells/idu_bit0.sv",
     "sv-cells/sm83/cells/idu_bit123456.sv",
@@ -111,12 +106,11 @@ const EXPECTED_RELEVANT_DEFERRALS: &[&str] = &[
     "sv-cells/sm83/cells/irq_prio_bit4.sv",
     "sv-cells/sm83/cells/irq_prio_bit5.sv",
     "sv-cells/sm83/cells/irq_prio_bit6.sv",
-    "sv-cells/sm83/cells/reg_wz_out.sv",
 ];
 
 const EXPECTED_REPEATED_TARGETS: &[(&str, &str, usize, Option<usize>)] = &[
-    ("sv-cells/dmg_cpu_b/cells/mux.sv", "mux", 4, None),
-    ("sv-cells/dmg_cpu_b/cells/muxi.sv", "mux", 4, None),
+    ("sv-cells/dmg_cpu_b/cells/mux.sv", "mux", 5, Some(5)),
+    ("sv-cells/dmg_cpu_b/cells/muxi.sv", "mux", 5, Some(5)),
     ("sv-cells/dmg_cpu_b/cells/pad_bidir.sv", "pad", 2, Some(2)),
     (
         "sv-cells/dmg_cpu_b/cells/pad_bidir_pu.sv",
@@ -136,7 +130,7 @@ const EXPECTED_REPEATED_TARGETS: &[(&str, &str, usize, Option<usize>)] = &[
         2,
         Some(2),
     ),
-    ("sv-cells/dmg_cpu_b/cells/pad_xtal.sv", "clk", 3, None),
+    ("sv-cells/dmg_cpu_b/cells/pad_xtal.sv", "clk", 4, Some(4)),
     ("sv-cells/sm83/cells/b2b_wand_inj_a.sv", "a", 3, Some(3)),
     ("sv-cells/sm83/cells/b2b_wand_inj_a.sv", "b", 2, Some(2)),
     ("sv-cells/sm83/cells/decoder2.sv", "y1", 2, Some(2)),
@@ -164,8 +158,8 @@ const EXPECTED_REPEATED_TARGETS: &[(&str, &str, usize, Option<usize>)] = &[
     ("sv-cells/sm83/cells/decoder2.sv", "y7", 2, Some(2)),
     ("sv-cells/sm83/cells/decoder2.sv", "y8", 2, Some(2)),
     ("sv-cells/sm83/cells/decoder2.sv", "y9", 2, Some(2)),
-    ("sv-cells/sm83/cells/dlatch_ee_irq.sv", "gated_q", 2, None),
-    ("sv-cells/sm83/cells/idu_bit0.sv", "aoi_y", 3, None),
+    ("sv-cells/sm83/cells/dlatch_ee_irq.sv", "gated_q", 3, None),
+    ("sv-cells/sm83/cells/idu_bit0.sv", "aoi_y", 4, None),
     ("sv-cells/sm83/cells/idu_bit0.sv", "buf_a_y", 2, None),
     ("sv-cells/sm83/cells/idu_bit0.sv", "buf_b_y", 2, None),
     ("sv-cells/sm83/cells/idu_bit123456.sv", "buf_a_y", 2, None),
@@ -211,8 +205,8 @@ const EXPECTED_REPEATED_TARGETS: &[(&str, &str, usize, Option<usize>)] = &[
     ("sv-cells/sm83/cells/reg_pc_out_bit345.sv", "y5", 2, Some(2)),
     ("sv-cells/sm83/cells/reg_pc_out_bit67.sv", "y4", 2, Some(2)),
     ("sv-cells/sm83/cells/reg_pc_out_bit67.sv", "y5", 2, Some(2)),
-    ("sv-cells/sm83/cells/reg_wz_out.sv", "aoi_a_y", 2, None),
-    ("sv-cells/sm83/cells/reg_wz_out.sv", "aoi_b_y", 2, None),
+    ("sv-cells/sm83/cells/reg_wz_out.sv", "aoi_a_y", 3, Some(3)),
+    ("sv-cells/sm83/cells/reg_wz_out.sv", "aoi_b_y", 2, Some(2)),
 ];
 
 #[derive(Debug, Clone)]
@@ -349,6 +343,9 @@ struct Audit {
     repeated_entries: Vec<RepeatedEntry>,
     source_pair_counts: BTreeMap<String, usize>,
     emitted_forms: EmittedForms,
+    source_keepers: usize,
+    emitted_keepers: usize,
+    deferred_keepers: usize,
     invariants: Invariants,
 }
 
@@ -390,12 +387,12 @@ fn structural_m6_relevance_and_disposition_sets_are_exact() {
         }
     }
 
-    assert_eq!(global_successes, 185);
-    assert_eq!(global_failures, 21);
+    assert_eq!(global_successes, 189);
+    assert_eq!(global_failures, 17);
     assert_eq!(successes, EXPECTED_RELEVANT_SUCCESSES);
     assert_eq!(failures, EXPECTED_RELEVANT_DEFERRALS);
-    assert_eq!(successes.len(), 53);
-    assert_eq!(failures.len(), 14);
+    assert_eq!(successes.len(), 57);
+    assert_eq!(failures.len(), 10);
     assert_eq!(successes.len() + failures.len(), 67);
 }
 
@@ -465,6 +462,12 @@ fn complete_driver_corpus_is_accounted_flat_and_source_ordered() {
                 .unwrap();
         let module = &analysis.modules[0];
         let inventory = source_inventory(module);
+        let source_keepers = inventory
+            .drivers
+            .iter()
+            .filter(|driver| matches!(driver.source, DriverSource::Keeper { .. }))
+            .count();
+        audit.source_keepers += source_keepers;
         let repeated = repeated_targets(&inventory);
         let relevant = inventory.contains_z_continuous > 0
             || inventory.continuous_strength > 0
@@ -495,6 +498,18 @@ fn complete_driver_corpus_is_accounted_flat_and_source_ordered() {
                     audit.invariants.absolute_path_leaks += 1;
                 }
                 audit_success_cell(&first.cell, &inventory, &mut audit.invariants);
+                let emitted_keepers = assignments(&first.cell)
+                    .iter()
+                    .filter(|assignment| {
+                        matches!(
+                            operation(&assignment.expr),
+                            Some((ValueOperator::Keeper, []))
+                        )
+                    })
+                    .inspect(|assignment| assert_eq!(assignment.delay, Expr::atom("0"), "{path}"))
+                    .count();
+                assert_eq!(emitted_keepers, source_keepers, "{path}");
+                audit.emitted_keepers += emitted_keepers;
                 if relevant {
                     let emitted = audit_relevant_success(
                         path,
@@ -530,6 +545,7 @@ fn complete_driver_corpus_is_accounted_flat_and_source_ordered() {
             }
             (Err(first), Err(second)) => {
                 audit.failed += 1;
+                audit.deferred_keepers += source_keepers;
                 if first != second {
                     audit.invariants.nondeterministic_results += 1;
                 }
@@ -1010,7 +1026,9 @@ fn audit_relevant_success(
         if sources.iter().all(|source| {
             matches!(
                 source,
-                DriverSource::Continuous | DriverSource::Primitive { .. }
+                DriverSource::Continuous
+                    | DriverSource::Primitive { .. }
+                    | DriverSource::Keeper { .. }
             )
         }) && registers.contains(target)
         {
@@ -1366,11 +1384,7 @@ fn pair_label(pair: StrengthPair) -> String {
 }
 
 fn later_blocker(path: &str) -> (&'static str, &'static str) {
-    let matches = [
-        M7_FAILURES.contains(&path),
-        M10_FAILURES.contains(&path),
-        M11_FAILURES.contains(&path),
-    ];
+    let matches = [M7_FAILURES.contains(&path), M11_FAILURES.contains(&path)];
     assert_eq!(
         matches.into_iter().filter(|matched| *matched).count(),
         1,
@@ -1380,11 +1394,6 @@ fn later_blocker(path: &str) -> (&'static str, &'static str) {
         (
             "M7",
             "M7 timing-factor lowering remains; M6 bufif polarity and strength are structurally inventoried",
-        )
-    } else if M10_FAILURES.contains(&path) {
-        (
-            "M10",
-            "M10 keeper lowering remains after M6 bufif/strength/repeated drivers were structurally inventoried",
         )
     } else if M11_FAILURES.contains(&path) {
         (
@@ -1398,10 +1407,13 @@ fn later_blocker(path: &str) -> (&'static str, &'static str) {
 
 fn assert_exact_audit(audit: &Audit) {
     assert_eq!(audit.processed, 206);
-    assert_eq!(audit.succeeded, 192);
-    assert_eq!(audit.failed, 14);
-    assert_eq!(audit.relevant_successes.len(), 53);
-    assert_eq!(audit.relevant_deferrals.len(), 14);
+    assert_eq!(audit.succeeded, 196);
+    assert_eq!(audit.failed, 10);
+    assert_eq!(audit.relevant_successes.len(), 57);
+    assert_eq!(audit.relevant_deferrals.len(), 10);
+    assert_eq!(audit.source_keepers, 6);
+    assert_eq!(audit.emitted_keepers, 4);
+    assert_eq!(audit.deferred_keepers, 2);
     assert_eq!(
         audit
             .relevant_successes
@@ -1486,8 +1498,8 @@ fn assert_exact_audit(audit: &Audit) {
     assert_eq!(audit.emitted_forms.bufif0, 2);
     assert_eq!(audit.emitted_forms.bufif1, 10);
     assert_eq!(audit.emitted_forms.drive_strength, 5);
-    assert_eq!(audit.emitted_forms.bufif0_strength, 74);
-    assert_eq!(audit.emitted_forms.bufif1_strength, 293);
+    assert_eq!(audit.emitted_forms.bufif0_strength, 82);
+    assert_eq!(audit.emitted_forms.bufif1_strength, 303);
 
     assert_eq!(audit.repeated_entries.len(), 58);
     assert_eq!(
@@ -1505,7 +1517,7 @@ fn assert_exact_audit(audit: &Audit) {
             .iter()
             .map(|entry| entry.source_occurrences)
             .sum::<usize>(),
-        129
+        135
     );
     assert_eq!(
         audit
@@ -1513,7 +1525,7 @@ fn assert_exact_audit(audit: &Audit) {
             .iter()
             .filter_map(|entry| entry.emitted_occurrences)
             .sum::<usize>(),
-        95
+        114
     );
     assert_eq!(
         audit
@@ -1522,7 +1534,7 @@ fn assert_exact_audit(audit: &Audit) {
             .filter(|entry| entry.emitted_occurrences.is_none())
             .map(|entry| entry.source_occurrences)
             .sum::<usize>(),
-        34
+        21
     );
     assert!(
         audit
@@ -1547,12 +1559,7 @@ fn assert_exact_audit(audit: &Audit) {
         EXPECTED_REPEATED_TARGETS
     );
 
-    for (category, expected) in [
-        ("M7", M7_FAILURES),
-        ("M9", &[][..]),
-        ("M10", M10_FAILURES),
-        ("M11", M11_FAILURES),
-    ] {
+    for (category, expected) in [("M7", M7_FAILURES), ("M9", &[][..]), ("M11", M11_FAILURES)] {
         assert_eq!(
             audit
                 .relevant_deferrals
@@ -1682,6 +1689,12 @@ fn render_summary(audit: &Audit) -> String {
         &mut output,
         "global-lowering: succeeded={} failed={}",
         audit.succeeded, audit.failed
+    )
+    .unwrap();
+    writeln!(
+        &mut output,
+        "keeper-drivers: source={} emitted={} deferred={}",
+        audit.source_keepers, audit.emitted_keepers, audit.deferred_keepers
     )
     .unwrap();
     writeln!(&mut output, "source-forms:").unwrap();

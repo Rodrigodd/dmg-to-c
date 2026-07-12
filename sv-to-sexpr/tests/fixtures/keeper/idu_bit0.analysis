@@ -1,0 +1,159 @@
+analyze summary: modules=1 disposition=deferred requirements=8
+module sm83_idu_bit0 @sv-cells/sm83/cells/idu_bit0.sv:3:1
+  inputs: pch_n aoi_buf_ena aoi_in1 aoi_in2 aoi_in3 zero_ena or_in1 or_in2 buf_a_in buf_b_in buf_ena_n
+  outputs: aoi_buf_y zero_y buf_a_y buf_b_y aoi_y_n or_y buf_ena
+  registers: <none>
+  symbols:
+    L_aoi_buf_y category=parameter @sv-cells/sm83/cells/idu_bit0.sv:4:3
+    L_aoi_y_n category=parameter @sv-cells/sm83/cells/idu_bit0.sv:5:3
+    L_buf_a_y category=parameter @sv-cells/sm83/cells/idu_bit0.sv:8:3
+    L_buf_b_y category=parameter @sv-cells/sm83/cells/idu_bit0.sv:9:3
+    L_buf_ena category=parameter @sv-cells/sm83/cells/idu_bit0.sv:10:3
+    L_or_y category=parameter @sv-cells/sm83/cells/idu_bit0.sv:7:3
+    L_zero_y category=parameter @sv-cells/sm83/cells/idu_bit0.sv:6:3
+    T_Z_aoi_buf_y category=localparam @sv-cells/sm83/cells/idu_bit0.sv:31:2
+    T_Z_aoi_y category=localparam @sv-cells/sm83/cells/idu_bit0.sv:30:2
+    T_Z_buf_a_y category=localparam @sv-cells/sm83/cells/idu_bit0.sv:52:2
+    T_Z_buf_b_y category=localparam @sv-cells/sm83/cells/idu_bit0.sv:62:2
+    T_Z_zero_y category=localparam @sv-cells/sm83/cells/idu_bit0.sv:41:2
+    T_fall_aoi_buf_y category=localparam @sv-cells/sm83/cells/idu_bit0.sv:27:2
+    T_fall_aoi_y category=localparam @sv-cells/sm83/cells/idu_bit0.sv:25:2
+    T_fall_aoi_y_in3 category=localparam @sv-cells/sm83/cells/idu_bit0.sv:26:2
+    T_fall_aoi_y_n category=localparam @sv-cells/sm83/cells/idu_bit0.sv:29:2
+    T_fall_buf_a_y category=localparam @sv-cells/sm83/cells/idu_bit0.sv:51:2
+    T_fall_buf_a_y_n category=localparam @sv-cells/sm83/cells/idu_bit0.sv:49:2
+    T_fall_buf_b_y category=localparam @sv-cells/sm83/cells/idu_bit0.sv:61:2
+    T_fall_buf_b_y_n category=localparam @sv-cells/sm83/cells/idu_bit0.sv:59:2
+    T_fall_buf_ena category=localparam @sv-cells/sm83/cells/idu_bit0.sv:45:2
+    T_fall_nor category=specparam @sv-cells/sm83/cells/idu_bit0.sv:70:3
+    T_fall_or_y category=specparam @sv-cells/sm83/cells/idu_bit0.sv:72:3
+    T_fall_zero_y category=localparam @sv-cells/sm83/cells/idu_bit0.sv:40:2
+    T_rise_aoi_y category=localparam @sv-cells/sm83/cells/idu_bit0.sv:24:2
+    T_rise_aoi_y_n category=localparam @sv-cells/sm83/cells/idu_bit0.sv:28:2
+    T_rise_buf_a_y category=localparam @sv-cells/sm83/cells/idu_bit0.sv:50:2
+    T_rise_buf_a_y_n category=localparam @sv-cells/sm83/cells/idu_bit0.sv:48:2
+    T_rise_buf_b_y category=localparam @sv-cells/sm83/cells/idu_bit0.sv:60:2
+    T_rise_buf_b_y_n category=localparam @sv-cells/sm83/cells/idu_bit0.sv:58:2
+    T_rise_buf_ena category=localparam @sv-cells/sm83/cells/idu_bit0.sv:44:2
+    T_rise_nor category=specparam @sv-cells/sm83/cells/idu_bit0.sv:69:3
+    T_rise_or_y category=specparam @sv-cells/sm83/cells/idu_bit0.sv:71:3
+    aoi_buf_ena category=port @sv-cells/sm83/cells/idu_bit0.sv:12:3
+    aoi_buf_y category=port @sv-cells/sm83/cells/idu_bit0.sv:14:3
+    aoi_in1 category=port @sv-cells/sm83/cells/idu_bit0.sv:12:3
+    aoi_in2 category=port @sv-cells/sm83/cells/idu_bit0.sv:12:3
+    aoi_in3 category=port @sv-cells/sm83/cells/idu_bit0.sv:12:3
+    aoi_y category=declaration @sv-cells/sm83/cells/idu_bit0.sv:22:2
+    aoi_y_n category=port @sv-cells/sm83/cells/idu_bit0.sv:15:3
+    buf_a_in category=port @sv-cells/sm83/cells/idu_bit0.sv:12:3
+    buf_a_y category=port @sv-cells/sm83/cells/idu_bit0.sv:14:3
+    buf_b_in category=port @sv-cells/sm83/cells/idu_bit0.sv:12:3
+    buf_b_y category=port @sv-cells/sm83/cells/idu_bit0.sv:14:3
+    buf_ena category=port @sv-cells/sm83/cells/idu_bit0.sv:15:3
+    buf_ena_n category=port @sv-cells/sm83/cells/idu_bit0.sv:12:3
+    or_in1 category=port @sv-cells/sm83/cells/idu_bit0.sv:12:3
+    or_in2 category=port @sv-cells/sm83/cells/idu_bit0.sv:12:3
+    or_y category=port @sv-cells/sm83/cells/idu_bit0.sv:15:3
+    pch_n category=port @sv-cells/sm83/cells/idu_bit0.sv:12:3
+    zero_ena category=port @sv-cells/sm83/cells/idu_bit0.sv:12:3
+    zero_y category=port @sv-cells/sm83/cells/idu_bit0.sv:14:3
+  ports:
+    aoi_buf_ena direction=input use=input modifiers=[logic] @sv-cells/sm83/cells/idu_bit0.sv:12:3
+    aoi_buf_y direction=output use=output modifiers=[tri,logic] @sv-cells/sm83/cells/idu_bit0.sv:14:3
+    aoi_in1 direction=input use=input modifiers=[logic] @sv-cells/sm83/cells/idu_bit0.sv:12:3
+    aoi_in2 direction=input use=input modifiers=[logic] @sv-cells/sm83/cells/idu_bit0.sv:12:3
+    aoi_in3 direction=input use=input modifiers=[logic] @sv-cells/sm83/cells/idu_bit0.sv:12:3
+    aoi_y_n direction=output use=output modifiers=[logic] @sv-cells/sm83/cells/idu_bit0.sv:15:3
+    buf_a_in direction=input use=input modifiers=[logic] @sv-cells/sm83/cells/idu_bit0.sv:12:3
+    buf_a_y direction=output use=output modifiers=[tri,logic] @sv-cells/sm83/cells/idu_bit0.sv:14:3
+    buf_b_in direction=input use=input modifiers=[logic] @sv-cells/sm83/cells/idu_bit0.sv:12:3
+    buf_b_y direction=output use=output modifiers=[tri,logic] @sv-cells/sm83/cells/idu_bit0.sv:14:3
+    buf_ena direction=output use=output modifiers=[logic] @sv-cells/sm83/cells/idu_bit0.sv:15:3
+    buf_ena_n direction=input use=input modifiers=[logic] @sv-cells/sm83/cells/idu_bit0.sv:12:3
+    or_in1 direction=input use=input modifiers=[logic] @sv-cells/sm83/cells/idu_bit0.sv:12:3
+    or_in2 direction=input use=input modifiers=[logic] @sv-cells/sm83/cells/idu_bit0.sv:12:3
+    or_y direction=output use=output modifiers=[logic] @sv-cells/sm83/cells/idu_bit0.sv:15:3
+    pch_n direction=input use=input modifiers=[logic] @sv-cells/sm83/cells/idu_bit0.sv:12:3
+    zero_ena direction=input use=input modifiers=[logic] @sv-cells/sm83/cells/idu_bit0.sv:12:3
+    zero_y direction=output use=output modifiers=[tri,logic] @sv-cells/sm83/cells/idu_bit0.sv:14:3
+  declarations:
+    aoi_y kind=Tri type=logic value=<none> @sv-cells/sm83/cells/idu_bit0.sv:22:2
+  signal_roles:
+    aoi_buf_y roles=[PrimitiveDriven] declared=sv-cells/sm83/cells/idu_bit0.sv:14:3
+    aoi_y roles=[PrimitiveDriven,KeeperDriven] declared=sv-cells/sm83/cells/idu_bit0.sv:22:2
+    aoi_y_n roles=[ContinuousDriven] declared=sv-cells/sm83/cells/idu_bit0.sv:15:3
+    buf_a_y roles=[PrimitiveDriven] declared=sv-cells/sm83/cells/idu_bit0.sv:14:3
+    buf_b_y roles=[PrimitiveDriven] declared=sv-cells/sm83/cells/idu_bit0.sv:14:3
+    buf_ena roles=[ContinuousDriven] declared=sv-cells/sm83/cells/idu_bit0.sv:15:3
+    or_y roles=[ContinuousDriven] declared=sv-cells/sm83/cells/idu_bit0.sv:15:3
+    zero_y roles=[PrimitiveDriven] declared=sv-cells/sm83/cells/idu_bit0.sv:14:3
+  assignments:
+    #0 (or_y continuous (or or_in1 or_in2)) @sv-cells/sm83/cells/idu_bit0.sv:20:2 strength=<none> syntax=Continuous
+    #6 (aoi_y_n continuous (not aoi_y) (T_rise_aoi_y_n T_fall_aoi_y_n)) @sv-cells/sm83/cells/idu_bit0.sv:38:2 strength=<none> syntax=Continuous
+    #8 (buf_ena continuous (not buf_ena_n) (T_rise_buf_ena T_fall_buf_ena)) @sv-cells/sm83/cells/idu_bit0.sv:46:2 strength=<none> syntax=Continuous
+  drivers:
+    #0 target=or_y source=continuous @sv-cells/sm83/cells/idu_bit0.sv:20:2
+    #1 target=aoi_y source=primitive(bufif0) @sv-cells/sm83/cells/idu_bit0.sv:32:2
+    #2 target=aoi_y source=primitive(bufif1) @sv-cells/sm83/cells/idu_bit0.sv:33:2
+    #3 target=aoi_y source=primitive(bufif1) @sv-cells/sm83/cells/idu_bit0.sv:34:2
+    #4 target=aoi_y source=keeper(instance=aoi_y_keeper) @sv-cells/sm83/cells/idu_bit0.sv:35:22
+    #5 target=aoi_buf_y source=primitive(nmos) @sv-cells/sm83/cells/idu_bit0.sv:37:2
+    #6 target=aoi_y_n source=continuous @sv-cells/sm83/cells/idu_bit0.sv:38:2
+    #7 target=zero_y source=primitive(bufif1) @sv-cells/sm83/cells/idu_bit0.sv:42:2
+    #8 target=buf_ena source=continuous @sv-cells/sm83/cells/idu_bit0.sv:46:2
+    #9 target=buf_a_y source=primitive(bufif1) @sv-cells/sm83/cells/idu_bit0.sv:53:2
+    #10 target=buf_a_y source=primitive(bufif1) @sv-cells/sm83/cells/idu_bit0.sv:55:2
+    #11 target=buf_b_y source=primitive(bufif1) @sv-cells/sm83/cells/idu_bit0.sv:63:2
+    #12 target=buf_b_y source=primitive(bufif1) @sv-cells/sm83/cells/idu_bit0.sv:65:2
+  primitives:
+    #1 bufif0 args=[aoi_y,'1,pch_n] strength=strong1,highz0 delay=(T_rise_aoi_y T_fall_aoi_y T_Z_aoi_y) @sv-cells/sm83/cells/idu_bit0.sv:32:2
+    #2 bufif1 args=[aoi_y,'0,(and (and pch_n aoi_in1) aoi_in2)] strength=highz1,strong0 delay=(T_rise_aoi_y T_fall_aoi_y T_Z_aoi_y) @sv-cells/sm83/cells/idu_bit0.sv:33:2
+    #3 bufif1 args=[aoi_y,'0,(and pch_n aoi_in3)] strength=highz1,strong0 delay=(T_rise_aoi_y T_fall_aoi_y_in3 T_Z_aoi_y) @sv-cells/sm83/cells/idu_bit0.sv:34:2
+    #5 nmos args=[aoi_buf_y,aoi_y,(and aoi_buf_ena ((caseneq aoi_y 1)))] strength=<none> delay=(T_Z_aoi_buf_y T_fall_aoi_buf_y T_Z_aoi_buf_y) @sv-cells/sm83/cells/idu_bit0.sv:37:2
+    #7 bufif1 args=[zero_y,'0,(and pch_n zero_ena)] strength=highz1,strong0 delay=(T_Z_zero_y T_fall_zero_y T_Z_zero_y) @sv-cells/sm83/cells/idu_bit0.sv:42:2
+    #9 bufif1 args=[buf_a_y,'1,(and buf_ena buf_a_in)] strength=strong1,highz0 delay=((add T_fall_buf_a_y_n T_rise_buf_a_y) (add T_rise_buf_a_y_n T_fall_buf_a_y) T_Z_buf_a_y) @sv-cells/sm83/cells/idu_bit0.sv:53:2
+    #10 bufif1 args=[buf_a_y,'0,(and (not buf_ena_n) (not buf_a_in))] strength=highz1,strong0 delay=((add T_fall_buf_a_y_n T_rise_buf_a_y) (add T_rise_buf_a_y_n T_fall_buf_a_y) T_Z_buf_a_y) @sv-cells/sm83/cells/idu_bit0.sv:55:2
+    #11 bufif1 args=[buf_b_y,'1,(and buf_ena buf_b_in)] strength=strong1,highz0 delay=((add T_fall_buf_b_y_n T_rise_buf_b_y) (add T_rise_buf_b_y_n T_fall_buf_b_y) T_Z_buf_b_y) @sv-cells/sm83/cells/idu_bit0.sv:63:2
+    #12 bufif1 args=[buf_b_y,'0,(and (not buf_ena_n) (not buf_b_in))] strength=highz1,strong0 delay=((add T_fall_buf_b_y_n T_rise_buf_b_y) (add T_rise_buf_b_y_n T_fall_buf_b_y) T_Z_buf_b_y) @sv-cells/sm83/cells/idu_bit0.sv:65:2
+  instantiations:
+    #4 keeper aoi_y_keeper @sv-cells/sm83/cells/idu_bit0.sv:35:2
+      resolution=special(Keeper)
+      connection target=aoi_y @sv-cells/sm83/cells/idu_bit0.sv:35:22
+  timing_aliases:
+    T_Z_aoi_buf_y kind=Localparam value=(call tpd_z _ T_fall_aoi_buf_y) @sv-cells/sm83/cells/idu_bit0.sv:31:2
+    T_Z_aoi_y kind=Localparam value=(call tpd_z T_rise_aoi_y T_fall_aoi_y) @sv-cells/sm83/cells/idu_bit0.sv:30:2
+    T_Z_buf_a_y kind=Localparam value=(call tpd_z (add T_fall_buf_a_y_n T_rise_buf_a_y) (add T_rise_buf_a_y_n T_fall_buf_a_y)) @sv-cells/sm83/cells/idu_bit0.sv:52:2
+    T_Z_buf_b_y kind=Localparam value=(call tpd_z (add T_fall_buf_b_y_n T_rise_buf_b_y) (add T_rise_buf_b_y_n T_fall_buf_b_y)) @sv-cells/sm83/cells/idu_bit0.sv:62:2
+    T_Z_zero_y kind=Localparam value=(call tpd_z _ T_fall_zero_y) @sv-cells/sm83/cells/idu_bit0.sv:41:2
+    T_fall_aoi_buf_y kind=Localparam value=(call tpd_elmore L_aoi_buf_y (call R_nmos_ohm (mul 17 L_unit))) @sv-cells/sm83/cells/idu_bit0.sv:27:2
+    T_fall_aoi_y kind=Localparam value=(call tpd_elmore 118 (add (mul (call R_nmos_ohm (mul 18 L_unit)) 2) (call R_nmos_ohm (mul 17 L_unit)))) @sv-cells/sm83/cells/idu_bit0.sv:25:2
+    T_fall_aoi_y_in3 kind=Localparam value=(call tpd_elmore 118 (add (call R_nmos_ohm (mul 18 L_unit)) (call R_nmos_ohm (mul 17 L_unit)))) @sv-cells/sm83/cells/idu_bit0.sv:26:2
+    T_fall_aoi_y_n kind=Localparam value=(call tpd_elmore L_aoi_y_n (call R_nmos_ohm (mul 7 L_unit))) @sv-cells/sm83/cells/idu_bit0.sv:29:2
+    T_fall_buf_a_y kind=Localparam value=(call tpd_elmore L_buf_a_y (call R_nmos_ohm (mul 14 L_unit))) @sv-cells/sm83/cells/idu_bit0.sv:51:2
+    T_fall_buf_a_y_n kind=Localparam value=(call tpd_elmore 28 (add (call R_nmos_ohm (mul 3 L_unit)) (call R_nmos_ohm (mul 9 L_unit)))) @sv-cells/sm83/cells/idu_bit0.sv:49:2
+    T_fall_buf_b_y kind=Localparam value=(call tpd_elmore L_buf_b_y (call R_nmos_ohm (mul 15 L_unit))) @sv-cells/sm83/cells/idu_bit0.sv:61:2
+    T_fall_buf_b_y_n kind=Localparam value=(call tpd_elmore 21 (add (call R_nmos_ohm (mul 3 L_unit)) (call R_nmos_ohm (mul 9 L_unit)))) @sv-cells/sm83/cells/idu_bit0.sv:59:2
+    T_fall_buf_ena kind=Localparam value=(call tpd_elmore L_buf_ena (call R_nmos_ohm (mul 3 L_unit))) @sv-cells/sm83/cells/idu_bit0.sv:45:2
+    T_fall_nor kind=Specparam value=(call tpd_elmore 124 (call R_nmos_ohm (mul 3 L_unit))) @sv-cells/sm83/cells/idu_bit0.sv:70:3
+    T_fall_or_y kind=Specparam value=(call tpd_elmore L_or_y (call R_nmos_ohm (mul 7 L_unit))) @sv-cells/sm83/cells/idu_bit0.sv:72:3
+    T_fall_zero_y kind=Localparam value=(call tpd_elmore L_zero_y (add (call R_nmos_ohm (mul 18 L_unit)) (call R_nmos_ohm (mul 17 L_unit)))) @sv-cells/sm83/cells/idu_bit0.sv:40:2
+    T_rise_aoi_y kind=Localparam value=(call tpd_elmore 118 (call R_pmos_ohm (mul 6 L_unit))) @sv-cells/sm83/cells/idu_bit0.sv:24:2
+    T_rise_aoi_y_n kind=Localparam value=(call tpd_elmore L_aoi_y_n (call R_pmos_ohm (mul 7 L_unit))) @sv-cells/sm83/cells/idu_bit0.sv:28:2
+    T_rise_buf_a_y kind=Localparam value=(call tpd_elmore L_buf_a_y (call R_pmos_ohm (mul 28 L_unit))) @sv-cells/sm83/cells/idu_bit0.sv:50:2
+    T_rise_buf_a_y_n kind=Localparam value=(call tpd_elmore 21 (add (call R_pmos_ohm (mul 3 L_unit)) (call R_pmos_ohm (mul 8 L_unit)))) @sv-cells/sm83/cells/idu_bit0.sv:48:2
+    T_rise_buf_b_y kind=Localparam value=(call tpd_elmore L_buf_b_y (call R_pmos_ohm (mul 28 L_unit))) @sv-cells/sm83/cells/idu_bit0.sv:60:2
+    T_rise_buf_b_y_n kind=Localparam value=(call tpd_elmore 37 (add (call R_pmos_ohm (mul 3 L_unit)) (call R_pmos_ohm (mul 8 L_unit)))) @sv-cells/sm83/cells/idu_bit0.sv:58:2
+    T_rise_buf_ena kind=Localparam value=(call tpd_elmore L_buf_ena (call R_pmos_ohm (mul 3 L_unit))) @sv-cells/sm83/cells/idu_bit0.sv:44:2
+    T_rise_nor kind=Specparam value=(call tpd_elmore 124 (mul (call R_pmos_ohm (mul 3 L_unit)) 2)) @sv-cells/sm83/cells/idu_bit0.sv:69:3
+    T_rise_or_y kind=Specparam value=(call tpd_elmore L_or_y (call R_pmos_ohm (mul 6 L_unit))) @sv-cells/sm83/cells/idu_bit0.sv:71:3
+  specify_paths:
+    controls=[or_in1,or_in2] target=or_y delays=[(add T_fall_nor T_rise_or_y),(add T_rise_nor T_fall_or_y)] @sv-cells/sm83/cells/idu_bit0.sv:74:3
+  generate_alternatives:
+requirements:
+  driver.primitive-tristate | M6 | sv-cells/sm83/cells/idu_bit0.sv:32:2 | tri-state primitive and strength semantics are scheduled for Milestone 6
+  driver.repeated | M6 | sv-cells/sm83/cells/idu_bit0.sv:32:2 | repeated source drivers are scheduled for Milestone 6
+  primitive.transistor | M11 | sv-cells/sm83/cells/idu_bit0.sv:37:2 | direct transistor primitives are scheduled for Milestone 11
+  timing.alias | M7 | sv-cells/sm83/cells/idu_bit0.sv:31:2 | timing aliases are scheduled for Milestone 7
+  timing.assignment-delay | M7 | sv-cells/sm83/cells/idu_bit0.sv:38:2 | symbolic assignment delays are scheduled for Milestone 7
+  timing.primitive-delay | M7 | sv-cells/sm83/cells/idu_bit0.sv:32:2 | symbolic primitive delays are scheduled for Milestone 7
+  timing.specify-path | M7 | sv-cells/sm83/cells/idu_bit0.sv:74:3 | specify paths are scheduled for Milestone 7
+  value.combinational | M4 | sv-cells/sm83/cells/idu_bit0.sv:20:2 | combinational value lowering is scheduled for Milestone 4

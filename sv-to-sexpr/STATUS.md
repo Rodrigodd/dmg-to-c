@@ -7,7 +7,7 @@ a milestone acceptance condition changes or is completed.
 
 Last audited on 2026-07-12:
 
-- `cargo test` passes 118 unit tests and 49 integration/corpus tests.
+- `cargo test` passes 124 unit tests and 54 integration/corpus tests.
 - Lexing succeeds for all 206 curated files.
 - Parsing succeeds for all 206 curated files.
 - `survey sv-cells` deterministically inventories 63,240 tokens and 138 typed
@@ -19,22 +19,22 @@ Last audited on 2026-07-12:
   bindings, and limits registers to modeled state. Explicit structural APIs
   retain both generate alternatives or unresolved hierarchy only for earlier
   source-inventory fixtures.
-- Default delayful lowering returns success for 192 files and fails explicitly
-  for 14 files. All 192 successful cells are deterministic, structurally valid,
+- Default delayful lowering returns success for 196 files and fails explicitly
+  for 10 files. All 196 successful cells are deterministic, structurally valid,
   and contain only flat contracted value expressions; the configured corpus
-  audit covers 1,693 assignments including 1,046 generated temporaries and 588
+  audit covers 1,749 assignments including 1,068 generated temporaries and 616
   modeled nonzero delays. Nodelay mode has the same exact success/failure sets.
-- Default delayful lowering reports 1,073 visible intentional ignores: 41
-  literal initial events and 1,032 delay tuple entries after the first. Nodelay
-  reports 1,063. They remain non-failing under `--strict`; initial events
+- Default delayful lowering reports 1,108 visible intentional ignores: 41
+  literal initial events and 1,067 delay tuple entries after the first. Nodelay
+  reports 1,098. They remain non-failing under `--strict`; initial events
   classify their targets as modeled registers without serializing an initial
   event queue.
 - Target-only selection among multiple control-dependent specify paths emits
   47 documented warnings in the configured delayful corpus. Ordinary lowering
   succeeds, while `--strict` promotes those warnings to failures.
-- Nine failures are transistor-related and five are keeper users. No failure
-  remains assigned to Milestone 7 timing, Milestone 8 generate selection, or
-  Milestone 9 ordinary hierarchy.
+- All ten failures are transistor-related. No failure remains assigned to
+  Milestone 7 timing, Milestone 8 generate selection, Milestone 9 ordinary
+  hierarchy, or Milestone 10 keepers.
 - Timing goldens are valid generic S-expressions, and the checked reference is
   canonical under `sexpr-fmt --check`. Full-corpus formatter validation has not
   been performed.
@@ -76,21 +76,23 @@ Last audited on 2026-07-12:
 - Milestone 4: complete. Reviewed goldens cover the required combinational
   operator families and compound equality/mux expressions; deterministic
   dependency-first `t0`, `t1`, ... assignments keep every value operation flat.
-  The configured full-corpus audit proves all 192 current successes are
-  structurally valid and freezes exact diagnostics for the 14 later-milestone
+  The configured full-corpus audit proves all 196 current successes are
+  structurally valid and freezes exact diagnostics for the 10 later-milestone
   failures.
 - Milestone 5: complete. Reviewed stateful goldens cover simple, set/reset,
   blocking/nonblocking, nested-priority, and block-body latches. The configured
   recursive audit finds 27 stateful files: 26 emitted cells have 47 exact
   modeled registers and 47 flat retained equations; only `dlatch_ee_irq`
-  remains explicitly assigned to its M10/M11 keeper and transistor work.
+  remains explicitly assigned to its M11 transistor work.
 - Milestone 6: complete. Reviewed fixtures cover signal- and literal-valued
   tri-state polarity, open drain, precharge, bidirectional pull-up pads, supply
   ties, direct primitives, and repeated buses. Exact strength metadata uses
   only the four contracted ordered pairs. The scope-aware audit accounts for
-  67 relevant files, proves all 53 current successes preserve flat driver
-  dependencies and source order, and keeps all 58 genuine repeated targets
-  separate without combining mutually exclusive generate alternatives.
+  67 relevant files, proves all 57 current successes preserve flat driver
+  dependencies and source order, and keeps genuine repeated targets separate
+  without combining mutually exclusive generate alternatives. The audit also
+  accounts for all six keeper drivers: four emitted and two deferred only by
+  Milestone 11 transistors.
 - Milestone 7: complete. Timing aliases resolve deterministically without
   dropping resistance sums, real factors, or outer multipliers; assignments and
   primitives use exactly tuple entry zero, and every later entry is tracked as
@@ -99,26 +101,31 @@ Last audited on 2026-07-12:
   warning for each used ambiguous target. Reviewed timing goldens include
   explicit precedence, procedural state, ambiguity diagnostics, and the exact
   reference `q_n`, `q`, and `d` assignments. The configured corpus audit
-  accounts for all 206 files, 266 structural specify paths, 647 selected source
-  targets, 385 preserved outer resistance multiplications, 47 warnings, and
+  accounts for all 206 files, 266 structural specify paths, 681 selected source
+  targets, 390 preserved outer resistance multiplications, 47 warnings, and
   zero M7 deferrals.
 - Milestone 8: complete. `GenerateMode::Delayful` is the default and
   `GenerateMode::Nodelay` is explicitly selectable through the configured APIs
   and CLI. Exact fixtures and a dual-mode 206-file audit prove that `dffr`,
   `dffr_cc`, `dffr_cc_q`, `dffsr`, and `tffnl` each select one branch with no
   unselected declarations, state, drivers, timing aliases, diagnostics, or
-  requirements. Both modes lower 192 files and leave exactly the 5 keeper and 9
-  transistor deferrals.
+  requirements. Both modes lower 196 files and leave exactly the 10 transistor
+  deferrals.
 - Milestone 9: complete. Catalog-owned typed module definitions and the
   hierarchy transformer recursively substitutes named, positional, omitted,
   and default parameter bindings plus named/positional port connections,
   qualifies child-local names and timing aliases, preserves instance/child
   driver order, and rejects collisions, unknown modules, and recursion.
   Reviewed `half_add`/`full_add` fixtures cover all seven actual instances, and
-  the exact dual-mode corpus audit reports 192 successes with no configured M9
+  the exact dual-mode corpus audit reports 196 successes with no configured M9
   requirement or hierarchy-only failure.
-- Milestone 10: pending apart from parsing keepers as instantiations and the
-  contracted direct keeper driver form.
+- Milestone 10: complete. Validated special keeper instances carry typed target
+  connections, a distinct `KeeperDriven` signal role, and a source-ordered
+  keeper driver. Lowering emits exactly `(target (keeper) 0)`, bypasses specify
+  delays, preserves independent neighboring drivers, and never adds the target
+  to registers. Reviewed fixtures cover the five required cells; the exact
+  audit accounts for six source keepers, four emitted keepers, and two
+  keeper-bearing files deferred solely by Milestone 11 transistors.
 - Milestone 11: pending apart from parser/analyzer scaffolding and contracted
   direct `nmos`, `pmos`, and `rnmos` driver forms.
 - Milestone 12: pending apart from the existing single-file serializer path.

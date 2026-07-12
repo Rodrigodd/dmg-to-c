@@ -1,6 +1,6 @@
 use crate::analyze::{
     ModuleCatalog, analyze_design_structural, analyze_design_with_catalog_and_generate_mode,
-    sensitivity_is_stateful,
+    resolve_keeper_ast_instantiation, sensitivity_is_stateful,
 };
 use crate::ast::*;
 use crate::diagnostic::{Diagnostic, DiagnosticKind, Span};
@@ -162,6 +162,7 @@ struct Lowerer<'a> {
     diagnostics: Vec<Diagnostic>,
     reserved_names: BTreeSet<String>,
     signal_names: BTreeSet<String>,
+    signal_spans: BTreeMap<String, Span>,
     next_temp_index: usize,
 }
 
@@ -191,6 +192,18 @@ impl<'a> Lowerer<'a> {
             })
             .map(|(name, _)| name.clone())
             .collect::<BTreeSet<_>>();
+        let signal_spans = analysis
+            .symbols
+            .iter()
+            .filter(|(_, symbol)| {
+                matches!(
+                    symbol.category,
+                    crate::analyze::SymbolCategory::Port
+                        | crate::analyze::SymbolCategory::Declaration
+                )
+            })
+            .map(|(name, symbol)| (name.clone(), symbol.span.clone()))
+            .collect::<BTreeMap<_, _>>();
         let mut reserved_names = analysis.symbols.keys().cloned().collect::<BTreeSet<_>>();
         reserved_names.extend(analysis.parameters.keys().cloned());
         reserved_names.extend(analysis.declarations.keys().cloned());
@@ -216,6 +229,7 @@ impl<'a> Lowerer<'a> {
             diagnostics: Vec::new(),
             reserved_names,
             signal_names,
+            signal_spans,
             next_temp_index: 0,
         }
     }
@@ -453,6 +467,9 @@ impl<'a> Lowerer<'a> {
             ItemKind::Specify(_) | ItemKind::Decl(_) | ItemKind::Import(_) | ItemKind::Empty => {
                 Ok(())
             }
+            ItemKind::Instantiation(instantiation) if instantiation.module == "keeper" => {
+                self.lower_keeper(instantiation)
+            }
             ItemKind::ProcAssign(_)
             | ItemKind::Instantiation(_)
             | ItemKind::Generate(_)
@@ -462,6 +479,16 @@ impl<'a> Lowerer<'a> {
                 "unsupported item for lowering",
             )),
         }
+    }
+
+    fn lower_keeper(&mut self, instantiation: &Instantiation) -> LowerResult<()> {
+        let keeper = resolve_keeper_ast_instantiation(instantiation, &self.signal_spans)?;
+        self.emit_assignment(
+            keeper.connection.target,
+            Expr::value(ValueOperator::Keeper, vec![]),
+            Expr::atom("0"),
+            &keeper.connection.span,
+        )
     }
 
     fn lower_initial(&mut self, item: &Item, stmt: &AssignStmt) -> LowerResult<()> {
@@ -1397,6 +1424,78 @@ mod tests {
             nonscalar.message,
             "initial assignment target must be a scalar local signal"
         );
+    }
+
+    #[test]
+    fn lowers_keeper_as_distinct_zero_delay_source_ordered_driver() {
+        let lowered = lower_snippet(
+            "module sample(input logic a, en, output logic y);\n  assign y = a;\n  bufif0 (y, a, en);\n  keeper held(y);\n  assign y = en;\nendmodule\n",
+        )
+        .unwrap();
+        assert!(lowered.cell.registers.is_empty());
+        assert_eq!(
+            assignment_strings(&lowered),
+            vec![
+                ("y".into(), "a".into(), "0".into()),
+                ("y".into(), "(bufif0 a en)".into(), "0".into()),
+                ("y".into(), "(keeper)".into(), "0".into()),
+                ("y".into(), "en".into(), "0".into()),
+            ]
+        );
+        lowered.cell.validate().unwrap();
+    }
+
+    #[test]
+    fn keeper_never_inherits_a_specify_delay() {
+        let lowered = lower_snippet(
+            "module sample(output logic y);\n  keeper held(y);\n  specify\n    (y *> y) = (9);\n  endspecify\nendmodule\n",
+        )
+        .unwrap();
+        assert_eq!(
+            assignment_strings(&lowered),
+            vec![("y".into(), "(keeper)".into(), "0".into())]
+        );
+    }
+
+    #[test]
+    fn malformed_keeper_lowering_reuses_typed_resolution_diagnostics() {
+        let cases = [
+            (
+                "module bad(output logic y);\n  keeper #(1) hold(y);\nendmodule\n",
+                Span::new("snippet.sv", 2, 12),
+                "keeper instance `hold` does not accept parameter overrides",
+            ),
+            (
+                "module bad(output logic y);\n  keeper hold(.target(y));\nendmodule\n",
+                Span::new("snippet.sv", 2, 15),
+                "keeper instance `hold` requires a positional connection",
+            ),
+            (
+                "module bad(output logic y);\n  keeper hold();\nendmodule\n",
+                Span::new("snippet.sv", 2, 3),
+                "keeper instance `hold` requires exactly one positional connection",
+            ),
+            (
+                "module bad(input logic a, output logic y);\n  keeper hold(y, a);\nendmodule\n",
+                Span::new("snippet.sv", 2, 18),
+                "keeper instance `hold` requires exactly one positional connection",
+            ),
+            (
+                "module bad(input logic a, output logic y);\n  keeper hold(a & y);\nendmodule\n",
+                Span::new("snippet.sv", 2, 15),
+                "keeper instance `hold` target must be a scalar signal name",
+            ),
+            (
+                "module bad(output logic y);\n  keeper hold(missing);\nendmodule\n",
+                Span::new("snippet.sv", 2, 15),
+                "unknown keeper target `missing` for instance `hold`",
+            ),
+        ];
+        for (source, span, message) in cases {
+            let error = lower_snippet(source).unwrap_err();
+            assert_eq!(error.span, span);
+            assert_eq!(error.message, message);
+        }
     }
 
     #[test]

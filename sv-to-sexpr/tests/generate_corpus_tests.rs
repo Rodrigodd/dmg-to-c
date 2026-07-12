@@ -24,15 +24,9 @@ const GENERATE_PATHS: &[&str] = &[
     "sv-cells/dmg_cpu_b/cells/dffsr.sv",
     "sv-cells/dmg_cpu_b/cells/tffnl.sv",
 ];
-const KEEPER_FAILURES: &[&str] = &[
-    "sv-cells/dmg_cpu_b/cells/mux.sv",
-    "sv-cells/dmg_cpu_b/cells/muxi.sv",
-    "sv-cells/dmg_cpu_b/cells/pad_xtal.sv",
-    "sv-cells/sm83/cells/idu_bit0.sv",
-    "sv-cells/sm83/cells/reg_wz_out.sv",
-];
 const TRANSISTOR_FAILURES: &[&str] = &[
     "sv-cells/sm83/cells/dlatch_ee_irq.sv",
+    "sv-cells/sm83/cells/idu_bit0.sv",
     "sv-cells/sm83/cells/idu_bit123456.sv",
     "sv-cells/sm83/cells/irq_prio_bit0.sv",
     "sv-cells/sm83/cells/irq_prio_bit1.sv",
@@ -172,15 +166,15 @@ fn staged_cli_checks_report_exact_dual_mode_results() {
         let lower = run_cli(&lower_args);
         assert!(!lower.status.success());
         let expected_ignores = if mode == GenerateMode::Delayful {
-            1073
+            1108
         } else {
-            1063
+            1098
         };
         assert!(String::from_utf8(lower.stdout).unwrap().starts_with(&format!(
-            "lower check summary: processed=206 warned=47 intentional-ignored={expected_ignores} failed=14\n"
+            "lower check summary: processed=206 warned=47 intentional-ignored={expected_ignores} failed=10\n"
         )));
         let stderr = String::from_utf8(lower.stderr).unwrap();
-        assert!(stderr.ends_with("error: 14 files failed lowering\n"));
+        assert!(stderr.ends_with("error: 10 files failed lowering\n"));
     }
 }
 
@@ -277,19 +271,17 @@ fn audit_mode(
         render_map(&totals.requirements)
     )
     .unwrap();
-    for category in ["keeper", "transistor"] {
-        writeln!(
-            output,
-            "  failures-{category}=[{}]",
-            totals
-                .failures
-                .get(category)
-                .cloned()
-                .unwrap_or_default()
-                .join(",")
-        )
-        .unwrap();
-    }
+    writeln!(
+        output,
+        "  failures-transistor=[{}]",
+        totals
+            .failures
+            .get("transistor")
+            .cloned()
+            .unwrap_or_default()
+            .join(",")
+    )
+    .unwrap();
     (totals, configured)
 }
 
@@ -299,10 +291,9 @@ fn assert_mode_totals(totals: &ModeTotals) {
     assert_eq!(totals.analysis_warned, 0);
     assert_eq!(totals.analysis_failed, 0);
     assert!(!totals.requirements.contains_key("generate.alternative"));
-    assert_eq!(totals.lower_succeeded, 192);
+    assert_eq!(totals.lower_succeeded, 196);
     assert_eq!(totals.warnings, 47);
-    assert!(matches!(totals.intentional_ignores, 1063 | 1073));
-    assert_eq!(totals.failures["keeper"], KEEPER_FAILURES);
+    assert!(matches!(totals.intentional_ignores, 1098 | 1108));
     assert_eq!(totals.failures["transistor"], TRANSISTOR_FAILURES);
 }
 
@@ -469,10 +460,7 @@ fn has_generate(design: &Design) -> bool {
 }
 
 fn failure_category(path: &str, message: &str) -> &'static str {
-    if KEEPER_FAILURES.contains(&path) {
-        assert!(message.starts_with("unsupported item for lowering"));
-        "keeper"
-    } else if TRANSISTOR_FAILURES.contains(&path) {
+    if TRANSISTOR_FAILURES.contains(&path) {
         assert!(message.starts_with("unsupported primitive"));
         "transistor"
     } else {

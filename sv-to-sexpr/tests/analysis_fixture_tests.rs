@@ -89,6 +89,11 @@ fn representative_analysis_goldens_are_deterministic_and_semantically_complete()
     assert!(
         module.signal_roles["mux"]
             .roles
+            .contains(&SignalRole::KeeperDriven)
+    );
+    assert!(
+        !module.signal_roles["mux"]
+            .roles
             .contains(&SignalRole::HierarchicalConnection)
     );
     assert!(

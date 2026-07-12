@@ -27,21 +27,21 @@ source-specify:
   target-multiplicity=1:154,2:36,3:12,4:1
   first-source-paths=203 witnesses=[sv-cells/dmg_cpu_b/cells/and2.sv:20:3:y,sv-cells/dmg_cpu_b/cells/and3.sv:20:3:y,sv-cells/dmg_cpu_b/cells/and4.sv:20:3:y,sv-cells/dmg_cpu_b/cells/ao21.sv:21:3:y,sv-cells/dmg_cpu_b/cells/ao22.sv:20:3:y,sv-cells/dmg_cpu_b/cells/ao222.sv:20:3:y]
 lowering:
-  succeeded=192 failed=14
-  assignments=1693 temps=1046 source-targets=647
-  source-dispositions explicit=403 explicit-nonzero=389 explicit-with-specify=0 specify=199 specify-nonzero=199 zero=45
-  emitted zero=1105 nonzero=588 nested=588
-  outer-resistance-multiplications expected=385 emitted=385
-  warnings=47 later-ignores=1032 initial-ignores=41
+  succeeded=196 failed=10
+  assignments=1749 temps=1068 source-targets=681
+  source-dispositions explicit=429 explicit-nonzero=415 explicit-with-specify=0 specify=201 specify-nonzero=201 zero=51
+  emitted zero=1133 nonzero=616 nested=616
+  outer-resistance-multiplications expected=390 emitted=390
+  warnings=47 later-ignores=1067 initial-ignores=41
 emitted-timing-operators:
-  +=225
+  +=226
   -=0
-  *=387
+  *=392
   /=0
-  elmore=739
-  wire=739
-  pmos=381
-  nmos=432
+  elmore=768
+  wire=768
+  pmos=406
+  nmos=436
   gt=0
   mux=0
 invariants:
@@ -66,13 +66,10 @@ acceptance-witnesses:
   real-device-factor=[sv-cells/dmg_cpu_b/cells/pad_xtal.sv,sv-cells/sm83/cells/dff_cc_ee_q_x2_reg_bit.sv,sv-cells/sm83/cells/dffn_ee_pch_d_alu_flag.sv,sv-cells/sm83/cells/dffn_ee_q_alu_sign.sv,sv-cells/sm83/cells/irq_prio_bit0.sv,sv-cells/sm83/cells/irq_prio_bit1.sv]
   reference=sv-cells/sm83/cells/dffs_cc_ee_pch_d_reg_pc_bit.sv
   explicit-precedence=sv-to-sexpr/tests/fixtures/timing/explicit_precedence.sv
-  pad-xtal=M10-keeper:no-M7-failure
+  pad-xtal=keeper-zero-delay:no-M7-failure
 deferrals:
-  sv-cells/dmg_cpu_b/cells/mux.sv | M10-keeper | 24:2 | unsupported item for lowering
-  sv-cells/dmg_cpu_b/cells/muxi.sv | M10-keeper | 24:2 | unsupported item for lowering
-  sv-cells/dmg_cpu_b/cells/pad_xtal.sv | M10-keeper | 26:2 | unsupported item for lowering
   sv-cells/sm83/cells/dlatch_ee_irq.sv | M11-transistor | 23:2 | unsupported primitive rnmos
-  sv-cells/sm83/cells/idu_bit0.sv | M10-keeper | 35:2 | unsupported item for lowering
+  sv-cells/sm83/cells/idu_bit0.sv | M11-transistor | 37:2 | unsupported primitive nmos
   sv-cells/sm83/cells/idu_bit123456.sv | M11-transistor | 29:2 | unsupported primitive nmos
   sv-cells/sm83/cells/irq_prio_bit0.sv | M11-transistor | 44:2 | unsupported primitive nmos
   sv-cells/sm83/cells/irq_prio_bit1.sv | M11-transistor | 51:2 | unsupported primitive nmos
@@ -81,4 +78,3 @@ deferrals:
   sv-cells/sm83/cells/irq_prio_bit4.sv | M11-transistor | 61:2 | unsupported primitive nmos
   sv-cells/sm83/cells/irq_prio_bit5.sv | M11-transistor | 64:2 | unsupported primitive nmos
   sv-cells/sm83/cells/irq_prio_bit6.sv | M11-transistor | 62:2 | unsupported primitive nmos
-  sv-cells/sm83/cells/reg_wz_out.sv | M10-keeper | 54:2 | unsupported item for lowering

@@ -1,0 +1,31 @@
+(cell
+  dmg_muxi
+  (inputs d0 d1 sel)
+
+  (outputs y)
+
+  (registers )
+
+  (assignments
+
+    (sel_n (not sel) (elmore (wire 33) (pmos 6)))
+    (mux
+      (bufif0-strength d0 sel strong1 highz0)
+      (elmore (wire 93) (pmos 6))
+    )
+    (mux
+      (bufif1-strength d0 sel_n highz1 strong0)
+      (elmore (wire 93) (pmos 6))
+    )
+    (mux
+      (bufif0-strength d1 sel_n strong1 highz0)
+      (elmore (wire 93) (pmos 6))
+    )
+    (mux
+      (bufif1-strength d1 sel highz1 strong0)
+      (elmore (wire 93) (pmos 6))
+    )
+    (mux (keeper) 0)
+    (y (not mux) (elmore (wire L_y) (pmos 35)))
+  )
+)

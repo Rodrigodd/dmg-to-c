@@ -93,7 +93,9 @@ representation; source-defined priority must be preserved.
 A keeper instance becomes a distinct zero-delay driver
 `(held_net (keeper) 0)`. It is not a register and is not merged with tri-state
 drivers. This records retention intent without claiming analog charge or keeper
-strength simulation.
+strength simulation. The accepted source shape is exactly one positional scalar
+visible target and no parameter overrides; named, missing, extra, compound, or
+unknown connections are source-spanned errors.
 
 Transistors are direct drivers:
 

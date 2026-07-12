@@ -1,0 +1,75 @@
+analyze summary: modules=1 disposition=deferred requirements=6
+module dmg_pad_xtal @sv-cells/dmg_cpu_b/cells/pad_xtal.sv:3:1
+  inputs: ena in_pad
+  outputs: clk_n out_pad
+  registers: <none>
+  symbols:
+    L_clk_n category=parameter @sv-cells/dmg_cpu_b/cells/pad_xtal.sv:4:3
+    L_out_pad category=parameter @sv-cells/dmg_cpu_b/cells/pad_xtal.sv:5:3
+    T_fall_clk_n category=localparam @sv-cells/dmg_cpu_b/cells/pad_xtal.sv:33:2
+    T_fall_mux_d1 category=localparam @sv-cells/dmg_cpu_b/cells/pad_xtal.sv:22:2
+    T_fall_not category=localparam @sv-cells/dmg_cpu_b/cells/pad_xtal.sv:17:2
+    T_fall_out_pad category=localparam @sv-cells/dmg_cpu_b/cells/pad_xtal.sv:29:2
+    T_rise_clk_n category=localparam @sv-cells/dmg_cpu_b/cells/pad_xtal.sv:32:2
+    T_rise_mux_d0 category=localparam @sv-cells/dmg_cpu_b/cells/pad_xtal.sv:20:2
+    T_rise_mux_d1 category=localparam @sv-cells/dmg_cpu_b/cells/pad_xtal.sv:21:2
+    T_rise_not category=localparam @sv-cells/dmg_cpu_b/cells/pad_xtal.sv:16:2
+    T_rise_out_pad category=localparam @sv-cells/dmg_cpu_b/cells/pad_xtal.sv:28:2
+    clk category=declaration @sv-cells/dmg_cpu_b/cells/pad_xtal.sv:14:2
+    clk_n category=port @sv-cells/dmg_cpu_b/cells/pad_xtal.sv:8:3
+    ena category=port @sv-cells/dmg_cpu_b/cells/pad_xtal.sv:7:3
+    ena_n category=declaration @sv-cells/dmg_cpu_b/cells/pad_xtal.sv:13:2
+    in_pad category=port @sv-cells/dmg_cpu_b/cells/pad_xtal.sv:7:3
+    out_pad category=port @sv-cells/dmg_cpu_b/cells/pad_xtal.sv:8:3
+  ports:
+    clk_n direction=output use=output modifiers=[logic] @sv-cells/dmg_cpu_b/cells/pad_xtal.sv:8:3
+    ena direction=input use=input modifiers=[logic] @sv-cells/dmg_cpu_b/cells/pad_xtal.sv:7:3
+    in_pad direction=input use=input modifiers=[logic] @sv-cells/dmg_cpu_b/cells/pad_xtal.sv:7:3
+    out_pad direction=output use=output modifiers=[logic] @sv-cells/dmg_cpu_b/cells/pad_xtal.sv:8:3
+  declarations:
+    clk kind=Tri type=logic value=<none> @sv-cells/dmg_cpu_b/cells/pad_xtal.sv:14:2
+    ena_n kind=Logic type=<implicit> value=<none> @sv-cells/dmg_cpu_b/cells/pad_xtal.sv:13:2
+  signal_roles:
+    clk roles=[PrimitiveDriven,KeeperDriven] declared=sv-cells/dmg_cpu_b/cells/pad_xtal.sv:14:2
+    clk_n roles=[ContinuousDriven] declared=sv-cells/dmg_cpu_b/cells/pad_xtal.sv:8:3
+    ena_n roles=[ContinuousDriven] declared=sv-cells/dmg_cpu_b/cells/pad_xtal.sv:13:2
+    out_pad roles=[ContinuousDriven] declared=sv-cells/dmg_cpu_b/cells/pad_xtal.sv:8:3
+  assignments:
+    #0 (ena_n continuous (not ena) (T_rise_not T_fall_not)) @sv-cells/dmg_cpu_b/cells/pad_xtal.sv:18:2 strength=<none> syntax=Continuous
+    #5 (out_pad continuous (not clk) (T_rise_out_pad T_fall_out_pad)) @sv-cells/dmg_cpu_b/cells/pad_xtal.sv:30:2 strength=<none> syntax=Continuous
+    #6 (clk_n continuous (not clk) (T_rise_clk_n T_fall_clk_n)) @sv-cells/dmg_cpu_b/cells/pad_xtal.sv:34:2 strength=<none> syntax=Continuous
+  drivers:
+    #0 target=ena_n source=continuous @sv-cells/dmg_cpu_b/cells/pad_xtal.sv:18:2
+    #1 target=clk source=primitive(bufif0) @sv-cells/dmg_cpu_b/cells/pad_xtal.sv:23:2
+    #2 target=clk source=primitive(bufif0) @sv-cells/dmg_cpu_b/cells/pad_xtal.sv:24:2
+    #3 target=clk source=primitive(bufif1) @sv-cells/dmg_cpu_b/cells/pad_xtal.sv:25:2
+    #4 target=clk source=keeper(instance=clk_keeper) @sv-cells/dmg_cpu_b/cells/pad_xtal.sv:26:20
+    #5 target=out_pad source=continuous @sv-cells/dmg_cpu_b/cells/pad_xtal.sv:30:2
+    #6 target=clk_n source=continuous @sv-cells/dmg_cpu_b/cells/pad_xtal.sv:34:2
+  primitives:
+    #1 bufif0 args=[clk,'1,ena] strength=strong1,highz0 delay=(T_rise_mux_d0 T_fall_mux_d1) @sv-cells/dmg_cpu_b/cells/pad_xtal.sv:23:2
+    #2 bufif0 args=[clk,in_pad,ena_n] strength=strong1,highz0 delay=(T_rise_mux_d1 T_fall_mux_d1) @sv-cells/dmg_cpu_b/cells/pad_xtal.sv:24:2
+    #3 bufif1 args=[clk,in_pad,ena] strength=highz1,strong0 delay=(T_rise_mux_d1 T_fall_mux_d1) @sv-cells/dmg_cpu_b/cells/pad_xtal.sv:25:2
+  instantiations:
+    #4 keeper clk_keeper @sv-cells/dmg_cpu_b/cells/pad_xtal.sv:26:2
+      resolution=special(Keeper)
+      connection target=clk @sv-cells/dmg_cpu_b/cells/pad_xtal.sv:26:20
+  timing_aliases:
+    T_fall_clk_n kind=Localparam value=(call tpd_elmore L_clk_n (call R_nmos_ohm 10.8)) @sv-cells/dmg_cpu_b/cells/pad_xtal.sv:33:2
+    T_fall_mux_d1 kind=Localparam value=(call tpd_elmore 130 (call R_nmos_ohm 28)) @sv-cells/dmg_cpu_b/cells/pad_xtal.sv:22:2
+    T_fall_not kind=Localparam value=(call tpd_elmore 130 (call R_nmos_ohm (mul 7 L_unit))) @sv-cells/dmg_cpu_b/cells/pad_xtal.sv:17:2
+    T_fall_out_pad kind=Localparam value=(call tpd_elmore L_out_pad (call R_nmos_ohm 25)) @sv-cells/dmg_cpu_b/cells/pad_xtal.sv:29:2
+    T_rise_clk_n kind=Localparam value=(call tpd_elmore L_clk_n (call R_pmos_ohm 13.5)) @sv-cells/dmg_cpu_b/cells/pad_xtal.sv:32:2
+    T_rise_mux_d0 kind=Localparam value=(call tpd_elmore 130 (call R_pmos_ohm (mul 7 L_unit))) @sv-cells/dmg_cpu_b/cells/pad_xtal.sv:20:2
+    T_rise_mux_d1 kind=Localparam value=(call tpd_elmore 130 (call R_pmos_ohm 33)) @sv-cells/dmg_cpu_b/cells/pad_xtal.sv:21:2
+    T_rise_not kind=Localparam value=(call tpd_elmore 130 (call R_pmos_ohm (mul 7 L_unit))) @sv-cells/dmg_cpu_b/cells/pad_xtal.sv:16:2
+    T_rise_out_pad kind=Localparam value=(call tpd_elmore L_out_pad (call R_pmos_ohm 62)) @sv-cells/dmg_cpu_b/cells/pad_xtal.sv:28:2
+  specify_paths:
+  generate_alternatives:
+requirements:
+  driver.primitive-tristate | M6 | sv-cells/dmg_cpu_b/cells/pad_xtal.sv:23:2 | tri-state primitive and strength semantics are scheduled for Milestone 6
+  driver.repeated | M6 | sv-cells/dmg_cpu_b/cells/pad_xtal.sv:23:2 | repeated source drivers are scheduled for Milestone 6
+  timing.alias | M7 | sv-cells/dmg_cpu_b/cells/pad_xtal.sv:33:2 | timing aliases are scheduled for Milestone 7
+  timing.assignment-delay | M7 | sv-cells/dmg_cpu_b/cells/pad_xtal.sv:18:2 | symbolic assignment delays are scheduled for Milestone 7
+  timing.primitive-delay | M7 | sv-cells/dmg_cpu_b/cells/pad_xtal.sv:23:2 | symbolic primitive delays are scheduled for Milestone 7
+  value.combinational | M4 | sv-cells/dmg_cpu_b/cells/pad_xtal.sv:18:2 | combinational value lowering is scheduled for Milestone 4

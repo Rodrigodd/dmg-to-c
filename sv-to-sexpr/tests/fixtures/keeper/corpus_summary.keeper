@@ -1,0 +1,58 @@
+keeper corpus mode=delayful
+analysis supported=3 deferred=203 keeper-requirements=0
+lower successes=196 failures=10 warnings=47 intentional-ignores=1108
+resolved-keepers:
+  sv-cells/dmg_cpu_b/cells/mux.sv | mux_keeper | mux | source-order=5 | 24:2
+  sv-cells/dmg_cpu_b/cells/muxi.sv | mux_keeper | mux | source-order=5 | 24:2
+  sv-cells/dmg_cpu_b/cells/pad_xtal.sv | clk_keeper | clk | source-order=4 | 26:2
+  sv-cells/sm83/cells/dlatch_ee_irq.sv | gated_q_keeper | gated_q | source-order=5 | 24:2
+  sv-cells/sm83/cells/idu_bit0.sv | aoi_y_keeper | aoi_y | source-order=4 | 35:2
+  sv-cells/sm83/cells/reg_wz_out.sv | aoi_a_y_keeper | aoi_a_y | source-order=9 | 54:2
+emitted-keepers:
+  sv-cells/dmg_cpu_b/cells/mux.sv | mux | target-ordinal=4/5 | assignment-index=5 | value=(keeper) | delay=0
+  sv-cells/dmg_cpu_b/cells/muxi.sv | mux | target-ordinal=4/5 | assignment-index=5 | value=(keeper) | delay=0
+  sv-cells/dmg_cpu_b/cells/pad_xtal.sv | clk | target-ordinal=3/4 | assignment-index=4 | value=(keeper) | delay=0
+  sv-cells/sm83/cells/reg_wz_out.sv | aoi_a_y | target-ordinal=2/3 | assignment-index=26 | value=(keeper) | delay=0
+keeper-bearing-m11-deferrals:
+  sv-cells/sm83/cells/dlatch_ee_irq.sv | rnmos | 23:2
+  sv-cells/sm83/cells/idu_bit0.sv | nmos | 37:2
+failures:
+  sv-cells/sm83/cells/dlatch_ee_irq.sv:23:2: unsupported primitive rnmos
+  sv-cells/sm83/cells/idu_bit0.sv:37:2: unsupported primitive nmos
+  sv-cells/sm83/cells/idu_bit123456.sv:29:2: unsupported primitive nmos
+  sv-cells/sm83/cells/irq_prio_bit0.sv:44:2: unsupported primitive nmos
+  sv-cells/sm83/cells/irq_prio_bit1.sv:51:2: unsupported primitive nmos
+  sv-cells/sm83/cells/irq_prio_bit2.sv:52:2: unsupported primitive nmos
+  sv-cells/sm83/cells/irq_prio_bit3.sv:63:2: unsupported primitive nmos
+  sv-cells/sm83/cells/irq_prio_bit4.sv:61:2: unsupported primitive nmos
+  sv-cells/sm83/cells/irq_prio_bit5.sv:64:2: unsupported primitive nmos
+  sv-cells/sm83/cells/irq_prio_bit6.sv:62:2: unsupported primitive nmos
+keeper corpus mode=nodelay
+analysis supported=3 deferred=203 keeper-requirements=0
+lower successes=196 failures=10 warnings=47 intentional-ignores=1098
+resolved-keepers:
+  sv-cells/dmg_cpu_b/cells/mux.sv | mux_keeper | mux | source-order=5 | 24:2
+  sv-cells/dmg_cpu_b/cells/muxi.sv | mux_keeper | mux | source-order=5 | 24:2
+  sv-cells/dmg_cpu_b/cells/pad_xtal.sv | clk_keeper | clk | source-order=4 | 26:2
+  sv-cells/sm83/cells/dlatch_ee_irq.sv | gated_q_keeper | gated_q | source-order=5 | 24:2
+  sv-cells/sm83/cells/idu_bit0.sv | aoi_y_keeper | aoi_y | source-order=4 | 35:2
+  sv-cells/sm83/cells/reg_wz_out.sv | aoi_a_y_keeper | aoi_a_y | source-order=9 | 54:2
+emitted-keepers:
+  sv-cells/dmg_cpu_b/cells/mux.sv | mux | target-ordinal=4/5 | assignment-index=5 | value=(keeper) | delay=0
+  sv-cells/dmg_cpu_b/cells/muxi.sv | mux | target-ordinal=4/5 | assignment-index=5 | value=(keeper) | delay=0
+  sv-cells/dmg_cpu_b/cells/pad_xtal.sv | clk | target-ordinal=3/4 | assignment-index=4 | value=(keeper) | delay=0
+  sv-cells/sm83/cells/reg_wz_out.sv | aoi_a_y | target-ordinal=2/3 | assignment-index=26 | value=(keeper) | delay=0
+keeper-bearing-m11-deferrals:
+  sv-cells/sm83/cells/dlatch_ee_irq.sv | rnmos | 23:2
+  sv-cells/sm83/cells/idu_bit0.sv | nmos | 37:2
+failures:
+  sv-cells/sm83/cells/dlatch_ee_irq.sv:23:2: unsupported primitive rnmos
+  sv-cells/sm83/cells/idu_bit0.sv:37:2: unsupported primitive nmos
+  sv-cells/sm83/cells/idu_bit123456.sv:29:2: unsupported primitive nmos
+  sv-cells/sm83/cells/irq_prio_bit0.sv:44:2: unsupported primitive nmos
+  sv-cells/sm83/cells/irq_prio_bit1.sv:51:2: unsupported primitive nmos
+  sv-cells/sm83/cells/irq_prio_bit2.sv:52:2: unsupported primitive nmos
+  sv-cells/sm83/cells/irq_prio_bit3.sv:63:2: unsupported primitive nmos
+  sv-cells/sm83/cells/irq_prio_bit4.sv:61:2: unsupported primitive nmos
+  sv-cells/sm83/cells/irq_prio_bit5.sv:64:2: unsupported primitive nmos
+  sv-cells/sm83/cells/irq_prio_bit6.sv:62:2: unsupported primitive nmos

@@ -1,0 +1,165 @@
+analyze summary: modules=1 disposition=deferred requirements=9
+module sm83_reg_wz_out @sv-cells/sm83/cells/reg_wz_out.sv:3:1
+  inputs: pch_n aoi_in1 aoi_ena1 aoi_ena2 aoi_ena3 aoi_a_in3_muxi_a_d1 aoi_b_in3_muxi_b_d1 muxi_d0 muxi_a_sel muxi_a_sel_n muxi_b_sel muxi_b_sel_n nand_ena oai21_in_aoi_b_in2 oai_ena1 oai_ena2 oai_ena3 oai31_in_nand_in_aoi_a_in2
+  outputs: aoi_b_y nand_y oai21_y oai31_y aoi_a_y_n muxi_a_y muxi_b_y
+  registers: <none>
+  symbols:
+    L_aoi_a_y_n category=parameter @sv-cells/sm83/cells/reg_wz_out.sv:4:3
+    L_aoi_b_y category=parameter @sv-cells/sm83/cells/reg_wz_out.sv:5:3
+    L_muxi_a_y category=parameter @sv-cells/sm83/cells/reg_wz_out.sv:6:3
+    L_muxi_b_y category=parameter @sv-cells/sm83/cells/reg_wz_out.sv:7:3
+    L_nand_y category=parameter @sv-cells/sm83/cells/reg_wz_out.sv:8:3
+    L_oai21_y category=parameter @sv-cells/sm83/cells/reg_wz_out.sv:9:3
+    L_oai31_y category=parameter @sv-cells/sm83/cells/reg_wz_out.sv:10:3
+    T_Z_aoi_a_y category=localparam @sv-cells/sm83/cells/reg_wz_out.sv:48:2
+    T_Z_aoi_b_y category=localparam @sv-cells/sm83/cells/reg_wz_out.sv:62:2
+    T_Z_nand_y category=localparam @sv-cells/sm83/cells/reg_wz_out.sv:42:2
+    T_Z_oai21_y category=localparam @sv-cells/sm83/cells/reg_wz_out.sv:37:2
+    T_Z_oai31_y category=localparam @sv-cells/sm83/cells/reg_wz_out.sv:32:2
+    T_fall_aoi_a_y category=localparam @sv-cells/sm83/cells/reg_wz_out.sv:47:2
+    T_fall_aoi_a_y_n category=localparam @sv-cells/sm83/cells/reg_wz_out.sv:57:2
+    T_fall_aoi_b_y category=localparam @sv-cells/sm83/cells/reg_wz_out.sv:61:2
+    T_fall_muxi_a_y category=specparam @sv-cells/sm83/cells/reg_wz_out.sv:71:3
+    T_fall_muxi_b_y category=specparam @sv-cells/sm83/cells/reg_wz_out.sv:73:3
+    T_fall_nand_y category=localparam @sv-cells/sm83/cells/reg_wz_out.sv:41:2
+    T_fall_oai21_y category=localparam @sv-cells/sm83/cells/reg_wz_out.sv:36:2
+    T_fall_oai31_y category=localparam @sv-cells/sm83/cells/reg_wz_out.sv:31:2
+    T_rise_aoi_a_y category=localparam @sv-cells/sm83/cells/reg_wz_out.sv:46:2
+    T_rise_aoi_a_y_n category=localparam @sv-cells/sm83/cells/reg_wz_out.sv:56:2
+    T_rise_aoi_b_y category=localparam @sv-cells/sm83/cells/reg_wz_out.sv:60:2
+    T_rise_muxi_a_y category=specparam @sv-cells/sm83/cells/reg_wz_out.sv:70:3
+    T_rise_muxi_b_y category=specparam @sv-cells/sm83/cells/reg_wz_out.sv:72:3
+    aoi_a_in3_muxi_a_d1 category=port @sv-cells/sm83/cells/reg_wz_out.sv:12:3
+    aoi_a_y category=declaration @sv-cells/sm83/cells/reg_wz_out.sv:29:2
+    aoi_a_y_n category=port @sv-cells/sm83/cells/reg_wz_out.sv:16:3
+    aoi_b_in3_muxi_b_d1 category=port @sv-cells/sm83/cells/reg_wz_out.sv:12:3
+    aoi_b_y category=port @sv-cells/sm83/cells/reg_wz_out.sv:15:3
+    aoi_ena1 category=port @sv-cells/sm83/cells/reg_wz_out.sv:12:3
+    aoi_ena2 category=port @sv-cells/sm83/cells/reg_wz_out.sv:12:3
+    aoi_ena3 category=port @sv-cells/sm83/cells/reg_wz_out.sv:12:3
+    aoi_in1 category=port @sv-cells/sm83/cells/reg_wz_out.sv:12:3
+    muxi_a_sel category=port @sv-cells/sm83/cells/reg_wz_out.sv:12:3
+    muxi_a_sel_n category=port @sv-cells/sm83/cells/reg_wz_out.sv:12:3
+    muxi_a_y category=port @sv-cells/sm83/cells/reg_wz_out.sv:16:3
+    muxi_b_sel category=port @sv-cells/sm83/cells/reg_wz_out.sv:12:3
+    muxi_b_sel_n category=port @sv-cells/sm83/cells/reg_wz_out.sv:12:3
+    muxi_b_y category=port @sv-cells/sm83/cells/reg_wz_out.sv:16:3
+    muxi_d0 category=port @sv-cells/sm83/cells/reg_wz_out.sv:12:3
+    nand_ena category=port @sv-cells/sm83/cells/reg_wz_out.sv:12:3
+    nand_y category=port @sv-cells/sm83/cells/reg_wz_out.sv:15:3
+    oai21_in_aoi_b_in2 category=port @sv-cells/sm83/cells/reg_wz_out.sv:12:3
+    oai21_y category=port @sv-cells/sm83/cells/reg_wz_out.sv:15:3
+    oai31_in_nand_in_aoi_a_in2 category=port @sv-cells/sm83/cells/reg_wz_out.sv:12:3
+    oai31_y category=port @sv-cells/sm83/cells/reg_wz_out.sv:15:3
+    oai_ena1 category=port @sv-cells/sm83/cells/reg_wz_out.sv:12:3
+    oai_ena2 category=port @sv-cells/sm83/cells/reg_wz_out.sv:12:3
+    oai_ena3 category=port @sv-cells/sm83/cells/reg_wz_out.sv:12:3
+    pch_n category=port @sv-cells/sm83/cells/reg_wz_out.sv:12:3
+    sel_a category=declaration @sv-cells/sm83/cells/reg_wz_out.sv:21:2
+    sel_b category=declaration @sv-cells/sm83/cells/reg_wz_out.sv:21:2
+  ports:
+    aoi_a_in3_muxi_a_d1 direction=input use=input modifiers=[logic] @sv-cells/sm83/cells/reg_wz_out.sv:12:3
+    aoi_a_y_n direction=output use=output modifiers=[logic] @sv-cells/sm83/cells/reg_wz_out.sv:16:3
+    aoi_b_in3_muxi_b_d1 direction=input use=input modifiers=[logic] @sv-cells/sm83/cells/reg_wz_out.sv:12:3
+    aoi_b_y direction=output use=output modifiers=[tri,logic] @sv-cells/sm83/cells/reg_wz_out.sv:15:3
+    aoi_ena1 direction=input use=input modifiers=[logic] @sv-cells/sm83/cells/reg_wz_out.sv:12:3
+    aoi_ena2 direction=input use=input modifiers=[logic] @sv-cells/sm83/cells/reg_wz_out.sv:12:3
+    aoi_ena3 direction=input use=input modifiers=[logic] @sv-cells/sm83/cells/reg_wz_out.sv:12:3
+    aoi_in1 direction=input use=input modifiers=[logic] @sv-cells/sm83/cells/reg_wz_out.sv:12:3
+    muxi_a_sel direction=input use=input modifiers=[logic] @sv-cells/sm83/cells/reg_wz_out.sv:12:3
+    muxi_a_sel_n direction=input use=input modifiers=[logic] @sv-cells/sm83/cells/reg_wz_out.sv:12:3
+    muxi_a_y direction=output use=output modifiers=[logic] @sv-cells/sm83/cells/reg_wz_out.sv:16:3
+    muxi_b_sel direction=input use=input modifiers=[logic] @sv-cells/sm83/cells/reg_wz_out.sv:12:3
+    muxi_b_sel_n direction=input use=input modifiers=[logic] @sv-cells/sm83/cells/reg_wz_out.sv:12:3
+    muxi_b_y direction=output use=output modifiers=[logic] @sv-cells/sm83/cells/reg_wz_out.sv:16:3
+    muxi_d0 direction=input use=input modifiers=[logic] @sv-cells/sm83/cells/reg_wz_out.sv:12:3
+    nand_ena direction=input use=input modifiers=[logic] @sv-cells/sm83/cells/reg_wz_out.sv:12:3
+    nand_y direction=output use=output modifiers=[tri,logic] @sv-cells/sm83/cells/reg_wz_out.sv:15:3
+    oai21_in_aoi_b_in2 direction=input use=input modifiers=[logic] @sv-cells/sm83/cells/reg_wz_out.sv:12:3
+    oai21_y direction=output use=output modifiers=[tri,logic] @sv-cells/sm83/cells/reg_wz_out.sv:15:3
+    oai31_in_nand_in_aoi_a_in2 direction=input use=input modifiers=[logic] @sv-cells/sm83/cells/reg_wz_out.sv:12:3
+    oai31_y direction=output use=output modifiers=[tri,logic] @sv-cells/sm83/cells/reg_wz_out.sv:15:3
+    oai_ena1 direction=input use=input modifiers=[logic] @sv-cells/sm83/cells/reg_wz_out.sv:12:3
+    oai_ena2 direction=input use=input modifiers=[logic] @sv-cells/sm83/cells/reg_wz_out.sv:12:3
+    oai_ena3 direction=input use=input modifiers=[logic] @sv-cells/sm83/cells/reg_wz_out.sv:12:3
+    pch_n direction=input use=input modifiers=[logic] @sv-cells/sm83/cells/reg_wz_out.sv:12:3
+  declarations:
+    aoi_a_y kind=Tri type=logic value=<none> @sv-cells/sm83/cells/reg_wz_out.sv:29:2
+    sel_a kind=Logic type=<implicit> value=<none> @sv-cells/sm83/cells/reg_wz_out.sv:21:2
+    sel_b kind=Logic type=<implicit> value=<none> @sv-cells/sm83/cells/reg_wz_out.sv:21:2
+  signal_roles:
+    aoi_a_y roles=[ContinuousDriven,PrimitiveDriven,KeeperDriven] declared=sv-cells/sm83/cells/reg_wz_out.sv:29:2
+    aoi_a_y_n roles=[ContinuousDriven] declared=sv-cells/sm83/cells/reg_wz_out.sv:16:3
+    aoi_b_y roles=[ContinuousDriven,PrimitiveDriven] declared=sv-cells/sm83/cells/reg_wz_out.sv:15:3
+    muxi_a_y roles=[ContinuousDriven] declared=sv-cells/sm83/cells/reg_wz_out.sv:16:3
+    muxi_b_y roles=[ContinuousDriven] declared=sv-cells/sm83/cells/reg_wz_out.sv:16:3
+    nand_y roles=[ContinuousDriven] declared=sv-cells/sm83/cells/reg_wz_out.sv:15:3
+    oai21_y roles=[ContinuousDriven] declared=sv-cells/sm83/cells/reg_wz_out.sv:15:3
+    oai31_y roles=[ContinuousDriven] declared=sv-cells/sm83/cells/reg_wz_out.sv:15:3
+    sel_a roles=[ContinuousDriven] declared=sv-cells/sm83/cells/reg_wz_out.sv:21:2
+    sel_b roles=[ContinuousDriven] declared=sv-cells/sm83/cells/reg_wz_out.sv:21:2
+  assignments:
+    #0 (sel_a continuous (?: ((eq muxi_a_sel (not muxi_a_sel_n))) muxi_a_sel 'x)) @sv-cells/sm83/cells/reg_wz_out.sv:23:2 strength=<none> syntax=Continuous
+    #1 (muxi_a_y continuous (?: sel_a (not aoi_a_in3_muxi_a_d1) (not muxi_d0))) @sv-cells/sm83/cells/reg_wz_out.sv:24:2 strength=<none> syntax=Continuous
+    #2 (sel_b continuous (?: ((eq muxi_b_sel (not muxi_b_sel_n))) muxi_b_sel 'x)) @sv-cells/sm83/cells/reg_wz_out.sv:26:2 strength=<none> syntax=Continuous
+    #3 (muxi_b_y continuous (?: sel_b (not aoi_b_in3_muxi_b_d1) (not muxi_d0))) @sv-cells/sm83/cells/reg_wz_out.sv:27:2 strength=<none> syntax=Continuous
+    #4 (oai31_y continuous (?: ((and ((or (or oai_ena1 oai_ena2) oai_ena3)) oai31_in_nand_in_aoi_a_in2)) 0 'z) (T_Z_oai31_y T_fall_oai31_y T_Z_oai31_y)) @sv-cells/sm83/cells/reg_wz_out.sv:33:2 strength=highz1,strong0 syntax=Continuous
+    #5 (oai21_y continuous (?: ((and ((or oai_ena1 oai_ena2)) oai21_in_aoi_b_in2)) 0 'z) (T_Z_oai21_y T_fall_oai21_y T_Z_oai21_y)) @sv-cells/sm83/cells/reg_wz_out.sv:38:2 strength=highz1,strong0 syntax=Continuous
+    #6 (nand_y continuous (?: ((and nand_ena oai31_in_nand_in_aoi_a_in2)) 0 'z) (T_Z_nand_y T_fall_nand_y T_Z_nand_y)) @sv-cells/sm83/cells/reg_wz_out.sv:43:2 strength=highz1,strong0 syntax=Continuous
+    #8 (aoi_a_y continuous (?: ((or (or ((and aoi_ena1 aoi_in1)) ((and aoi_ena2 oai31_in_nand_in_aoi_a_in2))) ((and aoi_ena3 aoi_a_in3_muxi_a_d1)))) 0 'z) (T_rise_aoi_a_y T_fall_aoi_a_y T_Z_aoi_a_y)) @sv-cells/sm83/cells/reg_wz_out.sv:50:2 strength=highz1,strong0 syntax=Continuous
+    #10 (aoi_a_y_n continuous (not aoi_a_y) (T_rise_aoi_a_y_n T_fall_aoi_a_y_n)) @sv-cells/sm83/cells/reg_wz_out.sv:58:2 strength=<none> syntax=Continuous
+    #12 (aoi_b_y continuous (?: ((or (or ((and aoi_ena1 aoi_in1)) ((and aoi_ena2 oai21_in_aoi_b_in2))) ((and aoi_ena3 aoi_b_in3_muxi_b_d1)))) 0 'z) (T_rise_aoi_b_y T_fall_aoi_b_y T_Z_aoi_b_y)) @sv-cells/sm83/cells/reg_wz_out.sv:64:2 strength=highz1,strong0 syntax=Continuous
+  drivers:
+    #0 target=sel_a source=continuous @sv-cells/sm83/cells/reg_wz_out.sv:23:2
+    #1 target=muxi_a_y source=continuous @sv-cells/sm83/cells/reg_wz_out.sv:24:2
+    #2 target=sel_b source=continuous @sv-cells/sm83/cells/reg_wz_out.sv:26:2
+    #3 target=muxi_b_y source=continuous @sv-cells/sm83/cells/reg_wz_out.sv:27:2
+    #4 target=oai31_y source=continuous @sv-cells/sm83/cells/reg_wz_out.sv:33:2
+    #5 target=oai21_y source=continuous @sv-cells/sm83/cells/reg_wz_out.sv:38:2
+    #6 target=nand_y source=continuous @sv-cells/sm83/cells/reg_wz_out.sv:43:2
+    #7 target=aoi_a_y source=primitive(bufif0) @sv-cells/sm83/cells/reg_wz_out.sv:49:2
+    #8 target=aoi_a_y source=continuous @sv-cells/sm83/cells/reg_wz_out.sv:50:2
+    #9 target=aoi_a_y source=keeper(instance=aoi_a_y_keeper) @sv-cells/sm83/cells/reg_wz_out.sv:54:24
+    #10 target=aoi_a_y_n source=continuous @sv-cells/sm83/cells/reg_wz_out.sv:58:2
+    #11 target=aoi_b_y source=primitive(bufif0) @sv-cells/sm83/cells/reg_wz_out.sv:63:2
+    #12 target=aoi_b_y source=continuous @sv-cells/sm83/cells/reg_wz_out.sv:64:2
+  primitives:
+    #7 bufif0 args=[aoi_a_y,'1,pch_n] strength=strong1,highz0 delay=(T_rise_aoi_a_y T_fall_aoi_a_y T_Z_aoi_a_y) @sv-cells/sm83/cells/reg_wz_out.sv:49:2
+    #11 bufif0 args=[aoi_b_y,'1,pch_n] strength=strong1,highz0 delay=(T_rise_aoi_b_y T_fall_aoi_b_y T_Z_aoi_b_y) @sv-cells/sm83/cells/reg_wz_out.sv:63:2
+  instantiations:
+    #9 keeper aoi_a_y_keeper @sv-cells/sm83/cells/reg_wz_out.sv:54:2
+      resolution=special(Keeper)
+      connection target=aoi_a_y @sv-cells/sm83/cells/reg_wz_out.sv:54:24
+  timing_aliases:
+    T_Z_aoi_a_y kind=Localparam value=(call tpd_z T_rise_aoi_a_y T_fall_aoi_a_y) @sv-cells/sm83/cells/reg_wz_out.sv:48:2
+    T_Z_aoi_b_y kind=Localparam value=(call tpd_z T_rise_aoi_b_y T_fall_aoi_b_y) @sv-cells/sm83/cells/reg_wz_out.sv:62:2
+    T_Z_nand_y kind=Localparam value=(call tpd_z _ T_fall_nand_y) @sv-cells/sm83/cells/reg_wz_out.sv:42:2
+    T_Z_oai21_y kind=Localparam value=(call tpd_z _ T_fall_oai21_y) @sv-cells/sm83/cells/reg_wz_out.sv:37:2
+    T_Z_oai31_y kind=Localparam value=(call tpd_z _ T_fall_oai31_y) @sv-cells/sm83/cells/reg_wz_out.sv:32:2
+    T_fall_aoi_a_y kind=Localparam value=(call tpd_elmore 93 (mul (call R_nmos_ohm (mul 8 L_unit)) 2)) @sv-cells/sm83/cells/reg_wz_out.sv:47:2
+    T_fall_aoi_a_y_n kind=Localparam value=(call tpd_elmore L_aoi_a_y_n (call R_nmos_ohm (mul 6 L_unit))) @sv-cells/sm83/cells/reg_wz_out.sv:57:2
+    T_fall_aoi_b_y kind=Localparam value=(call tpd_elmore L_aoi_b_y (mul (call R_nmos_ohm (mul 8 L_unit)) 2)) @sv-cells/sm83/cells/reg_wz_out.sv:61:2
+    T_fall_muxi_a_y kind=Specparam value=(call tpd_elmore L_muxi_a_y (mul (call R_nmos_ohm (mul 3 L_unit)) 2)) @sv-cells/sm83/cells/reg_wz_out.sv:71:3
+    T_fall_muxi_b_y kind=Specparam value=(call tpd_elmore L_muxi_b_y (mul (call R_nmos_ohm (mul 3 L_unit)) 2)) @sv-cells/sm83/cells/reg_wz_out.sv:73:3
+    T_fall_nand_y kind=Localparam value=(call tpd_elmore L_nand_y (mul (call R_nmos_ohm (mul 8 L_unit)) 2)) @sv-cells/sm83/cells/reg_wz_out.sv:41:2
+    T_fall_oai21_y kind=Localparam value=(call tpd_elmore L_oai21_y (mul (call R_nmos_ohm (mul 8 L_unit)) 2)) @sv-cells/sm83/cells/reg_wz_out.sv:36:2
+    T_fall_oai31_y kind=Localparam value=(call tpd_elmore L_oai31_y (mul (call R_nmos_ohm (mul 8 L_unit)) 2)) @sv-cells/sm83/cells/reg_wz_out.sv:31:2
+    T_rise_aoi_a_y kind=Localparam value=(call tpd_elmore 93 (call R_pmos_ohm (mul 8 L_unit))) @sv-cells/sm83/cells/reg_wz_out.sv:46:2
+    T_rise_aoi_a_y_n kind=Localparam value=(call tpd_elmore L_aoi_a_y_n (call R_pmos_ohm (mul 12 L_unit))) @sv-cells/sm83/cells/reg_wz_out.sv:56:2
+    T_rise_aoi_b_y kind=Localparam value=(call tpd_elmore L_aoi_b_y (call R_pmos_ohm (mul 6 L_unit))) @sv-cells/sm83/cells/reg_wz_out.sv:60:2
+    T_rise_muxi_a_y kind=Specparam value=(call tpd_elmore L_muxi_a_y (mul (call R_pmos_ohm (mul 3 L_unit)) 2)) @sv-cells/sm83/cells/reg_wz_out.sv:70:3
+    T_rise_muxi_b_y kind=Specparam value=(call tpd_elmore L_muxi_b_y (mul (call R_pmos_ohm (mul 3 L_unit)) 2)) @sv-cells/sm83/cells/reg_wz_out.sv:72:3
+  specify_paths:
+    controls=[muxi_a_sel,muxi_a_sel_n,aoi_a_in3_muxi_a_d1,muxi_d0] target=muxi_a_y delays=[T_rise_muxi_a_y,T_fall_muxi_a_y] @sv-cells/sm83/cells/reg_wz_out.sv:75:3
+    controls=[muxi_b_sel,muxi_b_sel_n,aoi_b_in3_muxi_b_d1,muxi_d0] target=muxi_b_y delays=[T_rise_muxi_b_y,T_fall_muxi_b_y] @sv-cells/sm83/cells/reg_wz_out.sv:76:3
+  generate_alternatives:
+requirements:
+  driver.high-z | M6 | sv-cells/sm83/cells/reg_wz_out.sv:34:13 | high-impedance driver semantics are scheduled for Milestone 6
+  driver.primitive-tristate | M6 | sv-cells/sm83/cells/reg_wz_out.sv:49:2 | tri-state primitive and strength semantics are scheduled for Milestone 6
+  driver.repeated | M6 | sv-cells/sm83/cells/reg_wz_out.sv:49:2 | repeated source drivers are scheduled for Milestone 6
+  driver.strength | M6 | sv-cells/sm83/cells/reg_wz_out.sv:33:2 | strength-qualified drivers are scheduled for Milestone 6
+  timing.alias | M7 | sv-cells/sm83/cells/reg_wz_out.sv:48:2 | timing aliases are scheduled for Milestone 7
+  timing.assignment-delay | M7 | sv-cells/sm83/cells/reg_wz_out.sv:33:2 | symbolic assignment delays are scheduled for Milestone 7
+  timing.primitive-delay | M7 | sv-cells/sm83/cells/reg_wz_out.sv:49:2 | symbolic primitive delays are scheduled for Milestone 7
+  timing.specify-path | M7 | sv-cells/sm83/cells/reg_wz_out.sv:75:3 | specify paths are scheduled for Milestone 7
+  value.combinational | M4 | sv-cells/sm83/cells/reg_wz_out.sv:23:2 | combinational value lowering is scheduled for Milestone 4

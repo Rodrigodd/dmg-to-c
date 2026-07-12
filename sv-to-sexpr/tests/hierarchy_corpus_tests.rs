@@ -19,15 +19,9 @@ use sv_to_sexpr::lower::lower_design_with_catalog_and_generate_mode;
 
 const HALF_ADD: &str = "sv-cells/dmg_cpu_b/cells/half_add.sv";
 const FULL_ADD: &str = "sv-cells/dmg_cpu_b/cells/full_add.sv";
-const KEEPER_FAILURES: &[&str] = &[
-    "sv-cells/dmg_cpu_b/cells/mux.sv",
-    "sv-cells/dmg_cpu_b/cells/muxi.sv",
-    "sv-cells/dmg_cpu_b/cells/pad_xtal.sv",
-    "sv-cells/sm83/cells/idu_bit0.sv",
-    "sv-cells/sm83/cells/reg_wz_out.sv",
-];
 const TRANSISTOR_FAILURES: &[&str] = &[
     "sv-cells/sm83/cells/dlatch_ee_irq.sv",
+    "sv-cells/sm83/cells/idu_bit0.sv",
     "sv-cells/sm83/cells/idu_bit123456.sv",
     "sv-cells/sm83/cells/irq_prio_bit0.sv",
     "sv-cells/sm83/cells/irq_prio_bit1.sv",
@@ -56,7 +50,6 @@ fn configured_hierarchy_corpus_is_exact_resolved_and_fully_lowered() {
         let mut lower_succeeded = 0;
         let mut warnings = 0;
         let mut ignores = 0;
-        let mut keeper_failures = Vec::new();
         let mut transistor_failures = Vec::new();
 
         for (path, design) in &corpus.designs {
@@ -68,7 +61,9 @@ fn configured_hierarchy_corpus_is_exact_resolved_and_fully_lowered() {
             .unwrap();
             assert!(analysis.requirements.iter().all(|requirement| {
                 requirement.milestone != TargetMilestone::M9OrdinaryHierarchy
+                    && requirement.milestone != TargetMilestone::M10Keeper
                     && requirement.capability_id != "hierarchy.ordinary"
+                    && requirement.capability_id != "hierarchy.keeper"
             }));
             match analysis.disposition {
                 AnalysisDisposition::Supported => supported += 1,
@@ -134,14 +129,6 @@ fn configured_hierarchy_corpus_is_exact_resolved_and_fully_lowered() {
                         assert_adder(path, &lowered);
                     }
                 }
-                Err(diagnostic) if KEEPER_FAILURES.contains(&path.as_str()) => {
-                    assert!(
-                        diagnostic
-                            .message
-                            .starts_with("unsupported item for lowering")
-                    );
-                    keeper_failures.push(path.clone());
-                }
                 Err(diagnostic) if TRANSISTOR_FAILURES.contains(&path.as_str()) => {
                     assert!(diagnostic.message.starts_with("unsupported primitive"));
                     transistor_failures.push(path.clone());
@@ -167,16 +154,15 @@ fn configured_hierarchy_corpus_is_exact_resolved_and_fully_lowered() {
         assert_eq!(input_connections, 14);
         assert_eq!(output_connections, 7);
         assert_eq!((supported, deferred), (3, 203));
-        assert_eq!(lower_succeeded, 192);
+        assert_eq!(lower_succeeded, 196);
         assert_eq!(warnings, 47);
         assert_eq!(
             ignores,
             match mode {
-                GenerateMode::Delayful => 1073,
-                GenerateMode::Nodelay => 1063,
+                GenerateMode::Delayful => 1108,
+                GenerateMode::Nodelay => 1098,
             }
         );
-        assert_eq!(keeper_failures, KEEPER_FAILURES);
         assert_eq!(transistor_failures, TRANSISTOR_FAILURES);
 
         writeln!(
@@ -185,13 +171,7 @@ fn configured_hierarchy_corpus_is_exact_resolved_and_fully_lowered() {
             mode.label(),
             ordinary_files.into_iter().collect::<Vec<_>>().join(","),
             render_counts(&module_counts),
-            keeper_failures.len() + transistor_failures.len(),
-        )
-        .unwrap();
-        writeln!(
-            &mut output,
-            "  keeper-failures=[{}]",
-            keeper_failures.join(",")
+            transistor_failures.len(),
         )
         .unwrap();
         writeln!(
@@ -214,6 +194,9 @@ fn configured_hierarchy_corpus_is_exact_resolved_and_fully_lowered() {
 
     let fixture = PathBuf::from(env!("CARGO_MANIFEST_DIR"))
         .join("tests/fixtures/hierarchy/corpus_summary.hierarchy");
+    if std::env::var_os("UPDATE_HIERARCHY_CORPUS_GOLDEN").is_some() {
+        fs::write(&fixture, &output).unwrap();
+    }
     let expected = fs::read_to_string(&fixture)
         .unwrap_or_else(|error| panic!("failed to read {}: {error}", fixture.display()));
     assert_eq!(output, expected, "hierarchy corpus summary changed");

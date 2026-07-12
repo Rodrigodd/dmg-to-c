@@ -19,7 +19,6 @@ use sv_to_sexpr::survey::collect_sv_files;
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
 enum FailureCategory {
     TransistorRelated,
-    KeeperUser,
     UnsupportedTimingFactor,
 }
 
@@ -27,7 +26,6 @@ impl FailureCategory {
     fn label(self) -> &'static str {
         match self {
             Self::TransistorRelated => "transistor-related",
-            Self::KeeperUser => "keeper-user",
             Self::UnsupportedTimingFactor => "unsupported-timing-factor",
         }
     }
@@ -65,6 +63,7 @@ struct AuditTotals {
 
 const TRANSISTOR_FAILURES: &[&str] = &[
     "sv-cells/sm83/cells/dlatch_ee_irq.sv",
+    "sv-cells/sm83/cells/idu_bit0.sv",
     "sv-cells/sm83/cells/idu_bit123456.sv",
     "sv-cells/sm83/cells/irq_prio_bit0.sv",
     "sv-cells/sm83/cells/irq_prio_bit1.sv",
@@ -73,13 +72,6 @@ const TRANSISTOR_FAILURES: &[&str] = &[
     "sv-cells/sm83/cells/irq_prio_bit4.sv",
     "sv-cells/sm83/cells/irq_prio_bit5.sv",
     "sv-cells/sm83/cells/irq_prio_bit6.sv",
-];
-const KEEPER_FAILURES: &[&str] = &[
-    "sv-cells/dmg_cpu_b/cells/mux.sv",
-    "sv-cells/dmg_cpu_b/cells/muxi.sv",
-    "sv-cells/dmg_cpu_b/cells/pad_xtal.sv",
-    "sv-cells/sm83/cells/idu_bit0.sv",
-    "sv-cells/sm83/cells/reg_wz_out.sv",
 ];
 const TIMING_FACTOR_FAILURES: &[&str] = &[];
 
@@ -185,14 +177,13 @@ fn full_corpus_lowering_baseline_is_deterministic_flat_and_explicit() {
     assert_exact_baseline(&totals, &failures);
     let summary = render_summary(&totals, &failures);
     assert!(!summary.contains(&absolute_root));
-    assert!(summary.contains("processed=206 succeeded=192 failed=14"));
+    assert!(summary.contains("processed=206 succeeded=196 failed=10"));
     assert!(summary.contains("invalid_successful_cells=0"));
     assert!(summary.contains("nested_value_expressions=0"));
     assert!(summary.contains("timing_validation_failures=0"));
     assert!(summary.contains("nondeterministic_results=0"));
     for category in [
         FailureCategory::TransistorRelated,
-        FailureCategory::KeeperUser,
         FailureCategory::UnsupportedTimingFactor,
     ] {
         assert!(summary.contains(&format!("{} files=", category.label())));
@@ -305,7 +296,6 @@ fn timing_has_nested_operation(expr: &Expr) -> bool {
 fn classify_failure(path: &str, diagnostic: &Diagnostic) -> FailureCategory {
     let membership_count = [
         TRANSISTOR_FAILURES.contains(&path),
-        KEEPER_FAILURES.contains(&path),
         TIMING_FACTOR_FAILURES.contains(&path),
     ]
     .into_iter()
@@ -318,8 +308,6 @@ fn classify_failure(path: &str, diagnostic: &Diagnostic) -> FailureCategory {
 
     let (category, expected_message) = if TRANSISTOR_FAILURES.contains(&path) {
         (FailureCategory::TransistorRelated, "unsupported primitive")
-    } else if KEEPER_FAILURES.contains(&path) {
-        (FailureCategory::KeeperUser, "unsupported item for lowering")
     } else if TIMING_FACTOR_FAILURES.contains(&path) {
         (
             FailureCategory::UnsupportedTimingFactor,
@@ -337,9 +325,9 @@ fn classify_failure(path: &str, diagnostic: &Diagnostic) -> FailureCategory {
 
 fn assert_exact_baseline(totals: &AuditTotals, failures: &[FailedFile]) {
     assert_eq!(totals.processed, 206);
-    assert_eq!(totals.succeeded, 192);
-    assert_eq!(totals.failed, 14);
-    assert_eq!(failures.len(), 14);
+    assert_eq!(totals.succeeded, 196);
+    assert_eq!(totals.failed, 10);
+    assert_eq!(failures.len(), 10);
     assert_eq!(totals.invalid_successful_cells, 0);
     assert_eq!(totals.nested_value_expressions, 0);
     assert_eq!(totals.empty_value_operands, 0);
@@ -347,29 +335,31 @@ fn assert_exact_baseline(totals: &AuditTotals, failures: &[FailedFile]) {
     assert_eq!(totals.nondeterministic_results, 0);
     assert_eq!(totals.absolute_path_leaks, 0);
     assert_eq!(totals.dependency_order_failures, 0);
-    assert_eq!(totals.assignments, 1693);
+    assert_eq!(totals.assignments, 1749);
     assert_eq!(totals.atom_value_assignments, 17);
-    assert_eq!(totals.temporary_assignments, 1046);
-    assert_eq!(totals.repeated_target_assignments, 51);
-    assert_eq!(totals.delayed_assignments, 588);
-    assert_eq!(totals.nested_timing_delay_assignments, 588);
+    assert_eq!(totals.temporary_assignments, 1068);
+    assert_eq!(totals.repeated_target_assignments, 65);
+    assert_eq!(totals.delayed_assignments, 616);
+    assert_eq!(totals.nested_timing_delay_assignments, 616);
     assert_eq!(totals.cells_with_registers, 26);
     assert_eq!(totals.registers, 47);
     assert_eq!(
         totals.operator_counts,
         BTreeMap::from([
-            ("and".to_string(), 646),
+            ("and".to_string(), 655),
             ("bufif0".to_string(), 2),
-            ("bufif0-strength".to_string(), 74),
+            ("bufif0-strength".to_string(), 82),
             ("bufif1".to_string(), 10),
-            ("bufif1-strength".to_string(), 293),
+            ("bufif1-strength".to_string(), 303),
             ("caseeq".to_string(), 4),
             ("drive-strength".to_string(), 5),
-            ("mux".to_string(), 54),
+            ("eq".to_string(), 2),
+            ("keeper".to_string(), 4),
+            ("mux".to_string(), 58),
             ("nand".to_string(), 27),
             ("nor".to_string(), 28),
-            ("not".to_string(), 232),
-            ("or".to_string(), 292),
+            ("not".to_string(), 247),
+            ("or".to_string(), 296),
             ("xnor".to_string(), 1),
             ("xor".to_string(), 8),
         ])
@@ -377,7 +367,6 @@ fn assert_exact_baseline(totals: &AuditTotals, failures: &[FailedFile]) {
 
     for (category, expected_paths) in [
         (FailureCategory::TransistorRelated, TRANSISTOR_FAILURES),
-        (FailureCategory::KeeperUser, KEEPER_FAILURES),
         (
             FailureCategory::UnsupportedTimingFactor,
             TIMING_FACTOR_FAILURES,
@@ -449,7 +438,6 @@ fn render_summary(totals: &AuditTotals, failures: &[FailedFile]) -> String {
     writeln!(&mut output, "failure-categories:").unwrap();
     for category in [
         FailureCategory::TransistorRelated,
-        FailureCategory::KeeperUser,
         FailureCategory::UnsupportedTimingFactor,
     ] {
         let category_failures = failures

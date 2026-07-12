@@ -1,6 +1,7 @@
 driver corpus audit
-corpus-files=206 relevant-files=67 relevant-successes=53 relevant-later-deferrals=14
-global-lowering: succeeded=192 failed=14
+corpus-files=206 relevant-files=67 relevant-successes=57 relevant-later-deferrals=10
+global-lowering: succeeded=196 failed=10
+keeper-drivers: source=6 emitted=4 deferred=2
 source-forms:
   high-z-bufif0=2
   high-z-bufif1=61
@@ -17,14 +18,14 @@ emitted-success-forms:
   bufif0=2
   bufif1=10
   drive-strength=5
-  bufif0-strength=74
-  bufif1-strength=293
+  bufif0-strength=82
+  bufif1-strength=303
 repeated-drivers:
   paths=26
   targets=58
-  source-occurrences=129
-  emitted-success-occurrences=95
-  deferred-source-occurrences=34
+  source-occurrences=135
+  emitted-success-occurrences=114
+  deferred-source-occurrences=21
 invariants:
   invalid-cells=0
   nested-values=0
@@ -43,6 +44,8 @@ invariants:
   absolute-path-leaks=0
 relevant-successes:
   sv-cells/dmg_cpu_b/cells/buf_if0.sv source[hiz0=1,hiz1=0,bufif0=0,bufif1=0,continuous-strength=0,primitive-strength=0,repeated-targets=0] emitted[bufif0=1,bufif1=0,drive-strength=0,bufif0-strength=0,bufif1-strength=0]
+  sv-cells/dmg_cpu_b/cells/mux.sv source[hiz0=0,hiz1=0,bufif0=2,bufif1=2,continuous-strength=0,primitive-strength=4,repeated-targets=1] emitted[bufif0=0,bufif1=0,drive-strength=0,bufif0-strength=2,bufif1-strength=2]
+  sv-cells/dmg_cpu_b/cells/muxi.sv source[hiz0=0,hiz1=0,bufif0=2,bufif1=2,continuous-strength=0,primitive-strength=4,repeated-targets=1] emitted[bufif0=0,bufif1=0,drive-strength=0,bufif0-strength=2,bufif1-strength=2]
   sv-cells/dmg_cpu_b/cells/not_if0.sv source[hiz0=1,hiz1=0,bufif0=0,bufif1=0,continuous-strength=0,primitive-strength=0,repeated-targets=0] emitted[bufif0=1,bufif1=0,drive-strength=0,bufif0-strength=0,bufif1-strength=0]
   sv-cells/dmg_cpu_b/cells/not_if1.sv source[hiz0=0,hiz1=1,bufif0=0,bufif1=0,continuous-strength=0,primitive-strength=0,repeated-targets=0] emitted[bufif0=0,bufif1=1,drive-strength=0,bufif0-strength=0,bufif1-strength=0]
   sv-cells/dmg_cpu_b/cells/pad_bidir.sv source[hiz0=0,hiz1=0,bufif0=1,bufif1=1,continuous-strength=0,primitive-strength=2,repeated-targets=1] emitted[bufif0=0,bufif1=0,drive-strength=0,bufif0-strength=1,bufif1-strength=1]
@@ -50,6 +53,7 @@ relevant-successes:
   sv-cells/dmg_cpu_b/cells/pad_bidir_pu_latch.sv source[hiz0=0,hiz1=0,bufif0=2,bufif1=1,continuous-strength=0,primitive-strength=3,repeated-targets=1] emitted[bufif0=0,bufif1=0,drive-strength=0,bufif0-strength=2,bufif1-strength=1]
   sv-cells/dmg_cpu_b/cells/pad_in_pu.sv source[hiz0=0,hiz1=0,bufif0=0,bufif1=0,continuous-strength=1,primitive-strength=0,repeated-targets=0] emitted[bufif0=0,bufif1=0,drive-strength=1,bufif0-strength=0,bufif1-strength=0]
   sv-cells/dmg_cpu_b/cells/pad_out_diff.sv source[hiz0=0,hiz1=0,bufif0=1,bufif1=1,continuous-strength=0,primitive-strength=2,repeated-targets=1] emitted[bufif0=0,bufif1=0,drive-strength=0,bufif0-strength=1,bufif1-strength=1]
+  sv-cells/dmg_cpu_b/cells/pad_xtal.sv source[hiz0=0,hiz1=0,bufif0=2,bufif1=1,continuous-strength=0,primitive-strength=3,repeated-targets=1] emitted[bufif0=0,bufif1=0,drive-strength=0,bufif0-strength=2,bufif1-strength=1]
   sv-cells/dmg_cpu_b/cells/tie.sv source[hiz0=0,hiz1=0,bufif0=0,bufif1=0,continuous-strength=2,primitive-strength=0,repeated-targets=0] emitted[bufif0=0,bufif1=0,drive-strength=2,bufif0-strength=0,bufif1-strength=0]
   sv-cells/sm83/cells/alu_decoder.sv source[hiz0=0,hiz1=0,bufif0=0,bufif1=14,continuous-strength=0,primitive-strength=14,repeated-targets=0] emitted[bufif0=0,bufif1=0,drive-strength=0,bufif0-strength=0,bufif1-strength=14]
   sv-cells/sm83/cells/alu_pggen.sv source[hiz0=0,hiz1=0,bufif0=1,bufif1=0,continuous-strength=0,primitive-strength=1,repeated-targets=0] emitted[bufif0=0,bufif1=0,drive-strength=0,bufif0-strength=1,bufif1-strength=0]
@@ -94,15 +98,16 @@ relevant-successes:
   sv-cells/sm83/cells/reg_pc_out_bit345.sv source[hiz0=0,hiz1=8,bufif0=0,bufif1=0,continuous-strength=8,primitive-strength=0,repeated-targets=2] emitted[bufif0=0,bufif1=0,drive-strength=0,bufif0-strength=0,bufif1-strength=8]
   sv-cells/sm83/cells/reg_pc_out_bit67.sv source[hiz0=0,hiz1=8,bufif0=0,bufif1=0,continuous-strength=8,primitive-strength=0,repeated-targets=2] emitted[bufif0=0,bufif1=0,drive-strength=0,bufif0-strength=0,bufif1-strength=8]
   sv-cells/sm83/cells/reg_sp_out.sv source[hiz0=0,hiz1=7,bufif0=0,bufif1=0,continuous-strength=7,primitive-strength=0,repeated-targets=0] emitted[bufif0=0,bufif1=0,drive-strength=0,bufif0-strength=0,bufif1-strength=7]
+  sv-cells/sm83/cells/reg_wz_out.sv source[hiz0=0,hiz1=5,bufif0=2,bufif1=0,continuous-strength=5,primitive-strength=2,repeated-targets=2] emitted[bufif0=0,bufif1=0,drive-strength=0,bufif0-strength=2,bufif1-strength=5]
   sv-cells/sm83/cells/tie.sv source[hiz0=0,hiz1=0,bufif0=0,bufif1=0,continuous-strength=2,primitive-strength=0,repeated-targets=0] emitted[bufif0=0,bufif1=0,drive-strength=2,bufif0-strength=0,bufif1-strength=0]
 repeated-target-inventory:
-  sv-cells/dmg_cpu_b/cells/mux.sv [root] mux source=4 emitted=later
-  sv-cells/dmg_cpu_b/cells/muxi.sv [root] mux source=4 emitted=later
+  sv-cells/dmg_cpu_b/cells/mux.sv [root] mux source=5 emitted=5
+  sv-cells/dmg_cpu_b/cells/muxi.sv [root] mux source=5 emitted=5
   sv-cells/dmg_cpu_b/cells/pad_bidir.sv [root] pad source=2 emitted=2
   sv-cells/dmg_cpu_b/cells/pad_bidir_pu.sv [root] pad source=3 emitted=3
   sv-cells/dmg_cpu_b/cells/pad_bidir_pu_latch.sv [root] pad source=3 emitted=3
   sv-cells/dmg_cpu_b/cells/pad_out_diff.sv [root] pad source=2 emitted=2
-  sv-cells/dmg_cpu_b/cells/pad_xtal.sv [root] clk source=3 emitted=later
+  sv-cells/dmg_cpu_b/cells/pad_xtal.sv [root] clk source=4 emitted=4
   sv-cells/sm83/cells/b2b_wand_inj_a.sv [root] a source=3 emitted=3
   sv-cells/sm83/cells/b2b_wand_inj_a.sv [root] b source=2 emitted=2
   sv-cells/sm83/cells/decoder2.sv [root] y1 source=2 emitted=2
@@ -130,8 +135,8 @@ repeated-target-inventory:
   sv-cells/sm83/cells/decoder2.sv [root] y7 source=2 emitted=2
   sv-cells/sm83/cells/decoder2.sv [root] y8 source=2 emitted=2
   sv-cells/sm83/cells/decoder2.sv [root] y9 source=2 emitted=2
-  sv-cells/sm83/cells/dlatch_ee_irq.sv [root] gated_q source=2 emitted=later
-  sv-cells/sm83/cells/idu_bit0.sv [root] aoi_y source=3 emitted=later
+  sv-cells/sm83/cells/dlatch_ee_irq.sv [root] gated_q source=3 emitted=later
+  sv-cells/sm83/cells/idu_bit0.sv [root] aoi_y source=4 emitted=later
   sv-cells/sm83/cells/idu_bit0.sv [root] buf_a_y source=2 emitted=later
   sv-cells/sm83/cells/idu_bit0.sv [root] buf_b_y source=2 emitted=later
   sv-cells/sm83/cells/idu_bit123456.sv [root] buf_a_y source=2 emitted=later
@@ -152,14 +157,11 @@ repeated-target-inventory:
   sv-cells/sm83/cells/reg_pc_out_bit345.sv [root] y5 source=2 emitted=2
   sv-cells/sm83/cells/reg_pc_out_bit67.sv [root] y4 source=2 emitted=2
   sv-cells/sm83/cells/reg_pc_out_bit67.sv [root] y5 source=2 emitted=2
-  sv-cells/sm83/cells/reg_wz_out.sv [root] aoi_a_y source=2 emitted=later
-  sv-cells/sm83/cells/reg_wz_out.sv [root] aoi_b_y source=2 emitted=later
+  sv-cells/sm83/cells/reg_wz_out.sv [root] aoi_a_y source=3 emitted=3
+  sv-cells/sm83/cells/reg_wz_out.sv [root] aoi_b_y source=2 emitted=2
 relevant-later-deferrals:
-  sv-cells/dmg_cpu_b/cells/mux.sv:24:2: unsupported item for lowering | M10 | M10 keeper lowering remains after M6 bufif/strength/repeated drivers were structurally inventoried | source[hiz0=0,hiz1=0,bufif0=2,bufif1=2,continuous-strength=0,primitive-strength=4,repeated-targets=1]
-  sv-cells/dmg_cpu_b/cells/muxi.sv:24:2: unsupported item for lowering | M10 | M10 keeper lowering remains after M6 bufif/strength/repeated drivers were structurally inventoried | source[hiz0=0,hiz1=0,bufif0=2,bufif1=2,continuous-strength=0,primitive-strength=4,repeated-targets=1]
-  sv-cells/dmg_cpu_b/cells/pad_xtal.sv:26:2: unsupported item for lowering | M10 | M10 keeper lowering remains after M6 bufif/strength/repeated drivers were structurally inventoried | source[hiz0=0,hiz1=0,bufif0=2,bufif1=1,continuous-strength=0,primitive-strength=3,repeated-targets=1]
   sv-cells/sm83/cells/dlatch_ee_irq.sv:23:2: unsupported primitive rnmos | M11 | M11 transistor lowering remains after M6 bufif/strength/repeated drivers were structurally inventoried | source[hiz0=0,hiz1=0,bufif0=1,bufif1=0,continuous-strength=0,primitive-strength=1,repeated-targets=1]
-  sv-cells/sm83/cells/idu_bit0.sv:35:2: unsupported item for lowering | M10 | M10 keeper lowering remains after M6 bufif/strength/repeated drivers were structurally inventoried | source[hiz0=0,hiz1=0,bufif0=1,bufif1=7,continuous-strength=0,primitive-strength=8,repeated-targets=3]
+  sv-cells/sm83/cells/idu_bit0.sv:37:2: unsupported primitive nmos | M11 | M11 transistor lowering remains after M6 bufif/strength/repeated drivers were structurally inventoried | source[hiz0=0,hiz1=0,bufif0=1,bufif1=7,continuous-strength=0,primitive-strength=8,repeated-targets=3]
   sv-cells/sm83/cells/idu_bit123456.sv:29:2: unsupported primitive nmos | M11 | M11 transistor lowering remains after M6 bufif/strength/repeated drivers were structurally inventoried | source[hiz0=0,hiz1=0,bufif0=2,bufif1=4,continuous-strength=0,primitive-strength=6,repeated-targets=2]
   sv-cells/sm83/cells/irq_prio_bit0.sv:44:2: unsupported primitive nmos | M11 | M11 transistor lowering remains after M6 bufif/strength/repeated drivers were structurally inventoried | source[hiz0=0,hiz1=0,bufif0=3,bufif1=3,continuous-strength=0,primitive-strength=6,repeated-targets=1]
   sv-cells/sm83/cells/irq_prio_bit1.sv:51:2: unsupported primitive nmos | M11 | M11 transistor lowering remains after M6 bufif/strength/repeated drivers were structurally inventoried | source[hiz0=0,hiz1=0,bufif0=2,bufif1=4,continuous-strength=0,primitive-strength=6,repeated-targets=0]
@@ -168,4 +170,3 @@ relevant-later-deferrals:
   sv-cells/sm83/cells/irq_prio_bit4.sv:61:2: unsupported primitive nmos | M11 | M11 transistor lowering remains after M6 bufif/strength/repeated drivers were structurally inventoried | source[hiz0=0,hiz1=0,bufif0=3,bufif1=4,continuous-strength=0,primitive-strength=7,repeated-targets=0]
   sv-cells/sm83/cells/irq_prio_bit5.sv:64:2: unsupported primitive nmos | M11 | M11 transistor lowering remains after M6 bufif/strength/repeated drivers were structurally inventoried | source[hiz0=0,hiz1=0,bufif0=3,bufif1=5,continuous-strength=0,primitive-strength=8,repeated-targets=1]
   sv-cells/sm83/cells/irq_prio_bit6.sv:62:2: unsupported primitive nmos | M11 | M11 transistor lowering remains after M6 bufif/strength/repeated drivers were structurally inventoried | source[hiz0=0,hiz1=0,bufif0=2,bufif1=5,continuous-strength=0,primitive-strength=7,repeated-targets=0]
-  sv-cells/sm83/cells/reg_wz_out.sv:54:2: unsupported item for lowering | M10 | M10 keeper lowering remains after M6 bufif/strength/repeated drivers were structurally inventoried | source[hiz0=0,hiz1=5,bufif0=2,bufif1=0,continuous-strength=5,primitive-strength=2,repeated-targets=2]

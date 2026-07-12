@@ -21,10 +21,10 @@ const INITIAL_OMISSION: &str = "literal initial value/event is intentionally omi
 const DELAY_IGNORE_PREFIX: &str = "delay tuple entry ";
 const SPECIFY_WARNING_PREFIX: &str = "multiple control-dependent specify paths target `";
 const REFERENCE: &str = "sv-cells/sm83/cells/dffs_cc_ee_pch_d_reg_pc_bit.sv";
-const PAD_XTAL: &str = "sv-cells/dmg_cpu_b/cells/pad_xtal.sv";
 
 const TRANSISTOR_DEFERRALS: &[&str] = &[
     "sv-cells/sm83/cells/dlatch_ee_irq.sv",
+    "sv-cells/sm83/cells/idu_bit0.sv",
     "sv-cells/sm83/cells/idu_bit123456.sv",
     "sv-cells/sm83/cells/irq_prio_bit0.sv",
     "sv-cells/sm83/cells/irq_prio_bit1.sv",
@@ -33,13 +33,6 @@ const TRANSISTOR_DEFERRALS: &[&str] = &[
     "sv-cells/sm83/cells/irq_prio_bit4.sv",
     "sv-cells/sm83/cells/irq_prio_bit5.sv",
     "sv-cells/sm83/cells/irq_prio_bit6.sv",
-];
-const KEEPER_DEFERRALS: &[&str] = &[
-    "sv-cells/dmg_cpu_b/cells/mux.sv",
-    "sv-cells/dmg_cpu_b/cells/muxi.sv",
-    PAD_XTAL,
-    "sv-cells/sm83/cells/idu_bit0.sv",
-    "sv-cells/sm83/cells/reg_wz_out.sv",
 ];
 
 #[derive(Default)]
@@ -118,14 +111,12 @@ struct SourceInventory {
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
 enum DeferralCategory {
-    Keeper,
     Transistor,
 }
 
 impl DeferralCategory {
     fn label(self) -> &'static str {
         match self {
-            Self::Keeper => "M10-keeper",
             Self::Transistor => "M11-transistor",
         }
     }
@@ -180,6 +171,7 @@ struct TupleRef<'a> {
 struct SourceAssignment<'a> {
     target: String,
     explicit: Option<TupleRef<'a>>,
+    force_zero: bool,
 }
 
 struct SpecifyPathRef<'a> {
@@ -656,7 +648,10 @@ fn audit_success(
             "{path}"
         );
         let matches = specify.get(&source_assignment.target);
-        let expected = if let Some(explicit) = source_assignment.explicit {
+        let expected = if source_assignment.force_zero {
+            audit.zero_delays += 1;
+            "0".to_string()
+        } else if let Some(explicit) = source_assignment.explicit {
             audit.explicit_delays += 1;
             if matches.is_some_and(|paths| !paths.is_empty()) {
                 audit.explicit_with_specify_match += 1;
@@ -755,11 +750,26 @@ fn collect_source_assignments<'a>(items: &'a [Item], output: &mut Vec<SourceAssi
             ItemKind::Assign(assign) => output.push(SourceAssignment {
                 target: scalar_symbol(&assign.target).unwrap(),
                 explicit: assign.delay.as_ref().map(delay_ref),
+                force_zero: false,
             }),
             ItemKind::Primitive(call) => output.push(SourceAssignment {
                 target: scalar_symbol(call.args[0].as_ref().unwrap()).unwrap(),
                 explicit: call.delay.as_ref().map(delay_ref),
+                force_zero: false,
             }),
+            ItemKind::Instantiation(instantiation) if instantiation.module == "keeper" => {
+                let [connection] = instantiation.connections.as_slice() else {
+                    panic!("validated corpus keeper connection shape")
+                };
+                let sv_to_sexpr::ast::ConnectionKind::Positional(target) = &connection.kind else {
+                    panic!("validated corpus keeper positional connection")
+                };
+                output.push(SourceAssignment {
+                    target: scalar_symbol(target).unwrap(),
+                    explicit: None,
+                    force_zero: true,
+                });
+            }
             ItemKind::AlwaysLatch(always) => {
                 collect_procedural_assignments(std::slice::from_ref(always.body.as_ref()), output)
             }
@@ -795,6 +805,7 @@ fn collect_procedural_assignments<'a>(items: &'a [Item], output: &mut Vec<Source
             ItemKind::ProcAssign(assign) => output.push(SourceAssignment {
                 target: scalar_symbol(&assign.target).unwrap(),
                 explicit: None,
+                force_zero: false,
             }),
             ItemKind::Block(block) | ItemKind::Generate(block) => {
                 collect_procedural_assignments(&block.items, output)
@@ -1115,9 +1126,7 @@ fn inventory_ir_timing(expr: &Expr, audit: &mut LowerAudit) {
 }
 
 fn deferral_category(path: &str) -> Option<DeferralCategory> {
-    if KEEPER_DEFERRALS.contains(&path) {
-        Some(DeferralCategory::Keeper)
-    } else if TRANSISTOR_DEFERRALS.contains(&path) {
+    if TRANSISTOR_DEFERRALS.contains(&path) {
         Some(DeferralCategory::Transistor)
     } else {
         None
@@ -1126,7 +1135,6 @@ fn deferral_category(path: &str) -> Option<DeferralCategory> {
 
 fn assert_expected_deferral(category: DeferralCategory, diagnostic: &Diagnostic) {
     let expected = match category {
-        DeferralCategory::Keeper => "unsupported item for lowering",
         DeferralCategory::Transistor => "unsupported primitive",
     };
     assert!(diagnostic.message.starts_with(expected));
@@ -1159,30 +1167,30 @@ fn is_resistance_call(expr: &SvExpr) -> bool {
 
 fn assert_exact_contract(source: &SourceInventory, lower: &LowerAudit) {
     assert_eq!(source.files, 206);
-    assert_eq!(lower.succeeded, 192);
-    assert_eq!(lower.failed, 14);
-    assert_eq!(lower.assignments, 1_693);
-    assert_eq!(lower.temporaries, 1_046);
-    assert_eq!(lower.source_assignments, 647);
+    assert_eq!(lower.succeeded, 196);
+    assert_eq!(lower.failed, 10);
+    assert_eq!(lower.assignments, 1_749);
+    assert_eq!(lower.temporaries, 1_068);
+    assert_eq!(lower.source_assignments, 681);
     assert_eq!(lower.temp_nonzero_delays, 0);
     assert_eq!(
         lower.explicit_delays + lower.specify_delays + lower.zero_delays,
-        647
+        681
     );
-    assert_eq!(lower.explicit_delays, 403);
-    assert_eq!(lower.explicit_nonzero_delays, 389);
-    assert_eq!(lower.specify_delays, 199);
-    assert_eq!(lower.specify_nonzero_delays, 199);
-    assert_eq!(lower.zero_delays, 45);
+    assert_eq!(lower.explicit_delays, 429);
+    assert_eq!(lower.explicit_nonzero_delays, 415);
+    assert_eq!(lower.specify_delays, 201);
+    assert_eq!(lower.specify_nonzero_delays, 201);
+    assert_eq!(lower.zero_delays, 51);
     assert_eq!(
         lower.explicit_nonzero_delays + lower.specify_nonzero_delays,
-        588
+        616
     );
-    assert_eq!(lower.emitted_nonzero_delays, 588);
-    assert_eq!(lower.emitted_zero_delays, 1_105);
-    assert_eq!(lower.emitted_nested_delays, 588);
+    assert_eq!(lower.emitted_nonzero_delays, 616);
+    assert_eq!(lower.emitted_zero_delays, 1_133);
+    assert_eq!(lower.emitted_nested_delays, 616);
     assert_eq!(lower.warnings, 47);
-    assert_eq!(lower.later_ignores, 1_032);
+    assert_eq!(lower.later_ignores, 1_067);
     assert_eq!(lower.initial_ignores, 41);
     assert_eq!(lower.warning_contract_failures, 0);
     assert_eq!(lower.diagnostic_mismatches, 0);
@@ -1196,42 +1204,25 @@ fn assert_exact_contract(source: &SourceInventory, lower: &LowerAudit) {
         lower.emitted_outer_resistance_multiplications,
         lower.expected_outer_resistance_multiplications
     );
-    assert_eq!(lower.expected_outer_resistance_multiplications, 385);
+    assert_eq!(lower.expected_outer_resistance_multiplications, 390);
     assert_eq!(
         lower.operator_counts,
         BTreeMap::from([
-            ("+".to_string(), 225),
-            ("*".to_string(), 387),
-            ("elmore".to_string(), 739),
-            ("wire".to_string(), 739),
-            ("pmos".to_string(), 381),
-            ("nmos".to_string(), 432),
+            ("+".to_string(), 226),
+            ("*".to_string(), 392),
+            ("elmore".to_string(), 768),
+            ("wire".to_string(), 768),
+            ("pmos".to_string(), 406),
+            ("nmos".to_string(), 436),
         ])
     );
-    assert_eq!(lower.deferrals.len(), 14);
-    assert_eq!(
+    assert_eq!(lower.deferrals.len(), 10);
+    assert!(
         lower
             .deferrals
             .iter()
-            .filter(|deferral| deferral.category == DeferralCategory::Keeper)
-            .map(|deferral| deferral.path.as_str())
-            .collect::<Vec<_>>(),
-        KEEPER_DEFERRALS
+            .all(|deferral| deferral.category == DeferralCategory::Transistor)
     );
-    let pad = lower
-        .deferrals
-        .iter()
-        .find(|deferral| deferral.path == PAD_XTAL)
-        .unwrap();
-    assert_eq!(pad.category, DeferralCategory::Keeper);
-    assert_eq!(pad.diagnostic.span.line, 26);
-    assert_eq!(pad.diagnostic.span.column, 2);
-    assert!(lower.deferrals.iter().all(|deferral| {
-        matches!(
-            deferral.category,
-            DeferralCategory::Keeper | DeferralCategory::Transistor
-        )
-    }));
 }
 
 fn render_summary(source: &SourceInventory, lower: &LowerAudit) -> String {
@@ -1418,7 +1409,7 @@ fn render_summary(source: &SourceInventory, lower: &LowerAudit) -> String {
         "  explicit-precedence=sv-to-sexpr/tests/fixtures/timing/explicit_precedence.sv"
     )
     .unwrap();
-    writeln!(&mut output, "  pad-xtal=M10-keeper:no-M7-failure").unwrap();
+    writeln!(&mut output, "  pad-xtal=keeper-zero-delay:no-M7-failure").unwrap();
     writeln!(&mut output, "deferrals:").unwrap();
     for deferral in &lower.deferrals {
         writeln!(

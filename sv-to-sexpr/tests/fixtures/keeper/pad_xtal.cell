@@ -1,0 +1,28 @@
+(cell
+  dmg_pad_xtal
+  (inputs ena in_pad)
+
+  (outputs clk_n out_pad)
+
+  (registers )
+
+  (assignments
+
+    (ena_n (not ena) (elmore (wire 130) (pmos 7)))
+    (clk
+      (bufif0-strength 1 ena strong1 highz0)
+      (elmore (wire 130) (pmos 7))
+    )
+    (clk
+      (bufif0-strength in_pad ena_n strong1 highz0)
+      (elmore (wire 130) (pmos 33))
+    )
+    (clk
+      (bufif1-strength in_pad ena highz1 strong0)
+      (elmore (wire 130) (pmos 33))
+    )
+    (clk (keeper) 0)
+    (out_pad (not clk) (elmore (wire L_out_pad) (pmos 62)))
+    (clk_n (not clk) (elmore (wire L_clk_n) (pmos 13.5)))
+  )
+)

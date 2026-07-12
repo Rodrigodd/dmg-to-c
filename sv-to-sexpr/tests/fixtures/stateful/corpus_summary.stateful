@@ -78,4 +78,4 @@ successful-flat-dff-dlatch-files:
   sv-cells/sm83/cells/dffs_cc_ee_pch_d_reg_pc_bit.sv
   sv-cells/sm83/cells/dlatch_ee_q_n.sv
 whole-file-deferrals:
-  sv-cells/sm83/cells/dlatch_ee_irq.sv:23:2 | unsupported primitive rnmos | category=later-driver-state | rationale=M6 driver.primitive-tristate+driver.repeated; M7 timing.alias+timing.specify-path; M10 hierarchy.keeper; M11 primitive.transistor (current blocker: rnmos)
+  sv-cells/sm83/cells/dlatch_ee_irq.sv:23:2 | unsupported primitive rnmos | category=later-driver-state | rationale=M6 driver.primitive-tristate+driver.repeated; M7 timing.alias+timing.specify-path; M11 primitive.transistor (current blocker: rnmos; keeper supported)

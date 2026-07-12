@@ -1,0 +1,95 @@
+(cell
+  sm83_reg_wz_out
+  (inputs
+    pch_n
+    aoi_in1
+    aoi_ena1
+    aoi_ena2
+    aoi_ena3
+    aoi_a_in3_muxi_a_d1
+    aoi_b_in3_muxi_b_d1
+    muxi_d0
+    muxi_a_sel
+    muxi_a_sel_n
+    muxi_b_sel
+    muxi_b_sel_n
+    nand_ena
+    oai21_in_aoi_b_in2
+    oai_ena1
+    oai_ena2
+    oai_ena3
+    oai31_in_nand_in_aoi_a_in2
+  )
+
+  (outputs aoi_b_y nand_y oai21_y oai31_y aoi_a_y_n muxi_a_y muxi_b_y)
+
+  (registers )
+
+  (assignments
+
+    (t0 (not muxi_a_sel_n) 0)
+    (t1 (eq muxi_a_sel t0) 0)
+    (sel_a (mux t1 muxi_a_sel x) 0)
+    (t2 (not aoi_a_in3_muxi_a_d1) 0)
+    (t3 (not muxi_d0) 0)
+    (muxi_a_y
+      (mux sel_a t2 t3)
+      (elmore (wire L_muxi_a_y) (* (pmos 3) 2))
+    )
+    (t4 (not muxi_b_sel_n) 0)
+    (t5 (eq muxi_b_sel t4) 0)
+    (sel_b (mux t5 muxi_b_sel x) 0)
+    (t6 (not aoi_b_in3_muxi_b_d1) 0)
+    (t7 (not muxi_d0) 0)
+    (muxi_b_y
+      (mux sel_b t6 t7)
+      (elmore (wire L_muxi_b_y) (* (pmos 3) 2))
+    )
+    (t8 (or oai_ena1 oai_ena2 oai_ena3) 0)
+    (t9 (and t8 oai31_in_nand_in_aoi_a_in2) 0)
+    (oai31_y
+      (bufif1-strength 0 t9 highz1 strong0)
+      (elmore (wire L_oai31_y) (* (nmos 8) 2))
+    )
+    (t10 (or oai_ena1 oai_ena2) 0)
+    (t11 (and t10 oai21_in_aoi_b_in2) 0)
+    (oai21_y
+      (bufif1-strength 0 t11 highz1 strong0)
+      (elmore (wire L_oai21_y) (* (nmos 8) 2))
+    )
+    (t12 (and nand_ena oai31_in_nand_in_aoi_a_in2) 0)
+    (nand_y
+      (bufif1-strength 0 t12 highz1 strong0)
+      (elmore (wire L_nand_y) (* (nmos 8) 2))
+    )
+    (aoi_a_y
+      (bufif0-strength 1 pch_n strong1 highz0)
+      (elmore (wire 93) (pmos 8))
+    )
+    (t13 (and aoi_ena1 aoi_in1) 0)
+    (t14 (and aoi_ena2 oai31_in_nand_in_aoi_a_in2) 0)
+    (t15 (and aoi_ena3 aoi_a_in3_muxi_a_d1) 0)
+    (t16 (or t13 t14 t15) 0)
+    (aoi_a_y
+      (bufif1-strength 0 t16 highz1 strong0)
+      (elmore (wire 93) (pmos 8))
+    )
+    (aoi_a_y (keeper) 0)
+    (aoi_a_y_n
+      (not aoi_a_y)
+      (elmore (wire L_aoi_a_y_n) (pmos 12))
+    )
+    (aoi_b_y
+      (bufif0-strength 1 pch_n strong1 highz0)
+      (elmore (wire L_aoi_b_y) (pmos 6))
+    )
+    (t17 (and aoi_ena1 aoi_in1) 0)
+    (t18 (and aoi_ena2 oai21_in_aoi_b_in2) 0)
+    (t19 (and aoi_ena3 aoi_b_in3_muxi_b_d1) 0)
+    (t20 (or t17 t18 t19) 0)
+    (aoi_b_y
+      (bufif1-strength 0 t20 highz1 strong0)
+      (elmore (wire L_aoi_b_y) (pmos 6))
+    )
+  )
+)

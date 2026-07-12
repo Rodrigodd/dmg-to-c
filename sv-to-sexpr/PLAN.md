@@ -553,6 +553,14 @@ Acceptance conditions:
 
 ### Milestone 10: Keeper Representation
 
+Status: complete as of 2026-07-12. Typed special-instance analysis records a
+distinct `KeeperDriven` role and source-ordered keeper driver, while lowering
+emits the contracted arity-zero `(keeper)` value at forced delay zero. Reviewed
+fixtures cover all five required cells, the exact six-instance corpus audit
+proves keeper targets never become registers or merge with neighboring drivers,
+and configured lowering now leaves only the 10 Milestone 11 transistor
+deferrals.
+
 Define and lower the keeper instances used by tri-state and mux cells.
 
 Expected to be working after this milestone:

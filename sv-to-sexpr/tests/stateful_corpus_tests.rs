@@ -299,7 +299,7 @@ const DEFERRED_EXPECTATIONS: &[DeferredExpectation] = &[DeferredExpectation {
     column: 2,
     message: "unsupported primitive rnmos",
     category: DeferralCategory::LaterDriver,
-    rationale: "M6 driver.primitive-tristate+driver.repeated; M7 timing.alias+timing.specify-path; M10 hierarchy.keeper; M11 primitive.transistor (current blocker: rnmos)",
+    rationale: "M6 driver.primitive-tristate+driver.repeated; M7 timing.alias+timing.specify-path; M11 primitive.transistor (current blocker: rnmos; keeper supported)",
 }];
 
 #[derive(Default)]
@@ -1012,7 +1012,6 @@ fn assert_deferral_requirements(report: &AnalysisReport, expectation: &DeferredE
                 ("driver.repeated", TargetMilestone::M6DriversAndStrength),
                 ("timing.alias", TargetMilestone::M7SymbolicTiming),
                 ("timing.specify-path", TargetMilestone::M7SymbolicTiming),
-                ("hierarchy.keeper", TargetMilestone::M10Keeper),
                 ("primitive.transistor", TargetMilestone::M11Transistors),
             ] {
                 assert!(

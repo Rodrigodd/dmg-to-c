@@ -391,22 +391,21 @@ fn later_driver_forms_fail_at_their_source_constructs() {
         assert_eq!(error.message, format!("unsupported primitive {primitive}"));
     }
 
-    for (path, construct, expected_message) in [
-        (
-            "diagnostics/hierarchy.sv",
-            "child u0(.a(a), .y(y));",
-            "unsupported item for lowering",
-        ),
-        (
-            "diagnostics/keeper.sv",
-            "keeper held(y);",
-            "unsupported item for lowering",
-        ),
-    ] {
-        let input =
-            format!("module sample(input logic a, output logic y);\n  {construct}\nendmodule");
-        let error = lower_error(path, &input);
-        assert_eq!(error.span, Span::new(path, 2, 3));
-        assert_eq!(error.message, expected_message);
-    }
+    let path = "diagnostics/hierarchy.sv";
+    let input =
+        "module sample(input logic a, output logic y);\n  child u0(.a(a), .y(y));\nendmodule";
+    let error = lower_error(path, input);
+    assert_eq!(error.span, Span::new(path, 2, 3));
+    assert_eq!(error.message, "unsupported item for lowering");
+
+    let keeper = lower_file(
+        Path::new("diagnostics/keeper.sv"),
+        "module sample(output logic y);\n  keeper held(y);\nendmodule",
+    )
+    .unwrap();
+    let assignments = assignments(&keeper.cell);
+    assert_eq!(assignments.len(), 1);
+    assert_eq!(assignments[0].target, "y");
+    assert_eq!(render_expr(&assignments[0].expr), "(keeper)");
+    assert_eq!(render_expr(&assignments[0].delay), "0");
 }

@@ -681,14 +681,7 @@ fn classify_support_parts(
     for instantiation in instantiations {
         match &instantiation.resolution {
             InstantiationResolution::Resolved(_) => {}
-            InstantiationResolution::Special(_) => {
-                collector.defer(
-                    "hierarchy.keeper",
-                    TargetMilestone::M10Keeper,
-                    &instantiation.span,
-                    "keeper behavior is scheduled for Milestone 10",
-                );
-            }
+            InstantiationResolution::Special(_) => {}
             _ if instantiation.module == "keeper" => {
                 collector.defer(
                     "hierarchy.keeper",
@@ -1073,6 +1066,7 @@ fn render_driver_source(source: &DriverSource) -> String {
             format!("procedural(state={state},source={source:?})")
         }
         DriverSource::Primitive { name } => format!("primitive({name})"),
+        DriverSource::Keeper { instance } => format!("keeper(instance={instance})"),
         DriverSource::Hierarchical {
             module,
             instance,
@@ -1134,19 +1128,15 @@ fn render_instantiation(out: &mut String, indent: usize, instantiation: &Instant
                 indent + 2,
                 &format!("resolution=special({:?})", special.kind),
             );
-            for connection in &special.connections {
-                let value = match &connection.kind {
-                    ConnectionKind::Named { name, value } => {
-                        format!(".{name}({})", render_expr(value))
-                    }
-                    ConnectionKind::Positional(value) => render_expr(value),
-                };
-                push_indented(
-                    out,
-                    indent + 2,
-                    &format!("connection {} @{}", value, render_span(&connection.span)),
-                );
-            }
+            push_indented(
+                out,
+                indent + 2,
+                &format!(
+                    "connection target={} @{}",
+                    special.keeper.connection.target,
+                    render_span(&special.keeper.connection.span)
+                ),
+            );
         }
         InstantiationResolution::Unresolved => {
             push_indented(out, indent + 2, "resolution=unresolved");
@@ -1320,12 +1310,26 @@ pub enum ConnectionSource {
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct SpecialInstantiation {
     pub kind: SpecialInstanceKind,
-    pub connections: Vec<Connection>,
+    pub keeper: KeeperInstantiation,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum SpecialInstanceKind {
     Keeper,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct KeeperInstantiation {
+    pub span: Span,
+    pub instance: String,
+    pub connection: KeeperConnection,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct KeeperConnection {
+    pub span: Span,
+    pub target: String,
+    pub expression: Expr,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -1364,6 +1368,7 @@ pub enum SignalRole {
     ProceduralDriven,
     ModeledState,
     PrimitiveDriven,
+    KeeperDriven,
     HierarchicalConnection,
 }
 
@@ -1391,6 +1396,9 @@ pub enum DriverSource {
     },
     Primitive {
         name: String,
+    },
+    Keeper {
+        instance: String,
     },
     Hierarchical {
         module: String,
@@ -1499,6 +1507,92 @@ pub(crate) fn is_special_instance(module: &str) -> bool {
     module == "keeper"
 }
 
+/// Validates and resolves the contracted scalar `keeper instance(target)` form.
+///
+/// This typed bridge is shared by catalog-aware analysis and keeper lowering;
+/// callers never need to reconstruct recognized syntax from rendered text.
+pub(crate) fn resolve_keeper_ast_instantiation(
+    instantiation: &Instantiation,
+    visible_signals: &BTreeMap<String, Span>,
+) -> AnalyzeResult<KeeperInstantiation> {
+    resolve_keeper_instantiation(
+        &instantiation.span,
+        &instantiation.module,
+        &instantiation.instance,
+        &instantiation.parameters,
+        &instantiation.connections,
+        visible_signals,
+    )
+}
+
+fn resolve_keeper_instantiation(
+    span: &Span,
+    module: &str,
+    instance: &str,
+    parameters: &[ParamOverride],
+    connections: &[Connection],
+    visible_signals: &BTreeMap<String, Span>,
+) -> AnalyzeResult<KeeperInstantiation> {
+    debug_assert_eq!(module, "keeper");
+    if let Some(parameter) = parameters.first() {
+        return Err(Diagnostic::new(
+            parameter.span.clone(),
+            format!("keeper instance `{instance}` does not accept parameter overrides"),
+        ));
+    }
+    let connection = match connections {
+        [] => {
+            return Err(Diagnostic::new(
+                span.clone(),
+                format!("keeper instance `{instance}` requires exactly one positional connection"),
+            ));
+        }
+        [connection] => connection,
+        [_, extra, ..] => {
+            return Err(Diagnostic::new(
+                extra.span.clone(),
+                format!("keeper instance `{instance}` requires exactly one positional connection"),
+            ));
+        }
+    };
+    let expression = match &connection.kind {
+        ConnectionKind::Named { .. } => {
+            return Err(Diagnostic::new(
+                connection.span.clone(),
+                format!("keeper instance `{instance}` requires a positional connection"),
+            ));
+        }
+        ConnectionKind::Positional(expression) => expression,
+    };
+    let ExprKind::Path(segments) = &expression.kind else {
+        return Err(Diagnostic::new(
+            expression.span.clone(),
+            format!("keeper instance `{instance}` target must be a scalar signal name"),
+        ));
+    };
+    let [target] = segments.as_slice() else {
+        return Err(Diagnostic::new(
+            expression.span.clone(),
+            format!("keeper instance `{instance}` target must be a scalar signal name"),
+        ));
+    };
+    if !visible_signals.contains_key(target) {
+        return Err(Diagnostic::new(
+            expression.span.clone(),
+            format!("unknown keeper target `{target}` for instance `{instance}`"),
+        ));
+    }
+    Ok(KeeperInstantiation {
+        span: span.clone(),
+        instance: instance.to_string(),
+        connection: KeeperConnection {
+            span: connection.span.clone(),
+            target: target.clone(),
+            expression: expression.clone(),
+        },
+    })
+}
+
 /// Resolves one typed AST instantiation using the same binding rules exposed
 /// by catalog-aware analysis.
 pub(crate) fn resolve_ast_instantiation(
@@ -1508,6 +1602,12 @@ pub(crate) fn resolve_ast_instantiation(
     catalog: &ModuleCatalog,
     generate_mode: Option<GenerateMode>,
 ) -> AnalyzeResult<InstantiationResolution> {
+    if is_special_instance(&instantiation.module) {
+        return Ok(InstantiationResolution::Special(SpecialInstantiation {
+            kind: SpecialInstanceKind::Keeper,
+            keeper: resolve_keeper_ast_instantiation(instantiation, visible_signals)?,
+        }));
+    }
     let analysis = InstantiationAnalysis {
         span: instantiation.span.clone(),
         source_order: 0,
@@ -1662,51 +1762,94 @@ fn resolve_instantiation_list(
             catalog,
             generate_mode,
         )?;
-        if let InstantiationResolution::Resolved(resolved) = &resolution {
-            for connection in &resolved.connections {
-                if let Some(name) = &connection.local_signal {
-                    let signal =
-                        signal_roles
-                            .entry(name.clone())
-                            .or_insert_with(|| SignalAnalysis {
-                                declaration_span: visible_signals.get(name).cloned(),
-                                roles: BTreeSet::new(),
-                            });
-                    if signal.declaration_span.is_none() {
-                        signal.declaration_span = visible_signals.get(name).cloned();
+        match &resolution {
+            InstantiationResolution::Resolved(resolved) => {
+                for connection in &resolved.connections {
+                    if let Some(name) = &connection.local_signal {
+                        let signal =
+                            signal_roles
+                                .entry(name.clone())
+                                .or_insert_with(|| SignalAnalysis {
+                                    declaration_span: visible_signals.get(name).cloned(),
+                                    roles: BTreeSet::new(),
+                                });
+                        if signal.declaration_span.is_none() {
+                            signal.declaration_span = visible_signals.get(name).cloned();
+                        }
+                        signal.roles.insert(SignalRole::HierarchicalConnection);
                     }
-                    signal.roles.insert(SignalRole::HierarchicalConnection);
-                }
-                match connection.direction {
-                    Direction::Input => {
-                        collect_behavioral_reads(&connection.expression, ports, port_usage);
-                    }
-                    Direction::Output => {
-                        apply_hierarchical_output(
-                            instantiation,
-                            connection,
-                            drivers,
-                            ports,
-                            port_usage,
-                        );
-                    }
-                    Direction::Inout => {
-                        collect_behavioral_reads(&connection.expression, ports, port_usage);
-                        apply_hierarchical_output(
-                            instantiation,
-                            connection,
-                            drivers,
-                            ports,
-                            port_usage,
-                        );
+                    match connection.direction {
+                        Direction::Input => {
+                            collect_behavioral_reads(&connection.expression, ports, port_usage);
+                        }
+                        Direction::Output => {
+                            apply_hierarchical_output(
+                                instantiation,
+                                connection,
+                                drivers,
+                                ports,
+                                port_usage,
+                            );
+                        }
+                        Direction::Inout => {
+                            collect_behavioral_reads(&connection.expression, ports, port_usage);
+                            apply_hierarchical_output(
+                                instantiation,
+                                connection,
+                                drivers,
+                                ports,
+                                port_usage,
+                            );
+                        }
                     }
                 }
             }
+            InstantiationResolution::Special(special) => apply_keeper_resolution(
+                instantiation,
+                &special.keeper,
+                signal_roles,
+                visible_signals,
+                drivers,
+                ports,
+                port_usage,
+            ),
+            InstantiationResolution::Unresolved => {}
         }
         instantiation.resolution = resolution;
     }
     drivers.sort_by_key(|driver| driver.source_order);
     Ok(())
+}
+
+fn apply_keeper_resolution(
+    instantiation: &InstantiationAnalysis,
+    keeper: &KeeperInstantiation,
+    signal_roles: &mut BTreeMap<String, SignalAnalysis>,
+    visible_signals: &BTreeMap<String, Span>,
+    drivers: &mut Vec<DriverAnalysis>,
+    ports: &mut BTreeMap<String, PortAnalysis>,
+    port_usage: &mut PortUsage,
+) {
+    let connection = &keeper.connection;
+    let signal = signal_roles
+        .entry(connection.target.clone())
+        .or_insert_with(|| SignalAnalysis {
+            declaration_span: visible_signals.get(&connection.target).cloned(),
+            roles: BTreeSet::new(),
+        });
+    if signal.declaration_span.is_none() {
+        signal.declaration_span = visible_signals.get(&connection.target).cloned();
+    }
+    signal.roles.insert(SignalRole::KeeperDriven);
+    mark_port_write(&connection.expression, ports, port_usage);
+    drivers.push(DriverAnalysis {
+        span: connection.span.clone(),
+        source_order: instantiation.source_order,
+        target: connection.target.clone(),
+        source: DriverSource::Keeper {
+            instance: keeper.instance.clone(),
+        },
+    });
 }
 
 fn apply_hierarchical_output(
@@ -1737,9 +1880,17 @@ fn resolve_instantiation(
     generate_mode: Option<GenerateMode>,
 ) -> AnalyzeResult<InstantiationResolution> {
     if is_special_instance(&instantiation.module) {
+        let keeper = resolve_keeper_instantiation(
+            &instantiation.span,
+            &instantiation.module,
+            &instantiation.instance,
+            &instantiation.parameter_overrides,
+            &instantiation.connection_items,
+            visible_signals,
+        )?;
         return Ok(InstantiationResolution::Special(SpecialInstantiation {
             kind: SpecialInstanceKind::Keeper,
-            connections: instantiation.connection_items.clone(),
+            keeper,
         }));
     }
     let interface = catalog.get(&instantiation.module).ok_or_else(|| {
@@ -2670,11 +2821,15 @@ fn analyze_instantiation(
     for connection in &inst.connections {
         match &connection.kind {
             ConnectionKind::Named { value, .. } => {
-                mark_hierarchical_connection(value, scope, ports);
+                if !is_special_instance(&inst.module) {
+                    mark_hierarchical_connection(value, scope, ports);
+                }
                 connections.push(render_expr(value));
             }
             ConnectionKind::Positional(value) => {
-                mark_hierarchical_connection(value, scope, ports);
+                if !is_special_instance(&inst.module) {
+                    mark_hierarchical_connection(value, scope, ports);
+                }
                 connections.push(render_expr(value));
             }
         }
@@ -3161,7 +3316,7 @@ mod tests {
                 .contains(&SignalRole::PrimitiveDriven)
         );
         assert!(
-            module.signal_roles["mux"]
+            !module.signal_roles["mux"]
                 .roles
                 .contains(&SignalRole::HierarchicalConnection)
         );
@@ -3362,8 +3517,188 @@ endmodule
             panic!("keeper was not retained as a special instance")
         };
         assert_eq!(special.kind, SpecialInstanceKind::Keeper);
-        assert_eq!(special.connections.len(), 1);
+        assert_eq!(special.keeper.instance, "mux_keeper");
+        assert_eq!(special.keeper.connection.target, "mux");
+        assert_eq!(
+            special.keeper.connection.expression.kind,
+            ExprKind::Path(vec!["mux".into()])
+        );
+        assert!(
+            module.signal_roles["mux"]
+                .roles
+                .contains(&SignalRole::KeeperDriven)
+        );
+        assert!(
+            !module.signal_roles["mux"]
+                .roles
+                .contains(&SignalRole::HierarchicalConnection)
+        );
+        assert!(module.drivers.iter().any(|driver| {
+            driver.target == "mux"
+                && matches!(
+                    &driver.source,
+                    DriverSource::Keeper { instance } if instance == "mux_keeper"
+                )
+        }));
         assert!(module.registers.is_empty());
+        assert!(report.requirements.iter().all(|requirement| {
+            requirement.capability_id != "hierarchy.keeper"
+                && requirement.milestone != TargetMilestone::M10Keeper
+        }));
+    }
+
+    #[test]
+    fn keeper_driver_remains_distinct_and_in_source_order() {
+        let source = r#"module keeper_order(input logic a, en, inout logic held);
+  assign held = a;
+  bufif0 (held, a, en);
+  keeper hold(held);
+  assign held = en;
+endmodule
+"#;
+        let report = analyze_catalog_source(source).unwrap();
+        let module = &report.modules[0];
+        assert_eq!(module.registers, Vec::<String>::new());
+        assert_eq!(module.inputs, vec!["a", "en"]);
+        assert_eq!(module.outputs, vec!["held"]);
+        assert_eq!(
+            module.signal_roles["held"].roles,
+            BTreeSet::from([
+                SignalRole::ContinuousDriven,
+                SignalRole::PrimitiveDriven,
+                SignalRole::KeeperDriven,
+            ])
+        );
+        assert_eq!(
+            module
+                .drivers
+                .iter()
+                .map(|driver| (driver.source_order, driver.target.as_str(), &driver.source))
+                .collect::<Vec<_>>(),
+            vec![
+                (0, "held", &DriverSource::Continuous),
+                (
+                    1,
+                    "held",
+                    &DriverSource::Primitive {
+                        name: "bufif0".into()
+                    }
+                ),
+                (
+                    2,
+                    "held",
+                    &DriverSource::Keeper {
+                        instance: "hold".into()
+                    }
+                ),
+                (3, "held", &DriverSource::Continuous),
+            ]
+        );
+    }
+
+    #[test]
+    fn resolves_all_six_corpus_keeper_instances() {
+        let cases = [
+            ("../sv-cells/dmg_cpu_b/cells/mux.sv", "mux_keeper", "mux"),
+            ("../sv-cells/dmg_cpu_b/cells/muxi.sv", "mux_keeper", "mux"),
+            (
+                "../sv-cells/dmg_cpu_b/cells/pad_xtal.sv",
+                "clk_keeper",
+                "clk",
+            ),
+            (
+                "../sv-cells/sm83/cells/idu_bit0.sv",
+                "aoi_y_keeper",
+                "aoi_y",
+            ),
+            (
+                "../sv-cells/sm83/cells/reg_wz_out.sv",
+                "aoi_a_y_keeper",
+                "aoi_a_y",
+            ),
+            (
+                "../sv-cells/sm83/cells/dlatch_ee_irq.sv",
+                "gated_q_keeper",
+                "gated_q",
+            ),
+        ];
+        for (path, expected_instance, expected_target) in cases {
+            let design = parse_path(path);
+            let catalog = ModuleCatalog::from_designs(std::slice::from_ref(&design)).unwrap();
+            let report = analyze_design_with_catalog(&design, &catalog).unwrap();
+            let module = &report.modules[0];
+            let special = module
+                .instantiations
+                .iter()
+                .find_map(|instantiation| match &instantiation.resolution {
+                    InstantiationResolution::Special(special) => Some(special),
+                    InstantiationResolution::Unresolved | InstantiationResolution::Resolved(_) => {
+                        None
+                    }
+                })
+                .unwrap_or_else(|| panic!("missing resolved keeper in {path}"));
+            assert_eq!(special.keeper.instance, expected_instance, "{path}");
+            assert_eq!(special.keeper.connection.target, expected_target, "{path}");
+            assert!(
+                module.signal_roles[expected_target]
+                    .roles
+                    .contains(&SignalRole::KeeperDriven),
+                "{path}"
+            );
+            assert!(!module.registers.iter().any(|name| name == expected_target));
+            assert!(module.drivers.iter().any(|driver| {
+                driver.target == expected_target
+                    && matches!(
+                        &driver.source,
+                        DriverSource::Keeper { instance } if instance == expected_instance
+                    )
+            }));
+        }
+    }
+
+    #[test]
+    fn rejects_malformed_keeper_forms_at_specific_spans() {
+        let cases = [
+            (
+                "module bad(output logic y);\n  keeper #(1) hold(y);\nendmodule\n",
+                2,
+                12,
+                "keeper instance `hold` does not accept parameter overrides",
+            ),
+            (
+                "module bad(output logic y);\n  keeper hold(.target(y));\nendmodule\n",
+                2,
+                15,
+                "keeper instance `hold` requires a positional connection",
+            ),
+            (
+                "module bad(output logic y);\n  keeper hold();\nendmodule\n",
+                2,
+                3,
+                "keeper instance `hold` requires exactly one positional connection",
+            ),
+            (
+                "module bad(input logic a, output logic y);\n  keeper hold(y, a);\nendmodule\n",
+                2,
+                18,
+                "keeper instance `hold` requires exactly one positional connection",
+            ),
+            (
+                "module bad(input logic a, output logic y);\n  keeper hold(a & y);\nendmodule\n",
+                2,
+                15,
+                "keeper instance `hold` target must be a scalar signal name",
+            ),
+            (
+                "module bad(output logic y);\n  keeper hold(missing);\nendmodule\n",
+                2,
+                15,
+                "unknown keeper target `missing` for instance `hold`",
+            ),
+        ];
+        for (source, line, column, message) in cases {
+            assert_analysis_error(source, line, column, message);
+        }
     }
 
     #[test]
@@ -3498,8 +3833,7 @@ endmodule
         assert!(hierarchy.requirements.is_empty());
 
         let mux = parse_path("../sv-cells/dmg_cpu_b/cells/mux.sv");
-        let mux_catalog = ModuleCatalog::from_designs(std::slice::from_ref(&mux)).unwrap();
-        let keeper = analyze_design_with_catalog_structural(&mux, &mux_catalog).unwrap();
+        let keeper_structural = analyze_design_structural(&mux);
 
         let reports = [
             (
@@ -3522,7 +3856,7 @@ endmodule
                 analyze_path("../sv-cells/dmg_cpu_b/cells/dffr_cc.sv"),
                 TargetMilestone::M8GenerateSelection,
             ),
-            (keeper, TargetMilestone::M10Keeper),
+            (keeper_structural, TargetMilestone::M10Keeper),
             (
                 analyze_path("../sv-cells/sm83/cells/irq_prio_bit0.sv"),
                 TargetMilestone::M11Transistors,
