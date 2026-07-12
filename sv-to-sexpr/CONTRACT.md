@@ -106,9 +106,12 @@ Transistors are direct drivers:
 ```
 
 The forms preserve primitive kind, source, gate polarity semantics, driver
-order, and timing. They do not claim SPICE behavior. `rnmos` remains distinct
-because weakening it to `nmos` would discard fidelity. Milestone 11 must warn
-for any demonstrated fidelity limit; strict mode then rejects that conversion.
+order, topology, and timing. `rnmos` remains distinct because weakening it to
+`nmos` would discard fidelity. The DSL does not perform analog network solving
+or numeric multi-driver strength resolution; that is a scope boundary rather
+than a lossy transistor normalization, so direct corpus transistor forms do not
+produce a generic fidelity warning. Any demonstrated information loss must
+still block conversion instead of being silently approximated.
 
 Source strength is never silently erased. A strength-qualified continuous
 assignment uses `(drive-strength value first_strength second_strength)`. A
@@ -130,8 +133,10 @@ preserves strength metadata but the
 DSL does not define multi-driver strength resolution or analog drive behavior.
 If a cell requires such resolution for fidelity, conversion is blocked with an
 error; a functional-only conversion is not silently substituted. If future
-transistor syntax carries a source strength, Milestone 11 must either add an
-equally explicit contracted operator before emitting it or reject the source.
+transistor syntax carries a source strength, conversion rejects it at the
+strength span because the direct transistor operators cannot carry that
+metadata. Supporting such syntax requires adding an equally explicit
+contracted operator before emitting it.
 
 The only contracted generate form is a module-level `generate if (nodelay)`
 with `begin ... end else begin ... end endgenerate`. Configured analysis and

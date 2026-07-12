@@ -1,0 +1,144 @@
+analyze summary: modules=1 disposition=deferred requirements=6
+module sm83_irq_prio_bit0 @sv-cells/sm83/cells/irq_prio_bit0.sv:3:1
+  inputs: pch_n and_in1 and_in2_nand_a_in2 nand_b_in2 dist_nand_a_in1 dist_nand_a_in2 dist_nand_b_in dist_nor_in dist_nand_a_in_n dist_nand_b_in_n dist_nor_in_p
+  outputs: nand_a_y nand_b_y dist_nand_a_y_n dist_nand_a_y_p dist_nand_b_y_n dist_nand_b_y_p dist_nor_y_n dist_nor_y_p and_y
+  registers: <none>
+  symbols:
+    L_and_y category=parameter @sv-cells/sm83/cells/irq_prio_bit0.sv:4:3
+    L_dist_nand_a_y_n category=parameter @sv-cells/sm83/cells/irq_prio_bit0.sv:7:3
+    L_dist_nand_a_y_p category=parameter @sv-cells/sm83/cells/irq_prio_bit0.sv:8:3
+    L_dist_nand_b_y_n category=parameter @sv-cells/sm83/cells/irq_prio_bit0.sv:9:3
+    L_dist_nand_b_y_p category=parameter @sv-cells/sm83/cells/irq_prio_bit0.sv:10:3
+    L_dist_nor_y_n category=parameter @sv-cells/sm83/cells/irq_prio_bit0.sv:11:3
+    L_dist_nor_y_p category=parameter @sv-cells/sm83/cells/irq_prio_bit0.sv:12:3
+    L_nand_a_y category=parameter @sv-cells/sm83/cells/irq_prio_bit0.sv:5:3
+    L_nand_b_y category=parameter @sv-cells/sm83/cells/irq_prio_bit0.sv:6:3
+    T_Z_dist_nand_a_y_n category=localparam @sv-cells/sm83/cells/irq_prio_bit0.sv:42:2
+    T_Z_dist_nand_a_y_p category=localparam @sv-cells/sm83/cells/irq_prio_bit0.sv:37:2
+    T_Z_dist_nand_b_y_n category=localparam @sv-cells/sm83/cells/irq_prio_bit0.sv:53:2
+    T_Z_dist_nand_b_y_p category=localparam @sv-cells/sm83/cells/irq_prio_bit0.sv:48:2
+    T_Z_dist_nor_y_n category=localparam @sv-cells/sm83/cells/irq_prio_bit0.sv:65:2
+    T_Z_dist_nor_y_p category=localparam @sv-cells/sm83/cells/irq_prio_bit0.sv:59:2
+    T_Z_nand_a_y category=localparam @sv-cells/sm83/cells/irq_prio_bit0.sv:28:2
+    T_Z_nand_b_y category=localparam @sv-cells/sm83/cells/irq_prio_bit0.sv:33:2
+    T_fall_and_y category=specparam @sv-cells/sm83/cells/irq_prio_bit0.sv:73:3
+    T_fall_dist_nand_a_y_n category=localparam @sv-cells/sm83/cells/irq_prio_bit0.sv:41:2
+    T_fall_dist_nand_b_y_n category=localparam @sv-cells/sm83/cells/irq_prio_bit0.sv:52:2
+    T_fall_dist_nor_y_n category=localparam @sv-cells/sm83/cells/irq_prio_bit0.sv:64:2
+    T_fall_nand category=specparam @sv-cells/sm83/cells/irq_prio_bit0.sv:71:3
+    T_fall_nand_a_y category=localparam @sv-cells/sm83/cells/irq_prio_bit0.sv:27:2
+    T_fall_nand_b_y category=localparam @sv-cells/sm83/cells/irq_prio_bit0.sv:32:2
+    T_rise_and_y category=specparam @sv-cells/sm83/cells/irq_prio_bit0.sv:72:3
+    T_rise_dist_nand_a_y_p category=localparam @sv-cells/sm83/cells/irq_prio_bit0.sv:36:2
+    T_rise_dist_nand_b_y_p category=localparam @sv-cells/sm83/cells/irq_prio_bit0.sv:47:2
+    T_rise_dist_nor_y_p category=localparam @sv-cells/sm83/cells/irq_prio_bit0.sv:58:2
+    T_rise_nand category=specparam @sv-cells/sm83/cells/irq_prio_bit0.sv:70:3
+    T_rise_nand_a_y category=localparam @sv-cells/sm83/cells/irq_prio_bit0.sv:26:2
+    and_in1 category=port @sv-cells/sm83/cells/irq_prio_bit0.sv:14:3
+    and_in2_nand_a_in2 category=port @sv-cells/sm83/cells/irq_prio_bit0.sv:14:3
+    and_y category=port @sv-cells/sm83/cells/irq_prio_bit0.sv:19:3
+    dist_nand_a_in1 category=port @sv-cells/sm83/cells/irq_prio_bit0.sv:14:3
+    dist_nand_a_in2 category=port @sv-cells/sm83/cells/irq_prio_bit0.sv:14:3
+    dist_nand_a_in_n category=port @sv-cells/sm83/cells/irq_prio_bit0.sv:16:3
+    dist_nand_a_y_n category=port @sv-cells/sm83/cells/irq_prio_bit0.sv:17:3
+    dist_nand_a_y_p category=port @sv-cells/sm83/cells/irq_prio_bit0.sv:17:3
+    dist_nand_b_in category=port @sv-cells/sm83/cells/irq_prio_bit0.sv:14:3
+    dist_nand_b_in_n category=port @sv-cells/sm83/cells/irq_prio_bit0.sv:16:3
+    dist_nand_b_y_n category=port @sv-cells/sm83/cells/irq_prio_bit0.sv:17:3
+    dist_nand_b_y_p category=port @sv-cells/sm83/cells/irq_prio_bit0.sv:17:3
+    dist_nor_in category=port @sv-cells/sm83/cells/irq_prio_bit0.sv:14:3
+    dist_nor_in_p category=port @sv-cells/sm83/cells/irq_prio_bit0.sv:16:3
+    dist_nor_y_n category=port @sv-cells/sm83/cells/irq_prio_bit0.sv:17:3
+    dist_nor_y_p category=port @sv-cells/sm83/cells/irq_prio_bit0.sv:17:3
+    nand_a_y category=port @sv-cells/sm83/cells/irq_prio_bit0.sv:17:3
+    nand_b_in2 category=port @sv-cells/sm83/cells/irq_prio_bit0.sv:14:3
+    nand_b_y category=port @sv-cells/sm83/cells/irq_prio_bit0.sv:17:3
+    pch_n category=port @sv-cells/sm83/cells/irq_prio_bit0.sv:14:3
+  ports:
+    and_in1 direction=input use=input modifiers=[logic] @sv-cells/sm83/cells/irq_prio_bit0.sv:14:3
+    and_in2_nand_a_in2 direction=input use=input modifiers=[logic] @sv-cells/sm83/cells/irq_prio_bit0.sv:14:3
+    and_y direction=output use=output modifiers=[logic] @sv-cells/sm83/cells/irq_prio_bit0.sv:19:3
+    dist_nand_a_in1 direction=input use=input modifiers=[logic] @sv-cells/sm83/cells/irq_prio_bit0.sv:14:3
+    dist_nand_a_in2 direction=input use=input modifiers=[logic] @sv-cells/sm83/cells/irq_prio_bit0.sv:14:3
+    dist_nand_a_in_n direction=input use=input modifiers=[tri,logic] @sv-cells/sm83/cells/irq_prio_bit0.sv:16:3
+    dist_nand_a_y_n direction=output use=output modifiers=[tri,logic] @sv-cells/sm83/cells/irq_prio_bit0.sv:17:3
+    dist_nand_a_y_p direction=output use=output modifiers=[tri,logic] @sv-cells/sm83/cells/irq_prio_bit0.sv:17:3
+    dist_nand_b_in direction=input use=input modifiers=[logic] @sv-cells/sm83/cells/irq_prio_bit0.sv:14:3
+    dist_nand_b_in_n direction=input use=input modifiers=[tri,logic] @sv-cells/sm83/cells/irq_prio_bit0.sv:16:3
+    dist_nand_b_y_n direction=output use=output modifiers=[tri,logic] @sv-cells/sm83/cells/irq_prio_bit0.sv:17:3
+    dist_nand_b_y_p direction=output use=output modifiers=[tri,logic] @sv-cells/sm83/cells/irq_prio_bit0.sv:17:3
+    dist_nor_in direction=input use=input modifiers=[logic] @sv-cells/sm83/cells/irq_prio_bit0.sv:14:3
+    dist_nor_in_p direction=input use=input modifiers=[tri,logic] @sv-cells/sm83/cells/irq_prio_bit0.sv:16:3
+    dist_nor_y_n direction=output use=output modifiers=[tri,logic] @sv-cells/sm83/cells/irq_prio_bit0.sv:17:3
+    dist_nor_y_p direction=output use=output modifiers=[tri,logic] @sv-cells/sm83/cells/irq_prio_bit0.sv:17:3
+    nand_a_y direction=output use=output modifiers=[tri,logic] @sv-cells/sm83/cells/irq_prio_bit0.sv:17:3
+    nand_b_in2 direction=input use=input modifiers=[logic] @sv-cells/sm83/cells/irq_prio_bit0.sv:14:3
+    nand_b_y direction=output use=output modifiers=[tri,logic] @sv-cells/sm83/cells/irq_prio_bit0.sv:17:3
+    pch_n direction=input use=input modifiers=[logic] @sv-cells/sm83/cells/irq_prio_bit0.sv:14:3
+  declarations:
+  signal_roles:
+    and_y roles=[ContinuousDriven] declared=sv-cells/sm83/cells/irq_prio_bit0.sv:19:3
+    dist_nand_a_y_n roles=[PrimitiveDriven] declared=sv-cells/sm83/cells/irq_prio_bit0.sv:17:3
+    dist_nand_a_y_p roles=[PrimitiveDriven] declared=sv-cells/sm83/cells/irq_prio_bit0.sv:17:3
+    dist_nand_b_y_n roles=[PrimitiveDriven] declared=sv-cells/sm83/cells/irq_prio_bit0.sv:17:3
+    dist_nand_b_y_p roles=[PrimitiveDriven] declared=sv-cells/sm83/cells/irq_prio_bit0.sv:17:3
+    dist_nor_y_n roles=[PrimitiveDriven] declared=sv-cells/sm83/cells/irq_prio_bit0.sv:17:3
+    dist_nor_y_p roles=[PrimitiveDriven] declared=sv-cells/sm83/cells/irq_prio_bit0.sv:17:3
+    nand_a_y roles=[PrimitiveDriven] declared=sv-cells/sm83/cells/irq_prio_bit0.sv:17:3
+    nand_b_y roles=[PrimitiveDriven] declared=sv-cells/sm83/cells/irq_prio_bit0.sv:17:3
+  assignments:
+    #0 (and_y continuous (and and_in1 and_in2_nand_a_in2)) @sv-cells/sm83/cells/irq_prio_bit0.sv:24:2 strength=<none> syntax=Continuous
+  drivers:
+    #0 target=and_y source=continuous @sv-cells/sm83/cells/irq_prio_bit0.sv:24:2
+    #1 target=nand_a_y source=primitive(bufif0) @sv-cells/sm83/cells/irq_prio_bit0.sv:29:2
+    #2 target=nand_a_y source=primitive(bufif1) @sv-cells/sm83/cells/irq_prio_bit0.sv:30:2
+    #3 target=nand_b_y source=primitive(bufif1) @sv-cells/sm83/cells/irq_prio_bit0.sv:34:2
+    #4 target=dist_nand_a_y_p source=primitive(bufif0) @sv-cells/sm83/cells/irq_prio_bit0.sv:38:2
+    #5 target=dist_nand_a_y_n source=primitive(nmos) @sv-cells/sm83/cells/irq_prio_bit0.sv:44:2
+    #6 target=dist_nand_b_y_p source=primitive(bufif0) @sv-cells/sm83/cells/irq_prio_bit0.sv:49:2
+    #7 target=dist_nand_b_y_n source=primitive(nmos) @sv-cells/sm83/cells/irq_prio_bit0.sv:55:2
+    #8 target=dist_nor_y_p source=primitive(pmos) @sv-cells/sm83/cells/irq_prio_bit0.sv:61:2
+    #9 target=dist_nor_y_n source=primitive(bufif1) @sv-cells/sm83/cells/irq_prio_bit0.sv:66:2
+  primitives:
+    #1 bufif0 args=[nand_a_y,'1,pch_n] strength=strong1,highz0 delay=(T_rise_nand_a_y T_fall_nand_a_y T_Z_nand_a_y) @sv-cells/sm83/cells/irq_prio_bit0.sv:29:2
+    #2 bufif1 args=[nand_a_y,'0,(and pch_n and_in2_nand_a_in2)] strength=highz1,strong0 delay=(T_rise_nand_a_y T_fall_nand_a_y T_Z_nand_a_y) @sv-cells/sm83/cells/irq_prio_bit0.sv:30:2
+    #3 bufif1 args=[nand_b_y,'0,(and pch_n nand_b_in2)] strength=highz1,strong0 delay=(T_Z_nand_b_y T_fall_nand_b_y T_Z_nand_b_y) @sv-cells/sm83/cells/irq_prio_bit0.sv:34:2
+    #4 bufif0 args=[dist_nand_a_y_p,'1,(and dist_nand_a_in1 dist_nand_a_in2)] strength=strong1,highz0 delay=(T_rise_dist_nand_a_y_p T_Z_dist_nand_a_y_p T_Z_dist_nand_a_y_p) @sv-cells/sm83/cells/irq_prio_bit0.sv:38:2
+    #5 nmos args=[dist_nand_a_y_n,dist_nand_a_in_n,(and (and dist_nand_a_in1 dist_nand_a_in2) ((caseneq dist_nand_a_in_n 1)))] strength=<none> delay=(T_Z_dist_nand_a_y_n T_fall_dist_nand_a_y_n T_Z_dist_nand_a_y_n) @sv-cells/sm83/cells/irq_prio_bit0.sv:44:2
+    #6 bufif0 args=[dist_nand_b_y_p,'1,dist_nand_b_in] strength=strong1,highz0 delay=(T_rise_dist_nand_b_y_p T_Z_dist_nand_b_y_p T_Z_dist_nand_b_y_p) @sv-cells/sm83/cells/irq_prio_bit0.sv:49:2
+    #7 nmos args=[dist_nand_b_y_n,dist_nand_b_in_n,(and dist_nand_b_in ((caseneq dist_nand_b_in_n 1)))] strength=<none> delay=(T_Z_dist_nand_b_y_n T_fall_dist_nand_b_y_n T_Z_dist_nand_b_y_n) @sv-cells/sm83/cells/irq_prio_bit0.sv:55:2
+    #8 pmos args=[dist_nor_y_p,dist_nor_in_p,(or dist_nor_in ((caseeq dist_nor_in_p 0)))] strength=<none> delay=(T_rise_dist_nor_y_p T_Z_dist_nor_y_p T_Z_dist_nor_y_p) @sv-cells/sm83/cells/irq_prio_bit0.sv:61:2
+    #9 bufif1 args=[dist_nor_y_n,'0,dist_nor_in] strength=highz1,strong0 delay=(T_Z_dist_nor_y_n T_fall_dist_nor_y_n T_Z_dist_nor_y_n) @sv-cells/sm83/cells/irq_prio_bit0.sv:66:2
+  instantiations:
+  timing_aliases:
+    T_Z_dist_nand_a_y_n kind=Localparam value=(call tpd_z _ T_fall_dist_nand_a_y_n) @sv-cells/sm83/cells/irq_prio_bit0.sv:42:2
+    T_Z_dist_nand_a_y_p kind=Localparam value=(call tpd_z T_rise_dist_nand_a_y_p) @sv-cells/sm83/cells/irq_prio_bit0.sv:37:2
+    T_Z_dist_nand_b_y_n kind=Localparam value=(call tpd_z _ T_fall_dist_nand_b_y_n) @sv-cells/sm83/cells/irq_prio_bit0.sv:53:2
+    T_Z_dist_nand_b_y_p kind=Localparam value=(call tpd_z T_rise_dist_nand_b_y_p) @sv-cells/sm83/cells/irq_prio_bit0.sv:48:2
+    T_Z_dist_nor_y_n kind=Localparam value=(call tpd_z _ T_fall_dist_nor_y_n) @sv-cells/sm83/cells/irq_prio_bit0.sv:65:2
+    T_Z_dist_nor_y_p kind=Localparam value=(call tpd_z T_rise_dist_nor_y_p) @sv-cells/sm83/cells/irq_prio_bit0.sv:59:2
+    T_Z_nand_a_y kind=Localparam value=(call tpd_z T_rise_nand_a_y T_fall_nand_a_y) @sv-cells/sm83/cells/irq_prio_bit0.sv:28:2
+    T_Z_nand_b_y kind=Localparam value=(call tpd_z _ T_fall_nand_b_y) @sv-cells/sm83/cells/irq_prio_bit0.sv:33:2
+    T_fall_and_y kind=Specparam value=(call tpd_elmore L_and_y (call R_nmos_ohm (mul 8.0 L_unit))) @sv-cells/sm83/cells/irq_prio_bit0.sv:73:3
+    T_fall_dist_nand_a_y_n kind=Localparam value=(call tpd_elmore L_dist_nand_a_y_n (mul (call R_nmos_ohm (mul 3 L_unit)) 2)) @sv-cells/sm83/cells/irq_prio_bit0.sv:41:2
+    T_fall_dist_nand_b_y_n kind=Localparam value=(call tpd_elmore L_dist_nand_b_y_n (call R_nmos_ohm (mul 3 L_unit))) @sv-cells/sm83/cells/irq_prio_bit0.sv:52:2
+    T_fall_dist_nor_y_n kind=Localparam value=(call tpd_elmore L_dist_nor_y_n (call R_nmos_ohm (mul 3 L_unit))) @sv-cells/sm83/cells/irq_prio_bit0.sv:64:2
+    T_fall_nand kind=Specparam value=(call tpd_elmore 24 (mul (call R_nmos_ohm (mul 3.0 L_unit)) 2)) @sv-cells/sm83/cells/irq_prio_bit0.sv:71:3
+    T_fall_nand_a_y kind=Localparam value=(call tpd_elmore L_nand_a_y (mul (call R_nmos_ohm (mul 6 L_unit)) 2)) @sv-cells/sm83/cells/irq_prio_bit0.sv:27:2
+    T_fall_nand_b_y kind=Localparam value=(call tpd_elmore L_nand_b_y (mul (call R_nmos_ohm (mul 6 L_unit)) 2)) @sv-cells/sm83/cells/irq_prio_bit0.sv:32:2
+    T_rise_and_y kind=Specparam value=(call tpd_elmore L_and_y (call R_pmos_ohm (mul 14.5 L_unit))) @sv-cells/sm83/cells/irq_prio_bit0.sv:72:3
+    T_rise_dist_nand_a_y_p kind=Localparam value=(call tpd_elmore L_dist_nand_a_y_p (call R_pmos_ohm (mul 3 L_unit))) @sv-cells/sm83/cells/irq_prio_bit0.sv:36:2
+    T_rise_dist_nand_b_y_p kind=Localparam value=(call tpd_elmore L_dist_nand_b_y_p (call R_pmos_ohm (mul 3 L_unit))) @sv-cells/sm83/cells/irq_prio_bit0.sv:47:2
+    T_rise_dist_nor_y_p kind=Localparam value=(call tpd_elmore L_dist_nor_y_p (call R_pmos_ohm (mul 5 L_unit))) @sv-cells/sm83/cells/irq_prio_bit0.sv:58:2
+    T_rise_nand kind=Specparam value=(call tpd_elmore 24 (call R_pmos_ohm (mul 3.0 L_unit))) @sv-cells/sm83/cells/irq_prio_bit0.sv:70:3
+    T_rise_nand_a_y kind=Localparam value=(call tpd_elmore L_nand_a_y (call R_pmos_ohm (mul 13 L_unit))) @sv-cells/sm83/cells/irq_prio_bit0.sv:26:2
+  specify_paths:
+    controls=[and_in1,and_in2_nand_a_in2] target=and_y delays=[(add T_fall_nand T_rise_and_y),(add T_rise_nand T_fall_and_y)] @sv-cells/sm83/cells/irq_prio_bit0.sv:75:3
+  generate_alternatives:
+requirements:
+  driver.primitive-tristate | M6 | sv-cells/sm83/cells/irq_prio_bit0.sv:29:2 | tri-state primitive and strength semantics are scheduled for Milestone 6
+  driver.repeated | M6 | sv-cells/sm83/cells/irq_prio_bit0.sv:29:2 | repeated source drivers are scheduled for Milestone 6
+  timing.alias | M7 | sv-cells/sm83/cells/irq_prio_bit0.sv:42:2 | timing aliases are scheduled for Milestone 7
+  timing.primitive-delay | M7 | sv-cells/sm83/cells/irq_prio_bit0.sv:29:2 | symbolic primitive delays are scheduled for Milestone 7
+  timing.specify-path | M7 | sv-cells/sm83/cells/irq_prio_bit0.sv:75:3 | specify paths are scheduled for Milestone 7
+  value.combinational | M4 | sv-cells/sm83/cells/irq_prio_bit0.sv:24:2 | combinational value lowering is scheduled for Milestone 4

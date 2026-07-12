@@ -1,0 +1,93 @@
+analyze summary: modules=1 disposition=deferred requirements=7
+module sm83_dlatch_ee_irq @sv-cells/sm83/cells/dlatch_ee_irq.sv:3:1
+  inputs: d ena ena_n pch_n ena_q_n
+  outputs: q q_n gated_q_n
+  registers: q_n
+  symbols:
+    L_gated_q_n category=parameter @sv-cells/sm83/cells/dlatch_ee_irq.sv:6:3
+    L_q category=parameter @sv-cells/sm83/cells/dlatch_ee_irq.sv:4:3
+    L_q_n category=parameter @sv-cells/sm83/cells/dlatch_ee_irq.sv:5:3
+    T_fall_buf category=specparam @sv-cells/sm83/cells/dlatch_ee_irq.sv:29:3
+    T_fall_gated_q category=specparam @sv-cells/sm83/cells/dlatch_ee_irq.sv:37:3
+    T_fall_gated_q_n category=specparam @sv-cells/sm83/cells/dlatch_ee_irq.sv:39:3
+    T_fall_not category=specparam @sv-cells/sm83/cells/dlatch_ee_irq.sv:31:3
+    T_fall_q category=specparam @sv-cells/sm83/cells/dlatch_ee_irq.sv:35:3
+    T_fall_q_n category=specparam @sv-cells/sm83/cells/dlatch_ee_irq.sv:33:3
+    T_rise_buf category=specparam @sv-cells/sm83/cells/dlatch_ee_irq.sv:28:3
+    T_rise_gated_q category=specparam @sv-cells/sm83/cells/dlatch_ee_irq.sv:36:3
+    T_rise_gated_q_n category=specparam @sv-cells/sm83/cells/dlatch_ee_irq.sv:38:3
+    T_rise_not category=specparam @sv-cells/sm83/cells/dlatch_ee_irq.sv:30:3
+    T_rise_q category=specparam @sv-cells/sm83/cells/dlatch_ee_irq.sv:34:3
+    T_rise_q_n category=specparam @sv-cells/sm83/cells/dlatch_ee_irq.sv:32:3
+    d category=port @sv-cells/sm83/cells/dlatch_ee_irq.sv:8:3
+    ena category=port @sv-cells/sm83/cells/dlatch_ee_irq.sv:8:3
+    ena_n category=port @sv-cells/sm83/cells/dlatch_ee_irq.sv:8:3
+    ena_q_n category=port @sv-cells/sm83/cells/dlatch_ee_irq.sv:9:3
+    gated_q category=declaration @sv-cells/sm83/cells/dlatch_ee_irq.sv:15:2
+    gated_q_n category=port @sv-cells/sm83/cells/dlatch_ee_irq.sv:10:3
+    pch_n category=port @sv-cells/sm83/cells/dlatch_ee_irq.sv:8:3
+    q category=port @sv-cells/sm83/cells/dlatch_ee_irq.sv:10:3
+    q_n category=port @sv-cells/sm83/cells/dlatch_ee_irq.sv:10:3
+  ports:
+    d direction=input use=input modifiers=[logic] @sv-cells/sm83/cells/dlatch_ee_irq.sv:8:3
+    ena direction=input use=input modifiers=[logic] @sv-cells/sm83/cells/dlatch_ee_irq.sv:8:3
+    ena_n direction=input use=input modifiers=[logic] @sv-cells/sm83/cells/dlatch_ee_irq.sv:8:3
+    ena_q_n direction=inout use=input modifiers=[tri,logic] @sv-cells/sm83/cells/dlatch_ee_irq.sv:9:3
+    gated_q_n direction=output use=output modifiers=[logic] @sv-cells/sm83/cells/dlatch_ee_irq.sv:10:3
+    pch_n direction=input use=input modifiers=[logic] @sv-cells/sm83/cells/dlatch_ee_irq.sv:8:3
+    q direction=output use=output modifiers=[logic] @sv-cells/sm83/cells/dlatch_ee_irq.sv:10:3
+    q_n direction=output use=output modifiers=[logic] @sv-cells/sm83/cells/dlatch_ee_irq.sv:10:3
+  declarations:
+    gated_q kind=Tri type=logic value=<none> @sv-cells/sm83/cells/dlatch_ee_irq.sv:15:2
+  signal_roles:
+    gated_q roles=[PrimitiveDriven,KeeperDriven] declared=sv-cells/sm83/cells/dlatch_ee_irq.sv:15:2
+    gated_q_n roles=[ContinuousDriven] declared=sv-cells/sm83/cells/dlatch_ee_irq.sv:10:3
+    q roles=[ContinuousDriven] declared=sv-cells/sm83/cells/dlatch_ee_irq.sv:10:3
+    q_n roles=[ModeledState] declared=sv-cells/sm83/cells/dlatch_ee_irq.sv:10:3
+  assignments:
+    #2 (q continuous (not q_n)) @sv-cells/sm83/cells/dlatch_ee_irq.sv:20:2 strength=<none> syntax=Continuous
+    #6 (gated_q_n continuous (not gated_q)) @sv-cells/sm83/cells/dlatch_ee_irq.sv:25:2 strength=<none> syntax=Continuous
+    #0 (q_n initial 0) @sv-cells/sm83/cells/dlatch_ee_irq.sv:17:10 strength=<none> syntax=Initial
+    #1 (q_n state (not d)) @sv-cells/sm83/cells/dlatch_ee_irq.sv:19:49 strength=<none> syntax=Procedural { state: true, source: AlwaysLatch }
+  drivers:
+    #0 target=q_n source=initial @sv-cells/sm83/cells/dlatch_ee_irq.sv:17:10
+    #1 target=q_n source=procedural(state=true,source=AlwaysLatch) @sv-cells/sm83/cells/dlatch_ee_irq.sv:19:49
+    #2 target=q source=continuous @sv-cells/sm83/cells/dlatch_ee_irq.sv:20:2
+    #3 target=gated_q source=primitive(bufif0) @sv-cells/sm83/cells/dlatch_ee_irq.sv:22:2
+    #4 target=gated_q source=primitive(rnmos) @sv-cells/sm83/cells/dlatch_ee_irq.sv:23:2
+    #5 target=gated_q source=keeper(instance=gated_q_keeper) @sv-cells/sm83/cells/dlatch_ee_irq.sv:24:24
+    #6 target=gated_q_n source=continuous @sv-cells/sm83/cells/dlatch_ee_irq.sv:25:2
+  primitives:
+    #3 bufif0 args=[gated_q,'1,pch_n] strength=strong1,highz0 delay=<none> @sv-cells/sm83/cells/dlatch_ee_irq.sv:22:2
+    #4 rnmos args=[gated_q,ena_q_n,(and q_n ((caseneq ena_q_n 1)))] strength=<none> delay=<none> @sv-cells/sm83/cells/dlatch_ee_irq.sv:23:2
+  instantiations:
+    #5 keeper gated_q_keeper @sv-cells/sm83/cells/dlatch_ee_irq.sv:24:2
+      resolution=special(Keeper)
+      connection target=gated_q @sv-cells/sm83/cells/dlatch_ee_irq.sv:24:24
+  timing_aliases:
+    T_fall_buf kind=Specparam value=(call tpd_elmore 34 (mul (call R_nmos_ohm (mul 3 L_unit)) 2)) @sv-cells/sm83/cells/dlatch_ee_irq.sv:29:3
+    T_fall_gated_q kind=Specparam value=(call tpd_elmore 19 (call R_nmos_ohm (mul 6 L_unit))) @sv-cells/sm83/cells/dlatch_ee_irq.sv:37:3
+    T_fall_gated_q_n kind=Specparam value=(call tpd_elmore L_gated_q_n (call R_nmos_ohm (mul 6 L_unit))) @sv-cells/sm83/cells/dlatch_ee_irq.sv:39:3
+    T_fall_not kind=Specparam value=(call tpd_elmore 34 (call R_nmos_ohm (mul 3 L_unit))) @sv-cells/sm83/cells/dlatch_ee_irq.sv:31:3
+    T_fall_q kind=Specparam value=(call tpd_elmore L_q (call R_nmos_ohm (mul 6 L_unit))) @sv-cells/sm83/cells/dlatch_ee_irq.sv:35:3
+    T_fall_q_n kind=Specparam value=(call tpd_elmore L_q_n (call R_nmos_ohm (mul 6 L_unit))) @sv-cells/sm83/cells/dlatch_ee_irq.sv:33:3
+    T_rise_buf kind=Specparam value=(call tpd_elmore 34 (mul (call R_pmos_ohm (mul 3 L_unit)) 2)) @sv-cells/sm83/cells/dlatch_ee_irq.sv:28:3
+    T_rise_gated_q kind=Specparam value=(call tpd_elmore 19 (call R_pmos_ohm (mul 6 L_unit))) @sv-cells/sm83/cells/dlatch_ee_irq.sv:36:3
+    T_rise_gated_q_n kind=Specparam value=(call tpd_elmore L_gated_q_n (call R_pmos_ohm (mul 6 L_unit))) @sv-cells/sm83/cells/dlatch_ee_irq.sv:38:3
+    T_rise_not kind=Specparam value=(call tpd_elmore 34 (call R_pmos_ohm (mul 3 L_unit))) @sv-cells/sm83/cells/dlatch_ee_irq.sv:30:3
+    T_rise_q kind=Specparam value=(call tpd_elmore L_q (call R_pmos_ohm (mul 6 L_unit))) @sv-cells/sm83/cells/dlatch_ee_irq.sv:34:3
+    T_rise_q_n kind=Specparam value=(call tpd_elmore L_q_n (call R_pmos_ohm (mul 13 L_unit))) @sv-cells/sm83/cells/dlatch_ee_irq.sv:32:3
+  specify_paths:
+    controls=[d,ena,ena_n] target=q_n delays=[(add (add T_rise_buf T_fall_not) T_rise_q_n),(add (add T_fall_buf T_rise_not) T_fall_q_n)] @sv-cells/sm83/cells/dlatch_ee_irq.sv:41:3
+    controls=[d,ena,ena_n] target=q delays=[(add (add (add T_fall_buf T_rise_not) T_fall_q_n) T_rise_q),(add (add (add T_rise_buf T_fall_not) T_rise_q_n) T_fall_q)] @sv-cells/sm83/cells/dlatch_ee_irq.sv:42:3
+    controls=[pch_n,ena_q_n] target=gated_q_n delays=[(add T_fall_gated_q T_rise_gated_q_n),(add T_rise_gated_q T_fall_gated_q_n)] @sv-cells/sm83/cells/dlatch_ee_irq.sv:45:3
+    controls=[d,ena,ena_n] target=gated_q_n delays=[(add (add (add (add T_rise_buf T_fall_not) T_rise_q_n) T_fall_gated_q) T_rise_gated_q_n),(add (add (add (add T_fall_buf T_rise_not) T_fall_q_n) T_rise_gated_q) T_fall_gated_q_n)] @sv-cells/sm83/cells/dlatch_ee_irq.sv:46:3
+  generate_alternatives:
+requirements:
+  driver.primitive-tristate | M6 | sv-cells/sm83/cells/dlatch_ee_irq.sv:22:2 | tri-state primitive and strength semantics are scheduled for Milestone 6
+  driver.repeated | M6 | sv-cells/sm83/cells/dlatch_ee_irq.sv:17:10 | repeated source drivers are scheduled for Milestone 6
+  state.initial | M5 | sv-cells/sm83/cells/dlatch_ee_irq.sv:17:10 | literal initialization and modeled state are scheduled for Milestone 5
+  state.procedural | M5 | sv-cells/sm83/cells/dlatch_ee_irq.sv:19:49 | stateful procedural lowering is scheduled for Milestone 5
+  timing.alias | M7 | sv-cells/sm83/cells/dlatch_ee_irq.sv:29:3 | timing aliases are scheduled for Milestone 7
+  timing.specify-path | M7 | sv-cells/sm83/cells/dlatch_ee_irq.sv:41:3 | specify paths are scheduled for Milestone 7
+  value.combinational | M4 | sv-cells/sm83/cells/dlatch_ee_irq.sv:20:2 | combinational value lowering is scheduled for Milestone 4

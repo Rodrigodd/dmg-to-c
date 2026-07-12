@@ -76,6 +76,7 @@ const SUCCESSFUL_STATEFUL_PATHS: &[&str] = &[
     "sv-cells/sm83/cells/dffr_cc_ee_reg_ie_bit.sv",
     "sv-cells/sm83/cells/dffre_cc_q.sv",
     "sv-cells/sm83/cells/dffs_cc_ee_pch_d_reg_pc_bit.sv",
+    "sv-cells/sm83/cells/dlatch_ee_irq.sv",
     "sv-cells/sm83/cells/dlatch_ee_q_n.sv",
     "sv-cells/sm83/cells/srlatch_r_n.sv",
     "sv-cells/sm83/cells/srlatch_r_n_alt.sv",
@@ -100,10 +101,11 @@ const SUCCESSFUL_FLAT_DFF_DLATCH_PATHS: &[&str] = &[
     "sv-cells/sm83/cells/dffr_cc_ee_reg_ie_bit.sv",
     "sv-cells/sm83/cells/dffre_cc_q.sv",
     "sv-cells/sm83/cells/dffs_cc_ee_pch_d_reg_pc_bit.sv",
+    "sv-cells/sm83/cells/dlatch_ee_irq.sv",
     "sv-cells/sm83/cells/dlatch_ee_q_n.sv",
 ];
 
-const LATER_DRIVER_DEFERRALS: &[&str] = &["sv-cells/sm83/cells/dlatch_ee_irq.sv"];
+const LATER_DRIVER_DEFERRALS: &[&str] = &[];
 
 struct ExpectedSuccess {
     path: &'static str,
@@ -252,6 +254,12 @@ const EXPECTED_SUCCESSES: &[ExpectedSuccess] = &[
         initial_ignores: 3,
     },
     ExpectedSuccess {
+        path: "sv-cells/sm83/cells/dlatch_ee_irq.sv",
+        registers: &["q_n"],
+        state_targets: &["q_n"],
+        initial_ignores: 1,
+    },
+    ExpectedSuccess {
         path: "sv-cells/sm83/cells/dlatch_ee_q_n.sv",
         registers: &["q_n"],
         state_targets: &["q_n"],
@@ -293,14 +301,7 @@ struct DeferredExpectation {
     rationale: &'static str,
 }
 
-const DEFERRED_EXPECTATIONS: &[DeferredExpectation] = &[DeferredExpectation {
-    path: "sv-cells/sm83/cells/dlatch_ee_irq.sv",
-    line: 23,
-    column: 2,
-    message: "unsupported primitive rnmos",
-    category: DeferralCategory::LaterDriver,
-    rationale: "M6 driver.primitive-tristate+driver.repeated; M7 timing.alias+timing.specify-path; M11 primitive.transistor (current blocker: rnmos; keeper supported)",
-}];
+const DEFERRED_EXPECTATIONS: &[DeferredExpectation] = &[];
 
 #[derive(Default)]
 struct AuditTotals {
@@ -860,7 +861,7 @@ fn audit_flat_values(assignments: &[&Assignment], totals: &mut AuditTotals) {
                 totals.nested_state_values += 1;
                 continue;
             };
-            if operands.is_empty()
+            if (operands.is_empty() && operator != ValueOperator::Keeper)
                 || operands
                     .iter()
                     .any(|operand| !matches!(operand, Expr::Atom(atom) if !atom.is_empty()))
@@ -1012,7 +1013,6 @@ fn assert_deferral_requirements(report: &AnalysisReport, expectation: &DeferredE
                 ("driver.repeated", TargetMilestone::M6DriversAndStrength),
                 ("timing.alias", TargetMilestone::M7SymbolicTiming),
                 ("timing.specify-path", TargetMilestone::M7SymbolicTiming),
-                ("primitive.transistor", TargetMilestone::M11Transistors),
             ] {
                 assert!(
                     has(capability, milestone),
@@ -1079,20 +1079,20 @@ fn assert_success_records(records: &[SuccessRecord]) {
 fn assert_zero_invariant_failures(totals: &AuditTotals) {
     assert_eq!(totals.corpus_files, 206);
     assert_eq!(totals.stateful_files, 27);
-    assert_eq!(totals.succeeded, 26);
-    assert_eq!(totals.deferred, 1);
+    assert_eq!(totals.succeeded, 27);
+    assert_eq!(totals.deferred, 0);
     assert_eq!(totals.recursive_modeled_registers, 48);
     assert_eq!(totals.recursive_state_assignments, 48);
     assert_eq!(totals.blocking_state_assignments, 17);
     assert_eq!(totals.nonblocking_state_assignments, 31);
-    assert_eq!(totals.successful_modeled_registers, 47);
-    assert_eq!(totals.successful_state_assignments, 47);
-    assert_eq!(totals.retained_muxes, 46);
+    assert_eq!(totals.successful_modeled_registers, 48);
+    assert_eq!(totals.successful_state_assignments, 48);
+    assert_eq!(totals.retained_muxes, 47);
     assert_eq!(totals.direct_state_assignments, 1);
-    assert_eq!(totals.successful_initial_omissions, 41);
-    assert_eq!(totals.successful_delay_tuple_omissions, 75);
-    assert_eq!(totals.successful_specify_warnings, 14);
-    assert_eq!(totals.nonzero_state_delays, 25);
+    assert_eq!(totals.successful_initial_omissions, 42);
+    assert_eq!(totals.successful_delay_tuple_omissions, 79);
+    assert_eq!(totals.successful_specify_warnings, 15);
+    assert_eq!(totals.nonzero_state_delays, 26);
     assert_eq!(totals.combinational_procedural_nonregisters, 0);
     for (name, value) in invariant_failures(totals) {
         assert_eq!(value, 0, "stateful invariant failed: {name}");

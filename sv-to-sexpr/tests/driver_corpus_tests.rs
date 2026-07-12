@@ -22,18 +22,6 @@ use sv_to_sexpr::serialize::render_cell;
 use sv_to_sexpr::survey::collect_sv_files;
 
 const M7_FAILURES: &[&str] = &[];
-const M11_FAILURES: &[&str] = &[
-    "sv-cells/sm83/cells/dlatch_ee_irq.sv",
-    "sv-cells/sm83/cells/idu_bit0.sv",
-    "sv-cells/sm83/cells/idu_bit123456.sv",
-    "sv-cells/sm83/cells/irq_prio_bit0.sv",
-    "sv-cells/sm83/cells/irq_prio_bit1.sv",
-    "sv-cells/sm83/cells/irq_prio_bit2.sv",
-    "sv-cells/sm83/cells/irq_prio_bit3.sv",
-    "sv-cells/sm83/cells/irq_prio_bit4.sv",
-    "sv-cells/sm83/cells/irq_prio_bit5.sv",
-    "sv-cells/sm83/cells/irq_prio_bit6.sv",
-];
 
 const EXPECTED_RELEVANT_SUCCESSES: &[&str] = &[
     "sv-cells/dmg_cpu_b/cells/buf_if0.sv",
@@ -58,7 +46,17 @@ const EXPECTED_RELEVANT_SUCCESSES: &[&str] = &[
     "sv-cells/sm83/cells/dff_cc_ee_pch_d_reg_sp_bit.sv",
     "sv-cells/sm83/cells/dffn_ee_pch_d_alu_flag.sv",
     "sv-cells/sm83/cells/dffs_cc_ee_pch_d_reg_pc_bit.sv",
+    "sv-cells/sm83/cells/dlatch_ee_irq.sv",
+    "sv-cells/sm83/cells/idu_bit0.sv",
+    "sv-cells/sm83/cells/idu_bit123456.sv",
     "sv-cells/sm83/cells/idu_bit7.sv",
+    "sv-cells/sm83/cells/irq_prio_bit0.sv",
+    "sv-cells/sm83/cells/irq_prio_bit1.sv",
+    "sv-cells/sm83/cells/irq_prio_bit2.sv",
+    "sv-cells/sm83/cells/irq_prio_bit3.sv",
+    "sv-cells/sm83/cells/irq_prio_bit4.sv",
+    "sv-cells/sm83/cells/irq_prio_bit5.sv",
+    "sv-cells/sm83/cells/irq_prio_bit6.sv",
     "sv-cells/sm83/cells/irq_prio_bit7.sv",
     "sv-cells/sm83/cells/nand2_nand3_od_irq.sv",
     "sv-cells/sm83/cells/nand2_od_a_dbus.sv",
@@ -95,18 +93,7 @@ const EXPECTED_RELEVANT_SUCCESSES: &[&str] = &[
     "sv-cells/sm83/cells/tie.sv",
 ];
 
-const EXPECTED_RELEVANT_DEFERRALS: &[&str] = &[
-    "sv-cells/sm83/cells/dlatch_ee_irq.sv",
-    "sv-cells/sm83/cells/idu_bit0.sv",
-    "sv-cells/sm83/cells/idu_bit123456.sv",
-    "sv-cells/sm83/cells/irq_prio_bit0.sv",
-    "sv-cells/sm83/cells/irq_prio_bit1.sv",
-    "sv-cells/sm83/cells/irq_prio_bit2.sv",
-    "sv-cells/sm83/cells/irq_prio_bit3.sv",
-    "sv-cells/sm83/cells/irq_prio_bit4.sv",
-    "sv-cells/sm83/cells/irq_prio_bit5.sv",
-    "sv-cells/sm83/cells/irq_prio_bit6.sv",
-];
+const EXPECTED_RELEVANT_DEFERRALS: &[&str] = &[];
 
 const EXPECTED_REPEATED_TARGETS: &[(&str, &str, usize, Option<usize>)] = &[
     ("sv-cells/dmg_cpu_b/cells/mux.sv", "mux", 5, Some(5)),
@@ -158,17 +145,47 @@ const EXPECTED_REPEATED_TARGETS: &[(&str, &str, usize, Option<usize>)] = &[
     ("sv-cells/sm83/cells/decoder2.sv", "y7", 2, Some(2)),
     ("sv-cells/sm83/cells/decoder2.sv", "y8", 2, Some(2)),
     ("sv-cells/sm83/cells/decoder2.sv", "y9", 2, Some(2)),
-    ("sv-cells/sm83/cells/dlatch_ee_irq.sv", "gated_q", 3, None),
-    ("sv-cells/sm83/cells/idu_bit0.sv", "aoi_y", 4, None),
-    ("sv-cells/sm83/cells/idu_bit0.sv", "buf_a_y", 2, None),
-    ("sv-cells/sm83/cells/idu_bit0.sv", "buf_b_y", 2, None),
-    ("sv-cells/sm83/cells/idu_bit123456.sv", "buf_a_y", 2, None),
-    ("sv-cells/sm83/cells/idu_bit123456.sv", "buf_b_y", 2, None),
+    (
+        "sv-cells/sm83/cells/dlatch_ee_irq.sv",
+        "gated_q",
+        3,
+        Some(3),
+    ),
+    ("sv-cells/sm83/cells/idu_bit0.sv", "aoi_y", 4, Some(4)),
+    ("sv-cells/sm83/cells/idu_bit0.sv", "buf_a_y", 2, Some(2)),
+    ("sv-cells/sm83/cells/idu_bit0.sv", "buf_b_y", 2, Some(2)),
+    (
+        "sv-cells/sm83/cells/idu_bit123456.sv",
+        "buf_a_y",
+        2,
+        Some(2),
+    ),
+    (
+        "sv-cells/sm83/cells/idu_bit123456.sv",
+        "buf_b_y",
+        2,
+        Some(2),
+    ),
     ("sv-cells/sm83/cells/idu_bit7.sv", "buf_a_y", 2, Some(2)),
     ("sv-cells/sm83/cells/idu_bit7.sv", "buf_b_y", 2, Some(2)),
-    ("sv-cells/sm83/cells/irq_prio_bit0.sv", "nand_a_y", 2, None),
-    ("sv-cells/sm83/cells/irq_prio_bit3.sv", "nand_d_y", 2, None),
-    ("sv-cells/sm83/cells/irq_prio_bit5.sv", "nand_c_y", 2, None),
+    (
+        "sv-cells/sm83/cells/irq_prio_bit0.sv",
+        "nand_a_y",
+        2,
+        Some(2),
+    ),
+    (
+        "sv-cells/sm83/cells/irq_prio_bit3.sv",
+        "nand_d_y",
+        2,
+        Some(2),
+    ),
+    (
+        "sv-cells/sm83/cells/irq_prio_bit5.sv",
+        "nand_c_y",
+        2,
+        Some(2),
+    ),
     (
         "sv-cells/sm83/cells/reg_bus_pch_a_bit0123.sv",
         "c_y",
@@ -387,12 +404,12 @@ fn structural_m6_relevance_and_disposition_sets_are_exact() {
         }
     }
 
-    assert_eq!(global_successes, 189);
-    assert_eq!(global_failures, 17);
+    assert_eq!(global_successes, 199);
+    assert_eq!(global_failures, 7);
     assert_eq!(successes, EXPECTED_RELEVANT_SUCCESSES);
     assert_eq!(failures, EXPECTED_RELEVANT_DEFERRALS);
-    assert_eq!(successes.len(), 57);
-    assert_eq!(failures.len(), 10);
+    assert_eq!(successes.len(), 67);
+    assert_eq!(failures.len(), 0);
     assert_eq!(successes.len() + failures.len(), 67);
 }
 
@@ -1384,36 +1401,25 @@ fn pair_label(pair: StrengthPair) -> String {
 }
 
 fn later_blocker(path: &str) -> (&'static str, &'static str) {
-    let matches = [M7_FAILURES.contains(&path), M11_FAILURES.contains(&path)];
-    assert_eq!(
-        matches.into_iter().filter(|matched| *matched).count(),
-        1,
+    assert!(
+        M7_FAILURES.contains(&path),
         "M6-relevant lower failure must have one later blocker: {path}"
     );
-    if M7_FAILURES.contains(&path) {
-        (
-            "M7",
-            "M7 timing-factor lowering remains; M6 bufif polarity and strength are structurally inventoried",
-        )
-    } else if M11_FAILURES.contains(&path) {
-        (
-            "M11",
-            "M11 transistor lowering remains after M6 bufif/strength/repeated drivers were structurally inventoried",
-        )
-    } else {
-        unreachable!()
-    }
+    (
+        "M7",
+        "M7 timing-factor lowering remains; M6 bufif polarity and strength are structurally inventoried",
+    )
 }
 
 fn assert_exact_audit(audit: &Audit) {
     assert_eq!(audit.processed, 206);
-    assert_eq!(audit.succeeded, 196);
-    assert_eq!(audit.failed, 10);
-    assert_eq!(audit.relevant_successes.len(), 57);
-    assert_eq!(audit.relevant_deferrals.len(), 10);
+    assert_eq!(audit.succeeded, 206);
+    assert_eq!(audit.failed, 0);
+    assert_eq!(audit.relevant_successes.len(), 67);
+    assert_eq!(audit.relevant_deferrals.len(), 0);
     assert_eq!(audit.source_keepers, 6);
-    assert_eq!(audit.emitted_keepers, 4);
-    assert_eq!(audit.deferred_keepers, 2);
+    assert_eq!(audit.emitted_keepers, 6);
+    assert_eq!(audit.deferred_keepers, 0);
     assert_eq!(
         audit
             .relevant_successes
@@ -1498,8 +1504,8 @@ fn assert_exact_audit(audit: &Audit) {
     assert_eq!(audit.emitted_forms.bufif0, 2);
     assert_eq!(audit.emitted_forms.bufif1, 10);
     assert_eq!(audit.emitted_forms.drive_strength, 5);
-    assert_eq!(audit.emitted_forms.bufif0_strength, 82);
-    assert_eq!(audit.emitted_forms.bufif1_strength, 303);
+    assert_eq!(audit.emitted_forms.bufif0_strength, 104);
+    assert_eq!(audit.emitted_forms.bufif1_strength, 344);
 
     assert_eq!(audit.repeated_entries.len(), 58);
     assert_eq!(
@@ -1525,7 +1531,7 @@ fn assert_exact_audit(audit: &Audit) {
             .iter()
             .filter_map(|entry| entry.emitted_occurrences)
             .sum::<usize>(),
-        114
+        135
     );
     assert_eq!(
         audit
@@ -1534,7 +1540,7 @@ fn assert_exact_audit(audit: &Audit) {
             .filter(|entry| entry.emitted_occurrences.is_none())
             .map(|entry| entry.source_occurrences)
             .sum::<usize>(),
-        21
+        0
     );
     assert!(
         audit
@@ -1559,18 +1565,7 @@ fn assert_exact_audit(audit: &Audit) {
         EXPECTED_REPEATED_TARGETS
     );
 
-    for (category, expected) in [("M7", M7_FAILURES), ("M9", &[][..]), ("M11", M11_FAILURES)] {
-        assert_eq!(
-            audit
-                .relevant_deferrals
-                .iter()
-                .filter(|file| file.category == category)
-                .map(|file| file.path.as_str())
-                .collect::<Vec<_>>(),
-            expected,
-            "relevant {category} deferral set changed"
-        );
-    }
+    assert!(audit.relevant_deferrals.is_empty());
 
     let invariants = &audit.invariants;
     assert_eq!(invariants.invalid_cells, 0);

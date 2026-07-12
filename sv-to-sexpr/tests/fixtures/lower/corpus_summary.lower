@@ -1,5 +1,5 @@
 lowering corpus audit
-processed=206 succeeded=196 failed=10
+processed=206 succeeded=206 failed=0
 invariants:
   invalid_successful_cells=0
   nested_value_expressions=0
@@ -9,41 +9,34 @@ invariants:
   absolute_path_leaks=0
   dependency_order_failures=0
 successful-cell-capabilities:
-  assignments=1749
+  assignments=1958
   atom_value_assignments=17
-  temporary_assignments=1068
-  repeated_target_assignments=65
-  delayed_assignments=616
-  nested_timing_delay_assignments=616
-  cells_with_registers=26
-  registers=47
+  temporary_assignments=1168
+  repeated_target_assignments=77
+  delayed_assignments=721
+  nested_timing_delay_assignments=721
+  cells_with_registers=27
+  registers=48
 value-operators:
-  and=655
+  and=718
   bufif0=2
-  bufif0-strength=82
+  bufif0-strength=104
   bufif1=10
-  bufif1-strength=303
-  caseeq=4
+  bufif1-strength=344
+  caseeq=11
+  caseneq=18
   drive-strength=5
   eq=2
-  keeper=4
-  mux=58
+  keeper=6
+  mux=59
   nand=27
+  nmos=17
   nor=28
-  not=247
-  or=296
+  not=268
+  or=305
+  pmos=7
+  rnmos=1
   xnor=1
   xor=8
 failure-categories:
-  transistor-related files=10
-    sv-cells/sm83/cells/dlatch_ee_irq.sv:23:2: unsupported primitive rnmos
-    sv-cells/sm83/cells/idu_bit0.sv:37:2: unsupported primitive nmos
-    sv-cells/sm83/cells/idu_bit123456.sv:29:2: unsupported primitive nmos
-    sv-cells/sm83/cells/irq_prio_bit0.sv:44:2: unsupported primitive nmos
-    sv-cells/sm83/cells/irq_prio_bit1.sv:51:2: unsupported primitive nmos
-    sv-cells/sm83/cells/irq_prio_bit2.sv:52:2: unsupported primitive nmos
-    sv-cells/sm83/cells/irq_prio_bit3.sv:63:2: unsupported primitive nmos
-    sv-cells/sm83/cells/irq_prio_bit4.sv:61:2: unsupported primitive nmos
-    sv-cells/sm83/cells/irq_prio_bit5.sv:64:2: unsupported primitive nmos
-    sv-cells/sm83/cells/irq_prio_bit6.sv:62:2: unsupported primitive nmos
   unsupported-timing-factor files=0

@@ -19,18 +19,7 @@ use sv_to_sexpr::lower::lower_design_with_catalog_and_generate_mode;
 
 const HALF_ADD: &str = "sv-cells/dmg_cpu_b/cells/half_add.sv";
 const FULL_ADD: &str = "sv-cells/dmg_cpu_b/cells/full_add.sv";
-const TRANSISTOR_FAILURES: &[&str] = &[
-    "sv-cells/sm83/cells/dlatch_ee_irq.sv",
-    "sv-cells/sm83/cells/idu_bit0.sv",
-    "sv-cells/sm83/cells/idu_bit123456.sv",
-    "sv-cells/sm83/cells/irq_prio_bit0.sv",
-    "sv-cells/sm83/cells/irq_prio_bit1.sv",
-    "sv-cells/sm83/cells/irq_prio_bit2.sv",
-    "sv-cells/sm83/cells/irq_prio_bit3.sv",
-    "sv-cells/sm83/cells/irq_prio_bit4.sv",
-    "sv-cells/sm83/cells/irq_prio_bit5.sv",
-    "sv-cells/sm83/cells/irq_prio_bit6.sv",
-];
+const LOWER_FAILURES: &[&str] = &[];
 
 #[test]
 fn configured_hierarchy_corpus_is_exact_resolved_and_fully_lowered() {
@@ -50,7 +39,7 @@ fn configured_hierarchy_corpus_is_exact_resolved_and_fully_lowered() {
         let mut lower_succeeded = 0;
         let mut warnings = 0;
         let mut ignores = 0;
-        let mut transistor_failures = Vec::new();
+        let mut lower_failures = Vec::new();
 
         for (path, design) in &corpus.designs {
             let analysis = sv_to_sexpr::analyze::analyze_design_with_catalog_and_generate_mode(
@@ -129,11 +118,10 @@ fn configured_hierarchy_corpus_is_exact_resolved_and_fully_lowered() {
                         assert_adder(path, &lowered);
                     }
                 }
-                Err(diagnostic) if TRANSISTOR_FAILURES.contains(&path.as_str()) => {
-                    assert!(diagnostic.message.starts_with("unsupported primitive"));
-                    transistor_failures.push(path.clone());
+                Err(diagnostic) => {
+                    lower_failures.push(path.clone());
+                    panic!("unexpected configured failure {path}: {diagnostic}");
                 }
-                Err(diagnostic) => panic!("unexpected configured failure {path}: {diagnostic}"),
             }
         }
 
@@ -154,16 +142,16 @@ fn configured_hierarchy_corpus_is_exact_resolved_and_fully_lowered() {
         assert_eq!(input_connections, 14);
         assert_eq!(output_connections, 7);
         assert_eq!((supported, deferred), (3, 203));
-        assert_eq!(lower_succeeded, 196);
-        assert_eq!(warnings, 47);
+        assert_eq!(lower_succeeded, 206);
+        assert_eq!(warnings, 49);
         assert_eq!(
             ignores,
             match mode {
-                GenerateMode::Delayful => 1108,
-                GenerateMode::Nodelay => 1098,
+                GenerateMode::Delayful => 1302,
+                GenerateMode::Nodelay => 1292,
             }
         );
-        assert_eq!(transistor_failures, TRANSISTOR_FAILURES);
+        assert_eq!(lower_failures, LOWER_FAILURES);
 
         writeln!(
             &mut output,
@@ -171,13 +159,13 @@ fn configured_hierarchy_corpus_is_exact_resolved_and_fully_lowered() {
             mode.label(),
             ordinary_files.into_iter().collect::<Vec<_>>().join(","),
             render_counts(&module_counts),
-            transistor_failures.len(),
+            lower_failures.len(),
         )
         .unwrap();
         writeln!(
             &mut output,
-            "  transistor-failures=[{}]",
-            transistor_failures.join(",")
+            "  lower-failures=[{}]",
+            lower_failures.join(",")
         )
         .unwrap();
     }

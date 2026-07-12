@@ -7,7 +7,7 @@ use sv_to_sexpr::analyze::{DriverSource, InstantiationResolution, SignalRole};
 use sv_to_sexpr::diagnostic::Diagnostic;
 use sv_to_sexpr::elaborate::GenerateMode;
 use sv_to_sexpr::ir::{CellItem, Expr, LoweredModule, ValueOperator};
-use sv_to_sexpr::serialize::render_cell;
+use sv_to_sexpr::serialize::{render_cell, render_expr};
 use sv_to_sexpr::survey::{
     analyze_file_with_sibling_catalog_and_generate_mode,
     lower_file_with_sibling_catalog_and_generate_mode,
@@ -82,7 +82,7 @@ fn reviewed_keeper_goldens_are_exact_flat_and_generate_mode_invariant() {
 }
 
 #[test]
-fn idu_bit0_resolves_keeper_before_exact_nmos_blocker() {
+fn idu_bit0_keeps_keeper_and_nmos_distinct_source_ordered_drivers() {
     let root = repository_root();
     let physical = root.join(IDU_BIT0);
     let analysis =
@@ -118,21 +118,55 @@ fn idu_bit0_resolves_keeper_before_exact_nmos_blocker() {
         requirement.capability_id != "hierarchy.keeper" && requirement.milestone.label() != "M10"
     }));
 
-    let error =
+    let lowered =
         lower_file_with_sibling_catalog_and_generate_mode(&physical, GenerateMode::Delayful)
-            .unwrap_err();
-    assert_eq!(error.span.line, 37);
-    assert_eq!(error.span.column, 2);
-    assert_eq!(error.message, "unsupported primitive nmos");
+            .unwrap();
+    let nodelay =
+        lower_file_with_sibling_catalog_and_generate_mode(&physical, GenerateMode::Nodelay)
+            .unwrap();
+    assert_eq!(lowered, nodelay);
+    lowered.cell.validate().unwrap();
+    assert!(lowered.cell.registers.is_empty());
+    let assignments = lowered
+        .cell
+        .items
+        .iter()
+        .filter_map(|item| match item {
+            CellItem::Assignment(assignment) => Some(assignment),
+            _ => None,
+        })
+        .collect::<Vec<_>>();
+    let keeper_index = assignments
+        .iter()
+        .position(|assignment| {
+            assignment.target == "aoi_y"
+                && assignment.expr == Expr::value(ValueOperator::Keeper, vec![])
+        })
+        .unwrap();
+    let nmos_index = assignments
+        .iter()
+        .position(|assignment| {
+            assignment.target == "aoi_buf_y" && render_expr(&assignment.expr) == "(nmos aoi_y t3)"
+        })
+        .unwrap();
+    assert!(keeper_index < nmos_index);
+    assert_eq!(assignments[keeper_index].delay, Expr::atom("0"));
+    assert_eq!(
+        render_expr(&assignments[nmos_index].delay),
+        "(elmore (wire L_aoi_buf_y) (nmos 17))"
+    );
+    assert_eq!(
+        render_cell(&lowered.cell),
+        transistor_fixture("idu_bit0", "cell")
+    );
+    assert_eq!(
+        render_diagnostics(&lowered.diagnostics),
+        transistor_fixture("idu_bit0", "diagnostics")
+    );
     assert_or_update_fixture(
         "idu_bit0",
         "analysis",
         &normalize_repository_paths(analysis.render()),
-    );
-    assert_or_update_fixture(
-        "idu_bit0",
-        "diagnostics",
-        &render_diagnostics(std::slice::from_ref(&error)),
     );
 }
 
@@ -180,13 +214,6 @@ fn cli_lower_and_convert_match_keeper_goldens_in_both_modes() {
             assert!(!output.exists());
         }
     }
-
-    let idu = run_cli(&["lower", IDU_BIT0]);
-    assert!(!idu.status.success());
-    assert!(idu.stdout.is_empty());
-    let stderr = String::from_utf8(idu.stderr).unwrap();
-    assert!(stderr.contains("idu_bit0.sv:37:2: error: unsupported primitive nmos"));
-    assert!(!stderr.contains("keeper"));
 }
 
 #[test]
@@ -345,6 +372,15 @@ fn fixture_path(name: &str, extension: &str) -> PathBuf {
 
 fn fixture(name: &str, extension: &str) -> String {
     fs::read_to_string(fixture_path(name, extension)).unwrap()
+}
+
+fn transistor_fixture(name: &str, extension: &str) -> String {
+    fs::read_to_string(
+        PathBuf::from(env!("CARGO_MANIFEST_DIR"))
+            .join("tests/fixtures/transistor")
+            .join(format!("{name}.{extension}")),
+    )
+    .unwrap()
 }
 
 fn assert_or_update_fixture(name: &str, extension: &str, actual: &str) {

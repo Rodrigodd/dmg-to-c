@@ -589,6 +589,12 @@ Acceptance conditions:
 
 ### Milestone 11: Transistor-Heavy Cells
 
+Status: complete as of 2026-07-12. All 25 curated transistor calls lower as
+direct, flat, typed drivers: 17 `nmos`, 7 `pmos`, and 1 `rnmos` across the 10
+transistor-bearing files. Reviewed fixtures and an exact dual-mode corpus audit
+preserve topology, polarity, source order, repeated drivers, and first-entry
+timing without a `bufif*` normalization or transistor-specific warning.
+
 Implement the transistor contract selected in Milestone 0.
 
 Expected to be working after this milestone:

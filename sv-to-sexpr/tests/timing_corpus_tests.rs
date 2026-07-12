@@ -8,7 +8,7 @@ use sv_to_sexpr::ast::{
     BinaryOp, ConstKind, Delay, Design, Expr as SvExpr, ExprKind, Item, ItemKind, ParamKind,
     SpecifyItem, UnaryOp,
 };
-use sv_to_sexpr::diagnostic::{Diagnostic, DiagnosticKind, DiagnosticPolicy, Span};
+use sv_to_sexpr::diagnostic::{DiagnosticKind, DiagnosticPolicy, Span};
 use sv_to_sexpr::elaborate::GenerateMode;
 use sv_to_sexpr::hierarchy::flatten_design_with_catalog_and_generate_mode;
 use sv_to_sexpr::ir::{CellItem, Expr, TimingOperator};
@@ -21,19 +21,6 @@ const INITIAL_OMISSION: &str = "literal initial value/event is intentionally omi
 const DELAY_IGNORE_PREFIX: &str = "delay tuple entry ";
 const SPECIFY_WARNING_PREFIX: &str = "multiple control-dependent specify paths target `";
 const REFERENCE: &str = "sv-cells/sm83/cells/dffs_cc_ee_pch_d_reg_pc_bit.sv";
-
-const TRANSISTOR_DEFERRALS: &[&str] = &[
-    "sv-cells/sm83/cells/dlatch_ee_irq.sv",
-    "sv-cells/sm83/cells/idu_bit0.sv",
-    "sv-cells/sm83/cells/idu_bit123456.sv",
-    "sv-cells/sm83/cells/irq_prio_bit0.sv",
-    "sv-cells/sm83/cells/irq_prio_bit1.sv",
-    "sv-cells/sm83/cells/irq_prio_bit2.sv",
-    "sv-cells/sm83/cells/irq_prio_bit3.sv",
-    "sv-cells/sm83/cells/irq_prio_bit4.sv",
-    "sv-cells/sm83/cells/irq_prio_bit5.sv",
-    "sv-cells/sm83/cells/irq_prio_bit6.sv",
-];
 
 #[derive(Default)]
 struct TupleInventory {
@@ -109,26 +96,6 @@ struct SourceInventory {
     witnesses: Witnesses,
 }
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
-enum DeferralCategory {
-    Transistor,
-}
-
-impl DeferralCategory {
-    fn label(self) -> &'static str {
-        match self {
-            Self::Transistor => "M11-transistor",
-        }
-    }
-}
-
-#[derive(Debug)]
-struct Deferral {
-    path: String,
-    category: DeferralCategory,
-    diagnostic: Diagnostic,
-}
-
 #[derive(Default)]
 struct LowerAudit {
     succeeded: usize,
@@ -159,7 +126,6 @@ struct LowerAudit {
     operator_counts: BTreeMap<String, usize>,
     expected_outer_resistance_multiplications: usize,
     emitted_outer_resistance_multiplications: usize,
-    deferrals: Vec<Deferral>,
 }
 
 #[derive(Clone, Copy)]
@@ -590,14 +556,7 @@ fn audit_lower_result(
             if first != second {
                 audit.nondeterministic_results += 1;
             }
-            let category = deferral_category(path)
-                .unwrap_or_else(|| panic!("unexpected M7/lowering deferral {path}: {first}"));
-            assert_expected_deferral(category, &first);
-            audit.deferrals.push(Deferral {
-                path: path.to_string(),
-                category,
-                diagnostic: first,
-            });
+            panic!("unexpected timing/lowering failure {path}: {first}");
         }
         other => panic!("nondeterministic lower disposition for {path}: {other:?}"),
     }
@@ -1125,21 +1084,6 @@ fn inventory_ir_timing(expr: &Expr, audit: &mut LowerAudit) {
     }
 }
 
-fn deferral_category(path: &str) -> Option<DeferralCategory> {
-    if TRANSISTOR_DEFERRALS.contains(&path) {
-        Some(DeferralCategory::Transistor)
-    } else {
-        None
-    }
-}
-
-fn assert_expected_deferral(category: DeferralCategory, diagnostic: &Diagnostic) {
-    let expected = match category {
-        DeferralCategory::Transistor => "unsupported primitive",
-    };
-    assert!(diagnostic.message.starts_with(expected));
-}
-
 fn scalar_symbol(expr: &SvExpr) -> Option<String> {
     match &expr.kind {
         ExprKind::Path(segments) if segments.len() == 1 => Some(segments[0].clone()),
@@ -1167,31 +1111,31 @@ fn is_resistance_call(expr: &SvExpr) -> bool {
 
 fn assert_exact_contract(source: &SourceInventory, lower: &LowerAudit) {
     assert_eq!(source.files, 206);
-    assert_eq!(lower.succeeded, 196);
-    assert_eq!(lower.failed, 10);
-    assert_eq!(lower.assignments, 1_749);
-    assert_eq!(lower.temporaries, 1_068);
-    assert_eq!(lower.source_assignments, 681);
+    assert_eq!(lower.succeeded, 206);
+    assert_eq!(lower.failed, 0);
+    assert_eq!(lower.assignments, 1_958);
+    assert_eq!(lower.temporaries, 1_168);
+    assert_eq!(lower.source_assignments, 790);
     assert_eq!(lower.temp_nonzero_delays, 0);
     assert_eq!(
         lower.explicit_delays + lower.specify_delays + lower.zero_delays,
-        681
+        790
     );
-    assert_eq!(lower.explicit_delays, 429);
-    assert_eq!(lower.explicit_nonzero_delays, 415);
-    assert_eq!(lower.specify_delays, 201);
-    assert_eq!(lower.specify_nonzero_delays, 201);
-    assert_eq!(lower.zero_delays, 51);
+    assert_eq!(lower.explicit_delays, 525);
+    assert_eq!(lower.explicit_nonzero_delays, 511);
+    assert_eq!(lower.specify_delays, 210);
+    assert_eq!(lower.specify_nonzero_delays, 210);
+    assert_eq!(lower.zero_delays, 55);
     assert_eq!(
         lower.explicit_nonzero_delays + lower.specify_nonzero_delays,
-        616
+        721
     );
-    assert_eq!(lower.emitted_nonzero_delays, 616);
-    assert_eq!(lower.emitted_zero_delays, 1_133);
-    assert_eq!(lower.emitted_nested_delays, 616);
-    assert_eq!(lower.warnings, 47);
-    assert_eq!(lower.later_ignores, 1_067);
-    assert_eq!(lower.initial_ignores, 41);
+    assert_eq!(lower.emitted_nonzero_delays, 721);
+    assert_eq!(lower.emitted_zero_delays, 1_237);
+    assert_eq!(lower.emitted_nested_delays, 721);
+    assert_eq!(lower.warnings, 49);
+    assert_eq!(lower.later_ignores, 1_260);
+    assert_eq!(lower.initial_ignores, 42);
     assert_eq!(lower.warning_contract_failures, 0);
     assert_eq!(lower.diagnostic_mismatches, 0);
     assert_eq!(lower.source_delay_mismatches, 0);
@@ -1204,24 +1148,17 @@ fn assert_exact_contract(source: &SourceInventory, lower: &LowerAudit) {
         lower.emitted_outer_resistance_multiplications,
         lower.expected_outer_resistance_multiplications
     );
-    assert_eq!(lower.expected_outer_resistance_multiplications, 390);
+    assert_eq!(lower.expected_outer_resistance_multiplications, 421);
     assert_eq!(
         lower.operator_counts,
         BTreeMap::from([
-            ("+".to_string(), 226),
-            ("*".to_string(), 392),
-            ("elmore".to_string(), 768),
-            ("wire".to_string(), 768),
-            ("pmos".to_string(), 406),
-            ("nmos".to_string(), 436),
+            ("+".to_string(), 258),
+            ("*".to_string(), 423),
+            ("elmore".to_string(), 896),
+            ("wire".to_string(), 896),
+            ("pmos".to_string(), 468),
+            ("nmos".to_string(), 511),
         ])
-    );
-    assert_eq!(lower.deferrals.len(), 10);
-    assert!(
-        lower
-            .deferrals
-            .iter()
-            .all(|deferral| deferral.category == DeferralCategory::Transistor)
     );
 }
 
@@ -1410,19 +1347,7 @@ fn render_summary(source: &SourceInventory, lower: &LowerAudit) -> String {
     )
     .unwrap();
     writeln!(&mut output, "  pad-xtal=keeper-zero-delay:no-M7-failure").unwrap();
-    writeln!(&mut output, "deferrals:").unwrap();
-    for deferral in &lower.deferrals {
-        writeln!(
-            &mut output,
-            "  {} | {} | {}:{} | {}",
-            deferral.path,
-            deferral.category.label(),
-            deferral.diagnostic.span.line,
-            deferral.diagnostic.span.column,
-            deferral.diagnostic.message
-        )
-        .unwrap();
-    }
+    writeln!(&mut output, "lower-failures: []").unwrap();
     output
 }
 

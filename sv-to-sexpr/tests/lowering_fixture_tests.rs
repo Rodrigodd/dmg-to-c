@@ -380,15 +380,22 @@ fn unsupported_value_and_timing_forms_report_exact_expression_spans() {
 }
 
 #[test]
-fn later_driver_forms_fail_at_their_source_constructs() {
+fn direct_driver_forms_lower_while_unresolved_hierarchy_fails_at_its_source() {
     for primitive in ["nmos", "pmos", "rnmos"] {
         let path = format!("diagnostics/{primitive}.sv");
         let input = format!(
             "module sample(input logic a, c, output logic y);\n  {primitive} (y, a, c);\nendmodule"
         );
-        let error = lower_error(&path, &input);
-        assert_eq!(error.span, Span::new(&path, 2, 3));
-        assert_eq!(error.message, format!("unsupported primitive {primitive}"));
+        let lowered = lower_file(Path::new(&path), &input).unwrap();
+        lowered.cell.validate().unwrap();
+        let assignments = assignments(&lowered.cell);
+        assert_eq!(assignments.len(), 1);
+        assert_eq!(assignments[0].target, "y");
+        assert_eq!(
+            render_expr(&assignments[0].expr),
+            format!("({primitive} a c)")
+        );
+        assert_eq!(render_expr(&assignments[0].delay), "0");
     }
 
     let path = "diagnostics/hierarchy.sv";

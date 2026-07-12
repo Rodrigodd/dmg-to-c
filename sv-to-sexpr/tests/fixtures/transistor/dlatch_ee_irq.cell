@@ -1,0 +1,41 @@
+(cell
+  sm83_dlatch_ee_irq
+  (inputs
+    d
+    ena
+    ena_n
+    pch_n
+    ena_q_n
+  )
+
+  (outputs q q_n gated_q_n)
+
+  (registers q_n)
+
+  (assignments
+
+    (t0 (and d ena) 0)
+    (t1 (not d) 0)
+    (t2 (not ena_n) 0)
+    (t3 (and t1 t2) 0)
+    (t4 (or t0 t3) 0)
+    (t5 (not d) 0)
+    (q_n
+      (mux t4 t5 q_n)
+      (+ (+ (elmore (wire 34) (* (pmos 3) 2)) (elmore (wire 34) (nmos 3))) (elmore (wire L_q_n) (pmos 13)))
+    )
+    (q
+      (not q_n)
+      (+ (+ (+ (elmore (wire 34) (* (nmos 3) 2)) (elmore (wire 34) (pmos 3))) (elmore (wire L_q_n) (nmos 6))) (elmore (wire L_q) (pmos 6)))
+    )
+    (gated_q (bufif0-strength 1 pch_n strong1 highz0) 0)
+    (t6 (caseneq ena_q_n 1) 0)
+    (t7 (and q_n t6) 0)
+    (gated_q (rnmos ena_q_n t7) 0)
+    (gated_q (keeper) 0)
+    (gated_q_n
+      (not gated_q)
+      (+ (elmore (wire 19) (nmos 6)) (elmore (wire L_gated_q_n) (pmos 6)))
+    )
+  )
+)

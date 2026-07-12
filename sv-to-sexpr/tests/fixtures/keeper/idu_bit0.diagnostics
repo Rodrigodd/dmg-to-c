@@ -1,2 +1,0 @@
-diagnostics:
-  error | sv-cells/sm83/cells/idu_bit0.sv:37:2 | unsupported primitive nmos

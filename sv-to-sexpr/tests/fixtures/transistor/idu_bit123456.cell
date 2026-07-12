@@ -1,0 +1,74 @@
+(cell
+  sm83_idu_bit123456
+  (inputs
+    pch_n
+    buf_a_in
+    buf_b_in
+    buf_ena
+    buf_ena_n
+    chain_a_ena
+    chain_b_ena
+    chain_a_in
+    chain_b_in
+  )
+
+  (outputs buf_a_y buf_b_y chain_a_y chain_b_y chain_a_y_n chain_b_y_n chain_a_in chain_b_in)
+
+  (registers )
+
+  (assignments
+
+    (chain_a_in
+      (bufif0-strength 1 pch_n strong1 highz0)
+      (elmore (wire L_chain_a_in) (pmos 6))
+    )
+    (t0 (caseneq chain_a_in 1) 0)
+    (t1 (and chain_a_ena t0) 0)
+    (chain_a_y
+      (nmos chain_a_in t1)
+      (elmore (wire L_chain_a_y) (nmos 17))
+    )
+    (chain_a_y_n
+      (not chain_a_in)
+      (elmore (wire L_chain_a_y_n) (pmos 6))
+    )
+    (chain_b_in
+      (bufif0-strength 1 pch_n strong1 highz0)
+      (elmore (wire L_chain_b_in) (pmos 6))
+    )
+    (t2 (caseneq chain_b_in 1) 0)
+    (t3 (and chain_b_ena t2) 0)
+    (chain_b_y
+      (nmos chain_b_in t3)
+      (elmore (wire L_chain_b_y) (nmos 17))
+    )
+    (chain_b_y_n
+      (not chain_b_in)
+      (elmore (wire L_chain_b_y_n) (pmos 7))
+    )
+    (t4 (and buf_ena buf_a_in) 0)
+    (buf_a_y
+      (bufif1-strength 1 t4 strong1 highz0)
+      (+ (elmore (wire 28) (+ (nmos 3) (nmos 9))) (elmore (wire L_buf_a_y) (pmos 28)))
+    )
+    (t5 (not buf_ena_n) 0)
+    (t6 (not buf_a_in) 0)
+    (t7 (and t5 t6) 0)
+    (buf_a_y
+      (bufif1-strength 0 t7 highz1 strong0)
+      (+ (elmore (wire 28) (+ (nmos 3) (nmos 9))) (elmore (wire L_buf_a_y) (pmos 28)))
+    )
+    (t8 (and buf_ena buf_b_in) 0)
+    (buf_b_y
+      (bufif1-strength 1 t8 strong1 highz0)
+      (+ (elmore (wire 21) (+ (nmos 3) (nmos 9))) (elmore (wire L_buf_b_y) (pmos 28)))
+    )
+    (t9 (not buf_ena_n) 0)
+    (t10 (not buf_b_in) 0)
+    (t11 (and t9 t10) 0)
+    (buf_b_y
+      (bufif1-strength 0 t11 highz1 strong0)
+      (+ (elmore (wire 21) (+ (nmos 3) (nmos 9))) (elmore (wire L_buf_b_y) (pmos 28)))
+    )
+  )
+)

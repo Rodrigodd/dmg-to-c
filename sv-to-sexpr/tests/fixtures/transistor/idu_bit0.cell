@@ -1,0 +1,83 @@
+(cell
+  sm83_idu_bit0
+  (inputs
+    pch_n
+    aoi_buf_ena
+    aoi_in1
+    aoi_in2
+    aoi_in3
+    zero_ena
+    or_in1
+    or_in2
+    buf_a_in
+    buf_b_in
+    buf_ena_n
+  )
+
+  (outputs aoi_buf_y zero_y buf_a_y buf_b_y aoi_y_n or_y buf_ena)
+
+  (registers )
+
+  (assignments
+
+    (or_y
+      (or or_in1 or_in2)
+      (+ (elmore (wire 124) (nmos 3)) (elmore (wire L_or_y) (pmos 6)))
+    )
+    (aoi_y
+      (bufif0-strength 1 pch_n strong1 highz0)
+      (elmore (wire 118) (pmos 6))
+    )
+    (t0 (and pch_n aoi_in1 aoi_in2) 0)
+    (aoi_y
+      (bufif1-strength 0 t0 highz1 strong0)
+      (elmore (wire 118) (pmos 6))
+    )
+    (t1 (and pch_n aoi_in3) 0)
+    (aoi_y
+      (bufif1-strength 0 t1 highz1 strong0)
+      (elmore (wire 118) (pmos 6))
+    )
+    (aoi_y (keeper) 0)
+    (t2 (caseneq aoi_y 1) 0)
+    (t3 (and aoi_buf_ena t2) 0)
+    (aoi_buf_y
+      (nmos aoi_y t3)
+      (elmore (wire L_aoi_buf_y) (nmos 17))
+    )
+    (aoi_y_n (not aoi_y) (elmore (wire L_aoi_y_n) (pmos 7)))
+    (t4 (and pch_n zero_ena) 0)
+    (zero_y
+      (bufif1-strength 0 t4 highz1 strong0)
+      (elmore (wire L_zero_y) (+ (nmos 18) (nmos 17)))
+    )
+    (buf_ena
+      (not buf_ena_n)
+      (elmore (wire L_buf_ena) (pmos 3))
+    )
+    (t5 (and buf_ena buf_a_in) 0)
+    (buf_a_y
+      (bufif1-strength 1 t5 strong1 highz0)
+      (+ (elmore (wire 28) (+ (nmos 3) (nmos 9))) (elmore (wire L_buf_a_y) (pmos 28)))
+    )
+    (t6 (not buf_ena_n) 0)
+    (t7 (not buf_a_in) 0)
+    (t8 (and t6 t7) 0)
+    (buf_a_y
+      (bufif1-strength 0 t8 highz1 strong0)
+      (+ (elmore (wire 28) (+ (nmos 3) (nmos 9))) (elmore (wire L_buf_a_y) (pmos 28)))
+    )
+    (t9 (and buf_ena buf_b_in) 0)
+    (buf_b_y
+      (bufif1-strength 1 t9 strong1 highz0)
+      (+ (elmore (wire 21) (+ (nmos 3) (nmos 9))) (elmore (wire L_buf_b_y) (pmos 28)))
+    )
+    (t10 (not buf_ena_n) 0)
+    (t11 (not buf_b_in) 0)
+    (t12 (and t10 t11) 0)
+    (buf_b_y
+      (bufif1-strength 0 t12 highz1 strong0)
+      (+ (elmore (wire 21) (+ (nmos 3) (nmos 9))) (elmore (wire L_buf_b_y) (pmos 28)))
+    )
+  )
+)

@@ -779,15 +779,73 @@ impl<'a> Lowerer<'a> {
     fn lower_primitive_call(&mut self, call: &PrimitiveCall) -> LowerResult<()> {
         match call.name.as_str() {
             "bufif0" | "bufif1" => self.lower_bufif_call(call),
-            "nmos" | "pmos" | "rnmos" => Err(Diagnostic::new(
-                call.span.clone(),
-                format!("unsupported primitive {}", call.name),
-            )),
+            "nmos" | "pmos" | "rnmos" => self.lower_transistor_call(call),
             _ => Err(Diagnostic::new(
                 call.span.clone(),
                 "unsupported primitive for lowering",
             )),
         }
+    }
+
+    fn lower_transistor_call(&mut self, call: &PrimitiveCall) -> LowerResult<()> {
+        if let Some(strength) = &call.strength {
+            return Err(Diagnostic::new(
+                strength.span.clone(),
+                format!(
+                    "strength-qualified {} is unsupported because direct transistor value operators do not carry source strength",
+                    call.name
+                ),
+            ));
+        }
+        if call.args.len() != 3 {
+            return Err(Diagnostic::new(
+                call.span.clone(),
+                format!("expected {} arity", call.name),
+            ));
+        }
+        let drain = call.args[0].as_ref().ok_or_else(|| {
+            Diagnostic::new(
+                call.span.clone(),
+                format!("expected {} drain argument", call.name),
+            )
+        })?;
+        let source = call.args[1].as_ref().ok_or_else(|| {
+            Diagnostic::new(
+                call.span.clone(),
+                format!("expected {} source argument", call.name),
+            )
+        })?;
+        let gate = call.args[2].as_ref().ok_or_else(|| {
+            Diagnostic::new(
+                call.span.clone(),
+                format!("expected {} gate argument", call.name),
+            )
+        })?;
+        let drain = scalar_expr_symbol(drain).ok_or_else(|| {
+            Diagnostic::new(
+                drain.span.clone(),
+                format!("expected {} drain scalar symbol", call.name),
+            )
+        })?;
+
+        // Operand order is semantically significant: flatten source first,
+        // then gate, before emitting the source-ordered transistor driver.
+        let source = self.lower_expr(source)?;
+        let gate = self.lower_expr(gate)?;
+        let operator = match call.name.as_str() {
+            "nmos" => ValueOperator::Nmos,
+            "pmos" => ValueOperator::Pmos,
+            "rnmos" => ValueOperator::Rnmos,
+            _ => {
+                return Err(Diagnostic::new(
+                    call.span.clone(),
+                    "uncontracted transistor value operator",
+                ));
+            }
+        };
+        let expr = Expr::value(operator, vec![source, gate]);
+        let delay = self.source_delay_for(&drain, call.delay.as_ref())?;
+        self.emit_assignment(drain, expr, delay, &call.span)
     }
 
     fn lower_bufif_call(&mut self, call: &PrimitiveCall) -> LowerResult<()> {
@@ -2220,6 +2278,115 @@ mod tests {
             ]
         );
         lowered.cell.validate().unwrap();
+    }
+
+    #[test]
+    fn lowers_direct_transistor_kinds_without_normalizing_topology() {
+        let lowered = lower_snippet(
+            "module sample(input logic a, g, output logic yn, yp, yr);\n\
+             nmos (yn, a, g);\n\
+             pmos (yp, a, g);\n\
+             rnmos (yr, a, g);\n\
+             endmodule\n",
+        )
+        .unwrap();
+        assert!(lowered.cell.registers.is_empty());
+        assert_eq!(
+            assignment_strings(&lowered),
+            vec![
+                ("yn".into(), "(nmos a g)".into(), "0".into()),
+                ("yp".into(), "(pmos a g)".into(), "0".into()),
+                ("yr".into(), "(rnmos a g)".into(), "0".into()),
+            ]
+        );
+        assert!(lowered.diagnostics.is_empty());
+        lowered.cell.validate().unwrap();
+    }
+
+    #[test]
+    fn transistor_compound_operands_flatten_source_then_gate_and_keep_drivers_ordered() {
+        let lowered = lower_snippet(
+            "module sample(input logic a, b, g, h, output logic y);\n\
+             assign y = a;\n\
+             nmos (y, a & b, g | h);\n\
+             pmos (y, b, g);\n\
+             endmodule\n",
+        )
+        .unwrap();
+        assert!(lowered.cell.registers.is_empty());
+        assert_eq!(
+            assignment_strings(&lowered),
+            vec![
+                ("y".into(), "a".into(), "0".into()),
+                ("t0".into(), "(and a b)".into(), "0".into()),
+                ("t1".into(), "(or g h)".into(), "0".into()),
+                ("y".into(), "(nmos t0 t1)".into(), "0".into()),
+                ("y".into(), "(pmos b g)".into(), "0".into()),
+            ]
+        );
+        lowered.cell.validate().unwrap();
+    }
+
+    #[test]
+    fn transistor_delays_use_first_explicit_entry_or_specify_fallback() {
+        let lowered = lower_snippet(
+            "module sample(input logic a, g, output logic explicit, fallback);\n\
+             nmos #(D_first, D_later, D_off) (explicit, a, g);\n\
+             pmos (fallback, a, g);\n\
+             specify\n\
+               (a *> explicit) = (S_explicit);\n\
+               (a *> fallback) = (S_fallback);\n\
+             endspecify\n\
+             endmodule\n",
+        )
+        .unwrap();
+        assert_eq!(
+            assignment_strings(&lowered),
+            vec![
+                ("explicit".into(), "(nmos a g)".into(), "D_first".into()),
+                ("fallback".into(), "(pmos a g)".into(), "S_fallback".into()),
+            ]
+        );
+        assert_eq!(lowered.diagnostics.len(), 2);
+        assert!(lowered.diagnostics.iter().all(|diagnostic| {
+            diagnostic.kind == DiagnosticKind::IntentionalIgnore
+                && diagnostic.message.contains(
+                    "is intentionally ignored because the cell model selects only entry 1",
+                )
+        }));
+        lowered.cell.validate().unwrap();
+    }
+
+    #[test]
+    fn transistor_shape_and_strength_diagnostics_are_precise() {
+        let cases = [
+            (
+                "module sample(input logic a, g, output logic y);\n  nmos (y, a);\nendmodule\n",
+                Span::new("snippet.sv", 2, 3),
+                "expected nmos arity",
+            ),
+            (
+                "module sample(input logic a, g, output logic y);\n  pmos (y, , g);\nendmodule\n",
+                Span::new("snippet.sv", 2, 3),
+                "expected pmos source argument",
+            ),
+            (
+                "module sample(input logic a, g, output logic y);\n  nmos (y & a, a, g);\nendmodule\n",
+                Span::new("snippet.sv", 2, 9),
+                "expected nmos drain scalar symbol",
+            ),
+            (
+                "module sample(input logic a, g, output logic y);\n  nmos (strong1, highz0) (y, a, g);\nendmodule\n",
+                Span::new("snippet.sv", 2, 8),
+                "strength-qualified nmos is unsupported because direct transistor value operators do not carry source strength",
+            ),
+        ];
+
+        for (source, span, message) in cases {
+            let diagnostic = lower_snippet(source).unwrap_err();
+            assert_eq!(diagnostic.span, span, "{message}");
+            assert_eq!(diagnostic.message, message);
+        }
     }
 
     #[test]

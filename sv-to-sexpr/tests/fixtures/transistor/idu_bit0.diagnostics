@@ -1,0 +1,22 @@
+diagnostics:
+  intentional-ignore | sv-cells/sm83/cells/idu_bit0.sv:32:43 | delay tuple entry 2 is intentionally ignored because the cell model selects only entry 1
+  intentional-ignore | sv-cells/sm83/cells/idu_bit0.sv:32:57 | delay tuple entry 3 is intentionally ignored because the cell model selects only entry 1
+  intentional-ignore | sv-cells/sm83/cells/idu_bit0.sv:33:43 | delay tuple entry 2 is intentionally ignored because the cell model selects only entry 1
+  intentional-ignore | sv-cells/sm83/cells/idu_bit0.sv:33:57 | delay tuple entry 3 is intentionally ignored because the cell model selects only entry 1
+  intentional-ignore | sv-cells/sm83/cells/idu_bit0.sv:34:43 | delay tuple entry 2 is intentionally ignored because the cell model selects only entry 1
+  intentional-ignore | sv-cells/sm83/cells/idu_bit0.sv:34:61 | delay tuple entry 3 is intentionally ignored because the cell model selects only entry 1
+  intentional-ignore | sv-cells/sm83/cells/idu_bit0.sv:37:24 | delay tuple entry 2 is intentionally ignored because the cell model selects only entry 1
+  intentional-ignore | sv-cells/sm83/cells/idu_bit0.sv:37:42 | delay tuple entry 3 is intentionally ignored because the cell model selects only entry 1
+  intentional-ignore | sv-cells/sm83/cells/idu_bit0.sv:38:27 | delay tuple entry 2 is intentionally ignored because the cell model selects only entry 1
+  intentional-ignore | sv-cells/sm83/cells/idu_bit0.sv:42:41 | delay tuple entry 2 is intentionally ignored because the cell model selects only entry 1
+  intentional-ignore | sv-cells/sm83/cells/idu_bit0.sv:42:56 | delay tuple entry 3 is intentionally ignored because the cell model selects only entry 1
+  intentional-ignore | sv-cells/sm83/cells/idu_bit0.sv:46:27 | delay tuple entry 2 is intentionally ignored because the cell model selects only entry 1
+  intentional-ignore | sv-cells/sm83/cells/idu_bit0.sv:53:64 | delay tuple entry 2 is intentionally ignored because the cell model selects only entry 1
+  intentional-ignore | sv-cells/sm83/cells/idu_bit0.sv:53:99 | delay tuple entry 3 is intentionally ignored because the cell model selects only entry 1
+  intentional-ignore | sv-cells/sm83/cells/idu_bit0.sv:55:64 | delay tuple entry 2 is intentionally ignored because the cell model selects only entry 1
+  intentional-ignore | sv-cells/sm83/cells/idu_bit0.sv:55:99 | delay tuple entry 3 is intentionally ignored because the cell model selects only entry 1
+  intentional-ignore | sv-cells/sm83/cells/idu_bit0.sv:63:64 | delay tuple entry 2 is intentionally ignored because the cell model selects only entry 1
+  intentional-ignore | sv-cells/sm83/cells/idu_bit0.sv:63:99 | delay tuple entry 3 is intentionally ignored because the cell model selects only entry 1
+  intentional-ignore | sv-cells/sm83/cells/idu_bit0.sv:65:64 | delay tuple entry 2 is intentionally ignored because the cell model selects only entry 1
+  intentional-ignore | sv-cells/sm83/cells/idu_bit0.sv:65:99 | delay tuple entry 3 is intentionally ignored because the cell model selects only entry 1
+  intentional-ignore | sv-cells/sm83/cells/idu_bit0.sv:74:57 | delay tuple entry 2 is intentionally ignored because the cell model selects only entry 1

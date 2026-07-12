@@ -16,19 +16,6 @@ use sv_to_sexpr::elaborate::GenerateMode;
 use sv_to_sexpr::ir::{CellItem, Expr, ValueOperator};
 use sv_to_sexpr::lower::lower_design_with_catalog_and_generate_mode;
 
-const FAILURES: &[&str] = &[
-    "sv-cells/sm83/cells/dlatch_ee_irq.sv",
-    "sv-cells/sm83/cells/idu_bit0.sv",
-    "sv-cells/sm83/cells/idu_bit123456.sv",
-    "sv-cells/sm83/cells/irq_prio_bit0.sv",
-    "sv-cells/sm83/cells/irq_prio_bit1.sv",
-    "sv-cells/sm83/cells/irq_prio_bit2.sv",
-    "sv-cells/sm83/cells/irq_prio_bit3.sv",
-    "sv-cells/sm83/cells/irq_prio_bit4.sv",
-    "sv-cells/sm83/cells/irq_prio_bit5.sv",
-    "sv-cells/sm83/cells/irq_prio_bit6.sv",
-];
-
 #[derive(Debug, Clone, PartialEq, Eq)]
 struct KeeperRow {
     path: String,
@@ -63,46 +50,28 @@ struct ModeAudit {
 }
 
 #[test]
-fn configured_keeper_corpus_is_exact_distinct_and_m11_only() {
+fn configured_keeper_corpus_is_exact_distinct_and_fully_emitted() {
     let delayful = audit_mode(GenerateMode::Delayful);
     let nodelay = audit_mode(GenerateMode::Nodelay);
     assert_eq!(delayful.keepers, nodelay.keepers);
     assert_eq!(delayful.emitted, nodelay.emitted);
     assert_eq!(delayful.failures, nodelay.failures);
-    assert_eq!(delayful.successes, 196);
-    assert_eq!(nodelay.successes, 196);
-    assert_eq!(delayful.failures.len(), 10);
-    assert_eq!(nodelay.failures.len(), 10);
-    assert_eq!(delayful.warnings, 47);
-    assert_eq!(nodelay.warnings, 47);
-    assert_eq!(delayful.ignores, 1108);
-    assert_eq!(nodelay.ignores, 1098);
+    assert_eq!(delayful.successes, 206);
+    assert_eq!(nodelay.successes, 206);
+    assert!(delayful.failures.is_empty());
+    assert!(nodelay.failures.is_empty());
+    assert_eq!(delayful.warnings, 49);
+    assert_eq!(nodelay.warnings, 49);
+    assert_eq!(delayful.ignores, 1302);
+    assert_eq!(nodelay.ignores, 1292);
     assert_eq!(delayful.supported, 3);
     assert_eq!(delayful.deferred, 203);
     assert_eq!(nodelay.supported, 3);
     assert_eq!(nodelay.deferred, 203);
-    assert_eq!(
-        delayful
-            .failures
-            .keys()
-            .map(String::as_str)
-            .collect::<Vec<_>>(),
-        FAILURES
-    );
-    assert!(delayful.failures.values().all(|diagnostic| {
-        diagnostic.contains("unsupported primitive nmos")
-            || diagnostic.contains("unsupported primitive pmos")
-            || diagnostic.contains("unsupported primitive rnmos")
-    }));
-    assert_eq!(
-        delayful.keeper_deferrals,
-        [
-            "sv-cells/sm83/cells/dlatch_ee_irq.sv | rnmos | 23:2",
-            "sv-cells/sm83/cells/idu_bit0.sv | nmos | 37:2",
-        ]
-    );
+    assert!(delayful.keeper_deferrals.is_empty());
+    assert!(nodelay.keeper_deferrals.is_empty());
     assert_eq!(delayful.keepers.len(), 6);
-    assert_eq!(delayful.emitted.len(), 4);
+    assert_eq!(delayful.emitted.len(), 6);
 
     let summary = format!("{}{}", render_audit(&delayful), render_audit(&nodelay));
     assert_or_update_fixture(&summary);
@@ -134,7 +103,9 @@ fn audit_mode(mode: GenerateMode) -> ModeAudit {
         }
         assert!(analysis.requirements.iter().all(|requirement| {
             requirement.capability_id != "hierarchy.keeper"
+                && requirement.capability_id != "primitive.transistor"
                 && requirement.milestone != TargetMilestone::M10Keeper
+                && requirement.milestone != TargetMilestone::M11Transistors
         }));
         let module = &analysis.modules[0];
         let mut file_keeper = None;
@@ -319,7 +290,7 @@ fn render_audit(audit: &ModeAudit) -> String {
         )
         .unwrap();
     }
-    writeln!(&mut output, "keeper-bearing-m11-deferrals:").unwrap();
+    writeln!(&mut output, "keeper-bearing-lower-deferrals:").unwrap();
     for row in &audit.keeper_deferrals {
         writeln!(&mut output, "  {row}").unwrap();
     }

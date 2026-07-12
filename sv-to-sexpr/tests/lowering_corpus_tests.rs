@@ -18,14 +18,12 @@ use sv_to_sexpr::survey::collect_sv_files;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
 enum FailureCategory {
-    TransistorRelated,
     UnsupportedTimingFactor,
 }
 
 impl FailureCategory {
     fn label(self) -> &'static str {
         match self {
-            Self::TransistorRelated => "transistor-related",
             Self::UnsupportedTimingFactor => "unsupported-timing-factor",
         }
     }
@@ -61,18 +59,6 @@ struct AuditTotals {
     operator_counts: BTreeMap<String, usize>,
 }
 
-const TRANSISTOR_FAILURES: &[&str] = &[
-    "sv-cells/sm83/cells/dlatch_ee_irq.sv",
-    "sv-cells/sm83/cells/idu_bit0.sv",
-    "sv-cells/sm83/cells/idu_bit123456.sv",
-    "sv-cells/sm83/cells/irq_prio_bit0.sv",
-    "sv-cells/sm83/cells/irq_prio_bit1.sv",
-    "sv-cells/sm83/cells/irq_prio_bit2.sv",
-    "sv-cells/sm83/cells/irq_prio_bit3.sv",
-    "sv-cells/sm83/cells/irq_prio_bit4.sv",
-    "sv-cells/sm83/cells/irq_prio_bit5.sv",
-    "sv-cells/sm83/cells/irq_prio_bit6.sv",
-];
 const TIMING_FACTOR_FAILURES: &[&str] = &[];
 
 #[test]
@@ -177,17 +163,15 @@ fn full_corpus_lowering_baseline_is_deterministic_flat_and_explicit() {
     assert_exact_baseline(&totals, &failures);
     let summary = render_summary(&totals, &failures);
     assert!(!summary.contains(&absolute_root));
-    assert!(summary.contains("processed=206 succeeded=196 failed=10"));
+    assert!(summary.contains("processed=206 succeeded=206 failed=0"));
     assert!(summary.contains("invalid_successful_cells=0"));
     assert!(summary.contains("nested_value_expressions=0"));
     assert!(summary.contains("timing_validation_failures=0"));
     assert!(summary.contains("nondeterministic_results=0"));
-    for category in [
-        FailureCategory::TransistorRelated,
-        FailureCategory::UnsupportedTimingFactor,
-    ] {
-        assert!(summary.contains(&format!("{} files=", category.label())));
-    }
+    assert!(summary.contains(&format!(
+        "{} files=",
+        FailureCategory::UnsupportedTimingFactor.label()
+    )));
     assert_or_update_fixture("corpus_summary", "lower", &summary);
 }
 
@@ -294,21 +278,12 @@ fn timing_has_nested_operation(expr: &Expr) -> bool {
 }
 
 fn classify_failure(path: &str, diagnostic: &Diagnostic) -> FailureCategory {
-    let membership_count = [
-        TRANSISTOR_FAILURES.contains(&path),
+    assert!(
         TIMING_FACTOR_FAILURES.contains(&path),
-    ]
-    .into_iter()
-    .filter(|matches| *matches)
-    .count();
-    assert_eq!(
-        membership_count, 1,
         "lowering failure must match exactly one explicit category: {path}: {diagnostic}"
     );
 
-    let (category, expected_message) = if TRANSISTOR_FAILURES.contains(&path) {
-        (FailureCategory::TransistorRelated, "unsupported primitive")
-    } else if TIMING_FACTOR_FAILURES.contains(&path) {
+    let (category, expected_message) = if TIMING_FACTOR_FAILURES.contains(&path) {
         (
             FailureCategory::UnsupportedTimingFactor,
             "unsupported timing factor",
@@ -325,9 +300,9 @@ fn classify_failure(path: &str, diagnostic: &Diagnostic) -> FailureCategory {
 
 fn assert_exact_baseline(totals: &AuditTotals, failures: &[FailedFile]) {
     assert_eq!(totals.processed, 206);
-    assert_eq!(totals.succeeded, 196);
-    assert_eq!(totals.failed, 10);
-    assert_eq!(failures.len(), 10);
+    assert_eq!(totals.succeeded, 206);
+    assert_eq!(totals.failed, 0);
+    assert_eq!(failures.len(), 0);
     assert_eq!(totals.invalid_successful_cells, 0);
     assert_eq!(totals.nested_value_expressions, 0);
     assert_eq!(totals.empty_value_operands, 0);
@@ -335,54 +310,51 @@ fn assert_exact_baseline(totals: &AuditTotals, failures: &[FailedFile]) {
     assert_eq!(totals.nondeterministic_results, 0);
     assert_eq!(totals.absolute_path_leaks, 0);
     assert_eq!(totals.dependency_order_failures, 0);
-    assert_eq!(totals.assignments, 1749);
+    assert_eq!(totals.assignments, 1958);
     assert_eq!(totals.atom_value_assignments, 17);
-    assert_eq!(totals.temporary_assignments, 1068);
-    assert_eq!(totals.repeated_target_assignments, 65);
-    assert_eq!(totals.delayed_assignments, 616);
-    assert_eq!(totals.nested_timing_delay_assignments, 616);
-    assert_eq!(totals.cells_with_registers, 26);
-    assert_eq!(totals.registers, 47);
+    assert_eq!(totals.temporary_assignments, 1168);
+    assert_eq!(totals.repeated_target_assignments, 77);
+    assert_eq!(totals.delayed_assignments, 721);
+    assert_eq!(totals.nested_timing_delay_assignments, 721);
+    assert_eq!(totals.cells_with_registers, 27);
+    assert_eq!(totals.registers, 48);
     assert_eq!(
         totals.operator_counts,
         BTreeMap::from([
-            ("and".to_string(), 655),
+            ("and".to_string(), 718),
             ("bufif0".to_string(), 2),
-            ("bufif0-strength".to_string(), 82),
+            ("bufif0-strength".to_string(), 104),
             ("bufif1".to_string(), 10),
-            ("bufif1-strength".to_string(), 303),
-            ("caseeq".to_string(), 4),
+            ("bufif1-strength".to_string(), 344),
+            ("caseeq".to_string(), 11),
+            ("caseneq".to_string(), 18),
             ("drive-strength".to_string(), 5),
             ("eq".to_string(), 2),
-            ("keeper".to_string(), 4),
-            ("mux".to_string(), 58),
+            ("keeper".to_string(), 6),
+            ("mux".to_string(), 59),
             ("nand".to_string(), 27),
+            ("nmos".to_string(), 17),
             ("nor".to_string(), 28),
-            ("not".to_string(), 247),
-            ("or".to_string(), 296),
+            ("not".to_string(), 268),
+            ("or".to_string(), 305),
+            ("pmos".to_string(), 7),
+            ("rnmos".to_string(), 1),
             ("xnor".to_string(), 1),
             ("xor".to_string(), 8),
         ])
     );
 
-    for (category, expected_paths) in [
-        (FailureCategory::TransistorRelated, TRANSISTOR_FAILURES),
-        (
-            FailureCategory::UnsupportedTimingFactor,
-            TIMING_FACTOR_FAILURES,
-        ),
-    ] {
-        assert_eq!(
-            failures
-                .iter()
-                .filter(|failure| failure.category == category)
-                .map(|failure| failure.path.as_str())
-                .collect::<Vec<_>>(),
-            expected_paths,
-            "{} failure set changed",
-            category.label()
-        );
-    }
+    let category = FailureCategory::UnsupportedTimingFactor;
+    assert_eq!(
+        failures
+            .iter()
+            .filter(|failure| failure.category == category)
+            .map(|failure| failure.path.as_str())
+            .collect::<Vec<_>>(),
+        TIMING_FACTOR_FAILURES,
+        "{} failure set changed",
+        category.label()
+    );
 }
 
 fn render_summary(totals: &AuditTotals, failures: &[FailedFile]) -> String {
@@ -436,10 +408,7 @@ fn render_summary(totals: &AuditTotals, failures: &[FailedFile]) -> String {
         writeln!(&mut output, "  {operator}={count}").unwrap();
     }
     writeln!(&mut output, "failure-categories:").unwrap();
-    for category in [
-        FailureCategory::TransistorRelated,
-        FailureCategory::UnsupportedTimingFactor,
-    ] {
+    for category in [FailureCategory::UnsupportedTimingFactor] {
         let category_failures = failures
             .iter()
             .filter(|failure| failure.category == category)

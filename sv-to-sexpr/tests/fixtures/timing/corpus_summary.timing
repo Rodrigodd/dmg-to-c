@@ -27,21 +27,21 @@ source-specify:
   target-multiplicity=1:154,2:36,3:12,4:1
   first-source-paths=203 witnesses=[sv-cells/dmg_cpu_b/cells/and2.sv:20:3:y,sv-cells/dmg_cpu_b/cells/and3.sv:20:3:y,sv-cells/dmg_cpu_b/cells/and4.sv:20:3:y,sv-cells/dmg_cpu_b/cells/ao21.sv:21:3:y,sv-cells/dmg_cpu_b/cells/ao22.sv:20:3:y,sv-cells/dmg_cpu_b/cells/ao222.sv:20:3:y]
 lowering:
-  succeeded=196 failed=10
-  assignments=1749 temps=1068 source-targets=681
-  source-dispositions explicit=429 explicit-nonzero=415 explicit-with-specify=0 specify=201 specify-nonzero=201 zero=51
-  emitted zero=1133 nonzero=616 nested=616
-  outer-resistance-multiplications expected=390 emitted=390
-  warnings=47 later-ignores=1067 initial-ignores=41
+  succeeded=206 failed=0
+  assignments=1958 temps=1168 source-targets=790
+  source-dispositions explicit=525 explicit-nonzero=511 explicit-with-specify=0 specify=210 specify-nonzero=210 zero=55
+  emitted zero=1237 nonzero=721 nested=721
+  outer-resistance-multiplications expected=421 emitted=421
+  warnings=49 later-ignores=1260 initial-ignores=42
 emitted-timing-operators:
-  +=226
+  +=258
   -=0
-  *=392
+  *=423
   /=0
-  elmore=768
-  wire=768
-  pmos=406
-  nmos=436
+  elmore=896
+  wire=896
+  pmos=468
+  nmos=511
   gt=0
   mux=0
 invariants:
@@ -67,14 +67,4 @@ acceptance-witnesses:
   reference=sv-cells/sm83/cells/dffs_cc_ee_pch_d_reg_pc_bit.sv
   explicit-precedence=sv-to-sexpr/tests/fixtures/timing/explicit_precedence.sv
   pad-xtal=keeper-zero-delay:no-M7-failure
-deferrals:
-  sv-cells/sm83/cells/dlatch_ee_irq.sv | M11-transistor | 23:2 | unsupported primitive rnmos
-  sv-cells/sm83/cells/idu_bit0.sv | M11-transistor | 37:2 | unsupported primitive nmos
-  sv-cells/sm83/cells/idu_bit123456.sv | M11-transistor | 29:2 | unsupported primitive nmos
-  sv-cells/sm83/cells/irq_prio_bit0.sv | M11-transistor | 44:2 | unsupported primitive nmos
-  sv-cells/sm83/cells/irq_prio_bit1.sv | M11-transistor | 51:2 | unsupported primitive nmos
-  sv-cells/sm83/cells/irq_prio_bit2.sv | M11-transistor | 52:2 | unsupported primitive nmos
-  sv-cells/sm83/cells/irq_prio_bit3.sv | M11-transistor | 63:2 | unsupported primitive nmos
-  sv-cells/sm83/cells/irq_prio_bit4.sv | M11-transistor | 61:2 | unsupported primitive nmos
-  sv-cells/sm83/cells/irq_prio_bit5.sv | M11-transistor | 64:2 | unsupported primitive nmos
-  sv-cells/sm83/cells/irq_prio_bit6.sv | M11-transistor | 62:2 | unsupported primitive nmos
+lower-failures: []

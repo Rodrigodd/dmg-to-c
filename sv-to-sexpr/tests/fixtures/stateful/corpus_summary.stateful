@@ -1,7 +1,7 @@
 stateful corpus audit
 corpus-files=206
 stateful-files=27
-stateful-lowering: succeeded=26 deferred=1
+stateful-lowering: succeeded=27 deferred=0
 recursive-analysis:
   modeled-registers=48
   state-assignments=48
@@ -10,14 +10,14 @@ source-state-syntax:
   blocking=17
   nonblocking=31
 successful-topology:
-  modeled-registers=47
-  state-assignments=47
-  retained-muxes=46
+  modeled-registers=48
+  state-assignments=48
+  retained-muxes=47
   direct-state-assignments=1
-  initial-intentional-ignores=41
-  delay-tuple-intentional-ignores=75
-  specify-warnings=14
-  modeled-state-delays=25
+  initial-intentional-ignores=42
+  delay-tuple-intentional-ignores=79
+  specify-warnings=15
+  modeled-state-delays=26
 invariant-failures:
   invalid_cells=0
   nested_state_values=0
@@ -54,6 +54,7 @@ successful-stateful-files:
   sv-cells/sm83/cells/dffr_cc_ee_reg_ie_bit.sv | registers=[ff1,ff2,q_n] | state-targets=[ff1,ff2,q_n] | initial-ignores=3
   sv-cells/sm83/cells/dffre_cc_q.sv | registers=[ff,q] | state-targets=[ff,q] | initial-ignores=2
   sv-cells/sm83/cells/dffs_cc_ee_pch_d_reg_pc_bit.sv | registers=[ff1,ff2,q_n] | state-targets=[ff1,ff2,q_n] | initial-ignores=3
+  sv-cells/sm83/cells/dlatch_ee_irq.sv | registers=[q_n] | state-targets=[q_n] | initial-ignores=1
   sv-cells/sm83/cells/dlatch_ee_q_n.sv | registers=[q_n] | state-targets=[q_n] | initial-ignores=1
   sv-cells/sm83/cells/srlatch_r_n.sv | registers=[q] | state-targets=[q] | initial-ignores=0
   sv-cells/sm83/cells/srlatch_r_n_alt.sv | registers=[q] | state-targets=[q] | initial-ignores=0
@@ -76,6 +77,6 @@ successful-flat-dff-dlatch-files:
   sv-cells/sm83/cells/dffr_cc_ee_reg_ie_bit.sv
   sv-cells/sm83/cells/dffre_cc_q.sv
   sv-cells/sm83/cells/dffs_cc_ee_pch_d_reg_pc_bit.sv
+  sv-cells/sm83/cells/dlatch_ee_irq.sv
   sv-cells/sm83/cells/dlatch_ee_q_n.sv
 whole-file-deferrals:
-  sv-cells/sm83/cells/dlatch_ee_irq.sv:23:2 | unsupported primitive rnmos | category=later-driver-state | rationale=M6 driver.primitive-tristate+driver.repeated; M7 timing.alias+timing.specify-path; M11 primitive.transistor (current blocker: rnmos; keeper supported)

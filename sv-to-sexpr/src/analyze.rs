@@ -698,18 +698,6 @@ fn classify_support_parts(
             ),
         }
     }
-
-    if let Some(primitive) = primitive_calls
-        .iter()
-        .find(|primitive| matches!(primitive.name.as_str(), "nmos" | "pmos" | "rnmos"))
-    {
-        collector.defer(
-            "primitive.transistor",
-            TargetMilestone::M11Transistors,
-            &primitive.span,
-            "direct transistor primitives are scheduled for Milestone 11",
-        );
-    }
 }
 
 fn expr_contains_constant(expr: &Expr, expected: ConstKind) -> bool {
@@ -3819,7 +3807,7 @@ endmodule
     }
 
     #[test]
-    fn support_classification_covers_milestones_four_through_eleven() {
+    fn support_classification_covers_milestones_four_through_ten() {
         let supported = analyze_file(Path::new("empty.sv"), "module empty; endmodule\n").unwrap();
         assert_eq!(supported.disposition, AnalysisDisposition::Supported);
         assert!(supported.requirements.is_empty());
@@ -3857,10 +3845,6 @@ endmodule
                 TargetMilestone::M8GenerateSelection,
             ),
             (keeper_structural, TargetMilestone::M10Keeper),
-            (
-                analyze_path("../sv-cells/sm83/cells/irq_prio_bit0.sv"),
-                TargetMilestone::M11Transistors,
-            ),
         ];
         for (report, milestone) in reports {
             assert_eq!(report.disposition, AnalysisDisposition::Deferred);
@@ -3873,6 +3857,105 @@ endmodule
                 milestone.label()
             );
         }
+    }
+
+    #[test]
+    fn direct_transistors_are_typed_primitive_drivers_without_m11_deferral() {
+        let report = analyze_file(
+            Path::new("transistors.sv"),
+            "module transistors(inout logic source, gate, drain);\n\
+             assign drain = '0;\n\
+             nmos (drain, source, gate);\n\
+             pmos (drain, source, gate);\n\
+             rnmos (drain, source, gate);\n\
+             endmodule\n",
+        )
+        .unwrap();
+        let module = &report.modules[0];
+
+        assert_eq!(
+            module
+                .primitive_calls
+                .iter()
+                .map(|call| (call.source_order, call.name.as_str(), call.args.clone()))
+                .collect::<Vec<_>>(),
+            vec![
+                (
+                    1,
+                    "nmos",
+                    vec![
+                        Some("drain".into()),
+                        Some("source".into()),
+                        Some("gate".into())
+                    ]
+                ),
+                (
+                    2,
+                    "pmos",
+                    vec![
+                        Some("drain".into()),
+                        Some("source".into()),
+                        Some("gate".into())
+                    ]
+                ),
+                (
+                    3,
+                    "rnmos",
+                    vec![
+                        Some("drain".into()),
+                        Some("source".into()),
+                        Some("gate".into())
+                    ]
+                ),
+            ]
+        );
+        assert_eq!(
+            module.signal_roles["drain"].roles,
+            BTreeSet::from([SignalRole::ContinuousDriven, SignalRole::PrimitiveDriven,])
+        );
+        assert_eq!(
+            module
+                .drivers
+                .iter()
+                .map(|driver| (driver.source_order, driver.target.as_str(), &driver.source))
+                .collect::<Vec<_>>(),
+            vec![
+                (0, "drain", &DriverSource::Continuous),
+                (
+                    1,
+                    "drain",
+                    &DriverSource::Primitive {
+                        name: "nmos".into()
+                    }
+                ),
+                (
+                    2,
+                    "drain",
+                    &DriverSource::Primitive {
+                        name: "pmos".into()
+                    }
+                ),
+                (
+                    3,
+                    "drain",
+                    &DriverSource::Primitive {
+                        name: "rnmos".into()
+                    }
+                ),
+            ]
+        );
+        assert_eq!(module.inputs, vec!["source", "gate"]);
+        assert_eq!(module.outputs, vec!["drain"]);
+        assert!(!module.ports["drain"].is_input);
+        assert!(module.ports["drain"].is_output);
+        assert!(module.ports["source"].is_input && !module.ports["source"].is_output);
+        assert!(module.ports["gate"].is_input && !module.ports["gate"].is_output);
+        assert!(
+            report
+                .requirements
+                .iter()
+                .all(|requirement| requirement.milestone != TargetMilestone::M11Transistors)
+        );
     }
 
     #[test]
