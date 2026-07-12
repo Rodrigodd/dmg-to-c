@@ -1,0 +1,12 @@
+source: sv-cells/dmg_cpu_b/cells/dlatch.sv
+cell: dmg_dlatch
+inputs: [d, ena]
+outputs: [q, q_n]
+registers: [q]
+assignments:
+  0: q
+    value: op(mux; atom(ena), atom(d), atom(q))
+    delay: atom(0)
+  1: q_n
+    value: op(not; atom(q))
+    delay: atom(0)

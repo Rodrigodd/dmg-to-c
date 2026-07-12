@@ -1,6 +1,8 @@
 use std::collections::BTreeMap;
 use std::fmt;
 
+use crate::diagnostic::Diagnostic;
+
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Cell {
     pub name: String,
@@ -34,6 +36,11 @@ pub enum Expr {
 pub struct LoweredModule {
     pub cell: Cell,
     pub timing_aliases: BTreeMap<String, Expr>,
+    /// Non-failing source diagnostics produced while constructing this cell.
+    ///
+    /// Diagnostics are deliberately kept outside [`Cell`], so they can be
+    /// surfaced by commands and reports without becoming serialized DSL data.
+    pub diagnostics: Vec<Diagnostic>,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]

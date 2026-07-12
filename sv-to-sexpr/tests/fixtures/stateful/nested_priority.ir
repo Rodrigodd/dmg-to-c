@@ -1,0 +1,24 @@
+source: sv-to-sexpr/tests/fixtures/stateful/nested_priority.sv
+cell: nested_priority
+inputs: [enable, reset_n, set, t0]
+outputs: [q]
+registers: [q]
+assignments:
+  0: t1
+    value: op(not; atom(reset_n))
+    delay: atom(0)
+  1: t2
+    value: op(and; atom(enable), atom(t1))
+    delay: atom(0)
+  2: q
+    value: op(mux; atom(t2), atom(0), atom(q))
+    delay: atom(0)
+  3: t3
+    value: op(and; atom(set), atom(t0))
+    delay: atom(0)
+  4: t4
+    value: op(and; atom(enable), atom(t3))
+    delay: atom(0)
+  5: q
+    value: op(mux; atom(t4), atom(1), atom(q))
+    delay: atom(0)

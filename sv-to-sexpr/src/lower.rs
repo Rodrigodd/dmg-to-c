@@ -1,6 +1,6 @@
 use crate::analyze::{analyze_design, sensitivity_is_stateful};
 use crate::ast::*;
-use crate::diagnostic::{Diagnostic, Span};
+use crate::diagnostic::{Diagnostic, DiagnosticKind, Span};
 use crate::ir::{Assignment, Cell, CellItem, Expr, LoweredModule, TimingOperator, ValueOperator};
 use std::collections::{BTreeMap, BTreeSet};
 use std::path::Path;
@@ -18,6 +18,13 @@ pub fn lower_design(
     design: &Design,
     analysis: &crate::analyze::AnalysisReport,
 ) -> LowerResult<LoweredModule> {
+    if let Some(diagnostic) = analysis
+        .diagnostics
+        .iter()
+        .find(|diagnostic| diagnostic.kind == DiagnosticKind::Error)
+    {
+        return Err(diagnostic.clone());
+    }
     let module = design
         .first_module()
         .ok_or_else(|| Diagnostic::new(Span::new("<lower>", 1, 1), "expected one module"))?;
@@ -35,16 +42,58 @@ fn lower_module(
     lowerer.lower_module()
 }
 
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+enum ProceduralMode {
+    Combinational,
+    Stateful,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+struct ProceduralContext {
+    mode: ProceduralMode,
+    condition: Option<Expr>,
+}
+
+impl ProceduralContext {
+    fn combinational() -> Self {
+        Self {
+            mode: ProceduralMode::Combinational,
+            condition: None,
+        }
+    }
+
+    fn stateful(condition: Option<Expr>) -> Self {
+        Self {
+            mode: ProceduralMode::Stateful,
+            condition,
+        }
+    }
+}
+
 struct Lowerer<'a> {
     module: &'a Module,
     cell: Cell,
     timing_aliases: BTreeMap<String, Expr>,
+    diagnostics: Vec<Diagnostic>,
     reserved_names: BTreeSet<String>,
+    signal_names: BTreeSet<String>,
     next_temp_index: usize,
 }
 
 impl<'a> Lowerer<'a> {
     fn new(module: &'a Module, analysis: &crate::analyze::ModuleAnalysis) -> Self {
+        let signal_names = analysis
+            .symbols
+            .iter()
+            .filter(|(_, symbol)| {
+                matches!(
+                    symbol.category,
+                    crate::analyze::SymbolCategory::Port
+                        | crate::analyze::SymbolCategory::Declaration
+                )
+            })
+            .map(|(name, _)| name.clone())
+            .collect::<BTreeSet<_>>();
         let mut reserved_names = analysis.symbols.keys().cloned().collect::<BTreeSet<_>>();
         reserved_names.extend(analysis.parameters.keys().cloned());
         reserved_names.extend(analysis.declarations.keys().cloned());
@@ -63,7 +112,9 @@ impl<'a> Lowerer<'a> {
                 items: Vec::new(),
             },
             timing_aliases: BTreeMap::new(),
+            diagnostics: Vec::new(),
             reserved_names,
+            signal_names,
             next_temp_index: 0,
         }
     }
@@ -84,6 +135,7 @@ impl<'a> Lowerer<'a> {
         Ok(LoweredModule {
             cell: self.cell.clone(),
             timing_aliases: self.timing_aliases.clone(),
+            diagnostics: self.diagnostics.clone(),
         })
     }
 
@@ -121,14 +173,14 @@ impl<'a> Lowerer<'a> {
                 Ok(())
             }
             ItemKind::Primitive(call) => self.lower_primitive_call(call),
-            ItemKind::Initial(_) => Ok(()),
+            ItemKind::Initial(stmt) => self.lower_initial(item, stmt),
             ItemKind::AlwaysLatch(always) => {
                 let condition = always
                     .condition
                     .as_ref()
                     .map(|expr| self.lower_expr(expr))
                     .transpose()?;
-                self.lower_procedural_body(&always.body, condition, true)
+                self.lower_procedural_body(&always.body, ProceduralContext::stateful(condition))
             }
             ItemKind::Always(always) => {
                 let stateful = matches!(always.kind, AlwaysKind::Ff)
@@ -137,7 +189,12 @@ impl<'a> Lowerer<'a> {
                         .as_ref()
                         .map(|sensitivity| sensitivity_is_stateful(sensitivity, always.kind))
                         .unwrap_or(false);
-                self.lower_procedural_body(&always.body, None, stateful)
+                let context = if stateful {
+                    ProceduralContext::stateful(None)
+                } else {
+                    ProceduralContext::combinational()
+                };
+                self.lower_procedural_body(&always.body, context)
             }
             ItemKind::Specify(_) | ItemKind::Decl(_) | ItemKind::Import(_) | ItemKind::Empty => {
                 Ok(())
@@ -153,37 +210,69 @@ impl<'a> Lowerer<'a> {
         }
     }
 
+    fn lower_initial(&mut self, item: &Item, stmt: &AssignStmt) -> LowerResult<()> {
+        let target = expr_symbol(&stmt.target).ok_or_else(|| {
+            Diagnostic::new(
+                stmt.target.span.clone(),
+                "initial assignment target must be a scalar local signal",
+            )
+        })?;
+        if !self.signal_names.contains(&target) {
+            return Err(Diagnostic::new(
+                stmt.target.span.clone(),
+                "initial assignment target must be a scalar local signal",
+            ));
+        }
+        if !is_contracted_initial_literal(&stmt.value) {
+            return Err(Diagnostic::new(
+                stmt.value.span.clone(),
+                "initial assignment value must be a contracted literal (0, 1, '0, '1, 'x, or 'z)",
+            ));
+        }
+        self.diagnostics.push(Diagnostic::intentional_ignore(
+            item.span.clone(),
+            "literal initial value/event is intentionally omitted because the cell model has no initial event queue",
+        ));
+        Ok(())
+    }
+
     fn lower_procedural_body(
         &mut self,
         item: &Item,
-        condition: Option<Expr>,
-        hold_on_false: bool,
+        context: ProceduralContext,
     ) -> LowerResult<()> {
         match &item.kind {
-            ItemKind::ProcAssign(stmt) => {
-                self.lower_procedural_assign(stmt, condition.as_ref(), hold_on_false)
-            }
+            ItemKind::ProcAssign(stmt) => self.lower_procedural_assign(stmt, &context),
             ItemKind::Block(block) | ItemKind::Generate(block) => {
                 for child in &block.items {
-                    self.lower_procedural_body(child, condition.clone(), hold_on_false)?;
+                    self.lower_procedural_body(child, context.clone())?;
                 }
                 Ok(())
             }
             ItemKind::If(stmt) => {
+                if context.mode == ProceduralMode::Combinational {
+                    return Err(Diagnostic::new(
+                        item.span.clone(),
+                        "conditional combinational procedural lowering is unsupported because the condition cannot be discarded",
+                    ));
+                }
                 if let Some(else_branch) = &stmt.else_branch {
                     return Err(Diagnostic::new(
                         else_branch.span.clone(),
                         "unsupported procedural else branch",
                     ));
                 }
-                let next_condition = match condition {
-                    Some(ref parent) => Expr::value(
+                let next_condition = match &context.condition {
+                    Some(parent) => Expr::value(
                         ValueOperator::And,
                         vec![parent.clone(), self.lower_expr(&stmt.condition)?],
                     ),
                     None => self.lower_expr(&stmt.condition)?,
                 };
-                self.lower_procedural_body(&stmt.then_branch, Some(next_condition), hold_on_false)
+                self.lower_procedural_body(
+                    &stmt.then_branch,
+                    ProceduralContext::stateful(Some(next_condition)),
+                )
             }
             ItemKind::Initial(_)
             | ItemKind::Assign(_)
@@ -204,8 +293,7 @@ impl<'a> Lowerer<'a> {
     fn lower_procedural_assign(
         &mut self,
         stmt: &AssignStmt,
-        condition: Option<&Expr>,
-        hold_on_false: bool,
+        context: &ProceduralContext,
     ) -> LowerResult<()> {
         let target = expr_symbol(&stmt.target).ok_or_else(|| {
             Diagnostic::new(
@@ -214,7 +302,9 @@ impl<'a> Lowerer<'a> {
             )
         })?;
         let mut expr = self.lower_expr(&stmt.value)?;
-        if hold_on_false && let Some(condition) = condition {
+        if context.mode == ProceduralMode::Stateful
+            && let Some(condition) = &context.condition
+        {
             expr = Expr::value(
                 ValueOperator::Mux,
                 vec![condition.clone(), expr, Expr::atom(target.clone())],
@@ -820,6 +910,15 @@ fn expr_symbol(expr: &SvExpr) -> Option<String> {
     }
 }
 
+fn is_contracted_initial_literal(expr: &SvExpr) -> bool {
+    match &expr.kind {
+        ExprKind::Constant(ConstKind::Zero | ConstKind::One | ConstKind::X | ConstKind::Z) => true,
+        ExprKind::Integer(value) => matches!(value.as_str(), "0" | "1"),
+        ExprKind::Group(inner) => is_contracted_initial_literal(inner),
+        _ => false,
+    }
+}
+
 fn render_call_callee(expr: &SvExpr) -> String {
     expr_symbol(expr).unwrap_or_else(|| "call".to_string())
 }
@@ -905,6 +1004,163 @@ mod tests {
 
     fn lower_snippet(input: &str) -> LowerResult<LoweredModule> {
         lower_file(Path::new("snippet.sv"), input)
+    }
+
+    #[test]
+    fn literal_initial_is_a_visible_non_failing_omission_and_emits_no_assignment() {
+        let lowered =
+            lower_snippet("module sample(output logic q);\n  initial q = ('0);\nendmodule\n")
+                .unwrap();
+        assert_eq!(lowered.cell.registers, vec!["q"]);
+        assert!(assignment_strings(&lowered).is_empty());
+        assert_eq!(lowered.diagnostics.len(), 1);
+        assert_eq!(
+            lowered.diagnostics[0].kind,
+            DiagnosticKind::IntentionalIgnore
+        );
+        assert_eq!(lowered.diagnostics[0].span, Span::new("snippet.sv", 2, 3));
+        assert_eq!(
+            lowered.diagnostics[0].message,
+            "literal initial value/event is intentionally omitted because the cell model has no initial event queue"
+        );
+        lowered.cell.validate().unwrap();
+    }
+
+    #[test]
+    fn invalid_initial_forms_fail_at_their_specific_expression_spans() {
+        let nonliteral = lower_snippet(
+            "module sample(input logic d, output logic q);\n  initial q = d;\nendmodule\n",
+        )
+        .unwrap_err();
+        assert_eq!(nonliteral.span, Span::new("snippet.sv", 2, 15));
+        assert_eq!(
+            nonliteral.message,
+            "initial assignment value must be a contracted literal (0, 1, '0, '1, 'x, or 'z)"
+        );
+
+        let integer_two =
+            lower_snippet("module sample(output logic q);\n  initial q = 2;\nendmodule\n")
+                .unwrap_err();
+        assert_eq!(integer_two.span, Span::new("snippet.sv", 2, 15));
+        assert_eq!(integer_two.message, nonliteral.message);
+
+        let nonscalar = lower_snippet(
+            "module sample(input logic d, output logic q);\n  initial q & d = '0;\nendmodule\n",
+        )
+        .unwrap_err();
+        assert_eq!(nonscalar.span, Span::new("snippet.sv", 2, 11));
+        assert_eq!(
+            nonscalar.message,
+            "initial assignment target must be a scalar local signal"
+        );
+    }
+
+    #[test]
+    fn blocking_and_nonblocking_latches_normalize_identically() {
+        let blocking = lower_snippet(
+            "module sample(input logic ena, d, output logic q);\n  always_latch if (ena) q = d;\nendmodule\n",
+        )
+        .unwrap();
+        let nonblocking = lower_snippet(
+            "module sample(input logic ena, d, output logic q);\n  always_latch if (ena) q <= d;\nendmodule\n",
+        )
+        .unwrap();
+        assert_eq!(blocking.cell.registers, vec!["q"]);
+        assert_eq!(nonblocking.cell.registers, vec!["q"]);
+        assert_eq!(
+            assignment_strings(&blocking),
+            assignment_strings(&nonblocking)
+        );
+        assert_eq!(
+            assignment_strings(&blocking),
+            vec![(
+                "q".to_string(),
+                "(mux ena d q)".to_string(),
+                "0".to_string(),
+            )]
+        );
+        blocking.cell.validate().unwrap();
+        nonblocking.cell.validate().unwrap();
+    }
+
+    #[test]
+    fn nested_state_conditions_and_data_are_flattened_dependency_first() {
+        let lowered = lower_snippet(
+            "module sample(input logic clk, ena, reset_n, d, r, output logic q);\n  always_ff @(posedge clk) if (ena) if (!reset_n) q <= d & r;\nendmodule\n",
+        )
+        .unwrap();
+        assert_eq!(lowered.cell.registers, vec!["q"]);
+        assert_eq!(
+            assignment_strings(&lowered),
+            vec![
+                (
+                    "t0".to_string(),
+                    "(not reset_n)".to_string(),
+                    "0".to_string(),
+                ),
+                (
+                    "t1".to_string(),
+                    "(and ena t0)".to_string(),
+                    "0".to_string(),
+                ),
+                ("t2".to_string(), "(and d r)".to_string(), "0".to_string(),),
+                (
+                    "q".to_string(),
+                    "(mux t1 t2 q)".to_string(),
+                    "0".to_string(),
+                ),
+            ]
+        );
+        lowered.cell.validate().unwrap();
+    }
+
+    #[test]
+    fn later_stateful_assignments_remain_separate_in_source_priority_order() {
+        let lowered = lower_snippet(
+            "module sample(input logic clk, reset, set, d, output logic q);\n  always_ff @(posedge clk) begin\n    if (reset) q <= 0;\n    if (set) q = 1;\n    q <= d;\n  end\nendmodule\n",
+        )
+        .unwrap();
+        assert_eq!(
+            assignment_strings(&lowered),
+            vec![
+                (
+                    "q".to_string(),
+                    "(mux reset 0 q)".to_string(),
+                    "0".to_string(),
+                ),
+                (
+                    "q".to_string(),
+                    "(mux set 1 q)".to_string(),
+                    "0".to_string(),
+                ),
+                ("q".to_string(), "d".to_string(), "0".to_string()),
+            ]
+        );
+        lowered.cell.validate().unwrap();
+    }
+
+    #[test]
+    fn unconditional_combinational_procedure_is_not_state_and_conditional_is_rejected() {
+        let lowered = lower_snippet(
+            "module sample(input logic a, b, output logic y);\n  always_comb y = a & b;\nendmodule\n",
+        )
+        .unwrap();
+        assert!(lowered.cell.registers.is_empty());
+        assert_eq!(
+            assignment_strings(&lowered),
+            vec![("y".to_string(), "(and a b)".to_string(), "0".to_string(),)]
+        );
+        lowered.cell.validate().unwrap();
+
+        let error = lower_snippet(
+            "module sample(input logic ena, d, output logic y);\n  always_comb if (ena) y = d;\nendmodule\n",
+        )
+        .unwrap_err();
+        assert_eq!(error.span, Span::new("snippet.sv", 2, 15));
+        assert_eq!(
+            error.message,
+            "conditional combinational procedural lowering is unsupported because the condition cannot be discarded"
+        );
     }
 
     #[test]

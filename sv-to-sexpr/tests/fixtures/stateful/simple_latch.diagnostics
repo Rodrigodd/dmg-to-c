@@ -1,0 +1,2 @@
+diagnostics:
+  intentional-ignore | sv-cells/dmg_cpu_b/cells/dlatch.sv:13:2 | literal initial value/event is intentionally omitted because the cell model has no initial event queue

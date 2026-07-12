@@ -1,0 +1,18 @@
+source: sv-cells/sm83/cells/srlatch_r_n.sv
+cell: sm83_srlatch_r_n
+inputs: [s, r_n]
+outputs: [q]
+registers: [q]
+assignments:
+  0: t0
+    value: op(not; atom(r_n))
+    delay: atom(0)
+  1: t1
+    value: op(or; atom(t0), atom(s))
+    delay: atom(0)
+  2: t2
+    value: op(and; atom(s), atom(r_n))
+    delay: atom(0)
+  3: q
+    value: op(mux; atom(t1), atom(t2), atom(q))
+    delay: atom(0)

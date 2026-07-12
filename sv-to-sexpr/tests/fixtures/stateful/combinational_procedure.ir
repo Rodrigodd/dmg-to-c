@@ -1,0 +1,9 @@
+source: sv-to-sexpr/tests/fixtures/stateful/combinational_procedure.sv
+cell: combinational_procedure
+inputs: [a, b]
+outputs: [y]
+registers: []
+assignments:
+  0: y
+    value: op(and; atom(a), atom(b))
+    delay: atom(0)

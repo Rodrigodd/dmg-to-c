@@ -60,7 +60,7 @@ pub fn run() -> Result<(), Diagnostic> {
             }
         }
         "lower" => {
-            let (input, _policy) = parse_single_input(args, "lower", "<input.sv>")?;
+            let (input, policy) = parse_single_input(args, "lower", "<input.sv>")?;
             let path = PathBuf::from(input);
             let contents = fs::read_to_string(&path).map_err(|err| {
                 Diagnostic::new(
@@ -69,7 +69,11 @@ pub fn run() -> Result<(), Diagnostic> {
                 )
             })?;
             let lowered = lower_file(&path, &contents)?;
-            println!("{:#?}", lowered);
+            surface_lowering_diagnostics(&lowered.diagnostics, policy)?;
+            println!(
+                "cell:\n{:#?}\ntiming aliases:\n{:#?}",
+                lowered.cell, lowered.timing_aliases
+            );
             Ok(())
         }
         "convert-file" => {
@@ -83,10 +87,8 @@ pub fn run() -> Result<(), Diagnostic> {
                 )
             })?;
             let lowered = lower_file(&input_path, &contents)?;
+            surface_lowering_diagnostics(&lowered.diagnostics, parsed.policy)?;
             let rendered = render_cell(&lowered.cell);
-            // `lower_file` currently returns errors directly and has no warning
-            // channel. Parsing retains the shared policy without inventing one.
-            let _policy = parsed.policy;
             if parsed.dry_run {
                 print!("{}", rendered);
             } else {
@@ -128,6 +130,26 @@ pub fn run() -> Result<(), Diagnostic> {
         }
         other => Err(usage_error(&format!("unknown subcommand `{}`", other))),
     }
+}
+
+fn surface_lowering_diagnostics(
+    diagnostics: &[Diagnostic],
+    policy: DiagnosticPolicy,
+) -> Result<(), Diagnostic> {
+    for diagnostic in diagnostics {
+        eprintln!("{diagnostic}");
+    }
+    lowering_policy_failure(diagnostics, policy).map_or(Ok(()), Err)
+}
+
+fn lowering_policy_failure(
+    diagnostics: &[Diagnostic],
+    policy: DiagnosticPolicy,
+) -> Option<Diagnostic> {
+    diagnostics
+        .iter()
+        .find(|diagnostic| policy.is_failure(diagnostic))
+        .cloned()
 }
 
 fn run_analyze_check(input: &str, policy: DiagnosticPolicy) -> Result<(), Diagnostic> {
@@ -394,7 +416,7 @@ mod tests {
     }
 
     #[test]
-    fn convert_file_parses_flags_in_any_position_without_claiming_warning_output() {
+    fn convert_file_parses_flags_in_any_position() {
         let parsed =
             parse_convert_file_args(args(&["--dry-run", "input.sv", "--strict", "output.cell"]))
                 .unwrap();
@@ -402,6 +424,35 @@ mod tests {
         assert_eq!(parsed.output, "output.cell");
         assert!(parsed.dry_run);
         assert!(parsed.policy.strict);
+    }
+
+    #[test]
+    fn lowering_policy_never_promotes_intentional_ignores() {
+        let ignore = Diagnostic::intentional_ignore(
+            crate::diagnostic::Span::new("state.sv", 2, 3),
+            "initial event omitted",
+        );
+        assert_eq!(
+            lowering_policy_failure(std::slice::from_ref(&ignore), DiagnosticPolicy::new(false)),
+            None
+        );
+        assert_eq!(
+            lowering_policy_failure(std::slice::from_ref(&ignore), DiagnosticPolicy::new(true)),
+            None
+        );
+
+        let warning = Diagnostic::warning(
+            crate::diagnostic::Span::new("approx.sv", 4, 5),
+            "approximation",
+        );
+        assert_eq!(
+            lowering_policy_failure(std::slice::from_ref(&warning), DiagnosticPolicy::new(false)),
+            None
+        );
+        assert_eq!(
+            lowering_policy_failure(std::slice::from_ref(&warning), DiagnosticPolicy::new(true)),
+            Some(warning)
+        );
     }
 
     #[test]

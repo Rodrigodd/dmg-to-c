@@ -330,6 +330,13 @@ Acceptance conditions:
 
 ### Milestone 5: Flat Stateful Cells
 
+Status: complete as of 2026-07-12. Reviewed fixtures cover blocking and
+nonblocking latches, set/reset behavior, nested same-target priority, and
+combinational procedural non-state. A recursive corpus audit identifies 27
+stateful files: all 21 currently emitted cells contain exact analyzed registers
+and flat source-ordered retained state equations, while five generated-state
+files and one later-driver latch remain explicitly assigned to later milestones.
+
 Lower stateful procedural logic that does not depend on unresolved generate or
 hierarchical behavior.
 

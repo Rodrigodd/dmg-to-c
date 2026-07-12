@@ -423,9 +423,25 @@ impl AnalyzeFileReport {
 }
 
 pub fn check_lower_dir(path: &Path) -> Result<CheckReport, Diagnostic> {
-    check_dir(path, "lower", |file, contents| {
-        lower_file(file, contents).map(|_| ())
-    })
+    let mut report = CheckReport::new("lower");
+    for file in collect_sv_files(path)? {
+        report.processed += 1;
+        match fs::read_to_string(&file) {
+            Ok(contents) => match lower_file(&file, &contents) {
+                Ok(lowered) => {
+                    for diagnostic in lowered.diagnostics {
+                        report.record(diagnostic);
+                    }
+                }
+                Err(diagnostic) => report.record(diagnostic),
+            },
+            Err(err) => report.record(Diagnostic::new(
+                crate::diagnostic::Span::new(&file, 1, 1),
+                format!("failed to read file: {err}"),
+            )),
+        }
+    }
+    Ok(report)
 }
 
 fn check_dir(
@@ -694,6 +710,37 @@ mod check_report_tests {
                 "  d.sv:1:1: error: failure\n",
             )
         );
+    }
+
+    #[test]
+    fn lower_check_keeps_successful_initial_omissions_once_and_non_failing() {
+        let directory = temporary_directory("lower-success-diagnostics");
+        std::fs::write(
+            directory.join("a.sv"),
+            "module a(output logic q0, q1);\n  initial q0 = 0;\n  initial q1 = '1;\nendmodule\n",
+        )
+        .unwrap();
+        std::fs::write(
+            directory.join("b.sv"),
+            "module b(input logic d, output logic q);\n  always_latch if (d) q = d;\nendmodule\n",
+        )
+        .unwrap();
+
+        let report = check_lower_dir(&directory).unwrap();
+        std::fs::remove_dir_all(directory).unwrap();
+
+        assert_eq!(report.processed, 2);
+        assert_eq!(report.warned(), 0);
+        assert_eq!(report.intentional_ignores(), 2);
+        assert_eq!(report.failed(), 0);
+        assert!(!report.fails(DiagnosticPolicy::new(false)));
+        assert!(!report.fails(DiagnosticPolicy::new(true)));
+        assert_eq!(report.diagnostics().entries().len(), 2);
+        assert_eq!(report.diagnostics().entries()[0].span.line, 2);
+        assert_eq!(report.diagnostics().entries()[1].span.line, 3);
+        let rendered = report.render();
+        assert_eq!(rendered.matches("intentional-ignore:").count(), 2);
+        assert_eq!(rendered, report.render());
     }
 
     #[test]

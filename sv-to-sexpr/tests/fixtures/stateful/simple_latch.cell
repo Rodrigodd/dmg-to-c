@@ -1,0 +1,14 @@
+(cell
+  dmg_dlatch
+  (inputs d ena)
+
+  (outputs q q_n)
+
+  (registers q)
+
+  (assignments
+
+    (q (mux ena d q) 0)
+    (q_n (not q) 0)
+  )
+)

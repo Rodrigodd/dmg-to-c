@@ -5,9 +5,9 @@ a milestone acceptance condition changes or is completed.
 
 ## Verified Baseline
 
-Last audited on 2026-07-11:
+Last audited on 2026-07-12:
 
-- `cargo test` passes 83 unit tests and 24 integration tests.
+- `cargo test` passes 91 unit tests and 28 integration tests.
 - Lexing succeeds for all 206 curated files.
 - Parsing succeeds for all 206 curated files.
 - `survey sv-cells` deterministically inventories 63,240 tokens and 138 typed
@@ -20,14 +20,18 @@ Last audited on 2026-07-11:
   182 successful cells are deterministic, structurally valid, and contain only
   flat contracted value expressions; the corpus audit covers 1,603 assignments
   including 995 generated temporaries.
+- Successful lowering reports 32 literal initial events as visible
+  intentional-ignore diagnostics. They remain non-failing under `--strict`,
+  classify their targets as modeled registers, and do not serialize an initial
+  event queue.
 - Nine failures are transistor-related. The other failures are five generated
   DFF/TFF variants, two hierarchical adders, four keeper users, three
   signal-valued high-Z drivers, and one unsupported timing factor.
 - Examined generated files are valid generic S-expressions and become stable
   after `sexpr-fmt`. Full-corpus formatter validation has not been performed.
-- Flat SSA structure and combinational operator lowering have completed fixture
-  review. Generated register lists, stateful behavior, driver normalizations,
-  and timing semantics remain subject to their later milestone fixture reviews.
+- Flat SSA, combinational operators, register lists, and supported stateful
+  behavior have completed fixture review. Driver normalizations and timing
+  semantics remain subject to their later milestone fixture reviews.
 - The reference cell now lowers with flat SSA values but does not yet match the
   checked-in target because specify-derived delays have not completed fixture
   review. Delay tuples select only their first entry, but reference output under
@@ -62,8 +66,13 @@ Last audited on 2026-07-11:
   dependency-first `t0`, `t1`, ... assignments keep every value operation flat.
   A full-corpus audit proves all 182 current successes are structurally valid
   and freezes exact diagnostics for the 24 later-milestone failures.
-- Milestone 5: partial. Several flat latch/register cells lower, but complete
-  family fixtures and review are missing.
+- Milestone 5: complete. Reviewed stateful goldens cover simple, set/reset,
+  blocking/nonblocking, nested-priority, and block-body latches. The recursive
+  audit finds 27 stateful files: 21 emitted cells have 38 exact modeled
+  registers and 38 flat retained mux equations; five generated DFF/TFF files
+  remain M8 deferrals, and `dlatch_ee_irq` remains explicitly assigned to its
+  M6/M7/M10/M11 driver and timing work. All 13 combinational procedural writes
+  found in generated alternatives remain non-state.
 - Milestone 6: partial. Constant-drive tri-state and precharge subsets lower;
   the strength representation is contracted, while signal-valued drives,
   strength lowering, and reviewed fixtures remain.

@@ -1,0 +1,36 @@
+source: sv-cells/dmg_cpu_b/cells/nand_latch.sv
+cell: dmg_nand_latch
+inputs: [s_n, r_n]
+outputs: [q, q_n]
+registers: [q, q_n]
+assignments:
+  0: t0
+    value: op(not; atom(s_n))
+    delay: atom(0)
+  1: t1
+    value: op(not; atom(r_n))
+    delay: atom(0)
+  2: t2
+    value: op(or; atom(t0), atom(t1))
+    delay: atom(0)
+  3: t3
+    value: op(not; atom(s_n))
+    delay: atom(0)
+  4: q
+    value: op(mux; atom(t2), atom(t3), atom(q))
+    delay: atom(0)
+  5: t4
+    value: op(not; atom(s_n))
+    delay: atom(0)
+  6: t5
+    value: op(not; atom(r_n))
+    delay: atom(0)
+  7: t6
+    value: op(or; atom(t4), atom(t5))
+    delay: atom(0)
+  8: t7
+    value: op(not; atom(r_n))
+    delay: atom(0)
+  9: q_n
+    value: op(mux; atom(t6), atom(t7), atom(q_n))
+    delay: atom(0)
