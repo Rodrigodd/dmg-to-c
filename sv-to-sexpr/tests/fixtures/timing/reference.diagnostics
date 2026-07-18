@@ -1,7 +1,4 @@
 diagnostics:
-  intentional-ignore | sv-cells/sm83/cells/dffs_cc_ee_pch_d_reg_pc_bit.sv:17:2 | literal initial value/event is intentionally omitted because the cell model has no initial event queue
-  intentional-ignore | sv-cells/sm83/cells/dffs_cc_ee_pch_d_reg_pc_bit.sv:18:2 | literal initial value/event is intentionally omitted because the cell model has no initial event queue
-  intentional-ignore | sv-cells/sm83/cells/dffs_cc_ee_pch_d_reg_pc_bit.sv:19:2 | literal initial value/event is intentionally omitted because the cell model has no initial event queue
   intentional-ignore | sv-cells/sm83/cells/dffs_cc_ee_pch_d_reg_pc_bit.sv:28:39 | delay tuple entry 2 is intentionally ignored because the cell model selects only entry 1
   intentional-ignore | sv-cells/sm83/cells/dffs_cc_ee_pch_d_reg_pc_bit.sv:28:46 | delay tuple entry 3 is intentionally ignored because the cell model selects only entry 1
   intentional-ignore | sv-cells/sm83/cells/dffs_cc_ee_pch_d_reg_pc_bit.sv:41:26 | delay tuple entry 2 is intentionally ignored because the cell model selects only entry 1

@@ -17,7 +17,6 @@ use sv_to_sexpr::parser::parse_file;
 use sv_to_sexpr::serialize::{render_cell, render_expr};
 use sv_to_sexpr::survey::collect_sv_files;
 
-const INITIAL_OMISSION: &str = "literal initial value/event is intentionally omitted because the cell model has no initial event queue";
 const DELAY_IGNORE_PREFIX: &str = "delay tuple entry ";
 const SPECIFY_IGNORE_PREFIX: &str = "additional control-dependent specify path for target `";
 const REFERENCE: &str = "sv-cells/sm83/cells/dffs_cc_ee_pch_d_reg_pc_bit.sv";
@@ -116,7 +115,6 @@ struct LowerAudit {
     warnings: usize,
     specify_ignores: usize,
     later_ignores: usize,
-    initial_ignores: usize,
     specify_ignore_contract_failures: usize,
     diagnostic_mismatches: usize,
     source_delay_mismatches: usize,
@@ -687,9 +685,7 @@ fn audit_success(
                 audit.warnings += 1;
             }
             DiagnosticKind::IntentionalIgnore => {
-                if diagnostic.message == INITIAL_OMISSION {
-                    audit.initial_ignores += 1;
-                } else if diagnostic.message.starts_with(DELAY_IGNORE_PREFIX) {
+                if diagnostic.message.starts_with(DELAY_IGNORE_PREFIX) {
                     audit.later_ignores += 1;
                 } else if diagnostic.message.starts_with(SPECIFY_IGNORE_PREFIX) {
                     audit.specify_ignores += 1;
@@ -698,6 +694,8 @@ fn audit_success(
                     {
                         audit.specify_ignore_contract_failures += 1;
                     }
+                } else {
+                    audit.diagnostic_mismatches += 1;
                 }
             }
             DiagnosticKind::Error => audit.diagnostic_mismatches += 1,
@@ -994,11 +992,7 @@ fn expected_diagnostics(
 fn collect_expected_item_diagnostics(items: &[Item], expected: &mut Vec<ExpectedDiagnostic>) {
     for item in items {
         match &item.kind {
-            ItemKind::Initial(_) => expected.push(ExpectedDiagnostic {
-                kind: DiagnosticKind::IntentionalIgnore,
-                span: item.span.clone(),
-                message: INITIAL_OMISSION.to_string(),
-            }),
+            ItemKind::Initial(_) => {}
             ItemKind::Assign(assign) => {
                 if let Some(delay) = &assign.delay {
                     expected_tuple_ignores(&delay.span, &delay.values, expected);
@@ -1138,7 +1132,6 @@ fn assert_exact_contract(source: &SourceInventory, lower: &LowerAudit) {
     assert_eq!(lower.warnings, 0);
     assert_eq!(lower.specify_ignores, 49);
     assert_eq!(lower.later_ignores, 1_260);
-    assert_eq!(lower.initial_ignores, 42);
     assert_eq!(lower.specify_ignore_contract_failures, 0);
     assert_eq!(lower.diagnostic_mismatches, 0);
     assert_eq!(lower.source_delay_mismatches, 0);
@@ -1289,8 +1282,8 @@ fn render_summary(source: &SourceInventory, lower: &LowerAudit) -> String {
     .unwrap();
     writeln!(
         &mut output,
-        "  warnings={} specify-ignores={} later-ignores={} initial-ignores={}",
-        lower.warnings, lower.specify_ignores, lower.later_ignores, lower.initial_ignores
+        "  warnings={} specify-ignores={} later-ignores={}",
+        lower.warnings, lower.specify_ignores, lower.later_ignores
     )
     .unwrap();
     writeln!(&mut output, "emitted-timing-operators:").unwrap();

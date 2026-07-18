@@ -1,4 +1,4 @@
-analyze summary: modules=1 disposition=deferred requirements=8
+analyze summary: modules=1 disposition=deferred requirements=7
 module dmg_dffr_cc @sv-cells/dmg_cpu_b/cells/dffr_cc.sv:3:1
   inputs: d clk clk_n r_n
   outputs: q q_n
@@ -158,7 +158,6 @@ module dmg_dffr_cc @sv-cells/dmg_cpu_b/cells/dffr_cc.sv:3:1
 requirements:
   driver.repeated | M6 | sv-cells/dmg_cpu_b/cells/dffr_cc.sv:18:12 | repeated source drivers are scheduled for Milestone 6
   generate.alternative | M8 | sv-cells/dmg_cpu_b/cells/dffr_cc.sv:14:3 | generate branch selection is scheduled for Milestone 8
-  state.initial | M5 | sv-cells/dmg_cpu_b/cells/dffr_cc.sv:18:12 | literal initialization and modeled state are scheduled for Milestone 5
   state.procedural | M5 | sv-cells/dmg_cpu_b/cells/dffr_cc.sv:25:73 | stateful procedural lowering is scheduled for Milestone 5
   timing.alias | M7 | sv-cells/dmg_cpu_b/cells/dffr_cc.sv:32:4 | timing aliases are scheduled for Milestone 7
   timing.assignment-delay | M7 | sv-cells/dmg_cpu_b/cells/dffr_cc.sv:55:4 | symbolic assignment delays are scheduled for Milestone 7

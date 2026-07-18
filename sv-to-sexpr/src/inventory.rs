@@ -22,6 +22,7 @@ pub enum Milestone {
     M10,
     M11,
     M12,
+    M13,
 }
 
 impl Milestone {
@@ -39,6 +40,7 @@ impl Milestone {
             Self::M10 => "M10 keeper drivers",
             Self::M11 => "M11 transistor drivers",
             Self::M12 => "M12 release conversion",
+            Self::M13 => "M13 register initial values",
         }
     }
 }
@@ -433,7 +435,7 @@ impl Capability {
     }
 
     pub fn classification(&self) -> Classification {
-        use Classification::{Deferred, IntentionalIgnore, Unsupported};
+        use Classification::{Deferred, IntentionalIgnore, Supported, Unsupported};
         match self {
             Self::Design | Self::Module => Deferred {
                 milestone: Milestone::M2,
@@ -468,15 +470,14 @@ impl Capability {
             Self::Declaration(_) => Deferred {
                 milestone: Milestone::M3,
             },
-            Self::Import { path, wildcard: true }
-                if matches!(path.as_str(), "dmg_timing" | "sm83_timing") =>
-            {
-                IntentionalIgnore {
-                    justification:
-                        "CONTRACT.md: behavior-free curated timing package import after resolution"
-                            .to_string(),
-                }
-            }
+            Self::Import {
+                path,
+                wildcard: true,
+            } if matches!(path.as_str(), "dmg_timing" | "sm83_timing") => IntentionalIgnore {
+                justification:
+                    "CONTRACT.md: behavior-free curated timing package import after resolution"
+                        .to_string(),
+            },
             Self::Import { path, .. } => Unsupported {
                 reason: format!("unrecognized import `{path}`"),
             },
@@ -489,10 +490,8 @@ impl Capability {
             },
             Self::InitialEvent {
                 supported_literal: true,
-            } => IntentionalIgnore {
-                justification:
-                    "CONTRACT.md: literal initial value/event classifies state but is not serialized"
-                        .to_string(),
+            } => Supported {
+                owner: Milestone::M13,
             },
             Self::InitialEvent {
                 supported_literal: false,
@@ -523,8 +522,8 @@ impl Capability {
                 arity,
                 omitted,
             } if is_known_call_shape(name, *arity, omitted) => Deferred {
-                    milestone: Milestone::M7,
-                },
+                milestone: Milestone::M7,
+            },
             Self::CallArguments {
                 name,
                 arity,
@@ -541,7 +540,10 @@ impl Capability {
                 arity: 3,
                 omitted,
             } if omitted.is_empty()
-                && matches!(name.as_str(), "bufif0" | "bufif1" | "nmos" | "pmos" | "rnmos") =>
+                && matches!(
+                    name.as_str(),
+                    "bufif0" | "bufif1" | "nmos" | "pmos" | "rnmos"
+                ) =>
             {
                 Deferred {
                     milestone: primitive_milestone(name),
@@ -590,7 +592,8 @@ impl Capability {
                 reason: format!("unsupported delay tuple arity {arity}"),
             },
             Self::DelayOmission { index: 0, .. } => Unsupported {
-                reason: "explicitly omitted first delay entry has no contracted meaning".to_string(),
+                reason: "explicitly omitted first delay entry has no contracted meaning"
+                    .to_string(),
             },
             Self::DelayOmission { index, .. } => IntentionalIgnore {
                 justification: format!(

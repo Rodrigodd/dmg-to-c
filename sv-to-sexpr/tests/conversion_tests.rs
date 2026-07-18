@@ -301,7 +301,7 @@ fn non_directory_output_root_and_nonregular_target_fail_without_mutation() {
 }
 
 #[test]
-fn nodelay_changes_selected_generate_output_and_strict_keeps_ignores_non_failing() {
+fn nodelay_changes_selected_register_metadata_and_strict_keeps_ignores_non_failing() {
     let tree = TempTree::new("convert-mode-policy");
     let input = tree.path("input");
     let dffr = repository_root().join("sv-cells/dmg_cpu_b/cells/dffr_cc.sv");
@@ -322,12 +322,13 @@ fn nodelay_changes_selected_generate_output_and_strict_keeps_ignores_non_failing
     let nodelay_report = convert(&nodelay);
     assert!(nodelay_report.succeeded());
     assert_eq!(nodelay_report.warned, 0);
-    assert!(nodelay_report.intentional_ignored > 0);
+    assert_eq!(nodelay_report.intentional_ignored, 0);
 
-    assert_ne!(
-        fs::read_to_string(delayful_output.join("dffr_cc.cell")).unwrap(),
-        fs::read_to_string(nodelay_output.join("dffr_cc.cell")).unwrap()
-    );
+    let delayful_cell = fs::read_to_string(delayful_output.join("dffr_cc.cell")).unwrap();
+    let nodelay_cell = fs::read_to_string(nodelay_output.join("dffr_cc.cell")).unwrap();
+    assert!(delayful_cell.contains("(registers (mux1 0) (mux2 0))"));
+    assert!(nodelay_cell.contains("(registers (ff 0) (q 0))"));
+    assert_ne!(delayful_cell, nodelay_cell);
 }
 
 #[test]

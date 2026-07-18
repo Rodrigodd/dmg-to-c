@@ -42,7 +42,7 @@ const CASES: &[TimingCase] = &[
         source: "sv-to-sexpr/tests/fixtures/timing/procedural_state.sv",
         expected_assignments: &[("t0", "(and a b)", "0"), ("q", "(mux ena t0 q)", "T_state")],
         warnings: 0,
-        intentional_ignores: 2,
+        intentional_ignores: 1,
     },
 ];
 
@@ -145,7 +145,7 @@ fn reference_cell_has_exact_first_applicable_q_q_n_and_d_assignments() {
             .iter()
             .filter(|diagnostic| diagnostic.kind == DiagnosticKind::IntentionalIgnore)
             .count(),
-        7
+        4
     );
     assert_or_update_fixture("reference", "cell", &render_cell(&first.cell));
     assert_or_update_fixture(

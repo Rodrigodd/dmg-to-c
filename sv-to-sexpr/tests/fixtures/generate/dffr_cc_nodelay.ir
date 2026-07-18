@@ -12,8 +12,14 @@ LoweredModule {
             "q_n",
         ],
         registers: [
-            "ff",
-            "q",
+            Register {
+                name: "ff",
+                initial: Zero,
+            },
+            Register {
+                name: "q",
+                initial: Zero,
+            },
         ],
         items: [
             Assignment(
@@ -400,24 +406,5 @@ LoweredModule {
         ],
     },
     timing_aliases: {},
-    diagnostics: [
-        Diagnostic {
-            kind: IntentionalIgnore,
-            span: Span {
-                path: "sv-cells/dmg_cpu_b/cells/dffr_cc.sv",
-                line: 18,
-                column: 4,
-            },
-            message: "literal initial value/event is intentionally omitted because the cell model has no initial event queue",
-        },
-        Diagnostic {
-            kind: IntentionalIgnore,
-            span: Span {
-                path: "sv-cells/dmg_cpu_b/cells/dffr_cc.sv",
-                line: 19,
-                column: 4,
-            },
-            message: "literal initial value/event is intentionally omitted because the cell model has no initial event queue",
-        },
-    ],
+    diagnostics: [],
 }

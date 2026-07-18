@@ -14,13 +14,11 @@ use sv_to_sexpr::analyze::{
 use sv_to_sexpr::ast::{AssignOp, ExprKind, Item, ItemKind};
 use sv_to_sexpr::diagnostic::{Diagnostic, DiagnosticKind, DiagnosticPolicy, Span};
 use sv_to_sexpr::elaborate::{GenerateMode, elaborate_design};
-use sv_to_sexpr::ir::{Assignment, Cell, CellItem, Expr, LoweredModule, ValueOperator};
+use sv_to_sexpr::ir::{Assignment, Cell, CellItem, Expr, LogicValue, LoweredModule, ValueOperator};
 use sv_to_sexpr::lower::lower_file;
 use sv_to_sexpr::parser::parse_file;
 use sv_to_sexpr::serialize::render_cell;
 use sv_to_sexpr::survey::collect_sv_files;
-
-const INITIAL_OMISSION: &str = "literal initial value/event is intentionally omitted because the cell model has no initial event queue";
 
 const STATEFUL_PATHS: &[&str] = &[
     "sv-cells/dmg_cpu_b/cells/dffr.sv",
@@ -111,7 +109,7 @@ struct ExpectedSuccess {
     path: &'static str,
     registers: &'static [&'static str],
     state_targets: &'static [&'static str],
-    initial_ignores: usize,
+    initial: LogicValue,
 }
 
 const EXPECTED_SUCCESSES: &[ExpectedSuccess] = &[
@@ -119,163 +117,163 @@ const EXPECTED_SUCCESSES: &[ExpectedSuccess] = &[
         path: "sv-cells/dmg_cpu_b/cells/dffr.sv",
         registers: &["q"],
         state_targets: &["q"],
-        initial_ignores: 1,
+        initial: LogicValue::Zero,
     },
     ExpectedSuccess {
         path: "sv-cells/dmg_cpu_b/cells/dffr_cc.sv",
         registers: &["mux1", "mux2"],
         state_targets: &["mux1", "mux2"],
-        initial_ignores: 2,
+        initial: LogicValue::Zero,
     },
     ExpectedSuccess {
         path: "sv-cells/dmg_cpu_b/cells/dffr_cc_q.sv",
         registers: &["mux1", "mux2"],
         state_targets: &["mux1", "mux2"],
-        initial_ignores: 2,
+        initial: LogicValue::Zero,
     },
     ExpectedSuccess {
         path: "sv-cells/dmg_cpu_b/cells/dffsr.sv",
         registers: &["ff", "q"],
         state_targets: &["ff", "q"],
-        initial_ignores: 2,
+        initial: LogicValue::Zero,
     },
     ExpectedSuccess {
         path: "sv-cells/dmg_cpu_b/cells/dlatch.sv",
         registers: &["q"],
         state_targets: &["q"],
-        initial_ignores: 1,
+        initial: LogicValue::Zero,
     },
     ExpectedSuccess {
         path: "sv-cells/dmg_cpu_b/cells/dlatch_ee.sv",
         registers: &["q"],
         state_targets: &["q"],
-        initial_ignores: 1,
+        initial: LogicValue::Zero,
     },
     ExpectedSuccess {
         path: "sv-cells/dmg_cpu_b/cells/dlatch_ee_q.sv",
         registers: &["q"],
         state_targets: &["q"],
-        initial_ignores: 1,
+        initial: LogicValue::Zero,
     },
     ExpectedSuccess {
         path: "sv-cells/dmg_cpu_b/cells/drlatch_ee.sv",
         registers: &["q"],
         state_targets: &["q"],
-        initial_ignores: 1,
+        initial: LogicValue::Zero,
     },
     ExpectedSuccess {
         path: "sv-cells/dmg_cpu_b/cells/nand_latch.sv",
         registers: &["q", "q_n"],
         state_targets: &["q", "q_n"],
-        initial_ignores: 0,
+        initial: LogicValue::X,
     },
     ExpectedSuccess {
         path: "sv-cells/dmg_cpu_b/cells/nor_latch.sv",
         registers: &["q", "q_n"],
         state_targets: &["q", "q_n"],
-        initial_ignores: 0,
+        initial: LogicValue::X,
     },
     ExpectedSuccess {
         path: "sv-cells/dmg_cpu_b/cells/pad_bidir_pu_latch.sv",
         registers: &["ff"],
         state_targets: &["ff"],
-        initial_ignores: 1,
+        initial: LogicValue::Zero,
     },
     ExpectedSuccess {
         path: "sv-cells/dmg_cpu_b/cells/tffnl.sv",
         registers: &["ff", "q"],
         state_targets: &["q", "ff"],
-        initial_ignores: 2,
+        initial: LogicValue::Zero,
     },
     ExpectedSuccess {
         path: "sv-cells/sm83/cells/dff_cc_ee_pch_d_reg_sp_bit.sv",
         registers: &["ff1", "ff2", "q_n"],
         state_targets: &["ff1", "ff2", "q_n"],
-        initial_ignores: 3,
+        initial: LogicValue::Zero,
     },
     ExpectedSuccess {
         path: "sv-cells/sm83/cells/dff_cc_ee_q_n_reg_wz_bit.sv",
         registers: &["ff", "q_n"],
         state_targets: &["ff", "q_n"],
-        initial_ignores: 2,
+        initial: LogicValue::Zero,
     },
     ExpectedSuccess {
         path: "sv-cells/sm83/cells/dff_cc_ee_q_x1_reg_bit.sv",
         registers: &["ff", "q"],
         state_targets: &["ff", "q"],
-        initial_ignores: 2,
+        initial: LogicValue::Zero,
     },
     ExpectedSuccess {
         path: "sv-cells/sm83/cells/dff_cc_ee_q_x2_reg_bit.sv",
         registers: &["ff", "q"],
         state_targets: &["ff", "q"],
-        initial_ignores: 2,
+        initial: LogicValue::Zero,
     },
     ExpectedSuccess {
         path: "sv-cells/sm83/cells/dff_cc_q.sv",
         registers: &["ff", "q"],
         state_targets: &["ff", "q"],
-        initial_ignores: 2,
+        initial: LogicValue::Zero,
     },
     ExpectedSuccess {
         path: "sv-cells/sm83/cells/dff_cc_q_alt.sv",
         registers: &["ff", "q"],
         state_targets: &["ff", "q"],
-        initial_ignores: 2,
+        initial: LogicValue::Zero,
     },
     ExpectedSuccess {
         path: "sv-cells/sm83/cells/dffn_ee_pch_d_alu_flag.sv",
         registers: &["ff1", "ff2", "q_n"],
         state_targets: &["ff1", "ff2", "q_n"],
-        initial_ignores: 3,
+        initial: LogicValue::Zero,
     },
     ExpectedSuccess {
         path: "sv-cells/sm83/cells/dffn_ee_q_alu_sign.sv",
         registers: &["ff", "q"],
         state_targets: &["ff", "q"],
-        initial_ignores: 2,
+        initial: LogicValue::Zero,
     },
     ExpectedSuccess {
         path: "sv-cells/sm83/cells/dffr_cc_ee_reg_ie_bit.sv",
         registers: &["ff1", "ff2", "q_n"],
         state_targets: &["ff1", "ff2", "q_n"],
-        initial_ignores: 3,
+        initial: LogicValue::Zero,
     },
     ExpectedSuccess {
         path: "sv-cells/sm83/cells/dffre_cc_q.sv",
         registers: &["ff", "q"],
         state_targets: &["ff", "q"],
-        initial_ignores: 2,
+        initial: LogicValue::Zero,
     },
     ExpectedSuccess {
         path: "sv-cells/sm83/cells/dffs_cc_ee_pch_d_reg_pc_bit.sv",
         registers: &["ff1", "ff2", "q_n"],
         state_targets: &["ff1", "ff2", "q_n"],
-        initial_ignores: 3,
+        initial: LogicValue::Zero,
     },
     ExpectedSuccess {
         path: "sv-cells/sm83/cells/dlatch_ee_irq.sv",
         registers: &["q_n"],
         state_targets: &["q_n"],
-        initial_ignores: 1,
+        initial: LogicValue::Zero,
     },
     ExpectedSuccess {
         path: "sv-cells/sm83/cells/dlatch_ee_q_n.sv",
         registers: &["q_n"],
         state_targets: &["q_n"],
-        initial_ignores: 1,
+        initial: LogicValue::Zero,
     },
     ExpectedSuccess {
         path: "sv-cells/sm83/cells/srlatch_r_n.sv",
         registers: &["q"],
         state_targets: &["q"],
-        initial_ignores: 0,
+        initial: LogicValue::X,
     },
     ExpectedSuccess {
         path: "sv-cells/sm83/cells/srlatch_r_n_alt.sv",
         registers: &["q"],
         state_targets: &["q"],
-        initial_ignores: 0,
+        initial: LogicValue::X,
     },
 ];
 
@@ -317,7 +315,11 @@ struct AuditTotals {
     successful_state_assignments: usize,
     retained_muxes: usize,
     direct_state_assignments: usize,
-    successful_initial_omissions: usize,
+    successful_explicit_initializers: usize,
+    initial_zero: usize,
+    initial_one: usize,
+    initial_x: usize,
+    initial_z: usize,
     successful_delay_tuple_omissions: usize,
     successful_specify_ignores: usize,
     combinational_procedural_nonregisters: usize,
@@ -327,7 +329,7 @@ struct AuditTotals {
     state_target_order_mismatches: usize,
     wrong_retention_operands: usize,
     nonzero_state_delays: usize,
-    initial_diagnostic_mismatches: usize,
+    initializer_metadata_mismatches: usize,
     delay_diagnostic_mismatches: usize,
     temp_dependency_or_collision_failures: usize,
     combinational_procedural_register_leaks: usize,
@@ -356,9 +358,8 @@ struct SourceProcedure {
 
 struct SuccessRecord {
     path: String,
-    registers: Vec<String>,
+    registers: Vec<(String, LogicValue)>,
     state_targets: Vec<String>,
-    initial_ignores: usize,
 }
 
 struct DeferralRecord {
@@ -641,7 +642,13 @@ fn audit_success(
     if lowered.cell.validate().is_err() {
         totals.invalid_cells += 1;
     }
-    if lowered.cell.registers != analysis.registers {
+    let lowered_register_names = lowered
+        .cell
+        .registers
+        .iter()
+        .map(|register| register.name.as_str())
+        .collect::<Vec<_>>();
+    if lowered_register_names != analysis.registers {
         totals.register_mismatches += 1;
     }
     totals.successful_modeled_registers += lowered.cell.registers.len();
@@ -669,7 +676,7 @@ fn audit_success(
         .cell
         .registers
         .iter()
-        .map(String::as_str)
+        .map(|register| register.name.as_str())
         .collect::<BTreeSet<_>>();
     let emitted_state = assignments
         .iter()
@@ -711,27 +718,33 @@ fn audit_success(
     }
 
     let initial_items = collect_initial_items(source_items);
-    let initial_diagnostics = lowered
-        .diagnostics
-        .iter()
-        .filter(|diagnostic| diagnostic.message == INITIAL_OMISSION)
-        .collect::<Vec<_>>();
-    if initial_items.len() != initial_diagnostics.len()
-        || initial_items.len() != recursive.initial_assignments
+    let initial_targets = initial_items.iter().cloned().collect::<BTreeSet<_>>();
+    if initial_items.len() != recursive.initial_assignments
+        || initial_items.len() != initial_targets.len()
+        || lowered
+            .diagnostics
+            .iter()
+            .any(|diagnostic| diagnostic.message.contains("literal initial value/event"))
     {
-        totals.initial_diagnostic_mismatches += 1;
+        totals.initializer_metadata_mismatches += 1;
     }
-    for ((span, target), diagnostic) in initial_items.iter().zip(initial_diagnostics.iter()) {
-        if diagnostic.kind != DiagnosticKind::IntentionalIgnore
-            || diagnostic.span != *span
-            || diagnostic.message != INITIAL_OMISSION
-            || !registers.contains(target.as_str())
-            || DiagnosticPolicy::new(true).is_failure(diagnostic)
-        {
-            totals.initial_diagnostic_mismatches += 1;
+    totals.successful_explicit_initializers += initial_items.len();
+    for register in &lowered.cell.registers {
+        match register.initial {
+            LogicValue::Zero => totals.initial_zero += 1,
+            LogicValue::One => totals.initial_one += 1,
+            LogicValue::X => totals.initial_x += 1,
+            LogicValue::Z => totals.initial_z += 1,
+        }
+        let expected = if initial_targets.contains(&register.name) {
+            LogicValue::Zero
+        } else {
+            LogicValue::X
+        };
+        if register.initial != expected {
+            totals.initializer_metadata_mismatches += 1;
         }
     }
-    totals.successful_initial_omissions += initial_diagnostics.len();
 
     let expected_delay_ignores = count_later_timing_entries(source_items);
     let delay_diagnostics = lowered
@@ -760,8 +773,7 @@ fn audit_success(
     if specify_ignores.iter().any(|diagnostic| {
         diagnostic.kind != DiagnosticKind::IntentionalIgnore
             || DiagnosticPolicy::new(true).is_failure(diagnostic)
-    }) || initial_diagnostics.len() + delay_diagnostics.len() + specify_ignores.len()
-        != lowered.diagnostics.len()
+    }) || delay_diagnostics.len() + specify_ignores.len() != lowered.diagnostics.len()
     {
         totals.delay_diagnostic_mismatches += 1;
     }
@@ -779,9 +791,13 @@ fn audit_success(
 
     SuccessRecord {
         path: path.to_string(),
-        registers: lowered.cell.registers.clone(),
+        registers: lowered
+            .cell
+            .registers
+            .iter()
+            .map(|register| (register.name.clone(), register.initial))
+            .collect(),
         state_targets: emitted_targets.into_iter().map(str::to_string).collect(),
-        initial_ignores: initial_diagnostics.len(),
     }
 }
 
@@ -940,8 +956,8 @@ fn temp_index(name: &str) -> Option<usize> {
         .and_then(|digits| digits.parse().ok())
 }
 
-fn collect_initial_items(items: &[Item]) -> Vec<(Span, String)> {
-    fn collect(items: &[Item], output: &mut Vec<(Span, String)>) {
+fn collect_initial_items(items: &[Item]) -> Vec<String> {
+    fn collect(items: &[Item], output: &mut Vec<String>) {
         for item in items {
             match &item.kind {
                 ItemKind::Initial(statement) => {
@@ -949,7 +965,7 @@ fn collect_initial_items(items: &[Item]) -> Vec<(Span, String)> {
                         panic!("successful initial target must be scalar")
                     };
                     assert_eq!(segments.len(), 1);
-                    output.push((item.span.clone(), segments[0].clone()));
+                    output.push(segments[0].clone());
                 }
                 ItemKind::Block(block) | ItemKind::Generate(block) => collect(&block.items, output),
                 ItemKind::If(statement) => {
@@ -1072,9 +1088,23 @@ fn assert_success_records(records: &[SuccessRecord]) {
     assert_eq!(records.len(), EXPECTED_SUCCESSES.len());
     for (actual, expected) in records.iter().zip(EXPECTED_SUCCESSES) {
         assert_eq!(actual.path, expected.path);
-        assert_eq!(actual.registers, expected.registers);
+        assert_eq!(
+            actual
+                .registers
+                .iter()
+                .map(|(name, _)| name.as_str())
+                .collect::<Vec<_>>(),
+            expected.registers
+        );
+        assert!(
+            actual
+                .registers
+                .iter()
+                .all(|(_, initial)| *initial == expected.initial),
+            "{}",
+            actual.path
+        );
         assert_eq!(actual.state_targets, expected.state_targets);
-        assert_eq!(actual.initial_ignores, expected.initial_ignores);
     }
 }
 
@@ -1091,7 +1121,11 @@ fn assert_zero_invariant_failures(totals: &AuditTotals) {
     assert_eq!(totals.successful_state_assignments, 48);
     assert_eq!(totals.retained_muxes, 47);
     assert_eq!(totals.direct_state_assignments, 1);
-    assert_eq!(totals.successful_initial_omissions, 42);
+    assert_eq!(totals.successful_explicit_initializers, 42);
+    assert_eq!(totals.initial_zero, 42);
+    assert_eq!(totals.initial_one, 0);
+    assert_eq!(totals.initial_x, 6);
+    assert_eq!(totals.initial_z, 0);
     assert_eq!(totals.successful_delay_tuple_omissions, 79);
     assert_eq!(totals.successful_specify_ignores, 15);
     assert_eq!(totals.nonzero_state_delays, 26);
@@ -1112,8 +1146,8 @@ fn invariant_failures(totals: &AuditTotals) -> [(&'static str, usize); 11] {
         ),
         ("wrong_retention_operands", totals.wrong_retention_operands),
         (
-            "initial_diagnostic_mismatches",
-            totals.initial_diagnostic_mismatches,
+            "initializer_metadata_mismatches",
+            totals.initializer_metadata_mismatches,
         ),
         (
             "delay_diagnostic_mismatches",
@@ -1178,9 +1212,13 @@ fn render_summary(
         ("retained-muxes", totals.retained_muxes),
         ("direct-state-assignments", totals.direct_state_assignments),
         (
-            "initial-intentional-ignores",
-            totals.successful_initial_omissions,
+            "explicit-register-initializers",
+            totals.successful_explicit_initializers,
         ),
+        ("initial-zero", totals.initial_zero),
+        ("initial-one", totals.initial_one),
+        ("initial-x", totals.initial_x),
+        ("initial-z", totals.initial_z),
         (
             "delay-tuple-intentional-ignores",
             totals.successful_delay_tuple_omissions,
@@ -1201,11 +1239,15 @@ fn render_summary(
     for success in successes {
         writeln!(
             &mut output,
-            "  {} | registers=[{}] | state-targets=[{}] | initial-ignores={}",
+            "  {} | registers=[{}] | state-targets=[{}]",
             success.path,
-            success.registers.join(","),
+            success
+                .registers
+                .iter()
+                .map(|(name, initial)| format!("{name}={}", initial.as_str()))
+                .collect::<Vec<_>>()
+                .join(","),
             success.state_targets.join(","),
-            success.initial_ignores
         )
         .unwrap();
     }

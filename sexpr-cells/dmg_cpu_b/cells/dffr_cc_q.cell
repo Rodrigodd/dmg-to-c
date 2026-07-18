@@ -9,7 +9,7 @@
 
   (outputs q)
 
-  (registers mux1 mux2)
+  (registers (mux1 0) (mux2 0))
 
   (assignments
 

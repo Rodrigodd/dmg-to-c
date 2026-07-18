@@ -534,8 +534,10 @@ fn classify_support_parts(
         );
     }
 
+    let mut initialized_registers = BTreeSet::new();
     for initial in initial_assignments {
-        let target_is_scalar = expr_local_symbol(&initial.target_expression).is_some();
+        let target_name = expr_local_symbol(&initial.target_expression);
+        let target_is_scalar = target_name.is_some();
         let value_is_literal = is_contracted_literal(&initial.value_expression);
         if !target_is_scalar {
             collector.fail(
@@ -553,12 +555,18 @@ fn classify_support_parts(
                 "initial assignment value must be a contracted literal (0, 1, '0, '1, 'x, or 'z)",
             );
         }
-        if target_is_scalar && value_is_literal {
-            collector.defer(
-                "state.initial",
+        if let Some(target_name) = target_name
+            && value_is_literal
+            && !initialized_registers.insert(target_name)
+        {
+            collector.fail(
+                "invalid.initial.duplicate",
                 TargetMilestone::M5StatefulProcedural,
-                &initial.span,
-                "literal initialization and modeled state are scheduled for Milestone 5",
+                &initial.target_expression.span,
+                &format!(
+                    "multiple initial assignments for register `{}` cannot be represented by one register initial value",
+                    target_name
+                ),
             );
         }
     }
@@ -4005,13 +4013,14 @@ endmodule
             "module okay(output logic q0, q1, qx);\n  initial q0 = 0;\n  initial q1 = 1;\n  initial qx = 'x;\nendmodule\n",
         )
         .unwrap();
-        assert_eq!(literal.disposition, AnalysisDisposition::Deferred);
+        assert_eq!(literal.disposition, AnalysisDisposition::Supported);
         assert_eq!(literal.modules[0].registers, vec!["q0", "q1", "qx"]);
         assert!(literal.diagnostics.is_empty());
         assert!(
-            literal.requirements.iter().any(|requirement| {
-                requirement.milestone == TargetMilestone::M5StatefulProcedural
-            })
+            literal
+                .requirements
+                .iter()
+                .all(|requirement| requirement.capability_id != "state.initial")
         );
     }
 

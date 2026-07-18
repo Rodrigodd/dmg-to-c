@@ -8,13 +8,10 @@ use stateful_support::{
     render_typed_ir, repository_root,
 };
 use sv_to_sexpr::ast::{ExprKind, ItemKind};
-use sv_to_sexpr::diagnostic::{DiagnosticKind, Span};
-use sv_to_sexpr::ir::{Assignment, Cell, CellItem, Expr, ValueOperator};
+use sv_to_sexpr::ir::{Assignment, Cell, CellItem, Expr, LogicValue, ValueOperator};
 use sv_to_sexpr::lower::lower_file;
 use sv_to_sexpr::parser::parse_file;
 use sv_to_sexpr::serialize::{render_cell, render_expr};
-
-const INITIAL_OMISSION: &str = "literal initial value/event is intentionally omitted because the cell model has no initial event queue";
 
 struct FixtureCase {
     name: &'static str,
@@ -91,7 +88,13 @@ fn stateful_goldens_are_flat_deterministic_and_contract_complete() {
             .validate()
             .unwrap_or_else(|error| panic!("invalid cell for {}: {error}", case.source));
         assert_eq!(
-            first.cell.registers, case.registers,
+            first
+                .cell
+                .registers
+                .iter()
+                .map(|register| register.name.as_str())
+                .collect::<Vec<_>>(),
+            case.registers,
             "register classification changed in {}",
             case.source
         );
@@ -211,7 +214,7 @@ fn assert_state_topology(cell: &Cell, assignments: &[&Assignment], case: &Fixtur
     let registers = cell
         .registers
         .iter()
-        .map(String::as_str)
+        .map(|register| register.name.as_str())
         .collect::<BTreeSet<_>>();
     let state_assignments = assignments
         .iter()
@@ -252,13 +255,13 @@ fn temp_index(name: &str) -> Option<usize> {
 }
 
 fn assert_temporary_order(cell: &Cell, assignments: &[&Assignment], case: &FixtureCase) {
-    let source_names = cell
+    let mut source_names = cell
         .inputs
         .iter()
         .chain(&cell.outputs)
-        .chain(&cell.registers)
         .cloned()
         .collect::<BTreeSet<_>>();
+    source_names.extend(cell.registers.iter().map(|register| register.name.clone()));
     let generated = assignments
         .iter()
         .filter(|assignment| !source_names.contains(&assignment.target))
@@ -330,24 +333,23 @@ fn assert_initial_contract(case: &FixtureCase, lowered: &sv_to_sexpr::ir::Lowere
             .map(|(target, _, _)| *target)
             .collect::<Vec<_>>()
     );
-    let initial_diagnostics = lowered
-        .diagnostics
-        .iter()
-        .filter(|diagnostic| diagnostic.message == INITIAL_OMISSION)
-        .collect::<Vec<_>>();
-    assert_eq!(initial_diagnostics.len(), case.initials.len());
-    for (diagnostic, (target, line, column)) in initial_diagnostics.iter().zip(case.initials.iter())
-    {
-        assert!(
-            lowered
-                .cell
-                .registers
-                .iter()
-                .any(|register| register == target)
-        );
-        assert_eq!(diagnostic.kind, DiagnosticKind::IntentionalIgnore);
-        assert_eq!(diagnostic.span, Span::new(case.source, *line, *column));
-        assert_eq!(diagnostic.message, INITIAL_OMISSION);
+    assert!(
+        lowered
+            .diagnostics
+            .iter()
+            .all(|diagnostic| !diagnostic.message.contains("literal initial value/event"))
+    );
+    for register in &lowered.cell.registers {
+        let expected = if case
+            .initials
+            .iter()
+            .any(|(target, _, _)| *target == register.name)
+        {
+            LogicValue::Zero
+        } else {
+            LogicValue::X
+        };
+        assert_eq!(register.initial, expected, "{}", case.source);
     }
 }
 

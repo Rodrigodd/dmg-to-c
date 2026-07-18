@@ -189,7 +189,13 @@ endmodule
         let delayful = lower_file(Path::new("generate_test.sv"), SELECTABLE).unwrap();
         assert_eq!(assignment_targets(&delayful), ["slow", "y"]);
         assert_eq!(delayful.timing_aliases["T_sel"], IrExpr::Atom("2".into()));
-        assert!(!delayful.cell.registers.iter().any(|name| name == "fast"));
+        assert!(
+            !delayful
+                .cell
+                .registers
+                .iter()
+                .any(|register| register.name == "fast")
+        );
 
         let nodelay = lower_file_with_generate_mode(
             Path::new("generate_test.sv"),
@@ -199,7 +205,13 @@ endmodule
         .unwrap();
         assert_eq!(assignment_targets(&nodelay), ["fast", "y"]);
         assert_eq!(nodelay.timing_aliases["T_sel"], IrExpr::Atom("1".into()));
-        assert!(!nodelay.cell.registers.iter().any(|name| name == "slow"));
+        assert!(
+            !nodelay
+                .cell
+                .registers
+                .iter()
+                .any(|register| register.name == "slow")
+        );
     }
 
     #[test]

@@ -62,8 +62,8 @@ fn configured_keeper_corpus_is_exact_distinct_and_fully_emitted() {
     assert!(nodelay.failures.is_empty());
     assert_eq!(delayful.warnings, 0);
     assert_eq!(nodelay.warnings, 0);
-    assert_eq!(delayful.ignores, 1351);
-    assert_eq!(nodelay.ignores, 1341);
+    assert_eq!(delayful.ignores, 1309);
+    assert_eq!(nodelay.ignores, 1299);
     assert_eq!(delayful.supported, 3);
     assert_eq!(delayful.deferred, 203);
     assert_eq!(nodelay.supported, 3);

@@ -2,7 +2,7 @@ use std::fs;
 use std::process::Command;
 
 #[test]
-fn strict_dry_run_keeps_cell_stdout_clean_and_surfaces_initial_omission_on_stderr() {
+fn strict_dry_run_serializes_initial_metadata_without_a_diagnostic() {
     let directory = std::env::temp_dir().join(format!(
         "sv-to-sexpr-cli-diagnostic-{}-{:?}",
         std::process::id(),
@@ -36,10 +36,8 @@ fn strict_dry_run_keeps_cell_stdout_clean_and_surfaces_initial_omission_on_stder
     let stderr = String::from_utf8(result.stderr).unwrap();
     assert!(stdout.starts_with("(cell\n  state\n"));
     assert!(!stdout.contains("intentional-ignore"));
-    assert_eq!(stderr.matches("intentional-ignore:").count(), 1);
-    assert!(stderr.contains(
-        "literal initial value/event is intentionally omitted because the cell model has no initial event queue"
-    ));
+    assert!(stdout.contains("(registers (q 0))"));
+    assert!(stderr.is_empty());
     assert!(!output.exists());
 
     fs::remove_dir_all(directory).unwrap();

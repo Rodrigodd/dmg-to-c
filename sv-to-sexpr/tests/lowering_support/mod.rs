@@ -43,7 +43,16 @@ pub fn render_typed_ir(cell: &Cell) -> String {
     writeln!(&mut output, "cell: {}", cell.name).unwrap();
     writeln!(&mut output, "inputs: [{}]", cell.inputs.join(", ")).unwrap();
     writeln!(&mut output, "outputs: [{}]", cell.outputs.join(", ")).unwrap();
-    writeln!(&mut output, "registers: [{}]", cell.registers.join(", ")).unwrap();
+    writeln!(
+        &mut output,
+        "registers: [{}]",
+        cell.registers
+            .iter()
+            .map(|register| format!("{}={}", register.name, register.initial.as_str()))
+            .collect::<Vec<_>>()
+            .join(", ")
+    )
+    .unwrap();
     writeln!(&mut output, "assignments:").unwrap();
     for (index, item) in cell.items.iter().enumerate() {
         match item {

@@ -1,6 +1,6 @@
 keeper corpus mode=delayful
 analysis supported=3 deferred=203 keeper-requirements=0
-lower successes=206 failures=0 warnings=0 intentional-ignores=1351
+lower successes=206 failures=0 warnings=0 intentional-ignores=1309
 resolved-keepers:
   sv-cells/dmg_cpu_b/cells/mux.sv | mux_keeper | mux | source-order=5 | 24:2
   sv-cells/dmg_cpu_b/cells/muxi.sv | mux_keeper | mux | source-order=5 | 24:2
@@ -19,7 +19,7 @@ keeper-bearing-lower-deferrals:
 failures:
 keeper corpus mode=nodelay
 analysis supported=3 deferred=203 keeper-requirements=0
-lower successes=206 failures=0 warnings=0 intentional-ignores=1341
+lower successes=206 failures=0 warnings=0 intentional-ignores=1299
 resolved-keepers:
   sv-cells/dmg_cpu_b/cells/mux.sv | mux_keeper | mux | source-order=5 | 24:2
   sv-cells/dmg_cpu_b/cells/muxi.sv | mux_keeper | mux | source-order=5 | 24:2

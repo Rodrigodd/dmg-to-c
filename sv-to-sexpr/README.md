@@ -74,9 +74,15 @@ replace an existing file unless `--overwrite` is present.
 Errors always fail. Warnings describe a supported conversion with a documented
 fidelity limitation and fail only in strict mode. Intentional ignores are
 explicitly excluded by the cell contract and never fail, even in strict mode.
-The current approved ignores include literal initial events after state
-classification, later delay-tuple entries, and additional control-dependent
-specify paths after the first selected source-ordered path.
+The current approved ignores include later delay-tuple entries and additional
+control-dependent specify paths after the first selected source-ordered path.
+Register initial values are preserved metadata and do not produce diagnostics.
+
+Each modeled register is serialized as `(name initial-value)`, where the value
+is one of `0`, `1`, `x`, or `z`. A selected scalar contracted literal `initial`
+assignment supplies that metadata and does not become an ordinary assignment.
+Registers without a selected initializer use `x`; duplicate selected
+initializers for one register are errors.
 
 `convert` prints diagnostics in deterministic source/location order and one
 summary whose counters mean:

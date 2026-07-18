@@ -8,8 +8,35 @@ pub struct Cell {
     pub name: String,
     pub inputs: Vec<String>,
     pub outputs: Vec<String>,
-    pub registers: Vec<String>,
+    pub registers: Vec<Register>,
     pub items: Vec<CellItem>,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum LogicValue {
+    Zero,
+    One,
+    X,
+    Z,
+}
+
+impl LogicValue {
+    pub const ALL: [Self; 4] = [Self::Zero, Self::One, Self::X, Self::Z];
+
+    pub const fn as_str(self) -> &'static str {
+        match self {
+            Self::Zero => "0",
+            Self::One => "1",
+            Self::X => "x",
+            Self::Z => "z",
+        }
+    }
+}
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct Register {
+    pub name: String,
+    pub initial: LogicValue,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -267,7 +294,7 @@ impl Cell {
         }
         validate_names("inputs", &self.inputs)?;
         validate_names("outputs", &self.outputs)?;
-        validate_names("registers", &self.registers)?;
+        validate_registers(&self.registers)?;
         for item in &self.items {
             if let CellItem::Assignment(assignment) = item {
                 assignment.validate()?;
@@ -275,6 +302,25 @@ impl Cell {
         }
         Ok(())
     }
+}
+
+fn validate_registers(registers: &[Register]) -> Result<(), ValidationError> {
+    let mut names = std::collections::BTreeSet::new();
+    for register in registers {
+        if register.name.is_empty() {
+            return Err(ValidationError::new(
+                "registers",
+                "names must be non-empty atoms",
+            ));
+        }
+        if !names.insert(register.name.as_str()) {
+            return Err(ValidationError::new(
+                "registers",
+                format!("duplicate register name `{}`", register.name),
+            ));
+        }
+    }
+    Ok(())
 }
 
 fn validate_names(context: &str, names: &[String]) -> Result<(), ValidationError> {
@@ -720,5 +766,49 @@ mod tests {
             Expr::atom("0"),
         )));
         assert_eq!(cell.validate().unwrap_err().context, "assignment `y` value");
+    }
+
+    #[test]
+    fn logic_values_have_stable_target_atoms() {
+        assert_eq!(
+            LogicValue::ALL.map(LogicValue::as_str),
+            ["0", "1", "x", "z"]
+        );
+    }
+
+    #[test]
+    fn register_validation_preserves_order_and_rejects_invalid_names() {
+        let mut cell = Cell {
+            name: "sample".into(),
+            inputs: Vec::new(),
+            outputs: Vec::new(),
+            registers: vec![
+                Register {
+                    name: "first".into(),
+                    initial: LogicValue::One,
+                },
+                Register {
+                    name: "second".into(),
+                    initial: LogicValue::X,
+                },
+            ],
+            items: Vec::new(),
+        };
+        cell.validate().unwrap();
+        assert_eq!(cell.registers[0].name, "first");
+        assert_eq!(cell.registers[1].name, "second");
+
+        cell.registers[1].name.clear();
+        let empty = cell.validate().unwrap_err();
+        assert_eq!(empty.context, "registers");
+        assert_eq!(empty.message, "names must be non-empty atoms");
+
+        cell.registers[1].name = "first".into();
+        let duplicate = cell.validate().unwrap_err();
+        assert_eq!(duplicate.context, "registers");
+        assert_eq!(duplicate.message, "duplicate register name `first`");
+
+        cell.registers.clear();
+        cell.validate().unwrap();
     }
 }

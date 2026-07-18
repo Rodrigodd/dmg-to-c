@@ -6,7 +6,7 @@ use std::process::Command;
 use sv_to_sexpr::analyze::{AnalysisReport, ModuleAnalysis, analyze_design_with_generate_mode};
 use sv_to_sexpr::diagnostic::{Diagnostic, DiagnosticKind};
 use sv_to_sexpr::elaborate::GenerateMode;
-use sv_to_sexpr::ir::{CellItem, LoweredModule};
+use sv_to_sexpr::ir::{CellItem, LogicValue, LoweredModule};
 use sv_to_sexpr::lower::lower_file_with_generate_mode;
 use sv_to_sexpr::parser::parse_file;
 use sv_to_sexpr::serialize::render_cell;
@@ -123,8 +123,8 @@ fn cli_plumbs_generate_mode_through_convert_analyze_and_lower() {
     );
     let delayful_stderr = String::from_utf8(delayful.stderr).unwrap();
     let nodelay_stderr = String::from_utf8(nodelay.stderr).unwrap();
-    assert_eq!(delayful_stderr.matches(": intentional-ignore:").count(), 8);
-    assert_eq!(nodelay_stderr.matches(": intentional-ignore:").count(), 2);
+    assert_eq!(delayful_stderr.matches(": intentional-ignore:").count(), 6);
+    assert_eq!(nodelay_stderr.matches(": intentional-ignore:").count(), 0);
     assert_eq!(delayful_stderr.matches(": warning:").count(), 0);
     assert_eq!(nodelay_stderr.matches(": warning:").count(), 0);
     assert!(!output.exists());
@@ -146,10 +146,14 @@ fn cli_plumbs_generate_mode_through_convert_analyze_and_lower() {
     assert!(lower_nodelay.status.success());
     let lower_delayful = String::from_utf8(lower_delayful.stdout).unwrap();
     let lower_nodelay = String::from_utf8(lower_nodelay.stdout).unwrap();
-    assert!(lower_delayful.contains("registers: [\n        \"mux1\",\n        \"mux2\","));
-    assert!(!lower_delayful.contains("\"ff\","));
-    assert!(lower_nodelay.contains("registers: [\n        \"ff\",\n        \"q\","));
-    assert!(!lower_nodelay.contains("\"mux1\","));
+    assert!(lower_delayful.contains("name: \"mux1\""));
+    assert!(lower_delayful.contains("name: \"mux2\""));
+    assert_eq!(lower_delayful.matches("initial: Zero").count(), 2);
+    assert!(!lower_delayful.contains("name: \"ff\""));
+    assert!(lower_nodelay.contains("name: \"ff\""));
+    assert!(lower_nodelay.contains("name: \"q\""));
+    assert_eq!(lower_nodelay.matches("initial: Zero").count(), 2);
+    assert!(!lower_nodelay.contains("name: \"mux1\""));
 }
 
 #[test]
@@ -223,6 +227,15 @@ fn assert_selected_dffr_cc(mode: GenerateMode, module: &ModuleAnalysis, lowered:
             assert_eq!(aliases, DELAYFUL_ALIASES);
             assert_eq!(analysis_aliases, DELAYFUL_ALIASES);
             assert_eq!(initial, ["mux1", "mux2"]);
+            assert_eq!(
+                lowered
+                    .cell
+                    .registers
+                    .iter()
+                    .map(|register| (register.name.as_str(), register.initial))
+                    .collect::<Vec<_>>(),
+                [("mux1", LogicValue::Zero), ("mux2", LogicValue::Zero)]
+            );
             assert_eq!(procedural, ["mux1", "mux2"]);
             assert_eq!(
                 continuous,
@@ -230,7 +243,7 @@ fn assert_selected_dffr_cc(mode: GenerateMode, module: &ModuleAnalysis, lowered:
             );
             assert_eq!(
                 diagnostic_count(diagnostics, DiagnosticKind::IntentionalIgnore),
-                8
+                6
             );
             for absent in ["ff", "clk_buf", "clk_n_buf", "r_n_buf"] {
                 assert!(!module.symbols.contains_key(absent));
@@ -245,11 +258,20 @@ fn assert_selected_dffr_cc(mode: GenerateMode, module: &ModuleAnalysis, lowered:
             assert!(aliases.is_empty());
             assert!(analysis_aliases.is_empty());
             assert_eq!(initial, ["ff", "q"]);
+            assert_eq!(
+                lowered
+                    .cell
+                    .registers
+                    .iter()
+                    .map(|register| (register.name.as_str(), register.initial))
+                    .collect::<Vec<_>>(),
+                [("ff", LogicValue::Zero), ("q", LogicValue::Zero)]
+            );
             assert_eq!(procedural, ["clk_buf", "clk_n_buf", "r_n_buf", "ff", "q"]);
             assert_eq!(continuous, ["q_n"]);
             assert_eq!(
                 diagnostic_count(diagnostics, DiagnosticKind::IntentionalIgnore),
-                2
+                0
             );
             for absent in ["and1", "nand2", "mux1", "mux2", "mux1_buf", "mux2_buf"] {
                 assert!(!module.symbols.contains_key(absent));

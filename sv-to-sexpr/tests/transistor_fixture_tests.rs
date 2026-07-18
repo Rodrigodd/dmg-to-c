@@ -134,7 +134,7 @@ const CASES: &[Case] = &[
         path: "sv-cells/sm83/cells/dlatch_ee_irq.sv",
         registers: &["q_n"],
         warnings: 0,
-        intentional_ignores: 6,
+        intentional_ignores: 5,
         transistors: DLATCH_TRANSISTORS,
     },
     Case {

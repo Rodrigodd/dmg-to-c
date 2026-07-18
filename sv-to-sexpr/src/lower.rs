@@ -6,7 +6,8 @@ use crate::ast::*;
 use crate::diagnostic::{Diagnostic, DiagnosticKind, Span};
 use crate::elaborate::{GenerateMode, elaborate_design};
 use crate::ir::{
-    Assignment, Cell, CellItem, Expr, LoweredModule, StrengthPair, TimingOperator, ValueOperator,
+    Assignment, Cell, CellItem, Expr, LogicValue, LoweredModule, Register, StrengthPair,
+    TimingOperator, ValueOperator,
 };
 use std::collections::{BTreeMap, BTreeSet};
 use std::path::Path;
@@ -159,6 +160,7 @@ struct Lowerer<'a> {
     timing_alias_stack: Vec<String>,
     specify_delays: BTreeMap<String, Vec<SpecifyDelay>>,
     ignored_additional_specify_targets: BTreeSet<String>,
+    initialized_registers: BTreeSet<String>,
     diagnostics: Vec<Diagnostic>,
     reserved_names: BTreeSet<String>,
     signal_names: BTreeSet<String>,
@@ -218,7 +220,14 @@ impl<'a> Lowerer<'a> {
                 name: module.name.clone(),
                 inputs: analysis.inputs.clone(),
                 outputs: analysis.outputs.clone(),
-                registers: analysis.registers.clone(),
+                registers: analysis
+                    .registers
+                    .iter()
+                    .map(|name| Register {
+                        name: name.clone(),
+                        initial: LogicValue::X,
+                    })
+                    .collect(),
                 items: Vec::new(),
             },
             timing_alias_sources: BTreeMap::new(),
@@ -226,6 +235,7 @@ impl<'a> Lowerer<'a> {
             timing_alias_stack: Vec::new(),
             specify_delays: BTreeMap::new(),
             ignored_additional_specify_targets: BTreeSet::new(),
+            initialized_registers: BTreeSet::new(),
             diagnostics: Vec::new(),
             reserved_names,
             signal_names,
@@ -443,7 +453,7 @@ impl<'a> Lowerer<'a> {
                 Ok(())
             }
             ItemKind::Primitive(call) => self.lower_primitive_call(call),
-            ItemKind::Initial(stmt) => self.lower_initial(item, stmt),
+            ItemKind::Initial(stmt) => self.lower_initial(stmt),
             ItemKind::AlwaysLatch(always) => {
                 let condition = always
                     .condition
@@ -493,7 +503,7 @@ impl<'a> Lowerer<'a> {
         )
     }
 
-    fn lower_initial(&mut self, item: &Item, stmt: &AssignStmt) -> LowerResult<()> {
+    fn lower_initial(&mut self, stmt: &AssignStmt) -> LowerResult<()> {
         let target = expr_symbol(&stmt.target).ok_or_else(|| {
             Diagnostic::new(
                 stmt.target.span.clone(),
@@ -506,16 +516,34 @@ impl<'a> Lowerer<'a> {
                 "initial assignment target must be a scalar local signal",
             ));
         }
-        if !is_contracted_initial_literal(&stmt.value) {
-            return Err(Diagnostic::new(
+        let initial = contracted_initial_literal(&stmt.value).ok_or_else(|| {
+            Diagnostic::new(
                 stmt.value.span.clone(),
                 "initial assignment value must be a contracted literal (0, 1, '0, '1, 'x, or 'z)",
+            )
+        })?;
+        if !self.initialized_registers.insert(target.clone()) {
+            return Err(Diagnostic::new(
+                stmt.target.span.clone(),
+                format!(
+                    "multiple initial assignments for register `{target}` cannot be represented by one register initial value"
+                ),
             ));
         }
-        self.diagnostics.push(Diagnostic::intentional_ignore(
-            item.span.clone(),
-            "literal initial value/event is intentionally omitted because the cell model has no initial event queue",
-        ));
+        let register = self
+            .cell
+            .registers
+            .iter_mut()
+            .find(|register| register.name == target)
+            .ok_or_else(|| {
+                Diagnostic::new(
+                    stmt.target.span.clone(),
+                    format!(
+                        "internal lowering invariant violated: initialized signal `{target}` is not a modeled register"
+                    ),
+                )
+            })?;
+        register.initial = initial;
         Ok(())
     }
 
@@ -1349,12 +1377,16 @@ fn scalar_expr_symbol(expr: &SvExpr) -> Option<String> {
     }
 }
 
-fn is_contracted_initial_literal(expr: &SvExpr) -> bool {
+fn contracted_initial_literal(expr: &SvExpr) -> Option<LogicValue> {
     match &expr.kind {
-        ExprKind::Constant(ConstKind::Zero | ConstKind::One | ConstKind::X | ConstKind::Z) => true,
-        ExprKind::Integer(value) => matches!(value.as_str(), "0" | "1"),
-        ExprKind::Group(inner) => is_contracted_initial_literal(inner),
-        _ => false,
+        ExprKind::Constant(ConstKind::Zero) => Some(LogicValue::Zero),
+        ExprKind::Constant(ConstKind::One) => Some(LogicValue::One),
+        ExprKind::Constant(ConstKind::X) => Some(LogicValue::X),
+        ExprKind::Constant(ConstKind::Z) => Some(LogicValue::Z),
+        ExprKind::Integer(value) if value == "0" => Some(LogicValue::Zero),
+        ExprKind::Integer(value) if value == "1" => Some(LogicValue::One),
+        ExprKind::Group(inner) => contracted_initial_literal(inner),
+        _ => None,
     }
 }
 
@@ -1438,24 +1470,113 @@ mod tests {
         lower_file(Path::new("snippet.sv"), input)
     }
 
+    fn registers(lowered: &LoweredModule) -> Vec<(&str, LogicValue)> {
+        lowered
+            .cell
+            .registers
+            .iter()
+            .map(|register| (register.name.as_str(), register.initial))
+            .collect()
+    }
+
     #[test]
-    fn literal_initial_is_a_visible_non_failing_omission_and_emits_no_assignment() {
+    fn literal_initial_is_register_metadata_and_emits_no_assignment_or_diagnostic() {
         let lowered =
             lower_snippet("module sample(output logic q);\n  initial q = ('0);\nendmodule\n")
                 .unwrap();
-        assert_eq!(lowered.cell.registers, vec!["q"]);
+        assert_eq!(registers(&lowered), vec![("q", LogicValue::Zero)]);
         assert!(assignment_strings(&lowered).is_empty());
-        assert_eq!(lowered.diagnostics.len(), 1);
-        assert_eq!(
-            lowered.diagnostics[0].kind,
-            DiagnosticKind::IntentionalIgnore
-        );
-        assert_eq!(lowered.diagnostics[0].span, Span::new("snippet.sv", 2, 3));
-        assert_eq!(
-            lowered.diagnostics[0].message,
-            "literal initial value/event is intentionally omitted because the cell model has no initial event queue"
-        );
+        assert!(lowered.diagnostics.is_empty());
         lowered.cell.validate().unwrap();
+    }
+
+    #[test]
+    fn initial_literals_normalize_to_typed_four_state_values() {
+        let lowered = lower_snippet(
+            "module sample(output logic i0, i1, u0, u1, ux, uz);\n\
+             initial i0 = 0;\n\
+             initial i1 = (((1)));\n\
+             initial u0 = '0;\n\
+             initial u1 = ('1);\n\
+             initial ux = ((('x)));\n\
+             initial uz = 'z;\n\
+             endmodule\n",
+        )
+        .unwrap();
+        assert_eq!(
+            registers(&lowered),
+            vec![
+                ("i0", LogicValue::Zero),
+                ("i1", LogicValue::One),
+                ("u0", LogicValue::Zero),
+                ("u1", LogicValue::One),
+                ("ux", LogicValue::X),
+                ("uz", LogicValue::Z),
+            ]
+        );
+        assert!(assignment_strings(&lowered).is_empty());
+        assert!(lowered.diagnostics.is_empty());
+    }
+
+    #[test]
+    fn procedural_state_without_an_initializer_defaults_to_unknown() {
+        let lowered = lower_snippet(
+            "module sample(input logic clk, d, output logic q);\n  always_ff @(posedge clk) q <= d;\nendmodule\n",
+        )
+        .unwrap();
+        assert_eq!(registers(&lowered), vec![("q", LogicValue::X)]);
+    }
+
+    #[test]
+    fn generate_selection_keeps_only_the_selected_initializer() {
+        let source = r#"module sample(output logic q);
+  generate
+    if (nodelay) begin
+      initial q = '1;
+    end else begin
+      initial q = '0;
+    end
+  endgenerate
+endmodule
+"#;
+        let delayful =
+            lower_file_with_generate_mode(Path::new("snippet.sv"), source, GenerateMode::Delayful)
+                .unwrap();
+        let nodelay =
+            lower_file_with_generate_mode(Path::new("snippet.sv"), source, GenerateMode::Nodelay)
+                .unwrap();
+
+        assert_eq!(registers(&delayful), vec![("q", LogicValue::Zero)]);
+        assert_eq!(registers(&nodelay), vec![("q", LogicValue::One)]);
+        assert!(delayful.diagnostics.is_empty());
+        assert!(nodelay.diagnostics.is_empty());
+    }
+
+    #[test]
+    fn duplicate_initializers_fail_at_the_second_target_in_analysis_and_lowering() {
+        let source =
+            "module sample(output logic q);\n  initial q = '0;\n  initial (q) = '1;\nendmodule\n";
+        let design = crate::parser::parse_file(Path::new("snippet.sv"), source).unwrap();
+        let analysis = crate::analyze::analyze_design_structural(&design);
+        let requirement = analysis
+            .requirements
+            .iter()
+            .find(|requirement| requirement.capability_id == "invalid.initial.duplicate")
+            .unwrap();
+        assert_eq!(requirement.span, Span::new("snippet.sv", 3, 11));
+        assert_eq!(
+            analysis.disposition,
+            crate::analyze::AnalysisDisposition::Failed
+        );
+        assert_eq!(
+            requirement.reason,
+            "multiple initial assignments for register `q` cannot be represented by one register initial value"
+        );
+
+        let mut lowerer = Lowerer::new(design.first_module().unwrap(), &analysis.modules[0]);
+        let error = lowerer.lower_module().unwrap_err();
+        assert_eq!(error.span, Span::new("snippet.sv", 3, 11));
+        assert_eq!(error.message, requirement.reason);
     }
 
     #[test]
@@ -1569,8 +1690,8 @@ mod tests {
             "module sample(input logic ena, d, output logic q);\n  always_latch if (ena) q <= d;\nendmodule\n",
         )
         .unwrap();
-        assert_eq!(blocking.cell.registers, vec!["q"]);
-        assert_eq!(nonblocking.cell.registers, vec!["q"]);
+        assert_eq!(registers(&blocking), vec![("q", LogicValue::X)]);
+        assert_eq!(registers(&nonblocking), vec![("q", LogicValue::X)]);
         assert_eq!(
             assignment_strings(&blocking),
             assignment_strings(&nonblocking)
@@ -1593,7 +1714,7 @@ mod tests {
             "module sample(input logic clk, ena, reset_n, d, r, output logic q);\n  always_ff @(posedge clk) if (ena) if (!reset_n) q <= d & r;\nendmodule\n",
         )
         .unwrap();
-        assert_eq!(lowered.cell.registers, vec!["q"]);
+        assert_eq!(registers(&lowered), vec![("q", LogicValue::X)]);
         assert_eq!(
             assignment_strings(&lowered),
             vec![
@@ -1776,7 +1897,14 @@ mod tests {
     #[test]
     fn lowers_register_latch_family_with_normalized_assignments() {
         let lowered = lower_path("../sv-cells/sm83/cells/dffr_cc_ee_reg_ie_bit.sv");
-        assert_eq!(lowered.cell.registers, vec!["ff1", "ff2", "q_n"]);
+        assert_eq!(
+            registers(&lowered),
+            vec![
+                ("ff1", LogicValue::Zero),
+                ("ff2", LogicValue::Zero),
+                ("q_n", LogicValue::Zero),
+            ]
+        );
         assert_eq!(
             assignment_strings(&lowered),
             vec![
@@ -1870,7 +1998,10 @@ mod tests {
     #[test]
     fn lowers_block_wrapped_latch_body() {
         let lowered = lower_path("../sv-cells/dmg_cpu_b/cells/nand_latch.sv");
-        assert_eq!(lowered.cell.registers, vec!["q", "q_n"]);
+        assert_eq!(
+            registers(&lowered),
+            vec![("q", LogicValue::X), ("q_n", LogicValue::X)]
+        );
         assert_eq!(
             assignment_strings(&lowered),
             vec![
@@ -1899,7 +2030,7 @@ mod tests {
     #[test]
     fn lowers_simple_latch_and_continuous_output() {
         let lowered = lower_path("../sv-cells/dmg_cpu_b/cells/dlatch.sv");
-        assert_eq!(lowered.cell.registers, vec!["q"]);
+        assert_eq!(registers(&lowered), vec![("q", LogicValue::Zero)]);
         assert_eq!(
             assignment_strings(&lowered),
             vec![
@@ -2257,7 +2388,7 @@ endmodule
              endmodule",
         )
         .unwrap();
-        assert_eq!(lowered.cell.registers, Vec::<String>::new());
+        assert!(lowered.cell.registers.is_empty());
         assert_eq!(
             assignment_strings(&lowered),
             vec![

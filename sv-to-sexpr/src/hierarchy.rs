@@ -872,7 +872,7 @@ fn collect_item_visible_names(items: &[Item], visible: &mut BTreeMap<String, Spa
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::ir::{CellItem, Expr as IrExpr};
+    use crate::ir::{CellItem, Expr as IrExpr, LogicValue, Register};
     use crate::lower::lower_design_with_catalog;
     use crate::parser::parse_file;
     use std::path::Path;
@@ -907,6 +907,42 @@ mod tests {
   assign #(T) co = local;
 endmodule
 "#;
+
+    #[test]
+    fn initialized_child_register_is_qualified_and_preserved() {
+        let child = parse(
+            "initialized_child.sv",
+            r#"module initialized_child(output logic q);
+  logic state;
+  initial state = '1;
+  assign q = state;
+endmodule
+"#,
+        );
+        let root = parse(
+            "root.sv",
+            r#"module root(output logic y);
+  initialized_child child(.q(y));
+endmodule
+"#,
+        );
+        let catalog = ModuleCatalog::from_designs(&[root.clone(), child]).unwrap();
+        let lowered = lower_design_with_catalog(&root, &catalog).unwrap();
+
+        assert_eq!(
+            lowered.cell.registers,
+            vec![Register {
+                name: "child__state".into(),
+                initial: LogicValue::One,
+            }]
+        );
+        assert_eq!(assignments(&lowered)[0].0, "y");
+        assert_eq!(
+            assignments(&lowered)[0].1,
+            &IrExpr::Atom("child__state".into())
+        );
+        assert!(lowered.diagnostics.is_empty());
+    }
 
     #[test]
     fn substitutes_named_positional_omitted_and_default_bindings_and_flattens_compound_inputs() {

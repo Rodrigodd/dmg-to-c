@@ -4,7 +4,7 @@
 
   (outputs q)
 
-  (registers q)
+  (registers (q 0))
 
   (assignments
 

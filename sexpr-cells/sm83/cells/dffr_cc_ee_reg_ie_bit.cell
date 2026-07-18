@@ -11,7 +11,7 @@
 
   (outputs q q_n)
 
-  (registers ff1 ff2 q_n)
+  (registers (ff1 0) (ff2 0) (q_n 0))
 
   (assignments
 

@@ -14,7 +14,11 @@ successful-topology:
   state-assignments=48
   retained-muxes=47
   direct-state-assignments=1
-  initial-intentional-ignores=42
+  explicit-register-initializers=42
+  initial-zero=42
+  initial-one=0
+  initial-x=6
+  initial-z=0
   delay-tuple-intentional-ignores=79
   specify-intentional-ignores=15
   modeled-state-delays=26
@@ -24,40 +28,40 @@ invariant-failures:
   register_mismatches=0
   state_target_order_mismatches=0
   wrong_retention_operands=0
-  initial_diagnostic_mismatches=0
+  initializer_metadata_mismatches=0
   delay_diagnostic_mismatches=0
   temp_dependency_or_collision_failures=0
   combinational_procedural_register_leaks=0
   nondeterministic_results=0
   absolute_path_leaks=0
 successful-stateful-files:
-  sv-cells/dmg_cpu_b/cells/dffr.sv | registers=[q] | state-targets=[q] | initial-ignores=1
-  sv-cells/dmg_cpu_b/cells/dffr_cc.sv | registers=[mux1,mux2] | state-targets=[mux1,mux2] | initial-ignores=2
-  sv-cells/dmg_cpu_b/cells/dffr_cc_q.sv | registers=[mux1,mux2] | state-targets=[mux1,mux2] | initial-ignores=2
-  sv-cells/dmg_cpu_b/cells/dffsr.sv | registers=[ff,q] | state-targets=[ff,q] | initial-ignores=2
-  sv-cells/dmg_cpu_b/cells/dlatch.sv | registers=[q] | state-targets=[q] | initial-ignores=1
-  sv-cells/dmg_cpu_b/cells/dlatch_ee.sv | registers=[q] | state-targets=[q] | initial-ignores=1
-  sv-cells/dmg_cpu_b/cells/dlatch_ee_q.sv | registers=[q] | state-targets=[q] | initial-ignores=1
-  sv-cells/dmg_cpu_b/cells/drlatch_ee.sv | registers=[q] | state-targets=[q] | initial-ignores=1
-  sv-cells/dmg_cpu_b/cells/nand_latch.sv | registers=[q,q_n] | state-targets=[q,q_n] | initial-ignores=0
-  sv-cells/dmg_cpu_b/cells/nor_latch.sv | registers=[q,q_n] | state-targets=[q,q_n] | initial-ignores=0
-  sv-cells/dmg_cpu_b/cells/pad_bidir_pu_latch.sv | registers=[ff] | state-targets=[ff] | initial-ignores=1
-  sv-cells/dmg_cpu_b/cells/tffnl.sv | registers=[ff,q] | state-targets=[q,ff] | initial-ignores=2
-  sv-cells/sm83/cells/dff_cc_ee_pch_d_reg_sp_bit.sv | registers=[ff1,ff2,q_n] | state-targets=[ff1,ff2,q_n] | initial-ignores=3
-  sv-cells/sm83/cells/dff_cc_ee_q_n_reg_wz_bit.sv | registers=[ff,q_n] | state-targets=[ff,q_n] | initial-ignores=2
-  sv-cells/sm83/cells/dff_cc_ee_q_x1_reg_bit.sv | registers=[ff,q] | state-targets=[ff,q] | initial-ignores=2
-  sv-cells/sm83/cells/dff_cc_ee_q_x2_reg_bit.sv | registers=[ff,q] | state-targets=[ff,q] | initial-ignores=2
-  sv-cells/sm83/cells/dff_cc_q.sv | registers=[ff,q] | state-targets=[ff,q] | initial-ignores=2
-  sv-cells/sm83/cells/dff_cc_q_alt.sv | registers=[ff,q] | state-targets=[ff,q] | initial-ignores=2
-  sv-cells/sm83/cells/dffn_ee_pch_d_alu_flag.sv | registers=[ff1,ff2,q_n] | state-targets=[ff1,ff2,q_n] | initial-ignores=3
-  sv-cells/sm83/cells/dffn_ee_q_alu_sign.sv | registers=[ff,q] | state-targets=[ff,q] | initial-ignores=2
-  sv-cells/sm83/cells/dffr_cc_ee_reg_ie_bit.sv | registers=[ff1,ff2,q_n] | state-targets=[ff1,ff2,q_n] | initial-ignores=3
-  sv-cells/sm83/cells/dffre_cc_q.sv | registers=[ff,q] | state-targets=[ff,q] | initial-ignores=2
-  sv-cells/sm83/cells/dffs_cc_ee_pch_d_reg_pc_bit.sv | registers=[ff1,ff2,q_n] | state-targets=[ff1,ff2,q_n] | initial-ignores=3
-  sv-cells/sm83/cells/dlatch_ee_irq.sv | registers=[q_n] | state-targets=[q_n] | initial-ignores=1
-  sv-cells/sm83/cells/dlatch_ee_q_n.sv | registers=[q_n] | state-targets=[q_n] | initial-ignores=1
-  sv-cells/sm83/cells/srlatch_r_n.sv | registers=[q] | state-targets=[q] | initial-ignores=0
-  sv-cells/sm83/cells/srlatch_r_n_alt.sv | registers=[q] | state-targets=[q] | initial-ignores=0
+  sv-cells/dmg_cpu_b/cells/dffr.sv | registers=[q=0] | state-targets=[q]
+  sv-cells/dmg_cpu_b/cells/dffr_cc.sv | registers=[mux1=0,mux2=0] | state-targets=[mux1,mux2]
+  sv-cells/dmg_cpu_b/cells/dffr_cc_q.sv | registers=[mux1=0,mux2=0] | state-targets=[mux1,mux2]
+  sv-cells/dmg_cpu_b/cells/dffsr.sv | registers=[ff=0,q=0] | state-targets=[ff,q]
+  sv-cells/dmg_cpu_b/cells/dlatch.sv | registers=[q=0] | state-targets=[q]
+  sv-cells/dmg_cpu_b/cells/dlatch_ee.sv | registers=[q=0] | state-targets=[q]
+  sv-cells/dmg_cpu_b/cells/dlatch_ee_q.sv | registers=[q=0] | state-targets=[q]
+  sv-cells/dmg_cpu_b/cells/drlatch_ee.sv | registers=[q=0] | state-targets=[q]
+  sv-cells/dmg_cpu_b/cells/nand_latch.sv | registers=[q=x,q_n=x] | state-targets=[q,q_n]
+  sv-cells/dmg_cpu_b/cells/nor_latch.sv | registers=[q=x,q_n=x] | state-targets=[q,q_n]
+  sv-cells/dmg_cpu_b/cells/pad_bidir_pu_latch.sv | registers=[ff=0] | state-targets=[ff]
+  sv-cells/dmg_cpu_b/cells/tffnl.sv | registers=[ff=0,q=0] | state-targets=[q,ff]
+  sv-cells/sm83/cells/dff_cc_ee_pch_d_reg_sp_bit.sv | registers=[ff1=0,ff2=0,q_n=0] | state-targets=[ff1,ff2,q_n]
+  sv-cells/sm83/cells/dff_cc_ee_q_n_reg_wz_bit.sv | registers=[ff=0,q_n=0] | state-targets=[ff,q_n]
+  sv-cells/sm83/cells/dff_cc_ee_q_x1_reg_bit.sv | registers=[ff=0,q=0] | state-targets=[ff,q]
+  sv-cells/sm83/cells/dff_cc_ee_q_x2_reg_bit.sv | registers=[ff=0,q=0] | state-targets=[ff,q]
+  sv-cells/sm83/cells/dff_cc_q.sv | registers=[ff=0,q=0] | state-targets=[ff,q]
+  sv-cells/sm83/cells/dff_cc_q_alt.sv | registers=[ff=0,q=0] | state-targets=[ff,q]
+  sv-cells/sm83/cells/dffn_ee_pch_d_alu_flag.sv | registers=[ff1=0,ff2=0,q_n=0] | state-targets=[ff1,ff2,q_n]
+  sv-cells/sm83/cells/dffn_ee_q_alu_sign.sv | registers=[ff=0,q=0] | state-targets=[ff,q]
+  sv-cells/sm83/cells/dffr_cc_ee_reg_ie_bit.sv | registers=[ff1=0,ff2=0,q_n=0] | state-targets=[ff1,ff2,q_n]
+  sv-cells/sm83/cells/dffre_cc_q.sv | registers=[ff=0,q=0] | state-targets=[ff,q]
+  sv-cells/sm83/cells/dffs_cc_ee_pch_d_reg_pc_bit.sv | registers=[ff1=0,ff2=0,q_n=0] | state-targets=[ff1,ff2,q_n]
+  sv-cells/sm83/cells/dlatch_ee_irq.sv | registers=[q_n=0] | state-targets=[q_n]
+  sv-cells/sm83/cells/dlatch_ee_q_n.sv | registers=[q_n=0] | state-targets=[q_n]
+  sv-cells/sm83/cells/srlatch_r_n.sv | registers=[q=x] | state-targets=[q]
+  sv-cells/sm83/cells/srlatch_r_n_alt.sv | registers=[q=x] | state-targets=[q]
 successful-flat-dff-dlatch-files:
   sv-cells/dmg_cpu_b/cells/dffr.sv
   sv-cells/dmg_cpu_b/cells/dffr_cc.sv

@@ -1,5 +1,4 @@
 diagnostics:
-  intentional-ignore | sv-cells/sm83/cells/dlatch_ee_irq.sv:17:2 | literal initial value/event is intentionally omitted because the cell model has no initial event queue
   intentional-ignore | sv-cells/sm83/cells/dlatch_ee_irq.sv:41:67 | delay tuple entry 2 is intentionally ignored because the cell model selects only entry 1
   intentional-ignore | sv-cells/sm83/cells/dlatch_ee_irq.sv:43:29 | delay tuple entry 2 is intentionally ignored because the cell model selects only entry 1
   intentional-ignore | sv-cells/sm83/cells/dlatch_ee_irq.sv:45:71 | delay tuple entry 2 is intentionally ignored because the cell model selects only entry 1

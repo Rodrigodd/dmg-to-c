@@ -1,8 +1,8 @@
 hierarchy corpus audit
 files=206
-mode=delayful analysis-supported=3 analysis-deferred=203 ordinary-files=[sv-cells/dmg_cpu_b/cells/full_add.sv,sv-cells/dmg_cpu_b/cells/half_add.sv] ordinary-instances=7 modules=dmg_and2:1,dmg_nand2:3,dmg_xor:3 bindings=named-L_y:7,positional:0 connections=named:21,positional:0,input:14,output:7,inout:0 lower-succeeded=206 lower-failed=0 warnings=0 intentional-ignores=1351
+mode=delayful analysis-supported=3 analysis-deferred=203 ordinary-files=[sv-cells/dmg_cpu_b/cells/full_add.sv,sv-cells/dmg_cpu_b/cells/half_add.sv] ordinary-instances=7 modules=dmg_and2:1,dmg_nand2:3,dmg_xor:3 bindings=named-L_y:7,positional:0 connections=named:21,positional:0,input:14,output:7,inout:0 lower-succeeded=206 lower-failed=0 warnings=0 intentional-ignores=1309
   lower-failures=[]
-mode=nodelay analysis-supported=3 analysis-deferred=203 ordinary-files=[sv-cells/dmg_cpu_b/cells/full_add.sv,sv-cells/dmg_cpu_b/cells/half_add.sv] ordinary-instances=7 modules=dmg_and2:1,dmg_nand2:3,dmg_xor:3 bindings=named-L_y:7,positional:0 connections=named:21,positional:0,input:14,output:7,inout:0 lower-succeeded=206 lower-failed=0 warnings=0 intentional-ignores=1341
+mode=nodelay analysis-supported=3 analysis-deferred=203 ordinary-files=[sv-cells/dmg_cpu_b/cells/full_add.sv,sv-cells/dmg_cpu_b/cells/half_add.sv] ordinary-instances=7 modules=dmg_and2:1,dmg_nand2:3,dmg_xor:3 bindings=named-L_y:7,positional:0 connections=named:21,positional:0,input:14,output:7,inout:0 lower-succeeded=206 lower-failed=0 warnings=0 intentional-ignores=1299
   lower-failures=[]
 half_add instances=[and2_cout_inst:dmg_and2:L_cout:y=cout,in1=a,in2=b,xor_sum_inst:dmg_xor:L_sum:y=sum,in1=a,in2=b] targets=[cout,sum] aliases=8
 full_add instances=[xor_sum_inst:dmg_xor:L_sum:y=sum,in1=axb,in2=cin,nand2_caxb_inst:dmg_nand2:120:y=caxb,in1=cin,in2=axb,nand2_cout_inst:dmg_nand2:L_cout:y=cout,in1=ab,in2=caxb,nand2_ab_inst:dmg_nand2:119:y=ab,in1=b,in2=a,xor_axb_inst:dmg_xor:296:y=axb,in1=a,in2=b] targets=[sum,caxb,cout,ab,axb] aliases=14

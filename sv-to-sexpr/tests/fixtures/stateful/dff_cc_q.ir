@@ -2,7 +2,7 @@ source: sv-cells/sm83/cells/dff_cc_q.sv
 cell: sm83_dff_cc_q
 inputs: [d, clk, clk_n]
 outputs: [q]
-registers: [ff, q]
+registers: [ff=0, q=0]
 assignments:
   0: t0
     value: op(and; atom(d), atom(clk_n))

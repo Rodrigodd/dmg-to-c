@@ -1,4 +1,4 @@
-analyze summary: modules=1 disposition=deferred requirements=7
+analyze summary: modules=1 disposition=deferred requirements=6
 module sm83_dlatch_ee_irq @sv-cells/sm83/cells/dlatch_ee_irq.sv:3:1
   inputs: d ena ena_n pch_n ena_q_n
   outputs: q q_n gated_q_n
@@ -86,7 +86,6 @@ module sm83_dlatch_ee_irq @sv-cells/sm83/cells/dlatch_ee_irq.sv:3:1
 requirements:
   driver.primitive-tristate | M6 | sv-cells/sm83/cells/dlatch_ee_irq.sv:22:2 | tri-state primitive and strength semantics are scheduled for Milestone 6
   driver.repeated | M6 | sv-cells/sm83/cells/dlatch_ee_irq.sv:17:10 | repeated source drivers are scheduled for Milestone 6
-  state.initial | M5 | sv-cells/sm83/cells/dlatch_ee_irq.sv:17:10 | literal initialization and modeled state are scheduled for Milestone 5
   state.procedural | M5 | sv-cells/sm83/cells/dlatch_ee_irq.sv:19:49 | stateful procedural lowering is scheduled for Milestone 5
   timing.alias | M7 | sv-cells/sm83/cells/dlatch_ee_irq.sv:29:3 | timing aliases are scheduled for Milestone 7
   timing.specify-path | M7 | sv-cells/sm83/cells/dlatch_ee_irq.sv:41:3 | specify paths are scheduled for Milestone 7

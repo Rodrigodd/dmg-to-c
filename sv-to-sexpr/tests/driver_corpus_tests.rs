@@ -1031,7 +1031,11 @@ fn audit_relevant_success(
         );
     }
 
-    let registers = cell.registers.iter().cloned().collect::<BTreeSet<_>>();
+    let registers = cell
+        .registers
+        .iter()
+        .map(|register| register.name.as_str())
+        .collect::<BTreeSet<_>>();
     let mut target_sources: BTreeMap<&str, Vec<&DriverSource>> = BTreeMap::new();
     for driver in source_drivers {
         target_sources

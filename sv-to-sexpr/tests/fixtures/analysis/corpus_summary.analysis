@@ -10,7 +10,6 @@ capabilities:
   driver.primitive-tristate | M6 | files=50
   driver.repeated | M6 | files=47
   driver.strength | M6 | files=15
-  state.initial | M5 | files=23
   state.procedural | M5 | files=27
   timing.alias | M7 | files=199
   timing.assignment-delay | M7 | files=39

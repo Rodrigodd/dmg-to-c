@@ -14,7 +14,7 @@ Each input file produces exactly one form:
   module_name
   (inputs input_port inout_port_if_read ...)
   (outputs output_port inout_port_if_driven ...)
-  (registers modeled_state_only ...)
+  (registers (modeled_state initial_value) ...)
   (assignments
     (target value-expression delay-expression)
     ...
@@ -32,7 +32,9 @@ and may nest recursively.
 
 `inputs` contains input ports plus inouts that are read. `outputs` contains
 output ports plus inouts that are driven. `registers` contains only modeled
-state, never a continuous, primitive, hierarchical, or keeper-driven net.
+state, never a continuous, primitive, hierarchical, or keeper-driven net. Each
+register entry is a `(name initial-value)` pair whose value is exactly one of
+the four atoms `0`, `1`, `x`, or `z`.
 
 ## Value operators
 
@@ -82,13 +84,16 @@ as an ordinary `(mux ... z ...)` value. Signal-valued and literal-valued drives
 use the same form.
 
 An `initial` target and a target with supported stateful procedural retention
-is listed in `registers`. Corpus initialization is accepted only when it assigns
-a contracted literal to a scalar target. The initial value/event is not
-serialized: the target describes logic/state topology, not the simulator's
-initial event queue. This omission is an explicit intentional-ignore diagnostic
-at the `initial` item. Later procedural next-state assignments remain separate
-and ordered. Blocking and non-blocking syntax does not change this
-representation; source-defined priority must be preserved.
+is listed in `registers`. A selected scalar `initial` assignment is accepted
+only when its value is `0`, `1`, `'0`, `'1`, `'x`, or `'z`, with arbitrary
+grouping. The value is normalized to the corresponding `0`, `1`, `x`, or `z`
+register atom and is metadata, never an ordinary assignment or diagnostic. A
+modeled register without a selected source initializer receives `x`. Multiple
+selected initializers for one register are an error at the second target
+because one register entry cannot represent multiple initial events. Later
+procedural next-state assignments remain separate and ordered. Blocking and
+non-blocking syntax does not change this representation; source-defined
+priority must be preserved.
 
 A keeper instance becomes a distinct zero-delay driver
 `(held_net (keeper) 0)`. It is not a register and is not merged with tri-state
@@ -224,14 +229,14 @@ assignment.
   from the model. It is printed/tracked separately and never masquerades as
   support or as a warning. Strict mode does not promote it.
 
-The only intentional ignores currently authorized are: supported literal
-initial values/events after they classify the target as state; delay tuple
-entries after the first; additional control-dependent specify paths after the
-first source-ordered path selected for each used scalar target; comments and
+The only intentional ignores currently authorized are: delay tuple entries
+after the first; additional control-dependent specify paths after the first
+source-ordered path selected for each used scalar target; comments and
 formatting; and directives/imports proven by analysis to affect neither
 elaborated values nor behavior (the corpus license/timescale and package imports
-whose referenced parameters are resolved). Strengths are preserved metadata,
-not intentional ignores. Unknown directives/import effects are errors.
+whose referenced parameters are resolved). Register initial values and
+strengths are preserved metadata, not intentional ignores. Unknown
+directives/import effects are errors.
 
 All diagnostic-capable commands accept `--strict`. Because current stage APIs
 return errors but do not yet produce warnings, accepting the option does not
@@ -252,7 +257,7 @@ contract before any newly discovered corpus category can be emitted.
 | `PortDecl`; `Direction::{Input, Output, Inout}` | Parsed M2; read/write port classification M3. Non-scalar port modifiers are errors. |
 | `ItemKind::Import(ImportDecl)` | Parsed M2. A resolved behavior-free corpus package import is intentional-ignore; unresolved names or side effects are errors in M3. |
 | `ItemKind::Decl(Decl)`; `DeclKind::{Logic, Tri, Wire, Parameter, Localparam, Specparam}` | Parsed M2; symbol/role analysis M3; parameter and timing aliases M3/M7. Scalar forms are supported; vector/array modifiers are errors. |
-| `ItemKind::Initial(AssignStmt)` | Literal scalar initialization classifies modeled state in M3/M5; its value/event is then an explicit intentional-ignore because no initial event is serialized. Other initial bodies are errors. |
+| `ItemKind::Initial(AssignStmt)` | A selected contracted scalar literal becomes the register's four-state initial metadata in M13 and emits no assignment. Duplicate selected initializers and other initial bodies are errors. |
 | `ItemKind::ProcAssign(AssignStmt)` | Blocking/nonblocking assignment in a supported procedural block is M5. At module scope or in an unsupported context it is an error. |
 | `ItemKind::AlwaysLatch(AlwaysLatch)` | Stateful condition/body analysis M3 and source-ordered next-state lowering M5. |
 | `ItemKind::Always(AlwaysBlock)`; `AlwaysKind::{Plain, Comb, Ff}` | Sensitivity/driver analysis M3; supported scalar procedural lowering M5. Ambiguous state or unsupported combinational procedures are errors. |
@@ -285,7 +290,7 @@ contract before any newly discovered corpus category can be emitted.
 | Corpus form/family | Contract classification |
 | --- | --- |
 | Simple gates, compound scalar logic, equality, and value ternaries | Deterministic flat SSA M4 using `t0`, `t1`, ... in dependency order. |
-| Latches, generated DFF/TFF variants, nested priority `if`, reset/enable logic | State analysis M3 and next-state lowering M5; initialization omission is the explicit intentional-ignore above. |
+| Latches, generated DFF/TFF variants, nested priority `if`, reset/enable logic | State analysis M3, next-state lowering M5, and exact four-state register initialization metadata M13; absent initialization is `x`. |
 | High-Z ternaries, direct `bufif*`, precharge/open-drain, and repeated drivers | Source-ordered driver lowering M6; high-Z ternaries normalize only to polarity-equivalent `bufif0`/`bufif1`. |
 | `(strong1, highz0)`, `(highz1, strong0)`, `(pull1, highz0)`, `(supply1, supply0)` | Exact strength-bearing driver forms M6, with no claim of strength-resolution simulation. |
 | One/two/three-entry tuples; timing aliases and paths; `tpd_elmore`, `tpd_z`; resistance factors including real factors | Selected-first symbolic timing M7. Later tuple entries are intentional-ignore and never summed. |
@@ -297,4 +302,5 @@ contract before any newly discovered corpus category can be emitted.
 | License/timescale directives, comments, and formatting | Intentional-ignore only after M1/M3 proves no elaboration/behavior effect. Unknown directives are errors. |
 | Curated package imports | Intentional-ignore only after referenced parameters resolve; unresolved import effects are errors. |
 | Corpus mirroring, filtering, overwrite/dry-run, formatter validation | Release CLI M12. |
+| Contracted scalar register initial values | Uniform `(name initial-value)` register metadata M13; duplicate selected initializers are errors. |
 | Vectors, arrays, interfaces, classes, assertions, generate loops, other third-party syntax | Global non-goal and blocked/unsupported; reject with a precise diagnostic. |

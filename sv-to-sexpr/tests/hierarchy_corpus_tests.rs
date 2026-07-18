@@ -147,8 +147,8 @@ fn configured_hierarchy_corpus_is_exact_resolved_and_fully_lowered() {
         assert_eq!(
             ignores,
             match mode {
-                GenerateMode::Delayful => 1351,
-                GenerateMode::Nodelay => 1341,
+                GenerateMode::Delayful => 1309,
+                GenerateMode::Nodelay => 1299,
             }
         );
         assert_eq!(lower_failures, LOWER_FAILURES);

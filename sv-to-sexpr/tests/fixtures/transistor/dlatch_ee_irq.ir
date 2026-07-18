@@ -14,7 +14,10 @@ Cell {
         "gated_q_n",
     ],
     registers: [
-        "q_n",
+        Register {
+            name: "q_n",
+            initial: Zero,
+        },
     ],
     items: [
         Assignment(

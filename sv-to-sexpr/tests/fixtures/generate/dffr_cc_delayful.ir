@@ -12,8 +12,14 @@ LoweredModule {
             "q_n",
         ],
         registers: [
-            "mux1",
-            "mux2",
+            Register {
+                name: "mux1",
+                initial: Zero,
+            },
+            Register {
+                name: "mux2",
+                initial: Zero,
+            },
         ],
         items: [
             Assignment(
@@ -1148,24 +1154,6 @@ LoweredModule {
         ),
     },
     diagnostics: [
-        Diagnostic {
-            kind: IntentionalIgnore,
-            span: Span {
-                path: "sv-cells/dmg_cpu_b/cells/dffr_cc.sv",
-                line: 50,
-                column: 4,
-            },
-            message: "literal initial value/event is intentionally omitted because the cell model has no initial event queue",
-        },
-        Diagnostic {
-            kind: IntentionalIgnore,
-            span: Span {
-                path: "sv-cells/dmg_cpu_b/cells/dffr_cc.sv",
-                line: 51,
-                column: 4,
-            },
-            message: "literal initial value/event is intentionally omitted because the cell model has no initial event queue",
-        },
         Diagnostic {
             kind: IntentionalIgnore,
             span: Span {

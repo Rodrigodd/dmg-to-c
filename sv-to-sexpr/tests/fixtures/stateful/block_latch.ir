@@ -2,7 +2,7 @@ source: sv-cells/dmg_cpu_b/cells/nand_latch.sv
 cell: dmg_nand_latch
 inputs: [s_n, r_n]
 outputs: [q, q_n]
-registers: [q, q_n]
+registers: [q=x, q_n=x]
 assignments:
   0: t0
     value: op(not; atom(s_n))

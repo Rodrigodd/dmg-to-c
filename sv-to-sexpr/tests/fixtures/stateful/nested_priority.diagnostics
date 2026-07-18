@@ -1,2 +1,1 @@
-diagnostics:
-  intentional-ignore | sv-to-sexpr/tests/fixtures/stateful/nested_priority.sv:5:5 | literal initial value/event is intentionally omitted because the cell model has no initial event queue
+diagnostics: []

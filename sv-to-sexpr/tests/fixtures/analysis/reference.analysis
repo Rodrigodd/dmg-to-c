@@ -1,4 +1,4 @@
-analyze summary: modules=1 disposition=deferred requirements=8
+analyze summary: modules=1 disposition=deferred requirements=7
 module sm83_dffs_cc_ee_pch_d_reg_pc_bit @sv-cells/sm83/cells/dffs_cc_ee_pch_d_reg_pc_bit.sv:3:1
   inputs: clk clk_n ena ena_n s_n pch_n d
   outputs: q q_n d
@@ -85,7 +85,6 @@ module sm83_dffs_cc_ee_pch_d_reg_pc_bit @sv-cells/sm83/cells/dffs_cc_ee_pch_d_re
 requirements:
   driver.primitive-tristate | M6 | sv-cells/sm83/cells/dffs_cc_ee_pch_d_reg_pc_bit.sv:28:2 | tri-state primitive and strength semantics are scheduled for Milestone 6
   driver.repeated | M6 | sv-cells/sm83/cells/dffs_cc_ee_pch_d_reg_pc_bit.sv:17:10 | repeated source drivers are scheduled for Milestone 6
-  state.initial | M5 | sv-cells/sm83/cells/dffs_cc_ee_pch_d_reg_pc_bit.sv:17:10 | literal initialization and modeled state are scheduled for Milestone 5
   state.procedural | M5 | sv-cells/sm83/cells/dffs_cc_ee_pch_d_reg_pc_bit.sv:21:74 | stateful procedural lowering is scheduled for Milestone 5
   timing.alias | M7 | sv-cells/sm83/cells/dffs_cc_ee_pch_d_reg_pc_bit.sv:27:2 | timing aliases are scheduled for Milestone 7
   timing.primitive-delay | M7 | sv-cells/sm83/cells/dffs_cc_ee_pch_d_reg_pc_bit.sv:28:2 | symbolic primitive delays are scheduled for Milestone 7

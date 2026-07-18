@@ -54,7 +54,7 @@ Each converted file contains one cell form:
   module_name
   (inputs ...)
   (outputs ...)
-  (registers ...)
+  (registers (register initial-value) ...)
   (assignments
     (target expression delay)
     ...
@@ -67,7 +67,10 @@ The following rules are part of the contract and must be tested:
 - `inputs` contains input ports and inout ports read by the cell.
 - `outputs` contains output ports and inout ports driven by the cell.
 - `registers` contains only modeled state, such as variables initialized by
-  `initial` or assigned by stateful procedural logic. Continuously driven and
+  `initial` or assigned by stateful procedural logic. Each entry is a
+  `(name initial-value)` pair whose value is one of `0`, `1`, `x`, or `z`.
+  Selected scalar literal initializers supply that metadata; a modeled register
+  without a selected initializer uses `x`. Continuously driven and
   primitive-driven internal nets are not registers.
 - Each source driver becomes an explicit assignment or a documented normalized
   equivalent. Repeated drivers remain distinct and in source order unless the
@@ -676,6 +679,55 @@ Acceptance conditions:
 - Unsupported input outside the curated subset fails with a precise diagnostic
   rather than producing partial output.
 
+### Milestone 13: Preserve Register Initial Values
+
+Status: complete as of 2026-07-18. Register state is represented by typed,
+source-ordered `(name initial-value)` pairs. Selected scalar contracted literal
+initializers are preserved as four-state metadata instead of intentional
+ignores, while modeled registers without a selected initializer explicitly use
+`x`. All 206 checked cells and their reviewed fixtures have been regenerated;
+strict delayful and nodelay lowering now report 1,309 and 1,299 intentional
+ignores respectively, with zero warnings or failures.
+
+Expected to be working after this milestone:
+
+- Typed IR register entries preserve exact `0`, `1`, `x`, or `z` initial
+  metadata independently from next-state assignments.
+- Integer `0`/`1`, unbased `'0`/`'1`/`'x`/`'z`, and arbitrarily grouped forms
+  normalize to the corresponding target atom.
+- A modeled register without a selected source initializer serializes with
+  initial value `x`.
+- Generate selection and hierarchy qualification preserve only the selected,
+  correctly qualified register metadata.
+- Multiple selected initializers for one register fail at the second target
+  rather than being merged or ordered as simulator events.
+
+Not expected to do:
+
+- Model an initial event queue, scheduling, races, or arbitrary initial block
+  bodies.
+- Accept non-scalar targets or non-contracted initializer expressions.
+
+Acceptance conditions:
+
+- `Cell::registers` uses an explicit register type with a typed four-state
+  initial value, validates unique nonempty names, and serializes every nonempty
+  list uniformly as `(registers (name value) ...)`.
+- Focused tests cover all six accepted source literal spellings, grouping,
+  implicit `x`, selected generate alternatives, qualified child state, and an
+  exact duplicate-initializer diagnostic at the second target.
+- Valid selected initializers emit neither assignments nor diagnostics and are
+  removed from the authorized intentional-ignore categories.
+- The configured corpus contains exactly 27 register-bearing cells and 48
+  registers: 42 initialized to `0`, 6 initialized to `x`, and none initialized
+  to `1` or `z`. The latter two values remain covered by focused tests.
+- Assignment totals remain unchanged at 1,958 delayful and 1,955 nodelay.
+- Strict delayful and nodelay lowering process all 206 files with zero warnings,
+  zero failures, and exactly 1,309 and 1,299 intentional ignores.
+- All 206 mirrored checked cells are formatter-canonical and byte-identical to
+  repeated strict conversion; the checked reference remains equal to its
+  reviewed timing fixture.
+
 ## Required Test Layout
 
 Tests may remain next to small units, but corpus and golden coverage should be
@@ -697,11 +749,12 @@ sv-to-sexpr/tests/
 
 ## Definition of Done
 
-The project is done only when Milestone 12 is accepted. In particular:
+The project is done only when Milestone 13 is accepted. In particular:
 
 - All 206 files produce deterministic, structurally valid, manually reviewed
   fixture output for every supported construct family.
-- Register lists contain state only.
+- Register lists contain state only and preserve exact four-state initial
+  metadata, using `x` when no selected initializer exists.
 - Generate branches are not combined accidentally.
 - Tri-state drivers never encode high-Z as an ordinary mux value unless that is
   explicitly part of the DSL contract.

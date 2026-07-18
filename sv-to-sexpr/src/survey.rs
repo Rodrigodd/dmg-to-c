@@ -867,7 +867,7 @@ mod check_report_tests {
     }
 
     #[test]
-    fn lower_check_keeps_successful_initial_omissions_once_and_non_failing() {
+    fn lower_check_captures_successful_initial_values_without_diagnostics() {
         let directory = temporary_directory("lower-success-diagnostics");
         std::fs::write(
             directory.join("a.sv"),
@@ -885,15 +885,13 @@ mod check_report_tests {
 
         assert_eq!(report.processed, 2);
         assert_eq!(report.warned(), 0);
-        assert_eq!(report.intentional_ignores(), 2);
+        assert_eq!(report.intentional_ignores(), 0);
         assert_eq!(report.failed(), 0);
         assert!(!report.fails(DiagnosticPolicy::new(false)));
         assert!(!report.fails(DiagnosticPolicy::new(true)));
-        assert_eq!(report.diagnostics().entries().len(), 2);
-        assert_eq!(report.diagnostics().entries()[0].span.line, 2);
-        assert_eq!(report.diagnostics().entries()[1].span.line, 3);
+        assert!(report.diagnostics().entries().is_empty());
         let rendered = report.render();
-        assert_eq!(rendered.matches("intentional-ignore:").count(), 2);
+        assert_eq!(rendered.matches("intentional-ignore:").count(), 0);
         assert_eq!(rendered, report.render());
     }
 

@@ -1,4 +1,4 @@
-use crate::ir::{Assignment, Cell, CellItem, Expr};
+use crate::ir::{Assignment, Cell, CellItem, Expr, Register};
 use std::fmt::Write as _;
 
 pub fn render_cell(cell: &Cell) -> String {
@@ -15,7 +15,7 @@ fn render_cell_source(cell: &Cell) -> String {
     out.push('\n');
     render_inline_section(&mut out, "outputs", &cell.outputs);
     out.push('\n');
-    render_inline_section(&mut out, "registers", &cell.registers);
+    render_register_section(&mut out, &cell.registers);
     out.push('\n');
     writeln!(&mut out, "  (assignments").unwrap();
     writeln!(&mut out).unwrap();
@@ -45,6 +45,19 @@ fn render_list_section(out: &mut String, label: &str, items: &[String]) {
 
 fn render_inline_section(out: &mut String, label: &str, items: &[String]) {
     writeln!(out, "  ({} {})", label, items.join(" ")).unwrap();
+}
+
+fn render_register_section(out: &mut String, registers: &[Register]) {
+    if registers.is_empty() {
+        writeln!(out, "  (registers)").unwrap();
+        return;
+    }
+    let entries = registers
+        .iter()
+        .map(|register| format!("({} {})", register.name, register.initial.as_str()))
+        .collect::<Vec<_>>()
+        .join(" ");
+    writeln!(out, "  (registers {entries})").unwrap();
 }
 
 fn render_assignment(out: &mut String, assignment: &Assignment) {
@@ -80,7 +93,7 @@ pub fn render_expr(expr: &Expr) -> String {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::ir::{TimingOperator, ValueOperator};
+    use crate::ir::{LogicValue, Register, TimingOperator, ValueOperator};
 
     #[test]
     fn representative_value_and_nested_delay_forms_serialize_canonically() {
@@ -114,5 +127,79 @@ mod tests {
         assert_eq!(first, second);
         assert_eq!(sexpr_fmt::format_source_default(&first).unwrap(), first);
         assert!(first.contains("(y (and a b) (+ (elmore (wire L_y) (pmos 5)) T_extra))"));
+    }
+
+    #[test]
+    fn registers_serialize_as_canonical_typed_name_value_pairs() {
+        let cell = Cell {
+            name: "register_sample".into(),
+            inputs: Vec::new(),
+            outputs: Vec::new(),
+            registers: vec![
+                Register {
+                    name: "zero".into(),
+                    initial: LogicValue::Zero,
+                },
+                Register {
+                    name: "one".into(),
+                    initial: LogicValue::One,
+                },
+                Register {
+                    name: "unknown".into(),
+                    initial: LogicValue::X,
+                },
+                Register {
+                    name: "high_z".into(),
+                    initial: LogicValue::Z,
+                },
+            ],
+            items: Vec::new(),
+        };
+
+        let rendered = render_cell(&cell);
+        assert!(rendered.contains(
+            "(registers\n    (zero 0)\n    (one 1)\n    (unknown x)\n    (high_z z)\n  )"
+        ));
+        assert_eq!(
+            sexpr_fmt::format_source_default(&rendered).unwrap(),
+            rendered
+        );
+        assert_eq!(render_cell(&cell), rendered);
+
+        let pair = Cell {
+            name: "pair".into(),
+            inputs: Vec::new(),
+            outputs: Vec::new(),
+            registers: vec![
+                Register {
+                    name: "ff".into(),
+                    initial: LogicValue::Zero,
+                },
+                Register {
+                    name: "q".into(),
+                    initial: LogicValue::X,
+                },
+            ],
+            items: Vec::new(),
+        };
+        assert!(render_cell(&pair).contains("(registers (ff 0) (q x))"));
+    }
+
+    #[test]
+    fn empty_register_section_stays_canonical() {
+        let cell = Cell {
+            name: "empty_register_sample".into(),
+            inputs: Vec::new(),
+            outputs: Vec::new(),
+            registers: Vec::new(),
+            items: Vec::new(),
+        };
+
+        let rendered = render_cell(&cell);
+        assert!(rendered.contains("(registers)"));
+        assert_eq!(
+            sexpr_fmt::format_source_default(&rendered).unwrap(),
+            rendered
+        );
     }
 }

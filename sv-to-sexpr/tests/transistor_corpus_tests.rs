@@ -260,7 +260,14 @@ fn audit_mode(corpus: &analysis_support::CorpusAnalysis, mode: GenerateMode) -> 
                 DriverSource::Primitive { name } if name == &call.name
             ));
             assert_eq!(emitted.target, driver.target, "{path}");
-            assert!(!lowered.cell.registers.contains(&emitted.target), "{path}");
+            assert!(
+                !lowered
+                    .cell
+                    .registers
+                    .iter()
+                    .any(|register| register.name == emitted.target),
+                "{path}"
+            );
 
             let source = call.args[1].as_ref().unwrap();
             let gate = call.args[2].as_ref().unwrap();
@@ -335,8 +342,8 @@ fn assert_exact_mode(totals: &ModeTotals, mode: GenerateMode) {
     assert_eq!(
         totals.ignores,
         match mode {
-            GenerateMode::Delayful => 1351,
-            GenerateMode::Nodelay => 1341,
+            GenerateMode::Delayful => 1309,
+            GenerateMode::Nodelay => 1299,
         }
     );
     assert_eq!(

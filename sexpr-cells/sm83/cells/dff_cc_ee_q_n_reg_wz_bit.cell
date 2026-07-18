@@ -10,7 +10,7 @@
 
   (outputs q_n)
 
-  (registers ff q_n)
+  (registers (ff 0) (q_n 0))
 
   (assignments
 

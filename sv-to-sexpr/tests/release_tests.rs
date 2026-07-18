@@ -85,7 +85,7 @@ fn strict_release_conversion_is_complete_canonical_and_byte_deterministic() {
     assert_eq!(skipped.selected, 206);
     assert_eq!(skipped.skipped, 206);
     assert_eq!(skipped.warned, 0);
-    assert_eq!(skipped.intentional_ignored, 1_351);
+    assert_eq!(skipped.intentional_ignored, 1_309);
     assert_eq!(skipped.written, 0);
     assert_eq!(skipped.would_write, 0);
     assert_eq!(skipped.failed, 0);
@@ -107,7 +107,7 @@ fn assert_release_write_report(report: &sv_to_sexpr::convert::ConvertReport) {
     assert_eq!(report.selected, 206);
     assert_eq!(report.skipped, 0);
     assert_eq!(report.warned, 0);
-    assert_eq!(report.intentional_ignored, 1_351);
+    assert_eq!(report.intentional_ignored, 1_309);
     assert_eq!(report.written, 206);
     assert_eq!(report.would_write, 0);
     assert_eq!(report.failed, 0);

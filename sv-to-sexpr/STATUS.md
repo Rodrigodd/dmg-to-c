@@ -7,12 +7,14 @@ a milestone acceptance condition changes or is completed.
 
 Last audited on 2026-07-18:
 
-- `cargo test` passes 136 unit tests and 70 integration/corpus tests; the sibling
+- `cargo test` passes 145 unit tests and 70 integration/corpus tests; the sibling
   formatter passes 7 unit and 4 integration tests.
 - Lexing succeeds for all 206 curated files.
 - Parsing succeeds for all 206 curated files.
 - `survey sv-cells` deterministically inventories 63,240 tokens and 138 typed
-  capabilities: 128 deferred, 10 intentional ignores, and zero unsupported.
+  capabilities: 1 supported, 128 deferred, 9 intentional ignores, and zero
+  unsupported. Contracted scalar initial events are the supported Milestone 13
+  capability rather than an intentional ignore.
 - Configured catalog-aware semantic analysis succeeds for all 206 files in both
   generate modes and reports 3 supported, 203 deferred, zero warned, and zero
   failed. It selects exactly one `nodelay` branch before analysis, resolves
@@ -24,13 +26,15 @@ Last audited on 2026-07-18:
   deterministic, structurally valid, and contains only flat contracted value
   expressions. The default delayful corpus audit covers 1,958 assignments,
   including 1,168 generated temporaries and 721 modeled nonzero delays; nodelay
-  contains 1,955 assignments and the same 1,168 temporaries.
-- Default delayful lowering reports 1,351 visible intentional ignores: 42
-  literal initial events, 1,260 delay tuple entries after the first, and 49
-  additional control-dependent specify paths after the selected first path for
-  each used target. Nodelay reports 1,341. They remain non-failing under
-  `--strict`; initial events classify their targets as modeled registers
-  without serializing an initial event queue. Both configured modes report zero
+  contains 1,955 assignments and the same 1,168 temporaries. Exactly 27 cells
+  contain 48 modeled registers: 42 with explicit initial value `0` and 6 with
+  implicit initial value `x`.
+- Default delayful lowering reports 1,309 visible intentional ignores: 1,260
+  delay tuple entries after the first and 49 additional control-dependent
+  specify paths after the selected first path for each used target. Nodelay
+  reports 1,299. They remain non-failing under `--strict`. Valid selected
+  initializers are typed register metadata, emit no assignment or diagnostic,
+  and are no longer an ignore category. Both configured modes report zero
   warnings and zero failures under strict policy.
 - No curated lowering failure remains. The exact transistor audit accounts for
   10 files and 25 direct value drivers: 17 `nmos`, 7 `pmos`, and 1 `rnmos`.
@@ -140,6 +144,14 @@ Last audited on 2026-07-18:
   diagnostics with no preflight partial writes, and exact reference equality.
   The authoritative `sexpr-cells` tree contains all 206 generated cells; strict
   delayful and nodelay corpus gates have zero warnings and zero failures.
+- Milestone 13: complete. Typed `LogicValue` and `Register` IR entries preserve
+  selected scalar literal initialization as uniform `(name value)` register
+  metadata, default uninitialized modeled state to `x`, survive configured
+  generate selection and hierarchy qualification, and reject duplicate selected
+  initializers at the second target. Focused tests cover all contracted values;
+  the exact corpus audit proves 42 zero-initialized and 6 unknown-initialized
+  registers, unchanged assignment totals, no initializer diagnostics, canonical
+  regenerated outputs, and strict ignore totals of 1,309/1,299.
 
 ## Review Policy
 

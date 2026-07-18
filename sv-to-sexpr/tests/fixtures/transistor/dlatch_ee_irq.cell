@@ -10,7 +10,7 @@
 
   (outputs q q_n gated_q_n)
 
-  (registers q_n)
+  (registers (q_n 0))
 
   (assignments
 
