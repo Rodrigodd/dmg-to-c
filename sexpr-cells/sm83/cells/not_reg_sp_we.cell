@@ -1,0 +1,13 @@
+(cell
+  sm83_not_reg_sp_we
+  (inputs in)
+
+  (outputs y)
+
+  (registers)
+
+  (assignments
+
+    (y (not in) (elmore (wire L_y) (pmos 14)))
+  )
+)

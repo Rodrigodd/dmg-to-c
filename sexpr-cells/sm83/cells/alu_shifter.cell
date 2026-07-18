@@ -1,0 +1,172 @@
+(cell
+  sm83_alu_shifter
+  (inputs
+    ena
+    l
+    r
+    rl
+    rr
+    rlc
+    rrc
+    sra
+    swap
+    c
+    d0
+    d1
+    d2
+    d3
+    d4
+    d5
+    d6
+    d7
+  )
+
+  (outputs
+    y0
+    y1
+    y2
+    y3
+    y4
+    y5
+    y6
+    y7
+  )
+
+  (registers)
+
+  (assignments
+
+    (t0 (and c rl) 0)
+    (t1 (and d4 swap) 0)
+    (t2 (and d1 r) 0)
+    (t3 (and d7 rlc) 0)
+    (t4
+      (or
+        t0
+        t1
+        t2
+        t3
+      )
+      0
+    )
+    (t5 (and ena t4) 0)
+    (y0
+      (bufif1-strength
+        0
+        t5
+        highz1
+        strong0
+      )
+      (elmore (wire L_y0) (+ (nmos 6) (* (nmos 11) 2)))
+    )
+    (t6 (and d5 swap) 0)
+    (t7 (and d2 r) 0)
+    (t8 (and d0 l) 0)
+    (t9 (or t6 t7 t8) 0)
+    (t10 (and ena t9) 0)
+    (y1
+      (bufif1-strength
+        0
+        t10
+        highz1
+        strong0
+      )
+      (elmore (wire L_y1) (+ (nmos 6) (* (nmos 11) 2)))
+    )
+    (t11 (and d6 swap) 0)
+    (t12 (and d3 r) 0)
+    (t13 (and d1 l) 0)
+    (t14 (or t11 t12 t13) 0)
+    (t15 (and ena t14) 0)
+    (y2
+      (bufif1-strength
+        0
+        t15
+        highz1
+        strong0
+      )
+      (elmore (wire L_y2) (+ (nmos 6) (* (nmos 11) 2)))
+    )
+    (t16 (and d7 swap) 0)
+    (t17 (and d4 r) 0)
+    (t18 (and d2 l) 0)
+    (t19 (or t16 t17 t18) 0)
+    (t20 (and ena t19) 0)
+    (y3
+      (bufif1-strength
+        0
+        t20
+        highz1
+        strong0
+      )
+      (elmore (wire L_y3) (+ (nmos 6) (* (nmos 11) 2)))
+    )
+    (t21 (and d5 r) 0)
+    (t22 (and d0 swap) 0)
+    (t23 (and d3 l) 0)
+    (t24 (or t21 t22 t23) 0)
+    (t25 (and ena t24) 0)
+    (y4
+      (bufif1-strength
+        0
+        t25
+        highz1
+        strong0
+      )
+      (elmore (wire L_y4) (+ (nmos 8) (* (nmos 11) 2)))
+    )
+    (t26 (and d1 swap) 0)
+    (t27 (and d6 r) 0)
+    (t28 (and d4 l) 0)
+    (t29 (or t26 t27 t28) 0)
+    (t30 (and ena t29) 0)
+    (y5
+      (bufif1-strength
+        0
+        t30
+        highz1
+        strong0
+      )
+      (elmore (wire L_y5) (+ (nmos 6) (* (nmos 11) 2)))
+    )
+    (t31 (and d2 swap) 0)
+    (t32 (and d5 l) 0)
+    (t33 (and d7 r) 0)
+    (t34 (or t31 t32 t33) 0)
+    (t35 (and ena t34) 0)
+    (y6
+      (bufif1-strength
+        0
+        t35
+        highz1
+        strong0
+      )
+      (elmore (wire L_y6) (+ (nmos 6) (* (nmos 11) 2)))
+    )
+    (t36 (and c rr) 0)
+    (t37 (and d7 sra) 0)
+    (t38 (and d0 rrc) 0)
+    (t39 (and d3 swap) 0)
+    (t40 (and d6 l) 0)
+    (t41
+      (or
+        t36
+        t37
+        t38
+        t39
+        t40
+      )
+      0
+    )
+    (t42 (and ena t41) 0)
+    (y7
+      (bufif1-strength
+        0
+        t42
+        highz1
+        strong0
+      )
+      (elmore (wire L_y7) (+ (nmos 6) (* (nmos 11) 2)))
+    )
+  )
+)

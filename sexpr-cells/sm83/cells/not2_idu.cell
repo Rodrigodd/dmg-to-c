@@ -1,0 +1,14 @@
+(cell
+  sm83_not2_idu
+  (inputs a_in b_in)
+
+  (outputs a_y b_y)
+
+  (registers)
+
+  (assignments
+
+    (a_y (not a_in) (elmore (wire L_a_y) (pmos 12)))
+    (b_y (not b_in) (elmore (wire L_b_y) (pmos 12)))
+  )
+)

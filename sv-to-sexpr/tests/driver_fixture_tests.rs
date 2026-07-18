@@ -21,8 +21,7 @@ struct FixtureCase {
     source_targets: &'static [&'static str],
     temporary_indices: &'static [usize],
     expected_values: &'static [(&'static str, &'static str)],
-    expected_delay_ignores: usize,
-    expected_warnings: usize,
+    expected_intentional_ignores: usize,
 }
 
 const CASES: &[FixtureCase] = &[
@@ -38,8 +37,7 @@ const CASES: &[FixtureCase] = &[
             ("t1", "(not t0)"),
             ("y", "(bufif0 t1 ena_n)"),
         ],
-        expected_delay_ignores: 3,
-        expected_warnings: 1,
+        expected_intentional_ignores: 4,
     },
     FixtureCase {
         name: "open_drain",
@@ -52,8 +50,7 @@ const CASES: &[FixtureCase] = &[
             ("t0", "(and in1 in2)"),
             ("y", "(bufif1-strength 0 t0 highz1 strong0)"),
         ],
-        expected_delay_ignores: 2,
-        expected_warnings: 0,
+        expected_intentional_ignores: 2,
     },
     FixtureCase {
         name: "precharge",
@@ -63,8 +60,7 @@ const CASES: &[FixtureCase] = &[
         source_targets: &["y"],
         temporary_indices: &[],
         expected_values: &[("y", "(bufif0-strength 1 pch_n strong1 highz0)")],
-        expected_delay_ignores: 2,
-        expected_warnings: 0,
+        expected_intentional_ignores: 2,
     },
     FixtureCase {
         name: "pad_bidir_pu",
@@ -79,8 +75,7 @@ const CASES: &[FixtureCase] = &[
             ("pad", "(bufif0-strength 1 ena_n_pu pull1 highz0)"),
             ("i_n", "(not pad)"),
         ],
-        expected_delay_ignores: 4,
-        expected_warnings: 0,
+        expected_intentional_ignores: 4,
     },
     FixtureCase {
         name: "repeated_bus",
@@ -118,8 +113,7 @@ const CASES: &[FixtureCase] = &[
             ("t15", "(or t13 t14)"),
             ("y6", "(bufif1-strength 0 t15 highz1 strong0)"),
         ],
-        expected_delay_ignores: 16,
-        expected_warnings: 0,
+        expected_intentional_ignores: 16,
     },
     FixtureCase {
         name: "supply_tie",
@@ -132,8 +126,7 @@ const CASES: &[FixtureCase] = &[
             ("gnd", "(drive-strength 0 supply1 supply0)"),
             ("vdd", "(drive-strength 1 supply1 supply0)"),
         ],
-        expected_delay_ignores: 0,
-        expected_warnings: 0,
+        expected_intentional_ignores: 0,
     },
     FixtureCase {
         name: "direct_signal_bufif",
@@ -148,8 +141,7 @@ const CASES: &[FixtureCase] = &[
             ("t1", "(and ena2 t0)"),
             ("y2", "(bufif0-strength in0 t1 strong1 highz0)"),
         ],
-        expected_delay_ignores: 0,
-        expected_warnings: 0,
+        expected_intentional_ignores: 0,
     },
 ];
 
@@ -192,8 +184,8 @@ fn driver_goldens_are_typed_flat_deterministic_and_source_complete() {
                 .iter()
                 .filter(|diagnostic| diagnostic.kind == DiagnosticKind::IntentionalIgnore)
                 .count(),
-            case.expected_delay_ignores,
-            "delay tuple ignore count changed in {}",
+            case.expected_intentional_ignores,
+            "intentional-ignore count changed in {}",
             case.source
         );
         assert_eq!(
@@ -202,8 +194,8 @@ fn driver_goldens_are_typed_flat_deterministic_and_source_complete() {
                 .iter()
                 .filter(|diagnostic| diagnostic.kind == DiagnosticKind::Warning)
                 .count(),
-            case.expected_warnings,
-            "specify warning count changed in {}",
+            0,
+            "unexpected warning in {}",
             case.source
         );
         for diagnostic in &first.diagnostics {
@@ -213,12 +205,11 @@ fn driver_goldens_are_typed_flat_deterministic_and_source_complete() {
                         == "delay tuple entry 2 is intentionally ignored because the cell model selects only entry 1"
                         || diagnostic.message
                             == "delay tuple entry 3 is intentionally ignored because the cell model selects only entry 1"
+                        || diagnostic
+                            .message
+                            .starts_with("additional control-dependent specify path for target `")
                 ),
-                DiagnosticKind::Warning => assert!(
-                    diagnostic
-                        .message
-                        .starts_with("multiple control-dependent specify paths target `")
-                ),
+                DiagnosticKind::Warning => panic!("unexpected lowering warning diagnostic"),
                 DiagnosticKind::Error => panic!("unexpected lowering error diagnostic"),
             }
         }

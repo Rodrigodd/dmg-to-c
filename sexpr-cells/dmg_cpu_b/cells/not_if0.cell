@@ -1,0 +1,14 @@
+(cell
+  dmg_not_if0
+  (inputs in ena_n)
+
+  (outputs y)
+
+  (registers)
+
+  (assignments
+
+    (t0 (not in) 0)
+    (y (bufif0 t0 ena_n) (elmore (wire L_y) (* (pmos W_y_p) 2)))
+  )
+)

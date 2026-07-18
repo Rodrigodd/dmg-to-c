@@ -5,9 +5,10 @@ a milestone acceptance condition changes or is completed.
 
 ## Verified Baseline
 
-Last audited on 2026-07-12:
+Last audited on 2026-07-18:
 
-- `cargo test` passes 129 unit tests and 58 integration/corpus tests.
+- `cargo test` passes 136 unit tests and 70 integration/corpus tests; the sibling
+  formatter passes 7 unit and 4 integration tests.
 - Lexing succeeds for all 206 curated files.
 - Parsing succeeds for all 206 curated files.
 - `survey sv-cells` deterministically inventories 63,240 tokens and 138 typed
@@ -24,34 +25,33 @@ Last audited on 2026-07-12:
   expressions. The default delayful corpus audit covers 1,958 assignments,
   including 1,168 generated temporaries and 721 modeled nonzero delays; nodelay
   contains 1,955 assignments and the same 1,168 temporaries.
-- Default delayful lowering reports 1,302 visible intentional ignores: 42
-  literal initial events and 1,260 delay tuple entries after the first. Nodelay
-  reports 1,292. They remain non-failing under `--strict`; initial events
-  classify their targets as modeled registers without serializing an initial
-  event queue.
-- Target-only selection among multiple control-dependent specify paths emits
-  49 documented warnings in the configured delayful corpus. Ordinary lowering
-  succeeds, while `--strict` promotes those warnings to failures.
+- Default delayful lowering reports 1,351 visible intentional ignores: 42
+  literal initial events, 1,260 delay tuple entries after the first, and 49
+  additional control-dependent specify paths after the selected first path for
+  each used target. Nodelay reports 1,341. They remain non-failing under
+  `--strict`; initial events classify their targets as modeled registers
+  without serializing an initial event queue. Both configured modes report zero
+  warnings and zero failures under strict policy.
 - No curated lowering failure remains. The exact transistor audit accounts for
   10 files and 25 direct value drivers: 17 `nmos`, 7 `pmos`, and 1 `rnmos`.
-- Timing goldens are valid generic S-expressions, and the checked reference is
-  canonical under `sexpr-fmt --check`. Full-corpus formatter validation has not
-  been performed.
+- All 206 checked generated cells are valid generic S-expressions, canonical
+  and idempotent under `sexpr-fmt`, and exact path mirrors of the 206 curated
+  sources. The checked reference byte-matches the reviewed timing fixture.
 - Flat SSA, combinational operators, register lists, supported stateful
   behavior, driver/strength normalizations, and first-entry symbolic timing
   have completed fixture and corpus review.
 - The reference cell's `q_n`, `q`, and `d` assignments now match the accepted
   first applicable source/specify entry policy, including all resistance
   multipliers, and the checked-in reference has been updated accordingly.
-- The current CLI has `lex`, `parse`, `analyze`, `lower`, `convert-file`,
-  `survey`, and staged `check`. Configured analysis, catalog-aware lowering,
-  single-file conversion, and analyze/lower checks accept `--nodelay`; delayful
-  selection is the default. Single-file and directory lowering build a sibling
-  or shared catalog for ordinary hierarchy. Diagnostic-capable commands accept
-  the shared `--strict` warning policy, and lower/convert surface timing
-  approximation warnings and intentional ignores. The CLI does not yet have
-  corpus `convert` or the complete release diagnostic summary required by the
-  plan.
+- The current CLI has `lex`, `parse`, `analyze`, `lower`, transactional corpus
+  `convert`, `convert-file`, `survey`, and staged `check`. Configured analysis,
+  catalog-aware lowering, conversion, and analyze/lower checks accept
+  `--nodelay`; delayful selection is the default. Corpus conversion supports
+  documented strict, dry-run, overwrite, and normalized relative-path filter
+  policies, validates the complete catalog before selected lowering, refuses
+  preflight-detectable partial output, and reports deterministic processed,
+  selected, skipped, warned, intentional-ignore, written, would-write, and
+  failed totals.
 
 ## Milestone Status
 
@@ -95,12 +95,13 @@ Last audited on 2026-07-12:
   primitives use exactly tuple entry zero, and every later entry is tracked as
   an intentional ignore. Source-level writes without an explicit delay use the
   first source-ordered specify path for their scalar target, with one strict-mode
-  warning for each used ambiguous target. Reviewed timing goldens include
+  intentional ignore for each used target having additional control-dependent
+  paths. Reviewed timing goldens include
   explicit precedence, procedural state, ambiguity diagnostics, and the exact
   reference `q_n`, `q`, and `d` assignments. The configured corpus audit
   accounts for all 206 files, 266 structural specify paths, 790 selected source
-  targets, 421 preserved outer resistance multiplications, 49 warnings, and
-  zero M7 deferrals.
+  targets, 421 preserved outer resistance multiplications, 49 additional-path
+  intentional ignores, zero warnings, and zero M7 deferrals.
 - Milestone 8: complete. `GenerateMode::Delayful` is the default and
   `GenerateMode::Nodelay` is explicitly selectable through the configured APIs
   and CLI. Exact fixtures and a dual-mode 206-file audit prove that `dffr`,
@@ -130,7 +131,15 @@ Last audited on 2026-07-12:
   matches all 25 source calls to 25 emitted roots across the required 10 files,
   proves no transistor target becomes state merely due to its driver, and
   reports 206 successful lowerings with no M11 requirement or diagnostic.
-- Milestone 12: pending apart from the existing single-file serializer path.
+- Milestone 12: complete. The typed conversion API and `convert` CLI perform a
+  complete-catalog, globally preflighted, deterministic conversion with strict,
+  dry-run, overwrite, filter, and dual-generate-mode policies. The serializer
+  shares `sexpr-fmt`'s canonical implementation. Release tests and CI prove the
+  exact 206-path mirror, canonical/idempotent formatting, flat structural IR,
+  byte-identical repeated overwrite conversion, precise unsupported-input
+  diagnostics with no preflight partial writes, and exact reference equality.
+  The authoritative `sexpr-cells` tree contains all 206 generated cells; strict
+  delayful and nodelay corpus gates have zero warnings and zero failures.
 
 ## Review Policy
 

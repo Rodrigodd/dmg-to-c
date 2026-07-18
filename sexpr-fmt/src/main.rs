@@ -1,15 +1,9 @@
-mod error;
-mod format;
-mod lexer;
-mod parser;
-
 use std::env;
 use std::fs;
 use std::path::PathBuf;
 use std::process::ExitCode;
 
-use format::{FormatOptions, format_document};
-use parser::parse_document;
+use sexpr_fmt::{FormatOptions, format_source};
 
 fn main() -> ExitCode {
     match run() {
@@ -24,14 +18,13 @@ fn main() -> ExitCode {
 fn run() -> Result<ExitCode, Box<dyn std::error::Error>> {
     let cli = Cli::parse(env::args().skip(1))?;
     let source = fs::read_to_string(&cli.path)?;
-    let document = parse_document(&source)?;
-    let formatted = format_document(
-        &document,
+    let formatted = format_source(
+        &source,
         FormatOptions {
             width: cli.width,
             max_inline_items: 4,
         },
-    );
+    )?;
 
     match cli.mode {
         Mode::Print => {

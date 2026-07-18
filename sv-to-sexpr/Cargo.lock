@@ -3,5 +3,12 @@
 version = 4
 
 [[package]]
+name = "sexpr-fmt"
+version = "0.1.0"
+
+[[package]]
 name = "sv-to-sexpr"
 version = "0.1.0"
+dependencies = [
+ "sexpr-fmt",
+]

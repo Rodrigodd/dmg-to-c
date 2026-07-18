@@ -1,5 +1,5 @@
 diagnostics:
   intentional-ignore | sv-cells/dmg_cpu_b/cells/buf_if0.sv:25:43 | delay tuple entry 2 is intentionally ignored because the cell model selects only entry 1
-  warning | sv-cells/dmg_cpu_b/cells/buf_if0.sv:26:3 | multiple control-dependent specify paths target `y`; the one-delay cell DSL selects the first source-ordered path
+  intentional-ignore | sv-cells/dmg_cpu_b/cells/buf_if0.sv:26:3 | additional control-dependent specify path for target `y` is intentionally ignored because the one-delay cell DSL selects the first source-ordered path for the target
   intentional-ignore | sv-cells/dmg_cpu_b/cells/buf_if0.sv:27:19 | delay tuple entry 2 is intentionally ignored because the cell model selects only entry 1
   intentional-ignore | sv-cells/dmg_cpu_b/cells/buf_if0.sv:28:19 | delay tuple entry 3 is intentionally ignored because the cell model selects only entry 1

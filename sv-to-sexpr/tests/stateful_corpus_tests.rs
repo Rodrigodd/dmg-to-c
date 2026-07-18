@@ -319,7 +319,7 @@ struct AuditTotals {
     direct_state_assignments: usize,
     successful_initial_omissions: usize,
     successful_delay_tuple_omissions: usize,
-    successful_specify_warnings: usize,
+    successful_specify_ignores: usize,
     combinational_procedural_nonregisters: usize,
     invalid_cells: usize,
     nested_state_values: usize,
@@ -748,22 +748,24 @@ fn audit_success(
         totals.delay_diagnostic_mismatches += 1;
     }
     totals.successful_delay_tuple_omissions += delay_diagnostics.len();
-    let warnings = lowered
+    let specify_ignores = lowered
         .diagnostics
         .iter()
-        .filter(|diagnostic| diagnostic.kind == DiagnosticKind::Warning)
+        .filter(|diagnostic| {
+            diagnostic
+                .message
+                .starts_with("additional control-dependent specify path for target `")
+        })
         .collect::<Vec<_>>();
-    if warnings.iter().any(|diagnostic| {
-        !diagnostic
-            .message
-            .starts_with("multiple control-dependent specify paths target `")
-            || !DiagnosticPolicy::new(true).is_failure(diagnostic)
-    }) || initial_diagnostics.len() + delay_diagnostics.len() + warnings.len()
+    if specify_ignores.iter().any(|diagnostic| {
+        diagnostic.kind != DiagnosticKind::IntentionalIgnore
+            || DiagnosticPolicy::new(true).is_failure(diagnostic)
+    }) || initial_diagnostics.len() + delay_diagnostics.len() + specify_ignores.len()
         != lowered.diagnostics.len()
     {
         totals.delay_diagnostic_mismatches += 1;
     }
-    totals.successful_specify_warnings += warnings.len();
+    totals.successful_specify_ignores += specify_ignores.len();
 
     let serialized = render_cell(&lowered.cell);
     if serialized.contains(absolute_root)
@@ -1091,7 +1093,7 @@ fn assert_zero_invariant_failures(totals: &AuditTotals) {
     assert_eq!(totals.direct_state_assignments, 1);
     assert_eq!(totals.successful_initial_omissions, 42);
     assert_eq!(totals.successful_delay_tuple_omissions, 79);
-    assert_eq!(totals.successful_specify_warnings, 15);
+    assert_eq!(totals.successful_specify_ignores, 15);
     assert_eq!(totals.nonzero_state_delays, 26);
     assert_eq!(totals.combinational_procedural_nonregisters, 0);
     for (name, value) in invariant_failures(totals) {
@@ -1183,7 +1185,10 @@ fn render_summary(
             "delay-tuple-intentional-ignores",
             totals.successful_delay_tuple_omissions,
         ),
-        ("specify-warnings", totals.successful_specify_warnings),
+        (
+            "specify-intentional-ignores",
+            totals.successful_specify_ignores,
+        ),
         ("modeled-state-delays", totals.nonzero_state_delays),
     ] {
         writeln!(&mut output, "  {name}={value}").unwrap();

@@ -1,0 +1,26 @@
+(cell
+  dmg_nor4
+  (inputs
+    in1
+    in2
+    in3
+    in4
+  )
+
+  (outputs y)
+
+  (registers)
+
+  (assignments
+
+    (y
+      (nor
+        in1
+        in2
+        in3
+        in4
+      )
+      (elmore (wire L_y) (* (pmos 35) 4))
+    )
+  )
+)

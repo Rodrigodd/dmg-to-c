@@ -133,8 +133,8 @@ const CASES: &[Case] = &[
         name: "dlatch_ee_irq",
         path: "sv-cells/sm83/cells/dlatch_ee_irq.sv",
         registers: &["q_n"],
-        warnings: 1,
-        intentional_ignores: 5,
+        warnings: 0,
+        intentional_ignores: 6,
         transistors: DLATCH_TRANSISTORS,
     },
     Case {
@@ -239,13 +239,9 @@ fn cli_lower_and_convert_match_transistor_goldens_in_both_modes() {
         }
 
         let strict = run_cli(&["lower", case.path, "--strict"]);
-        assert_eq!(strict.status.success(), case.warnings == 0);
+        assert!(strict.status.success());
         let strict_stderr = String::from_utf8_lossy(&strict.stderr);
-        let warning_copies = if case.warnings == 0 { 1 } else { 2 };
-        assert_eq!(
-            strict_stderr.matches(": warning:").count(),
-            warning_copies * case.warnings
-        );
+        assert_eq!(strict_stderr.matches(": warning:").count(), case.warnings);
         assert_eq!(
             strict_stderr.matches(": intentional-ignore:").count(),
             case.intentional_ignores
@@ -255,7 +251,7 @@ fn cli_lower_and_convert_match_transistor_goldens_in_both_modes() {
 }
 
 #[test]
-fn transistor_cell_goldens_parse_with_sibling_formatter() {
+fn transistor_cell_goldens_are_canonical_for_sibling_formatter() {
     for case in CASES {
         let cell = fixture_path(case.name, "cell");
         let result = Command::new("cargo")
@@ -266,16 +262,18 @@ fn transistor_cell_goldens_parse_with_sibling_formatter() {
                 "--manifest-path",
                 "sexpr-fmt/Cargo.toml",
                 "--",
+                "--check",
                 cell.to_str().unwrap(),
             ])
             .output()
             .unwrap();
         assert!(
             result.status.success(),
-            "formatter rejected {}: {}",
+            "formatter found non-canonical {}: {}",
             cell.display(),
             String::from_utf8_lossy(&result.stderr)
         );
+        assert!(result.stdout.is_empty());
     }
 }
 

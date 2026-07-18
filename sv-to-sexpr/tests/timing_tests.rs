@@ -2,7 +2,7 @@ use std::fmt::Write as _;
 use std::fs;
 use std::path::{Path, PathBuf};
 
-use sv_to_sexpr::diagnostic::{Diagnostic, DiagnosticKind, Span};
+use sv_to_sexpr::diagnostic::{Diagnostic, DiagnosticKind, DiagnosticPolicy, Span};
 use sv_to_sexpr::ir::{Assignment, CellItem, LoweredModule};
 use sv_to_sexpr::lower::lower_file;
 use sv_to_sexpr::serialize::{render_cell, render_expr};
@@ -27,8 +27,8 @@ const CASES: &[TimingCase] = &[
         name: "ambiguous_paths",
         source: "sv-to-sexpr/tests/fixtures/timing/ambiguous_paths.sv",
         expected_assignments: &[("y", "(or a b)", "T_first")],
-        warnings: 1,
-        intentional_ignores: 2,
+        warnings: 0,
+        intentional_ignores: 3,
     },
     TimingCase {
         name: "explicit_precedence",
@@ -181,7 +181,7 @@ fn specify_paths_reject_non_scalar_controls_and_targets_at_exact_spans() {
 }
 
 #[test]
-fn specify_tuples_require_entry_zero_and_warn_only_once_per_repeated_target() {
+fn specify_tuples_require_entry_zero_and_ignore_additional_path_once_per_repeated_target() {
     for (source, expected_message) in [
         (
             "module bad(input logic a, output logic y); assign y = a; specify (a *> y) = (); endspecify endmodule",
@@ -209,13 +209,35 @@ fn specify_tuples_require_entry_zero_and_warn_only_once_per_repeated_target() {
             ("y", "b".to_string(), "T_first".to_string()),
         ]
     );
-    let warnings = repeated
+    let additional_path_ignores = repeated
         .diagnostics
         .iter()
-        .filter(|diagnostic| diagnostic.kind == DiagnosticKind::Warning)
+        .filter(|diagnostic| {
+            diagnostic.kind == DiagnosticKind::IntentionalIgnore
+                && diagnostic
+                    .message
+                    .starts_with("additional control-dependent specify path")
+        })
         .collect::<Vec<_>>();
-    assert_eq!(warnings.len(), 1);
-    assert_eq!(warnings[0].span, Span::new("repeated.sv", 1, 110));
+    assert_eq!(additional_path_ignores.len(), 1);
+    assert_eq!(
+        additional_path_ignores[0].span,
+        Span::new("repeated.sv", 1, 110)
+    );
+    assert_eq!(
+        additional_path_ignores[0].message,
+        "additional control-dependent specify path for target `y` is intentionally ignored because the one-delay cell DSL selects the first source-ordered path for the target"
+    );
+    assert!(!DiagnosticPolicy::new(false).is_failure(additional_path_ignores[0]));
+    assert!(!DiagnosticPolicy::new(true).is_failure(additional_path_ignores[0]));
+    assert_eq!(
+        repeated
+            .diagnostics
+            .iter()
+            .filter(|diagnostic| diagnostic.kind == DiagnosticKind::Warning)
+            .count(),
+        0
+    );
 }
 
 fn repository_root() -> PathBuf {

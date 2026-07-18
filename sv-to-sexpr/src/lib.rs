@@ -1,6 +1,7 @@
 pub mod analyze;
 pub mod ast;
 pub mod cli;
+pub mod convert;
 pub mod diagnostic;
 pub mod elaborate;
 pub mod hierarchy;

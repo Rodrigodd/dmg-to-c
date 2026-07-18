@@ -1,0 +1,19 @@
+(cell
+  sm83_dlatch_ee_q_n
+  (inputs d ena ena_n)
+
+  (outputs q_n)
+
+  (registers q_n)
+
+  (assignments
+
+    (t0 (and d ena) 0)
+    (t1 (not d) 0)
+    (t2 (not ena_n) 0)
+    (t3 (and t1 t2) 0)
+    (t4 (or t0 t3) 0)
+    (t5 (not d) 0)
+    (q_n (mux t4 t5 q_n) (elmore (wire L_q_n) (* (pmos 3) 2)))
+  )
+)

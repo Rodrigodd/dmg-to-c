@@ -117,7 +117,7 @@ fn cli_lower_and_convert_use_sibling_catalog_and_match_goldens() {
 }
 
 #[test]
-fn hierarchy_cell_goldens_parse_with_sibling_formatter() {
+fn hierarchy_cell_goldens_are_canonical_for_sibling_formatter() {
     let root = repository_root();
     for case in cases() {
         let cell = fixture_path(case.name, "cell");
@@ -129,21 +129,18 @@ fn hierarchy_cell_goldens_parse_with_sibling_formatter() {
                 "--manifest-path",
                 "sexpr-fmt/Cargo.toml",
                 "--",
+                "--check",
                 cell.to_str().unwrap(),
             ])
             .output()
             .unwrap();
         assert!(
             result.status.success(),
-            "sexpr-fmt rejected {}: {}",
+            "sexpr-fmt found non-canonical {}: {}",
             case.name,
             String::from_utf8_lossy(&result.stderr)
         );
-        assert!(
-            String::from_utf8(result.stdout)
-                .unwrap()
-                .starts_with(&format!("(cell\n  dmg_{}\n", case.name))
-        );
+        assert!(result.stdout.is_empty());
     }
 }
 

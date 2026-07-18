@@ -1,6 +1,6 @@
 use crate::parser::{Atom, Document, Expr, Item, List};
 
-#[derive(Debug, Clone, Copy)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct FormatOptions {
     pub width: usize,
     pub max_inline_items: usize,

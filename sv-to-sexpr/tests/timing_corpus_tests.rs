@@ -19,7 +19,7 @@ use sv_to_sexpr::survey::collect_sv_files;
 
 const INITIAL_OMISSION: &str = "literal initial value/event is intentionally omitted because the cell model has no initial event queue";
 const DELAY_IGNORE_PREFIX: &str = "delay tuple entry ";
-const SPECIFY_WARNING_PREFIX: &str = "multiple control-dependent specify paths target `";
+const SPECIFY_IGNORE_PREFIX: &str = "additional control-dependent specify path for target `";
 const REFERENCE: &str = "sv-cells/sm83/cells/dffs_cc_ee_pch_d_reg_pc_bit.sv";
 
 #[derive(Default)]
@@ -114,9 +114,10 @@ struct LowerAudit {
     emitted_nonzero_delays: usize,
     emitted_nested_delays: usize,
     warnings: usize,
+    specify_ignores: usize,
     later_ignores: usize,
     initial_ignores: usize,
-    warning_contract_failures: usize,
+    specify_ignore_contract_failures: usize,
     diagnostic_mismatches: usize,
     source_delay_mismatches: usize,
     invalid_cells: usize,
@@ -684,18 +685,19 @@ fn audit_success(
         match diagnostic.kind {
             DiagnosticKind::Warning => {
                 audit.warnings += 1;
-                if !diagnostic.message.starts_with(SPECIFY_WARNING_PREFIX)
-                    || DiagnosticPolicy::new(false).is_failure(diagnostic)
-                    || !DiagnosticPolicy::new(true).is_failure(diagnostic)
-                {
-                    audit.warning_contract_failures += 1;
-                }
             }
             DiagnosticKind::IntentionalIgnore => {
                 if diagnostic.message == INITIAL_OMISSION {
                     audit.initial_ignores += 1;
                 } else if diagnostic.message.starts_with(DELAY_IGNORE_PREFIX) {
                     audit.later_ignores += 1;
+                } else if diagnostic.message.starts_with(SPECIFY_IGNORE_PREFIX) {
+                    audit.specify_ignores += 1;
+                    if DiagnosticPolicy::new(false).is_failure(diagnostic)
+                        || DiagnosticPolicy::new(true).is_failure(diagnostic)
+                    {
+                        audit.specify_ignore_contract_failures += 1;
+                    }
                 }
             }
             DiagnosticKind::Error => audit.diagnostic_mismatches += 1,
@@ -971,10 +973,10 @@ fn expected_diagnostics(
     for (target, paths) in specify {
         if used_ambiguous_targets.contains(target) {
             expected.push(ExpectedDiagnostic {
-                kind: DiagnosticKind::Warning,
+                kind: DiagnosticKind::IntentionalIgnore,
                 span: paths[1].span.clone(),
                 message: format!(
-                    "multiple control-dependent specify paths target `{target}`; the one-delay cell DSL selects the first source-ordered path"
+                    "additional control-dependent specify path for target `{target}` is intentionally ignored because the one-delay cell DSL selects the first source-ordered path for the target"
                 ),
             });
         }
@@ -1133,10 +1135,11 @@ fn assert_exact_contract(source: &SourceInventory, lower: &LowerAudit) {
     assert_eq!(lower.emitted_nonzero_delays, 721);
     assert_eq!(lower.emitted_zero_delays, 1_237);
     assert_eq!(lower.emitted_nested_delays, 721);
-    assert_eq!(lower.warnings, 49);
+    assert_eq!(lower.warnings, 0);
+    assert_eq!(lower.specify_ignores, 49);
     assert_eq!(lower.later_ignores, 1_260);
     assert_eq!(lower.initial_ignores, 42);
-    assert_eq!(lower.warning_contract_failures, 0);
+    assert_eq!(lower.specify_ignore_contract_failures, 0);
     assert_eq!(lower.diagnostic_mismatches, 0);
     assert_eq!(lower.source_delay_mismatches, 0);
     assert_eq!(lower.invalid_cells, 0);
@@ -1286,8 +1289,8 @@ fn render_summary(source: &SourceInventory, lower: &LowerAudit) -> String {
     .unwrap();
     writeln!(
         &mut output,
-        "  warnings={} later-ignores={} initial-ignores={}",
-        lower.warnings, lower.later_ignores, lower.initial_ignores
+        "  warnings={} specify-ignores={} later-ignores={} initial-ignores={}",
+        lower.warnings, lower.specify_ignores, lower.later_ignores, lower.initial_ignores
     )
     .unwrap();
     writeln!(&mut output, "emitted-timing-operators:").unwrap();
@@ -1307,7 +1310,10 @@ fn render_summary(source: &SourceInventory, lower: &LowerAudit) -> String {
     writeln!(&mut output, "invariants:").unwrap();
     for (name, value) in [
         ("temp-nonzero-delays", lower.temp_nonzero_delays),
-        ("warning-contract-failures", lower.warning_contract_failures),
+        (
+            "specify-ignore-contract-failures",
+            lower.specify_ignore_contract_failures,
+        ),
         ("diagnostic-mismatches", lower.diagnostic_mismatches),
         ("source-delay-mismatches", lower.source_delay_mismatches),
         ("invalid-cells", lower.invalid_cells),

@@ -1,0 +1,13 @@
+(cell
+  dmg_eco_nand2
+  (inputs in1 in2)
+
+  (outputs y)
+
+  (registers)
+
+  (assignments
+
+    (y (nand in1 in2) (elmore (wire L_y) (pmos 35)))
+  )
+)

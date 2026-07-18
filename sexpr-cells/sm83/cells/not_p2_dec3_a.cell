@@ -1,0 +1,13 @@
+(cell
+  sm83_not_p2_dec3_a
+  (inputs in)
+
+  (outputs y)
+
+  (registers)
+
+  (assignments
+
+    (y (not in) (elmore (wire L_y) (pmos 28)))
+  )
+)

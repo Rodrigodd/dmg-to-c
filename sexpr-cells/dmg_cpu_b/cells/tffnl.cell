@@ -1,0 +1,44 @@
+(cell
+  dmg_tffnl
+  (inputs d l tclk_n)
+
+  (outputs q q_n)
+
+  (registers ff q)
+
+  (assignments
+
+    (l_buf l 0)
+    (tclk_n_buf tclk_n 0)
+    (t0 (not tclk_n_buf) 0)
+    (t1 (or t0 l_buf) 0)
+    (t2 (mux l_buf d ff) 0)
+    (q
+      (mux t1 t2 q)
+      (+
+        (+
+          (+
+            (+ (elmore (wire L_tclk_out) (pmos 35)) (elmore (wire 78) (nmos 8)))
+            (elmore (wire 36) (* (pmos 8) 2))
+          )
+          (elmore (wire 143) (* (nmos 8) 2))
+        )
+        (elmore (wire L_q) (pmos 35))
+      )
+    )
+    (t3 (or tclk_n_buf l_buf) 0)
+    (t4 (not q) 0)
+    (t5 (mux l_buf d t4) 0)
+    (ff (mux t3 t5 ff) 0)
+    (q_n
+      (not q)
+      (+
+        (+
+          (+ (elmore (wire L_tclk_out) (nmos 35)) (elmore (wire 78) (pmos 8)))
+          (elmore (wire 110) (nmos 8))
+        )
+        (elmore (wire L_q_n) (pmos 35))
+      )
+    )
+  )
+)

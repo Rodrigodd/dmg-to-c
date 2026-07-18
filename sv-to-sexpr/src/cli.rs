@@ -1,4 +1,5 @@
 use crate::ast::render_design;
+use crate::convert::{ConvertOptions, convert};
 use crate::diagnostic::{Diagnostic, DiagnosticPolicy};
 use crate::elaborate::GenerateMode;
 use crate::parser::parse_file;
@@ -10,6 +11,7 @@ use crate::survey::{
 };
 use std::env;
 use std::fs;
+use std::io::ErrorKind;
 use std::path::{Path, PathBuf};
 
 pub fn run() -> Result<(), Diagnostic> {
@@ -75,6 +77,22 @@ pub fn run() -> Result<(), Diagnostic> {
             );
             Ok(())
         }
+        "convert" => {
+            let options = parse_convert_args(args)?;
+            let report = convert(&options);
+            for diagnostic in report.diagnostics() {
+                eprintln!("{diagnostic}");
+            }
+            print!("{}", report.render_summary());
+            if report.succeeded() {
+                Ok(())
+            } else {
+                Err(Diagnostic::new(
+                    crate::diagnostic::Span::new(&options.input_root, 1, 1),
+                    format!("conversion failed with {} failed source(s)", report.failed),
+                ))
+            }
+        }
         "convert-file" => {
             let parsed = parse_convert_file_args(args)?;
             let input_path = PathBuf::from(&parsed.input);
@@ -88,6 +106,28 @@ pub fn run() -> Result<(), Diagnostic> {
             if parsed.dry_run {
                 print!("{}", rendered);
             } else {
+                match fs::symlink_metadata(&output_path) {
+                    Ok(metadata) if metadata.is_file() && parsed.overwrite => {}
+                    Ok(metadata) if metadata.is_file() => {
+                        return Err(Diagnostic::new(
+                            crate::diagnostic::Span::new(&output_path, 1, 1),
+                            "output file already exists; pass --overwrite to replace it",
+                        ));
+                    }
+                    Ok(_) => {
+                        return Err(Diagnostic::new(
+                            crate::diagnostic::Span::new(&output_path, 1, 1),
+                            "output path exists but is not a regular file",
+                        ));
+                    }
+                    Err(error) if error.kind() == ErrorKind::NotFound => {}
+                    Err(error) => {
+                        return Err(Diagnostic::new(
+                            crate::diagnostic::Span::new(&output_path, 1, 1),
+                            format!("failed to stat output file: {error}"),
+                        ));
+                    }
+                }
                 if let Some(parent) = output_path.parent() {
                     fs::create_dir_all(parent).map_err(|err| {
                         Diagnostic::new(
@@ -272,6 +312,7 @@ struct ConvertFileArgs {
     input: String,
     output: String,
     dry_run: bool,
+    overwrite: bool,
     policy: DiagnosticPolicy,
     generate_mode: GenerateMode,
 }
@@ -283,6 +324,7 @@ fn parse_convert_file_args(
     let mut dry_run = false;
     let mut strict = false;
     let mut nodelay = false;
+    let mut overwrite = false;
     for arg in args {
         match arg.as_str() {
             "--dry-run" if !dry_run => dry_run = true,
@@ -291,6 +333,8 @@ fn parse_convert_file_args(
             "--strict" => return Err(usage_error("--strict may be specified only once")),
             "--nodelay" if !nodelay => nodelay = true,
             "--nodelay" => return Err(usage_error("--nodelay may be specified only once")),
+            "--overwrite" if !overwrite => overwrite = true,
+            "--overwrite" => return Err(usage_error("--overwrite may be specified only once")),
             _ if arg.starts_with('-') => {
                 return Err(usage_error(&format!("unknown option `{arg}`")));
             }
@@ -311,7 +355,65 @@ fn parse_convert_file_args(
         input: positionals.remove(0),
         output: positionals.remove(0),
         dry_run,
+        overwrite,
         policy: DiagnosticPolicy::new(strict),
+        generate_mode: if nodelay {
+            GenerateMode::Nodelay
+        } else {
+            GenerateMode::Delayful
+        },
+    })
+}
+
+fn parse_convert_args(args: impl Iterator<Item = String>) -> Result<ConvertOptions, Diagnostic> {
+    let mut args = args.peekable();
+    let mut positionals = Vec::new();
+    let mut dry_run = false;
+    let mut strict = false;
+    let mut overwrite = false;
+    let mut nodelay = false;
+    let mut filter = None;
+    let mut filter_seen = false;
+    while let Some(arg) = args.next() {
+        match arg.as_str() {
+            "--dry-run" if !dry_run => dry_run = true,
+            "--dry-run" => return Err(usage_error("--dry-run may be specified only once")),
+            "--strict" if !strict => strict = true,
+            "--strict" => return Err(usage_error("--strict may be specified only once")),
+            "--overwrite" if !overwrite => overwrite = true,
+            "--overwrite" => return Err(usage_error("--overwrite may be specified only once")),
+            "--nodelay" if !nodelay => nodelay = true,
+            "--nodelay" => return Err(usage_error("--nodelay may be specified only once")),
+            "--filter" if filter_seen => {
+                return Err(usage_error("--filter may be specified only once"));
+            }
+            "--filter" => {
+                filter_seen = true;
+                filter = Some(
+                    args.next()
+                        .filter(|value| !value.starts_with('-'))
+                        .ok_or_else(|| usage_error("--filter requires a value"))?,
+                );
+            }
+            _ if arg.starts_with('-') => {
+                return Err(usage_error(&format!("unknown option `{arg}`")));
+            }
+            _ => positionals.push(arg),
+        }
+    }
+    if positionals.len() < 2 {
+        return Err(usage_error("convert requires <input-dir> <output-dir>"));
+    }
+    if positionals.len() > 2 {
+        return Err(usage_error("convert accepts exactly two path operands"));
+    }
+    Ok(ConvertOptions {
+        input_root: PathBuf::from(positionals.remove(0)),
+        output_root: PathBuf::from(positionals.remove(0)),
+        dry_run,
+        strict,
+        overwrite,
+        filter,
         generate_mode: if nodelay {
             GenerateMode::Nodelay
         } else {
@@ -439,7 +541,7 @@ fn usage_error(message: &str) -> Diagnostic {
     Diagnostic::new(
         crate::diagnostic::Span::new("<cli>", 1, 1),
         format!(
-            "{}; supported commands: lex, parse, analyze [--nodelay], lower [--nodelay], convert-file [--nodelay], survey, check --stage lex|parse|analyze|lower [--nodelay for analyze/lower]; diagnostic-capable commands accept --strict",
+            "{}; supported commands: lex, parse, analyze [--nodelay], lower [--nodelay], convert <input-dir> <output-dir> [--dry-run] [--strict] [--overwrite] [--filter <relative-path-substring>] [--nodelay], convert-file <input.sv> <output.cell> [--dry-run] [--strict] [--overwrite] [--nodelay], survey, check --stage lex|parse|analyze|lower [--nodelay for analyze/lower]; diagnostic-capable commands accept --strict",
             message
         ),
     )
@@ -556,13 +658,20 @@ mod tests {
         assert_eq!(parsed.input, "input.sv");
         assert_eq!(parsed.output, "output.cell");
         assert!(parsed.dry_run);
+        assert!(!parsed.overwrite);
         assert!(parsed.policy.strict);
         assert_eq!(parsed.generate_mode, GenerateMode::Delayful);
 
-        let parsed =
-            parse_convert_file_args(args(&["input.sv", "--nodelay", "output.cell", "--dry-run"]))
-                .unwrap();
+        let parsed = parse_convert_file_args(args(&[
+            "input.sv",
+            "--nodelay",
+            "output.cell",
+            "--dry-run",
+            "--overwrite",
+        ]))
+        .unwrap();
         assert_eq!(parsed.generate_mode, GenerateMode::Nodelay);
+        assert!(parsed.overwrite);
     }
 
     #[test]
@@ -625,6 +734,15 @@ mod tests {
         );
         assert!(
             message(parse_convert_file_args(args(&[
+                "input.sv",
+                "output.cell",
+                "--overwrite",
+                "--overwrite",
+            ])))
+            .starts_with("--overwrite may be specified only once")
+        );
+        assert!(
+            message(parse_convert_file_args(args(&[
                 "--mystery",
                 "input.sv",
                 "output.cell",
@@ -642,6 +760,94 @@ mod tests {
                 "extra.cell",
             ])))
             .starts_with("convert-file accepts exactly two path operands")
+        );
+    }
+
+    #[test]
+    fn convert_flags_are_order_independent_and_defaults_are_explicit() {
+        let defaults = parse_convert_args(args(&["sources", "cells"])).unwrap();
+        assert_eq!(defaults.input_root, Path::new("sources"));
+        assert_eq!(defaults.output_root, Path::new("cells"));
+        assert!(!defaults.dry_run);
+        assert!(!defaults.strict);
+        assert!(!defaults.overwrite);
+        assert_eq!(defaults.filter, None);
+        assert_eq!(defaults.generate_mode, GenerateMode::Delayful);
+
+        let configured = parse_convert_args(args(&[
+            "--filter",
+            "nested/",
+            "--strict",
+            "sources",
+            "--nodelay",
+            "--overwrite",
+            "cells",
+            "--dry-run",
+        ]))
+        .unwrap();
+        assert_eq!(configured.input_root, Path::new("sources"));
+        assert_eq!(configured.output_root, Path::new("cells"));
+        assert!(configured.dry_run);
+        assert!(configured.strict);
+        assert!(configured.overwrite);
+        assert_eq!(configured.filter.as_deref(), Some("nested/"));
+        assert_eq!(configured.generate_mode, GenerateMode::Nodelay);
+    }
+
+    #[test]
+    fn convert_rejects_duplicate_missing_unknown_and_extra_arguments() {
+        for (values, prefix) in [
+            (
+                vec!["input", "output", "--dry-run", "--dry-run"],
+                "--dry-run may be specified only once",
+            ),
+            (
+                vec!["input", "output", "--strict", "--strict"],
+                "--strict may be specified only once",
+            ),
+            (
+                vec!["input", "output", "--overwrite", "--overwrite"],
+                "--overwrite may be specified only once",
+            ),
+            (
+                vec!["input", "output", "--nodelay", "--nodelay"],
+                "--nodelay may be specified only once",
+            ),
+            (
+                vec!["--filter", "a", "--filter", "b", "input", "output"],
+                "--filter may be specified only once",
+            ),
+            (
+                vec!["input", "output", "--mystery"],
+                "unknown option `--mystery`",
+            ),
+        ] {
+            assert!(
+                message(parse_convert_args(values.into_iter().map(str::to_string)))
+                    .starts_with(prefix)
+            );
+        }
+        assert!(
+            message(parse_convert_args(args(&["input", "output", "--filter"])))
+                .starts_with("--filter requires a value")
+        );
+        assert!(
+            message(parse_convert_args(args(&[
+                "input", "output", "--filter", "--strict",
+            ])))
+            .starts_with("--filter requires a value")
+        );
+        assert!(
+            message(parse_convert_args(args(&[])))
+                .starts_with("convert requires <input-dir> <output-dir>")
+        );
+        assert!(
+            message(parse_convert_args(args(&["input"])))
+                .starts_with("convert requires <input-dir> <output-dir>")
+        );
+        assert!(
+            message(parse_convert_args(args(&["input", "output", "extra"])))
+                .starts_with("convert accepts exactly two path operands")
         );
     }
 

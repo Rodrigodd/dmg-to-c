@@ -1,0 +1,13 @@
+(cell
+  sm83_buf_dec2
+  (inputs in)
+
+  (outputs y)
+
+  (registers)
+
+  (assignments
+
+    (y in (+ (elmore (wire 25) (nmos 8)) (elmore (wire L_y) (pmos 34))))
+  )
+)

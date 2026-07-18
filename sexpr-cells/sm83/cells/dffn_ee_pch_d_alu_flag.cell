@@ -1,0 +1,70 @@
+(cell
+  sm83_dffn_ee_pch_d_alu_flag
+  (inputs
+    clk_n
+    ena
+    ena_n
+    pch_n
+    d
+  )
+
+  (outputs q q_n d)
+
+  (registers ff1 ff2 q_n)
+
+  (assignments
+
+    (t0 (and d clk_n ena) 0)
+    (t1 (not d) 0)
+    (t2 (not ena_n) 0)
+    (t3 (and t1 clk_n t2) 0)
+    (t4 (or t0 t3) 0)
+    (ff1 (mux t4 d ff1) 0)
+    (t5 (not clk_n) 0)
+    (t6 (and ff1 t5) 0)
+    (t7 (not ff1) 0)
+    (t8 (not clk_n) 0)
+    (t9 (and t7 t8) 0)
+    (t10 (or t6 t9) 0)
+    (t11 (not ff1) 0)
+    (ff2 (mux t10 t11 ff2) 0)
+    (t12 (not clk_n) 0)
+    (t13 (and ff2 t12) 0)
+    (t14 (not ff2) 0)
+    (t15 (not clk_n) 0)
+    (t16 (and t14 t15) 0)
+    (t17 (or t13 t16) 0)
+    (q_n
+      (mux t17 ff2 q_n)
+      (+
+        (+
+          (+ (elmore (wire 71) (nmos 5)) (elmore (wire 114) (* (pmos 3) 2)))
+          (elmore (wire 73) (* (nmos 3) 2))
+        )
+        (elmore (wire L_q_n) (pmos 10))
+      )
+    )
+    (q
+      (not q_n)
+      (+
+        (+
+          (+
+            (+ (elmore (wire 71) (pmos 15)) (elmore (wire 114) (* (nmos 3) 2)))
+            (elmore (wire 73) (* (pmos 3) 2))
+          )
+          (elmore (wire L_q_n) (nmos 5))
+        )
+        (elmore (wire L_q) (pmos 10))
+      )
+    )
+    (d
+      (bufif0-strength
+        1
+        pch_n
+        strong1
+        highz0
+      )
+      (elmore (wire L_d) (pmos 12.5))
+    )
+  )
+)

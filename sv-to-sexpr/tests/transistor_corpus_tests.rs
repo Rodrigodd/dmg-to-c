@@ -331,12 +331,12 @@ fn assert_exact_mode(totals: &ModeTotals, mode: GenerateMode) {
             ("rnmos".to_string(), 1),
         ])
     );
-    assert_eq!(totals.warnings, 49);
+    assert_eq!(totals.warnings, 0);
     assert_eq!(
         totals.ignores,
         match mode {
-            GenerateMode::Delayful => 1302,
-            GenerateMode::Nodelay => 1292,
+            GenerateMode::Delayful => 1351,
+            GenerateMode::Nodelay => 1341,
         }
     );
     assert_eq!(

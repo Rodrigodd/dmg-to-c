@@ -1,0 +1,105 @@
+(cell
+  sm83_irq_prio_bit1
+  (inputs
+    pch_n
+    and_in1
+    and_in2_nand_a_in2
+    nand_b_in2
+    nand_b_in3
+    dist_nand_a_in
+    dist_nand_b_in
+    dist_nor_in
+    dist_nand_a_in_n
+    dist_nand_b_in_n
+    dist_nor_in_p
+  )
+
+  (outputs
+    nand_a_y
+    nand_b_y
+    nand_c_y
+    dist_nand_a_y_n
+    dist_nand_a_y_p
+    dist_nand_b_y_n
+    dist_nand_b_y_p
+    dist_nor_y_n
+    dist_nor_y_p
+    and_y
+  )
+
+  (registers)
+
+  (assignments
+
+    (and_y
+      (and and_in1 and_in2_nand_a_in2)
+      (+ (elmore (wire 24) (* (nmos 3.0) 2)) (elmore (wire L_and_y) (pmos 14.5)))
+    )
+    (t0 (and pch_n and_in2_nand_a_in2) 0)
+    (nand_a_y
+      (bufif1-strength
+        0
+        t0
+        highz1
+        strong0
+      )
+      (elmore (wire L_nand_a_y) (* (nmos 6) 2))
+    )
+    (t1 (and pch_n nand_b_in2 nand_b_in3) 0)
+    (nand_b_y
+      (bufif1-strength
+        0
+        t1
+        highz1
+        strong0
+      )
+      (elmore (wire L_nand_b_y) (* (nmos 6) 3))
+    )
+    (t2 (and pch_n and_y) 0)
+    (nand_c_y
+      (bufif1-strength
+        0
+        t2
+        highz1
+        strong0
+      )
+      (elmore (wire L_nand_c_y) (* (nmos 6) 2))
+    )
+    (dist_nand_a_y_p
+      (bufif0-strength
+        1
+        dist_nand_a_in
+        strong1
+        highz0
+      )
+      (elmore (wire L_dist_nand_a_y_p) (pmos 3))
+    )
+    (t3 (caseneq dist_nand_a_in_n 1) 0)
+    (t4 (and dist_nand_a_in t3) 0)
+    (dist_nand_a_y_n (nmos dist_nand_a_in_n t4) (elmore (wire L_dist_nand_a_y_n) (nmos 3)))
+    (dist_nand_b_y_p
+      (bufif0-strength
+        1
+        dist_nand_b_in
+        strong1
+        highz0
+      )
+      (elmore (wire L_dist_nand_b_y_p) (pmos 3))
+    )
+    (t5 (caseneq dist_nand_b_in_n 1) 0)
+    (t6 (and dist_nand_b_in t5) 0)
+    (dist_nand_b_y_n (nmos dist_nand_b_in_n t6) (elmore (wire L_dist_nand_b_y_n) (nmos 3)))
+    (t7 (caseeq dist_nor_in_p 0) 0)
+    (t8 (or dist_nor_in t7) 0)
+    (dist_nor_y_p (pmos dist_nor_in_p t8) (elmore (wire L_dist_nor_y_p) (pmos 5)))
+    (dist_nor_y_n
+      (bufif1-strength
+        0
+        dist_nor_in
+        highz1
+        strong0
+      )
+      (elmore (wire L_dist_nor_y_n) (nmos 3))
+    )
+  )
+)

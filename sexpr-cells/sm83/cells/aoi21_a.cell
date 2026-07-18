@@ -1,0 +1,14 @@
+(cell
+  sm83_aoi21_a
+  (inputs in1 in2 in3)
+
+  (outputs y)
+
+  (registers)
+
+  (assignments
+
+    (t0 (and in1 in2) 0)
+    (y (nor t0 in3) (elmore (wire L_y) (* (pmos 3) 2)))
+  )
+)

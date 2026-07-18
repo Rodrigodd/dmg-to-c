@@ -1,0 +1,21 @@
+(cell
+  sm83_pch_dec2_b
+  (inputs pch_n)
+
+  (outputs y)
+
+  (registers)
+
+  (assignments
+
+    (y
+      (bufif0-strength
+        1
+        pch_n
+        strong1
+        highz0
+      )
+      (elmore (wire L_y) (pmos 7))
+    )
+  )
+)

@@ -1,0 +1,13 @@
+(cell
+  dmg_not_x3
+  (inputs in)
+
+  (outputs y)
+
+  (registers)
+
+  (assignments
+
+    (y (not in) (elmore (wire L_y) (pmos 105)))
+  )
+)

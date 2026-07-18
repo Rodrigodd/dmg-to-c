@@ -11,13 +11,21 @@
 
   (outputs y0 y1 y2)
 
-  (registers )
+  (registers)
 
   (assignments
 
     (y0 (bufif0 in0 ena0) 0)
     (y1 (bufif1 in1 ena1) 0)
     (t1 (and ena2 t0) 0)
-    (y2 (bufif0-strength in0 t1 strong1 highz0) 0)
+    (y2
+      (bufif0-strength
+        in0
+        t1
+        strong1
+        highz0
+      )
+      0
+    )
   )
 )

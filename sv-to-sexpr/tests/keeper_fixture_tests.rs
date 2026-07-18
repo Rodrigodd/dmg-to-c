@@ -217,7 +217,7 @@ fn cli_lower_and_convert_match_keeper_goldens_in_both_modes() {
 }
 
 #[test]
-fn keeper_cell_goldens_parse_with_sibling_formatter() {
+fn keeper_cell_goldens_are_canonical_for_sibling_formatter() {
     for case in cases() {
         let cell = fixture_path(case.name, "cell");
         let result = Command::new("cargo")
@@ -228,16 +228,18 @@ fn keeper_cell_goldens_parse_with_sibling_formatter() {
                 "--manifest-path",
                 "sexpr-fmt/Cargo.toml",
                 "--",
+                "--check",
                 cell.to_str().unwrap(),
             ])
             .output()
             .unwrap();
         assert!(
             result.status.success(),
-            "formatter rejected {}: {}",
+            "formatter found non-canonical {}: {}",
             cell.display(),
             String::from_utf8_lossy(&result.stderr)
         );
+        assert!(result.stdout.is_empty());
     }
 }
 

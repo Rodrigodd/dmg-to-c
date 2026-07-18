@@ -423,10 +423,11 @@ entry is a visible intentional ignore. Reviewed goldens cover explicit-delay
 precedence, single and ambiguous specify paths, procedural state timing, and the
 reference cell's exact `q_n`, `q`, and `d` assignments. A typed 206-file audit
 reconciles 393 explicit-delay, 186 specify-derived, and 32 zero-default source
-assignments, with 41 documented approximation warnings, 999 later-entry
-ignores, and 372 preserved emitted resistance multiplications. The corpus has
-no one-entry delay tuple, so that required case remains covered by its focused
-unit test while two- and three-entry forms are covered by corpus witnesses.
+assignments, with 41 additional control-dependent path distinctions now
+recorded as intentional ignores, 999 later-entry ignores, and 372 preserved
+emitted resistance multiplications. The corpus has no one-entry delay tuple, so
+that required case remains covered by its focused unit test while two- and
+three-entry forms are covered by corpus witnesses.
 
 Implement nested delay expressions using the DSL's first-entry-only policy.
 
@@ -438,8 +439,8 @@ Expected to be working after this milestone:
 - Lowering of exactly the first delay tuple entry for every assignment,
   primitive, and specify path.
 - Specify path lookup and composition for assignments without attached delays.
-- Symbolic warnings for contract-approved approximations and strict failures for
-  ambiguous/unrepresentable formulas.
+- Symbolic diagnostics for contract-approved approximations and strict failures
+  for genuinely unsupported or unrepresentable formulas.
 
 Expected not to be working yet:
 
@@ -625,6 +626,16 @@ Acceptance conditions:
   non-strict diagnostics.
 
 ### Milestone 12: Full Corpus Conversion and Release Gate
+
+Status: complete as of 2026-07-18. Transactional corpus conversion mirrors all
+206 curated sources into canonical checked cells with documented dry-run,
+strict, overwrite, filtering, and generate-mode behavior. Strict delayful and
+nodelay lowering report zero warnings and zero failures; the approved
+first-path specify approximation is visible as an intentional ignore and never
+promoted by strict mode. Release tests prove exact path coverage, structural IR
+validation, formatter canonicality and idempotence, reference equality,
+byte-identical repeated conversion, and precise no-partial-output failures. The
+checked 206-file output tree and CI release workflow reproduce those gates.
 
 Complete the CLI, serializer, corpus output, and end-to-end validation.
 

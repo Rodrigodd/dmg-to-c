@@ -1,0 +1,13 @@
+(cell
+  dmg_pad_in
+  (inputs pad)
+
+  (outputs i_n)
+
+  (registers)
+
+  (assignments
+
+    (i_n (not pad) (elmore (wire L_i_n) (pmos 15)))
+  )
+)

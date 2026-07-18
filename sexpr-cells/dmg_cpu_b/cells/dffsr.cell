@@ -1,0 +1,60 @@
+(cell
+  dmg_dffsr
+  (inputs
+    d
+    clk
+    s_n
+    r_n
+  )
+
+  (outputs q q_n)
+
+  (registers ff q)
+
+  (assignments
+
+    (clk_buf clk 0)
+    (s_n_buf s_n 0)
+    (r_n_buf r_n 0)
+    (t0 (not clk_buf) 0)
+    (t1 (not s_n_buf) 0)
+    (t2 (not r_n_buf) 0)
+    (t3 (or t0 t1 t2) 0)
+    (t4 (not s_n_buf) 0)
+    (t5 (or d t4) 0)
+    (t6 (and t5 r_n_buf) 0)
+    (ff (mux t3 t6 ff) 0)
+    (t7 (not s_n_buf) 0)
+    (t8 (not r_n_buf) 0)
+    (t9 (or clk_buf t7 t8) 0)
+    (t10 (not s_n_buf) 0)
+    (t11 (or ff t10) 0)
+    (t12 (and t11 r_n_buf) 0)
+    (q
+      (mux t9 t12 q)
+      (+
+        (+
+          (+ (elmore (wire L_clk_n_out) (nmos 35)) (elmore (wire 101) (pmos 8)))
+          (elmore (wire 104) (nmos 8))
+        )
+        (elmore (wire L_q) (pmos 35))
+      )
+    )
+    (q_n
+      (not q)
+      (+
+        (+
+          (+
+            (+
+              (+ (elmore (wire L_clk_n_out) (nmos 35)) (elmore (wire L_clk_out) (pmos 35)))
+              (elmore (wire 101) (nmos 8))
+            )
+            (elmore (wire 104) (pmos 8))
+          )
+          (elmore (wire 146) (* (nmos 8) 2))
+        )
+        (elmore (wire L_q_n) (pmos 35))
+      )
+    )
+  )
+)

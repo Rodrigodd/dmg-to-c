@@ -1,0 +1,13 @@
+(cell
+  dmg_or2
+  (inputs in1 in2)
+
+  (outputs y)
+
+  (registers)
+
+  (assignments
+
+    (y (or in1 in2) (+ (elmore (wire 122) (nmos 35)) (elmore (wire L_y) (pmos 35))))
+  )
+)

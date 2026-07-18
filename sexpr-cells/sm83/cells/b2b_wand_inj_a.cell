@@ -1,0 +1,70 @@
+(cell
+  sm83_b2b_wand_inj_a
+  (inputs
+    oe_n
+    pch_n
+    inj_d
+    inj_en
+    b
+    a
+  )
+
+  (outputs a b)
+
+  (registers)
+
+  (assignments
+
+    (inj_d_n (not inj_d) (elmore (wire 17) (pmos 5)))
+    (nor_pp (nor b oe_n) (elmore (wire 16) (* (pmos 9) 2)))
+    (a
+      (bufif0-strength
+        1
+        pch_n
+        strong1
+        highz0
+      )
+      (elmore (wire L_a) (pmos 27))
+    )
+    (t0 (and pch_n nor_pp) 0)
+    (a
+      (bufif1-strength
+        0
+        t0
+        highz1
+        strong0
+      )
+      (elmore (wire L_a) (pmos 27))
+    )
+    (t1 (and inj_en inj_d_n) 0)
+    (a
+      (bufif1-strength
+        0
+        t1
+        highz1
+        strong0
+      )
+      (elmore (wire L_a) (pmos 27))
+    )
+    (or_pch (or pch_n oe_n) (+ (elmore (wire 24) (nmos 5)) (elmore (wire 36) (pmos 5))))
+    (nor_ab (nor oe_n a) (elmore (wire 55) (* (pmos 14) 2)))
+    (b
+      (bufif0-strength
+        1
+        or_pch
+        strong1
+        highz0
+      )
+      (elmore (wire L_b) (pmos 50))
+    )
+    (b
+      (bufif1-strength
+        0
+        nor_ab
+        highz1
+        strong0
+      )
+      (elmore (wire L_b) (pmos 50))
+    )
+  )
+)

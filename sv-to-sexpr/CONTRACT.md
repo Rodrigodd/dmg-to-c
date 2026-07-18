@@ -145,8 +145,9 @@ requirement analysis; branches are never combined and no content from the
 unselected branch may contribute a declaration, port use, driver, register,
 timing alias, diagnostic, or requirement. `GenerateMode::Delayful` selects the
 false/`else` branch and is the API and CLI default. `GenerateMode::Nodelay`,
-exposed by the explicit `--nodelay` option on `analyze`, `lower`, `convert-file`,
-and `check --stage analyze|lower`, is the sole true-branch selection.
+exposed by the explicit `--nodelay` option on `analyze`, `lower`, `convert`,
+`convert-file`, and `check --stage analyze|lower`, is the sole true-branch
+selection.
 
 The explicitly named structural analysis/lowering APIs retain both branches or
 the unresolved Generate node only for milestone inventory and compatibility
@@ -204,12 +205,13 @@ assignment has no explicit delay, specify lookup uses only its scalar target
 symbol; generated SSA temporaries always retain delay `0`. A single matching
 specify path contributes its selected first tuple entry. If multiple
 control-dependent paths target the same symbol, the one-delay DSL selects the
-first path in source order and emits one warning for that target at the second
-matching path. This target-only selection is a documented approximation:
-ordinary lowering succeeds with the warning, while strict mode promotes it to
-a failure. Every specify tuple is still validated and every entry after the
-first is recorded as an intentional ignore, even when that path is not selected
-by an assignment.
+first path in source order. Each additional-path control distinction is a
+documented approximation: lowering emits one intentional-ignore diagnostic per
+used target at the second matching path, stating that the additional path is
+ignored because the one-delay DSL selects the first source-ordered path for the
+target. Every specify tuple is still validated and every entry after the first
+is recorded as an intentional ignore, even when that path is not selected by an
+assignment.
 
 ## Diagnostics and strict mode
 
@@ -224,11 +226,12 @@ by an assignment.
 
 The only intentional ignores currently authorized are: supported literal
 initial values/events after they classify the target as state; delay tuple
-entries after the first; comments and formatting; and directives/imports proven
-by analysis to affect neither elaborated values nor behavior (the corpus
-license/timescale and package imports whose referenced parameters are
-resolved). Strengths are preserved metadata, not intentional ignores. Unknown
-directives/import effects are errors.
+entries after the first; additional control-dependent specify paths after the
+first source-ordered path selected for each used scalar target; comments and
+formatting; and directives/imports proven by analysis to affect neither
+elaborated values nor behavior (the corpus license/timescale and package imports
+whose referenced parameters are resolved). Strengths are preserved metadata,
+not intentional ignores. Unknown directives/import effects are errors.
 
 All diagnostic-capable commands accept `--strict`. Because current stage APIs
 return errors but do not yet produce warnings, accepting the option does not

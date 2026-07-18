@@ -1,0 +1,14 @@
+(cell
+  dmg_pad_in_pu
+  (inputs pad)
+
+  (outputs i_n pad)
+
+  (registers)
+
+  (assignments
+
+    (pad (drive-strength 1 pull1 highz0) 0)
+    (i_n (not pad) (elmore (wire L_i_n) (pmos 15)))
+  )
+)

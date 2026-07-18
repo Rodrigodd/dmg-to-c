@@ -1,0 +1,31 @@
+(cell
+  sm83_dff_cc_ee_q_x2_reg_bit
+  (inputs
+    d
+    clk
+    clk_n
+    ena
+    ena_n
+  )
+
+  (outputs q)
+
+  (registers ff q)
+
+  (assignments
+
+    (t0 (and d clk_n ena) 0)
+    (t1 (not d) 0)
+    (t2 (not clk) 0)
+    (t3 (not ena_n) 0)
+    (t4 (and t1 t2 t3) 0)
+    (t5 (or t0 t4) 0)
+    (ff (mux t5 d ff) 0)
+    (t6 (and ff clk) 0)
+    (t7 (not ff) 0)
+    (t8 (not clk_n) 0)
+    (t9 (and t7 t8) 0)
+    (t10 (or t6 t9) 0)
+    (q (mux t10 ff q) (+ (elmore (wire 21) (* (nmos 3.0) 2)) (elmore (wire L_q) (pmos 27.0))))
+  )
+)

@@ -153,7 +153,7 @@ fn cli_plumbs_generate_mode_through_convert_analyze_and_lower() {
 }
 
 #[test]
-fn generate_cell_goldens_parse_with_sibling_formatter() {
+fn generate_cell_goldens_are_canonical_for_sibling_formatter() {
     let root = repository_root();
     for name in ["dffr_cc_delayful", "dffr_cc_nodelay"] {
         let cell = PathBuf::from(env!("CARGO_MANIFEST_DIR"))
@@ -167,20 +167,17 @@ fn generate_cell_goldens_parse_with_sibling_formatter() {
                 "--manifest-path",
                 "sexpr-fmt/Cargo.toml",
                 "--",
+                "--check",
                 cell.to_str().unwrap(),
             ])
             .output()
             .unwrap();
         assert!(
             result.status.success(),
-            "sexpr-fmt rejected {name}: {}",
+            "sexpr-fmt found non-canonical {name}: {}",
             String::from_utf8_lossy(&result.stderr)
         );
-        assert!(
-            String::from_utf8(result.stdout)
-                .unwrap()
-                .starts_with("(cell\n  dmg_dffr_cc\n")
-        );
+        assert!(result.stdout.is_empty());
     }
 }
 

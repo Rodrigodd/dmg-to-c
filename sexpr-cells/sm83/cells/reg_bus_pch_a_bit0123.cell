@@ -1,0 +1,54 @@
+(cell
+  sm83_reg_bus_pch_a_bit0123
+  (inputs
+    pch_n
+    c_zero
+    b_y
+    c_y
+  )
+
+  (outputs
+    a_y
+    b_y_n
+    c_y_n
+    b_y
+    c_y
+  )
+
+  (registers)
+
+  (assignments
+
+    (b_y_n (not b_y) (elmore (wire L_b_y_n) (pmos 15)))
+    (c_y_n (not c_y) (elmore (wire L_c_y_n) (pmos 15)))
+    (a_y
+      (bufif0-strength
+        1
+        pch_n
+        strong1
+        highz0
+      )
+      (elmore (wire L_a_y) (pmos 10))
+    )
+    (b_y
+      (bufif0-strength
+        1
+        pch_n
+        strong1
+        highz0
+      )
+      (elmore (wire L_b_y) (pmos 15))
+    )
+    (c_y
+      (bufif0-strength
+        1
+        pch_n
+        strong1
+        highz0
+      )
+      (elmore (wire L_c_y) (pmos 15))
+    )
+    (t0 (and pch_n c_zero) 0)
+    (c_y (bufif1 0 t0) (elmore (wire L_c_y) (pmos 15)))
+  )
+)

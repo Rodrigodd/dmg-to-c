@@ -46,7 +46,7 @@ fn strict_dry_run_keeps_cell_stdout_clean_and_surfaces_initial_omission_on_stder
 }
 
 #[test]
-fn ambiguous_specify_warning_succeeds_normally_and_fails_in_strict_mode() {
+fn ambiguous_specify_intentional_ignore_succeeds_normally_and_in_strict_mode() {
     let root = std::path::PathBuf::from(env!("CARGO_MANIFEST_DIR"))
         .parent()
         .unwrap()
@@ -74,10 +74,10 @@ fn ambiguous_specify_warning_succeeds_normally_and_fails_in_strict_mode() {
     let ordinary_stdout = String::from_utf8(ordinary.stdout).unwrap();
     let ordinary_stderr = String::from_utf8(ordinary.stderr).unwrap();
     assert!(ordinary_stdout.starts_with("(cell\n  timing_ambiguous_paths\n"));
-    assert_eq!(ordinary_stderr.matches(": warning:").count(), 1);
-    assert_eq!(ordinary_stderr.matches(": intentional-ignore:").count(), 2);
+    assert_eq!(ordinary_stderr.matches(": warning:").count(), 0);
+    assert_eq!(ordinary_stderr.matches(": intentional-ignore:").count(), 3);
     assert!(ordinary_stderr.contains(
-        "multiple control-dependent specify paths target `y`; the one-delay cell DSL selects the first source-ordered path"
+        "additional control-dependent specify path for target `y` is intentionally ignored because the one-delay cell DSL selects the first source-ordered path for the target"
     ));
     assert!(!output.exists());
 
@@ -91,13 +91,14 @@ fn ambiguous_specify_warning_succeeds_normally_and_fails_in_strict_mode() {
         ])
         .output()
         .unwrap();
-    assert!(!strict.status.success());
-    assert!(strict.stdout.is_empty());
+    assert!(strict.status.success());
+    let strict_stdout = String::from_utf8(strict.stdout).unwrap();
+    assert_eq!(strict_stdout, ordinary_stdout);
     let strict_stderr = String::from_utf8(strict.stderr).unwrap();
-    assert_eq!(strict_stderr.matches(": warning:").count(), 2);
-    assert_eq!(strict_stderr.matches(": intentional-ignore:").count(), 2);
-    assert!(strict_stderr.lines().last().unwrap().contains(
-        "warning: multiple control-dependent specify paths target `y`; the one-delay cell DSL selects the first source-ordered path"
+    assert_eq!(strict_stderr.matches(": warning:").count(), 0);
+    assert_eq!(strict_stderr.matches(": intentional-ignore:").count(), 3);
+    assert!(strict_stderr.contains(
+        "intentional-ignore: additional control-dependent specify path for target `y` is intentionally ignored because the one-delay cell DSL selects the first source-ordered path for the target"
     ));
     assert!(!output.exists());
 }

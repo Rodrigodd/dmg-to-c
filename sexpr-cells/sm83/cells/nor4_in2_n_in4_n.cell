@@ -1,0 +1,28 @@
+(cell
+  sm83_nor4_in2_n_in4_n
+  (inputs
+    in1
+    in2_n
+    in3
+    in4_n
+  )
+
+  (outputs y)
+
+  (registers)
+
+  (assignments
+
+    (t0 (not in2_n) 0)
+    (t1 (not in4_n) 0)
+    (y
+      (nor
+        in1
+        t0
+        in3
+        t1
+      )
+      (elmore (wire L_y) (* (pmos 3) 2))
+    )
+  )
+)

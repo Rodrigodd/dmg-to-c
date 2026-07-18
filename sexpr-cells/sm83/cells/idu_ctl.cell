@@ -1,0 +1,41 @@
+(cell
+  sm83_idu_ctl
+  (inputs
+    in1
+    in2
+    in3
+    in4
+    in5
+  )
+
+  (outputs y1 y2 y3)
+
+  (registers)
+
+  (assignments
+
+    (t0 (not in4) 0)
+    (t1 (and in3 t0 in2) 0)
+    (t2 (not in2) 0)
+    (t3 (and in3 in4 t2) 0)
+    (y1
+      (or t1 t3)
+      (+
+        (+ (elmore (wire 34) (pmos 3)) (elmore (wire 92) (* (nmos 5) 3)))
+        (elmore (wire L_y1) (pmos 7))
+      )
+    )
+    (t4 (not in4) 0)
+    (t5 (and in3 t4 in2) 0)
+    (y2 (or t5 in1) (+ (elmore (wire 19) (nmos 3)) (elmore (wire L_y2) (pmos 7))))
+    (t6 (not in2) 0)
+    (t7 (and in3 in4 t6) 0)
+    (y3
+      (or in5 t7)
+      (+
+        (+ (elmore (wire 34) (pmos 3)) (elmore (wire 92) (* (nmos 5) 3)))
+        (elmore (wire L_y3) (pmos 7))
+      )
+    )
+  )
+)

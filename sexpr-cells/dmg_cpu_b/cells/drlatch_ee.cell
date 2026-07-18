@@ -1,0 +1,41 @@
+(cell
+  dmg_drlatch_ee
+  (inputs
+    d
+    r_n
+    ena
+    ena_n
+  )
+
+  (outputs q q_n)
+
+  (registers q)
+
+  (assignments
+
+    (t0 (not d) 0)
+    (t1 (and t0 ena) 0)
+    (t2 (not ena_n) 0)
+    (t3 (and d t2) 0)
+    (t4 (not r_n) 0)
+    (t5 (or t1 t3 t4) 0)
+    (t6 (and d r_n) 0)
+    (q
+      (mux t5 t6 q)
+      (+
+        (+ (elmore (wire 66) (pmos 10)) (elmore (wire 110) (* (nmos 10) 2)))
+        (elmore (wire L_q) (pmos 35))
+      )
+    )
+    (q_n
+      (not q)
+      (+
+        (+
+          (+ (elmore (wire 66) (nmos 10)) (elmore (wire 110) (pmos 10)))
+          (elmore (wire 129) (nmos 10))
+        )
+        (elmore (wire L_q_n) (pmos 35))
+      )
+    )
+  )
+)

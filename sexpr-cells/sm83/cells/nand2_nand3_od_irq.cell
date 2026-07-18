@@ -1,0 +1,29 @@
+(cell
+  sm83_nand2_nand3_od_irq
+  (inputs
+    a_in1
+    a_in2
+    b_in1
+    b_in2
+    b_in3
+  )
+
+  (outputs a_y b_y)
+
+  (registers)
+
+  (assignments
+
+    (a_y (nand a_in1 a_in2) (elmore (wire L_a_y) (pmos 3)))
+    (t0 (and b_in1 b_in2 b_in3) 0)
+    (b_y
+      (bufif1-strength
+        0
+        t0
+        highz1
+        strong0
+      )
+      (elmore (wire L_b_y) (* (nmos 9) 3))
+    )
+  )
+)

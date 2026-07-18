@@ -1,0 +1,85 @@
+name: sv-to-sexpr release gate
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+env:
+  CARGO_TERM_COLOR: always
+  LC_ALL: C
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install stable Rust with lint and format components
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          components: clippy, rustfmt
+
+      - name: Check Rust formatting
+        run: |
+          cargo fmt --manifest-path sv-to-sexpr/Cargo.toml -- --check
+          cargo fmt --manifest-path sexpr-fmt/Cargo.toml -- --check
+
+      - name: Lint every target
+        run: |
+          cargo clippy --manifest-path sv-to-sexpr/Cargo.toml --all-targets -- -D warnings
+          cargo clippy --manifest-path sexpr-fmt/Cargo.toml --all-targets -- -D warnings
+
+      - name: Run all tests
+        run: |
+          cargo test --manifest-path sv-to-sexpr/Cargo.toml
+          cargo test --manifest-path sexpr-fmt/Cargo.toml
+
+      - name: Check strict full-corpus lowering in both generate modes
+        run: |
+          cargo run --quiet --manifest-path sv-to-sexpr/Cargo.toml -- \
+            check sv-cells --stage lower --strict \
+            > "$RUNNER_TEMP/lower-delayful.log"
+          grep -Fx \
+            "lower check summary: processed=206 warned=0 intentional-ignored=1351 failed=0" \
+            "$RUNNER_TEMP/lower-delayful.log"
+
+          cargo run --quiet --manifest-path sv-to-sexpr/Cargo.toml -- \
+            check sv-cells --stage lower --strict --nodelay \
+            > "$RUNNER_TEMP/lower-nodelay.log"
+          grep -Fx \
+            "lower check summary: processed=206 warned=0 intentional-ignored=1341 failed=0" \
+            "$RUNNER_TEMP/lower-nodelay.log"
+
+      - name: Regenerate and compare the authoritative corpus
+        run: |
+          generated="$RUNNER_TEMP/sexpr-cells"
+          summary="$RUNNER_TEMP/convert-summary.txt"
+          diagnostics="$RUNNER_TEMP/convert-diagnostics.txt"
+
+          cargo run --quiet --manifest-path sv-to-sexpr/Cargo.toml -- \
+            convert sv-cells "$generated" --strict --overwrite \
+            > "$summary" 2> "$diagnostics"
+          test "$(cat "$summary")" = \
+            "convert summary: processed=206 selected=206 skipped=0 warned=0 intentional-ignored=1351 written=206 would-write=0 failed=0"
+
+          find sv-cells -type f -name '*.sv' -printf '%P\n' \
+            | sed 's/\.sv$/.cell/' \
+            | sort > "$RUNNER_TEMP/expected-paths.txt"
+          find "$generated" -type f -name '*.cell' -printf '%P\n' \
+            | sort > "$RUNNER_TEMP/actual-paths.txt"
+          test "$(wc -l < "$RUNNER_TEMP/expected-paths.txt")" -eq 206
+          test "$(wc -l < "$RUNNER_TEMP/actual-paths.txt")" -eq 206
+          diff -u "$RUNNER_TEMP/expected-paths.txt" "$RUNNER_TEMP/actual-paths.txt"
+          diff -ru --no-dereference sexpr-cells "$generated"
+
+      - name: Check all generated cells with the canonical formatter
+        run: |
+          cargo build --quiet --manifest-path sexpr-fmt/Cargo.toml
+          find sexpr-cells -type f -name '*.cell' -print \
+            | sort \
+            | while IFS= read -r cell; do
+                sexpr-fmt/target/debug/sexpr-fmt --check "$cell"
+              done

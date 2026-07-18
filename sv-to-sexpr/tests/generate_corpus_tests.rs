@@ -150,15 +150,16 @@ fn staged_cli_checks_report_exact_dual_mode_results() {
         ));
         assert!(analyze.stderr.is_empty());
 
+        lower_args.push("--strict");
         let lower = run_cli(&lower_args);
         assert!(lower.status.success());
         let expected_ignores = if mode == GenerateMode::Delayful {
-            1302
+            1351
         } else {
-            1292
+            1341
         };
         assert!(String::from_utf8(lower.stdout).unwrap().starts_with(&format!(
-            "lower check summary: processed=206 warned=49 intentional-ignored={expected_ignores} failed=0\n"
+            "lower check summary: processed=206 warned=0 intentional-ignored={expected_ignores} failed=0\n"
         )));
         assert!(lower.stderr.is_empty());
     }
@@ -273,8 +274,8 @@ fn assert_mode_totals(totals: &ModeTotals) {
     assert_eq!(totals.analysis_failed, 0);
     assert!(!totals.requirements.contains_key("generate.alternative"));
     assert_eq!(totals.lower_succeeded, 206);
-    assert_eq!(totals.warnings, 49);
-    assert!(matches!(totals.intentional_ignores, 1292 | 1302));
+    assert_eq!(totals.warnings, 0);
+    assert!(matches!(totals.intentional_ignores, 1341 | 1351));
     assert!(totals.failures.is_empty());
 }
 

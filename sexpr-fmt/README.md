@@ -18,6 +18,18 @@ Run the tests with:
 cargo test --manifest-path sexpr-fmt/Cargo.toml
 ```
 
+## Library API
+
+The CLI and downstream tools share the same formatter implementation. Add a
+path or registry dependency and call the default canonical formatter:
+
+```rust
+let canonical = sexpr_fmt::format_source_default(source)?;
+```
+
+Use `format_source(source, FormatOptions { .. })` when a non-default width or
+inline-item limit is required.
+
 ## Usage
 
 Format a file and print the result to stdout:

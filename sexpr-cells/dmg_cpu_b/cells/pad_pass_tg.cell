@@ -1,0 +1,13 @@
+(cell
+  dmg_pad_pass_tg
+  (inputs pad)
+
+  (outputs a)
+
+  (registers)
+
+  (assignments
+
+    (a pad 0)
+  )
+)

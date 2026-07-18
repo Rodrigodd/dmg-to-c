@@ -1,4 +1,4 @@
 diagnostics:
   intentional-ignore | sv-to-sexpr/tests/fixtures/timing/ambiguous_paths.sv:8:30 | delay tuple entry 2 is intentionally ignored because the cell model selects only entry 1
-  warning | sv-to-sexpr/tests/fixtures/timing/ambiguous_paths.sv:9:9 | multiple control-dependent specify paths target `y`; the one-delay cell DSL selects the first source-ordered path
+  intentional-ignore | sv-to-sexpr/tests/fixtures/timing/ambiguous_paths.sv:9:9 | additional control-dependent specify path for target `y` is intentionally ignored because the one-delay cell DSL selects the first source-ordered path for the target
   intentional-ignore | sv-to-sexpr/tests/fixtures/timing/ambiguous_paths.sv:9:31 | delay tuple entry 2 is intentionally ignored because the cell model selects only entry 1

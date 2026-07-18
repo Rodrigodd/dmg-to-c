@@ -158,7 +158,7 @@ struct Lowerer<'a> {
     timing_aliases: BTreeMap<String, Expr>,
     timing_alias_stack: Vec<String>,
     specify_delays: BTreeMap<String, Vec<SpecifyDelay>>,
-    warned_specify_targets: BTreeSet<String>,
+    ignored_additional_specify_targets: BTreeSet<String>,
     diagnostics: Vec<Diagnostic>,
     reserved_names: BTreeSet<String>,
     signal_names: BTreeSet<String>,
@@ -225,7 +225,7 @@ impl<'a> Lowerer<'a> {
             timing_aliases: BTreeMap::new(),
             timing_alias_stack: Vec::new(),
             specify_delays: BTreeMap::new(),
-            warned_specify_targets: BTreeSet::new(),
+            ignored_additional_specify_targets: BTreeSet::new(),
             diagnostics: Vec::new(),
             reserved_names,
             signal_names,
@@ -420,14 +420,16 @@ impl<'a> Lowerer<'a> {
             return Expr::atom("0");
         };
         let first = matches[0].delay.clone();
-        let warning_span = matches.get(1).map(|candidate| candidate.path_span.clone());
-        if let Some(span) = warning_span
-            && self.warned_specify_targets.insert(target.to_string())
+        let additional_path_span = matches.get(1).map(|candidate| candidate.path_span.clone());
+        if let Some(span) = additional_path_span
+            && self
+                .ignored_additional_specify_targets
+                .insert(target.to_string())
         {
-            self.diagnostics.push(Diagnostic::warning(
+            self.diagnostics.push(Diagnostic::intentional_ignore(
                 span,
                 format!(
-                    "multiple control-dependent specify paths target `{target}`; the one-delay cell DSL selects the first source-ordered path"
+                    "additional control-dependent specify path for target `{target}` is intentionally ignored because the one-delay cell DSL selects the first source-ordered path for the target"
                 ),
             ));
         }
@@ -1399,6 +1401,7 @@ fn is_l_unit(expr: &SvExpr) -> bool {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::diagnostic::DiagnosticPolicy;
     use crate::serialize::render_expr;
     use std::fs;
 
@@ -2013,6 +2016,41 @@ mod tests {
                 .unwrap();
         assert_eq!(assignment_strings(&lowered)[0].2, "0");
         assert!(lowered.diagnostics.is_empty());
+    }
+
+    #[test]
+    fn additional_specify_paths_are_one_strict_clean_ignore_at_the_second_path() {
+        let lowered = lower_snippet(
+            r#"module sample(input logic a, b, c, output logic y);
+  assign y = a;
+  assign y = b;
+  specify
+    (a *> y) = (T_first);
+    (b *> y) = (T_second);
+    (c *> y) = (T_third);
+  endspecify
+endmodule
+"#,
+        )
+        .unwrap();
+        assert_eq!(
+            assignment_strings(&lowered),
+            vec![
+                ("y".into(), "a".into(), "T_first".into()),
+                ("y".into(), "b".into(), "T_first".into()),
+            ]
+        );
+        let [diagnostic] = lowered.diagnostics.as_slice() else {
+            panic!("expected exactly one additional-path diagnostic")
+        };
+        assert_eq!(diagnostic.kind, DiagnosticKind::IntentionalIgnore);
+        assert_eq!(diagnostic.span, Span::new("snippet.sv", 6, 5));
+        assert_eq!(
+            diagnostic.message,
+            "additional control-dependent specify path for target `y` is intentionally ignored because the one-delay cell DSL selects the first source-ordered path for the target"
+        );
+        assert!(!DiagnosticPolicy::new(false).is_failure(diagnostic));
+        assert!(!DiagnosticPolicy::new(true).is_failure(diagnostic));
     }
 
     #[test]

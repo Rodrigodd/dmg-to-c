@@ -1,0 +1,13 @@
+(cell
+  sm83_and2
+  (inputs in1 in2)
+
+  (outputs y)
+
+  (registers)
+
+  (assignments
+
+    (y (and in1 in2) (+ (elmore (wire 15) (* (nmos 3) 2)) (elmore (wire L_y) (pmos 3))))
+  )
+)

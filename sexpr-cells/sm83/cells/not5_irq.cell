@@ -1,0 +1,29 @@
+(cell
+  sm83_not5_irq
+  (inputs
+    a_in
+    b_in
+    c_in
+    d_in
+    e_in
+  )
+
+  (outputs
+    a_y
+    b_y
+    c_y
+    d_y
+    e_y
+  )
+
+  (registers)
+
+  (assignments
+
+    (a_y (not a_in) (elmore (wire L_a_y) (pmos 5)))
+    (b_y (not b_in) (elmore (wire L_b_y) (pmos 5)))
+    (c_y (not c_in) (elmore (wire L_c_y) (pmos 5)))
+    (d_y (not d_in) (elmore (wire L_d_y) (pmos 14)))
+    (e_y (not e_in) (elmore (wire L_e_y) (pmos 14)))
+  )
+)

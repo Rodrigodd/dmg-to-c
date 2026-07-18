@@ -1,0 +1,62 @@
+(cell
+  sm83_reg_de_out
+  (inputs
+    ena1
+    d_ena2
+    e_ena2
+    d_in
+    e_in
+    d_zero1
+    d_zero2
+  )
+
+  (outputs d_y1 e_y1 y2)
+
+  (registers)
+
+  (assignments
+
+    (t0 (and ena1 d_in) 0)
+    (d_y1
+      (bufif1-strength
+        0
+        t0
+        highz1
+        strong0
+      )
+      (elmore (wire L_d_y1) (* (nmos 8) 2))
+    )
+    (t1 (or d_zero1 d_zero2) 0)
+    (d_y1
+      (bufif1-strength
+        0
+        t1
+        highz1
+        strong0
+      )
+      (elmore (wire L_d_y1) (* (nmos 8) 2))
+    )
+    (t2 (and ena1 e_in) 0)
+    (e_y1
+      (bufif1-strength
+        0
+        t2
+        highz1
+        strong0
+      )
+      (elmore (wire L_e_y1) (* (nmos 8) 2))
+    )
+    (t3 (and d_ena2 d_in) 0)
+    (t4 (and e_ena2 e_in) 0)
+    (t5 (or t3 t4) 0)
+    (y2
+      (bufif1-strength
+        0
+        t5
+        highz1
+        strong0
+      )
+      (elmore (wire L_y2) (* (nmos 8) 2))
+    )
+  )
+)

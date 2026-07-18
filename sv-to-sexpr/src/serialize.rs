@@ -2,6 +2,12 @@ use crate::ir::{Assignment, Cell, CellItem, Expr};
 use std::fmt::Write as _;
 
 pub fn render_cell(cell: &Cell) -> String {
+    let source = render_cell_source(cell);
+    sexpr_fmt::format_source_default(&source)
+        .expect("typed cell serializer must emit valid S-expression source")
+}
+
+fn render_cell_source(cell: &Cell) -> String {
     let mut out = String::new();
     writeln!(&mut out, "(cell").unwrap();
     writeln!(&mut out, "  {}", cell.name).unwrap();
@@ -68,5 +74,45 @@ pub fn render_expr(expr: &Expr) -> String {
             let rendered = items.iter().map(render_expr).collect::<Vec<_>>().join(" ");
             format!("({})", rendered)
         }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::ir::{TimingOperator, ValueOperator};
+
+    #[test]
+    fn representative_value_and_nested_delay_forms_serialize_canonically() {
+        let cell = Cell {
+            name: "serializer_sample".into(),
+            inputs: vec!["a".into(), "b".into()],
+            outputs: vec!["y".into()],
+            registers: Vec::new(),
+            items: vec![CellItem::Assignment(Assignment {
+                target: "y".into(),
+                expr: Expr::value(ValueOperator::And, vec![Expr::atom("a"), Expr::atom("b")]),
+                delay: Expr::timing(
+                    TimingOperator::Add,
+                    vec![
+                        Expr::timing(
+                            TimingOperator::Elmore,
+                            vec![
+                                Expr::timing(TimingOperator::Wire, vec![Expr::atom("L_y")]),
+                                Expr::timing(TimingOperator::Pmos, vec![Expr::atom("5")]),
+                            ],
+                        ),
+                        Expr::atom("T_extra"),
+                    ],
+                ),
+            })],
+        };
+        cell.validate().unwrap();
+
+        let first = render_cell(&cell);
+        let second = render_cell(&cell);
+        assert_eq!(first, second);
+        assert_eq!(sexpr_fmt::format_source_default(&first).unwrap(), first);
+        assert!(first.contains("(y (and a b) (+ (elmore (wire L_y) (pmos 5)) T_extra))"));
     }
 }

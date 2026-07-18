@@ -2,8 +2,8 @@ transistor corpus audit
 files=206
 source files=10 calls=25 nmos=17 pmos=7 rnmos=1
 source-file-set=[sv-cells/sm83/cells/dlatch_ee_irq.sv,sv-cells/sm83/cells/idu_bit0.sv,sv-cells/sm83/cells/idu_bit123456.sv,sv-cells/sm83/cells/irq_prio_bit0.sv,sv-cells/sm83/cells/irq_prio_bit1.sv,sv-cells/sm83/cells/irq_prio_bit2.sv,sv-cells/sm83/cells/irq_prio_bit3.sv,sv-cells/sm83/cells/irq_prio_bit4.sv,sv-cells/sm83/cells/irq_prio_bit5.sv,sv-cells/sm83/cells/irq_prio_bit6.sv]
-mode=delayful succeeded=206 failed=0 warnings=49 intentional-ignores=1302 assignments=1958 temps=1168 register-cells=27 registers=48
-mode=nodelay succeeded=206 failed=0 warnings=49 intentional-ignores=1292 assignments=1955 temps=1168 register-cells=27 registers=48
+mode=delayful succeeded=206 failed=0 warnings=0 intentional-ignores=1351 assignments=1958 temps=1168 register-cells=27 registers=48
+mode=nodelay succeeded=206 failed=0 warnings=0 intentional-ignores=1341 assignments=1955 temps=1168 register-cells=27 registers=48
 calls:
   sv-cells/sm83/cells/dlatch_ee_irq.sv | rnmos | source-order=4 | span=23:2 | drain=gated_q | source=ena_q_n | gate=(and q_n ((caseneq ena_q_n 1))) | delay0=0 | strength=none | assignment-index=11 | emitted=(rnmos ena_q_n t7) | emitted-delay=0
   sv-cells/sm83/cells/idu_bit0.sv | nmos | source-order=5 | span=37:2 | drain=aoi_buf_y | source=aoi_y | gate=(and aoi_buf_ena ((caseneq aoi_y 1))) | delay0=T_Z_aoi_buf_y | strength=none | assignment-index=9 | emitted=(nmos aoi_y t3) | emitted-delay=(elmore (wire L_aoi_buf_y) (nmos 17))

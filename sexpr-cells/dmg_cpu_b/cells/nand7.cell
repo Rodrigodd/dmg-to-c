@@ -1,0 +1,32 @@
+(cell
+  dmg_nand7
+  (inputs
+    in1
+    in2
+    in3
+    in4
+    in5
+    in6
+    in7
+  )
+
+  (outputs y)
+
+  (registers)
+
+  (assignments
+
+    (y
+      (nand
+        in1
+        in2
+        in3
+        in4
+        in5
+        in6
+        in7
+      )
+      (elmore (wire L_y) (pmos 35))
+    )
+  )
+)
