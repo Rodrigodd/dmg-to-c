@@ -14,27 +14,42 @@
 
   (assignments
 
-    (t0 (and d ena) 0)
-    (t1 (not d) 0)
-    (t2 (not ena_n) 0)
-    (t3 (and t1 t2) 0)
-    (t4 (or t0 t3) 0)
-    (t5 (not d) 0)
+    (t0 (and d ena) (delay 0))
+    (t1 (not d) (delay 0))
+    (t2 (not ena_n) (delay 0))
+    (t3 (and t1 t2) (delay 0))
+    (t4 (or t0 t3) (delay 0))
+    (t5 (not d) (delay 0))
     (q_n
       (mux t4 t5 q_n)
-      (+
-        (+ (elmore (wire 34) (* (pmos 3) 2)) (elmore (wire 34) (nmos 3)))
-        (elmore (wire L_q_n) (pmos 13))
-      )
-    )
-    (q
-      (not q_n)
-      (+
+      (delay
+        (+
+          (+ (elmore (wire 34) (* (pmos 3) 2)) (elmore (wire 34) (nmos 3)))
+          (elmore (wire L_q_n) (pmos 13))
+        )
         (+
           (+ (elmore (wire 34) (* (nmos 3) 2)) (elmore (wire 34) (pmos 3)))
           (elmore (wire L_q_n) (nmos 6))
         )
-        (elmore (wire L_q) (pmos 6))
+      )
+    )
+    (q
+      (not q_n)
+      (delay
+        (+
+          (+
+            (+ (elmore (wire 34) (* (nmos 3) 2)) (elmore (wire 34) (pmos 3)))
+            (elmore (wire L_q_n) (nmos 6))
+          )
+          (elmore (wire L_q) (pmos 6))
+        )
+        (+
+          (+
+            (+ (elmore (wire 34) (* (pmos 3) 2)) (elmore (wire 34) (nmos 3)))
+            (elmore (wire L_q_n) (pmos 13))
+          )
+          (elmore (wire L_q) (nmos 6))
+        )
       )
     )
     (gated_q
@@ -44,12 +59,18 @@
         strong1
         highz0
       )
-      0
+      (delay 0)
     )
-    (t6 (caseneq ena_q_n 1) 0)
-    (t7 (and q_n t6) 0)
-    (gated_q (rnmos ena_q_n t7) 0)
-    (gated_q (keeper) 0)
-    (gated_q_n (not gated_q) (+ (elmore (wire 19) (nmos 6)) (elmore (wire L_gated_q_n) (pmos 6))))
+    (t6 (caseneq ena_q_n 1) (delay 0))
+    (t7 (and q_n t6) (delay 0))
+    (gated_q (rnmos ena_q_n t7) (delay 0))
+    (gated_q (keeper) (delay 0))
+    (gated_q_n
+      (not gated_q)
+      (delay
+        (+ (elmore (wire 19) (nmos 6)) (elmore (wire L_gated_q_n) (pmos 6)))
+        (+ (elmore (wire 19) (pmos 6)) (elmore (wire L_gated_q_n) (nmos 6)))
+      )
+    )
   )
 )

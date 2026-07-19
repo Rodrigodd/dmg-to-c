@@ -1,4 +1,4 @@
-use crate::ir::{Assignment, Cell, CellItem, Expr, Register};
+use crate::ir::{Assignment, Cell, CellItem, DelayTuple, Expr, Register, TimingExpr};
 use std::fmt::Write as _;
 
 pub fn render_cell(cell: &Cell) -> String {
@@ -62,7 +62,7 @@ fn render_register_section(out: &mut String, registers: &[Register]) {
 
 fn render_assignment(out: &mut String, assignment: &Assignment) {
     let expr = render_expr(&assignment.expr);
-    let delay = render_expr(&assignment.delay);
+    let delay = render_delay_tuple(&assignment.delay);
     if should_wrap_assignment(&assignment.target, &expr, &delay) {
         writeln!(out, "    ({target}", target = assignment.target).unwrap();
         writeln!(out, "      {}", expr).unwrap();
@@ -74,7 +74,7 @@ fn render_assignment(out: &mut String, assignment: &Assignment) {
 }
 
 fn should_wrap_assignment(target: &str, expr: &str, delay: &str) -> bool {
-    if target == "q_n" && delay != "0" {
+    if target == "q_n" && delay != "(delay 0)" {
         return true;
     }
     expr.len() + delay.len() > 48
@@ -90,10 +90,23 @@ pub fn render_expr(expr: &Expr) -> String {
     }
 }
 
+pub fn render_timing_expr(expr: &TimingExpr) -> String {
+    render_expr(expr.as_expr())
+}
+
+pub fn render_delay_tuple(delay: &DelayTuple) -> String {
+    let components = delay
+        .components()
+        .map(render_timing_expr)
+        .collect::<Vec<_>>()
+        .join(" ");
+    format!("(delay {components})")
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::ir::{LogicValue, Register, TimingOperator, ValueOperator};
+    use crate::ir::{DelayTuple, LogicValue, Register, TimingExpr, TimingOperator, ValueOperator};
 
     #[test]
     fn representative_value_and_nested_delay_forms_serialize_canonically() {
@@ -105,18 +118,30 @@ mod tests {
             items: vec![CellItem::Assignment(Assignment {
                 target: "y".into(),
                 expr: Expr::value(ValueOperator::And, vec![Expr::atom("a"), Expr::atom("b")]),
-                delay: Expr::timing(
-                    TimingOperator::Add,
-                    vec![
-                        Expr::timing(
-                            TimingOperator::Elmore,
-                            vec![
-                                Expr::timing(TimingOperator::Wire, vec![Expr::atom("L_y")]),
-                                Expr::timing(TimingOperator::Pmos, vec![Expr::atom("5")]),
-                            ],
-                        ),
-                        Expr::atom("T_extra"),
-                    ],
+                delay: DelayTuple::One(
+                    TimingExpr::operation(
+                        TimingOperator::Add,
+                        vec![
+                            TimingExpr::operation(
+                                TimingOperator::Elmore,
+                                vec![
+                                    TimingExpr::operation(
+                                        TimingOperator::Wire,
+                                        vec![TimingExpr::atom("L_y").unwrap()],
+                                    )
+                                    .unwrap(),
+                                    TimingExpr::operation(
+                                        TimingOperator::Pmos,
+                                        vec![TimingExpr::atom("5").unwrap()],
+                                    )
+                                    .unwrap(),
+                                ],
+                            )
+                            .unwrap(),
+                            TimingExpr::atom("T_extra").unwrap(),
+                        ],
+                    )
+                    .unwrap(),
                 ),
             })],
         };
@@ -126,7 +151,31 @@ mod tests {
         let second = render_cell(&cell);
         assert_eq!(first, second);
         assert_eq!(sexpr_fmt::format_source_default(&first).unwrap(), first);
-        assert!(first.contains("(y (and a b) (+ (elmore (wire L_y) (pmos 5)) T_extra))"));
+        assert!(first.contains("(y (and a b) (delay (+ (elmore (wire L_y) (pmos 5)) T_extra)))"));
+    }
+
+    #[test]
+    fn delay_tuple_forms_render_with_exact_tagged_arity() {
+        let atom = |value| TimingExpr::atom(value).unwrap();
+        assert_eq!(
+            render_delay_tuple(&DelayTuple::One(atom("value"))),
+            "(delay value)"
+        );
+        assert_eq!(
+            render_delay_tuple(&DelayTuple::Two {
+                rise: atom("rise"),
+                fall: atom("fall"),
+            }),
+            "(delay rise fall)"
+        );
+        assert_eq!(
+            render_delay_tuple(&DelayTuple::Three {
+                rise: atom("rise"),
+                fall: atom("fall"),
+                turn_off: atom("turn_off"),
+            }),
+            "(delay rise fall turn_off)"
+        );
     }
 
     #[test]

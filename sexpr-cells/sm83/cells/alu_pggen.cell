@@ -25,24 +25,39 @@
 
     (tap_xor
       (xor xor_in1 xor_in2)
-      (+
-        (+ (elmore (wire 31) (pmos 5)) (elmore (wire 28) (* (nmos 5) 2)))
-        (elmore (wire L_tap_xor) (pmos 15))
+      (delay
+        (+
+          (+ (elmore (wire 31) (pmos 5)) (elmore (wire 28) (* (nmos 5) 2)))
+          (elmore (wire L_tap_xor) (pmos 15))
+        )
+        (+
+          (+ (elmore (wire 31) (* (nmos 5) 2)) (elmore (wire 28) (* (pmos 5) 2)))
+          (elmore (wire L_tap_xor) (nmos 8))
+        )
       )
     )
-    (tap_nand (nand tap_xor and_or_in2) (elmore (wire L_tap_nand) (pmos 5)))
+    (tap_nand
+      (nand tap_xor and_or_in2)
+      (delay (elmore (wire L_tap_nand) (pmos 5)) (elmore (wire L_tap_nand) (* (nmos 5) 2)))
+    )
     (tap_and
       (not tap_nand)
-      (+ (elmore (wire L_tap_nand) (* (nmos 5) 2)) (elmore (wire L_tap_and) (pmos 15)))
+      (delay
+        (+ (elmore (wire L_tap_nand) (* (nmos 5) 2)) (elmore (wire L_tap_and) (pmos 15)))
+        (+ (elmore (wire L_tap_nand) (pmos 5)) (elmore (wire L_tap_and) (nmos 8)))
+      )
     )
     (tap_or
       (or tap_xor and_or_in2)
-      (+ (elmore (wire 29) (nmos 5)) (elmore (wire L_tap_or) (pmos 15)))
+      (delay
+        (+ (elmore (wire 29) (nmos 5)) (elmore (wire L_tap_or) (pmos 15)))
+        (+ (elmore (wire 29) (* (pmos 5) 2)) (elmore (wire L_tap_or) (nmos 8)))
+      )
     )
-    (t0 (and tap_and ao221_in2) 0)
-    (t1 (and ao221_in3 tap_or) 0)
-    (t2 (not ao221_in5_n) 0)
-    (y (or t0 t1 t2) (elmore (wire L_y) (pmos 5)))
+    (t0 (and tap_and ao221_in2) (delay 0))
+    (t1 (and ao221_in3 tap_or) (delay 0))
+    (t2 (not ao221_in5_n) (delay 0))
+    (y (or t0 t1 t2) (delay (elmore (wire L_y) (pmos 5)) (elmore (wire L_y) (* (nmos 5) 3))))
     (ao221_in5_n
       (bufif0-strength
         1
@@ -50,7 +65,11 @@
         strong1
         highz0
       )
-      (elmore (wire L_ao221_in5_n) (pmos 5))
+      (delay
+        (elmore (wire L_ao221_in5_n) (pmos 5))
+        (elmore (wire L_ao221_in5_n) (pmos 5))
+        (elmore (wire L_ao221_in5_n) (pmos 5))
+      )
     )
   )
 )

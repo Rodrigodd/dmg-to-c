@@ -8,7 +8,7 @@
 
   (assignments
 
-    (sel_n (not sel) (elmore (wire 33) (pmos 6)))
+    (sel_n (not sel) (delay (elmore (wire 33) (pmos 6)) (elmore (wire 33) (nmos 6))))
     (mux
       (bufif0-strength
         d0
@@ -16,7 +16,7 @@
         strong1
         highz0
       )
-      (elmore (wire 93) (pmos 6))
+      (delay (elmore (wire 93) (pmos 6)) (elmore (wire 93) (nmos 6)))
     )
     (mux
       (bufif1-strength
@@ -25,7 +25,7 @@
         highz1
         strong0
       )
-      (elmore (wire 93) (pmos 6))
+      (delay (elmore (wire 93) (pmos 6)) (elmore (wire 93) (nmos 6)))
     )
     (mux
       (bufif0-strength
@@ -34,7 +34,7 @@
         strong1
         highz0
       )
-      (elmore (wire 93) (pmos 6))
+      (delay (elmore (wire 93) (pmos 6)) (elmore (wire 93) (nmos 6)))
     )
     (mux
       (bufif1-strength
@@ -43,10 +43,16 @@
         highz1
         strong0
       )
-      (elmore (wire 93) (pmos 6))
+      (delay (elmore (wire 93) (pmos 6)) (elmore (wire 93) (nmos 6)))
     )
-    (mux (keeper) 0)
-    (t0 (not mux) 0)
-    (y (not t0) (+ (elmore (wire 116) (nmos 35)) (elmore (wire L_y) (pmos 35))))
+    (mux (keeper) (delay 0))
+    (t0 (not mux) (delay 0))
+    (y
+      (not t0)
+      (delay
+        (+ (elmore (wire 116) (nmos 35)) (elmore (wire L_y) (pmos 35)))
+        (+ (elmore (wire 116) (pmos 35)) (elmore (wire L_y) (nmos 35)))
+      )
+    )
   )
 )

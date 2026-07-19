@@ -8,6 +8,6 @@
 
   (assignments
 
-    (i_n (not pad) (elmore (wire L_i_n) (pmos 15)))
+    (i_n (not pad) (delay (elmore (wire L_i_n) (pmos 15)) (elmore (wire L_i_n) (nmos 7))))
   )
 )

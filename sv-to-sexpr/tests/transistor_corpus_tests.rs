@@ -11,9 +11,9 @@ use sv_to_sexpr::analyze::{DriverSource, TargetMilestone};
 use sv_to_sexpr::ast::{BinaryOp, ConstKind, Expr as SvExpr, ExprKind, ItemKind, UnaryOp};
 use sv_to_sexpr::diagnostic::DiagnosticKind;
 use sv_to_sexpr::elaborate::GenerateMode;
-use sv_to_sexpr::ir::{CellItem, Expr, ValueOperator};
+use sv_to_sexpr::ir::{CellItem, DelayTuple, Expr, ValueOperator};
 use sv_to_sexpr::lower::lower_design_with_catalog_and_generate_mode;
-use sv_to_sexpr::serialize::render_expr;
+use sv_to_sexpr::serialize::{render_delay_tuple, render_expr};
 
 const TRANSISTOR_FILES: &[&str] = &[
     "sv-cells/sm83/cells/dlatch_ee_irq.sv",
@@ -284,15 +284,24 @@ fn audit_mode(corpus: &analysis_support::CorpusAnalysis, mode: GenerateMode) -> 
 
             let delay0 = if let Some(delay) = &call.delay {
                 assert_eq!(delay.values.len(), 3, "{path}");
-                let first = delay.values[0].as_ref().unwrap();
-                let alias = scalar_symbol(first).expect("corpus transistor delay entry zero alias");
-                assert_eq!(
-                    emitted.delay, lowered.timing_aliases[&alias],
-                    "first delay entry changed in {path}"
-                );
-                alias
+                assert_eq!(emitted.delay.len(), delay.values.len(), "{path}");
+                let aliases = delay
+                    .values
+                    .iter()
+                    .map(|component| {
+                        scalar_symbol(component.as_ref().unwrap())
+                            .expect("corpus transistor delay component alias")
+                    })
+                    .collect::<Vec<_>>();
+                for (component, alias) in emitted.delay.components().zip(&aliases) {
+                    assert_eq!(
+                        component, &lowered.timing_aliases[alias],
+                        "delay component `{alias}` changed in {path}"
+                    );
+                }
+                aliases[0].clone()
             } else {
-                assert_eq!(emitted.delay, Expr::atom("0"), "{path}");
+                assert!(is_zero_delay(&emitted.delay), "{path}");
                 "0".to_string()
             };
 
@@ -313,11 +322,15 @@ fn audit_mode(corpus: &analysis_support::CorpusAnalysis, mode: GenerateMode) -> 
                 delay0,
                 assignment_index,
                 render_expr(&emitted.expr),
-                render_expr(&emitted.delay)
+                render_delay_tuple(&emitted.delay)
             ));
         }
     }
     totals
+}
+
+fn is_zero_delay(delay: &DelayTuple) -> bool {
+    delay.len() == 1 && delay.first().as_expr() == &Expr::atom("0")
 }
 
 fn assert_exact_mode(totals: &ModeTotals, mode: GenerateMode) {
@@ -342,8 +355,7 @@ fn assert_exact_mode(totals: &ModeTotals, mode: GenerateMode) {
     assert_eq!(
         totals.ignores,
         match mode {
-            GenerateMode::Delayful => 1309,
-            GenerateMode::Nodelay => 1299,
+            GenerateMode::Delayful | GenerateMode::Nodelay => 49,
         }
     );
     assert_eq!(

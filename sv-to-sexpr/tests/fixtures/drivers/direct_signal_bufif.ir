@@ -6,13 +6,13 @@ registers: []
 assignments:
   0: y0
     value: op(bufif0; atom(in0), atom(ena0))
-    delay: atom(0)
+    delay: tuple(atom(0))
   1: y1
     value: op(bufif1; atom(in1), atom(ena1))
-    delay: atom(0)
+    delay: tuple(atom(0))
   2: t1
     value: op(and; atom(ena2), atom(t0))
-    delay: atom(0)
+    delay: tuple(atom(0))
   3: y2
     value: op(bufif0-strength; atom(in0), atom(t1), strength(strong1, highz0))
-    delay: atom(0)
+    delay: tuple(atom(0))

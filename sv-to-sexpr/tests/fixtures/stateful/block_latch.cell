@@ -8,15 +8,21 @@
 
   (assignments
 
-    (t0 (not s_n) 0)
-    (t1 (not r_n) 0)
-    (t2 (or t0 t1) 0)
-    (t3 (not s_n) 0)
-    (q (mux t2 t3 q) (elmore (wire L_q) (pmos 35)))
-    (t4 (not s_n) 0)
-    (t5 (not r_n) 0)
-    (t6 (or t4 t5) 0)
-    (t7 (not r_n) 0)
-    (q_n (mux t6 t7 q_n) (+ (elmore (wire L_q) (nmos 35)) (elmore (wire L_q_n) (pmos 35))))
+    (t0 (not s_n) (delay 0))
+    (t1 (not r_n) (delay 0))
+    (t2 (or t0 t1) (delay 0))
+    (t3 (not s_n) (delay 0))
+    (q (mux t2 t3 q) (delay (elmore (wire L_q) (pmos 35)) (elmore (wire L_q) (nmos 35))))
+    (t4 (not s_n) (delay 0))
+    (t5 (not r_n) (delay 0))
+    (t6 (or t4 t5) (delay 0))
+    (t7 (not r_n) (delay 0))
+    (q_n
+      (mux t6 t7 q_n)
+      (delay
+        (+ (elmore (wire L_q) (nmos 35)) (elmore (wire L_q_n) (pmos 35)))
+        (+ (elmore (wire L_q) (pmos 35)) (elmore (wire L_q_n) (nmos 35)))
+      )
+    )
   )
 )

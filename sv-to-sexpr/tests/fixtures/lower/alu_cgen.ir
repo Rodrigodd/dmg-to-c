@@ -5,157 +5,157 @@ registers: []
 assignments:
   0: t0
     value: op(or; atom(cin), atom(g0))
-    delay: atom(0)
+    delay: tuple(atom(0))
   1: cout0_n_p
     value: op(nand; atom(t0), atom(p0))
-    delay: atom(0)
+    delay: tuple(atom(0))
   2: t1
     value: op(and; atom(cin), atom(p0))
-    delay: atom(0)
+    delay: tuple(atom(0))
   3: cout0_n_n
     value: op(nor; atom(t1), atom(g0))
-    delay: atom(0)
+    delay: tuple(atom(0))
   4: t2
     value: op(or; atom(cin), atom(g0))
-    delay: atom(0)
+    delay: tuple(atom(0))
   5: t3
     value: op(and; atom(t2), atom(p0))
-    delay: atom(0)
+    delay: tuple(atom(0))
   6: t4
     value: op(or; atom(t3), atom(g1))
-    delay: atom(0)
+    delay: tuple(atom(0))
   7: cout1_n_p
     value: op(nand; atom(t4), atom(p1))
-    delay: atom(0)
+    delay: tuple(atom(0))
   8: t5
     value: op(and; atom(cin), atom(p0))
-    delay: atom(0)
+    delay: tuple(atom(0))
   9: t6
     value: op(or; atom(t5), atom(g0))
-    delay: atom(0)
+    delay: tuple(atom(0))
   10: t7
     value: op(and; atom(t6), atom(p1))
-    delay: atom(0)
+    delay: tuple(atom(0))
   11: cout1_n_n
     value: op(nor; atom(t7), atom(g1))
-    delay: atom(0)
+    delay: tuple(atom(0))
   12: t8
     value: op(or; atom(cin), atom(g0))
-    delay: atom(0)
+    delay: tuple(atom(0))
   13: t9
     value: op(and; atom(t8), atom(p0))
-    delay: atom(0)
+    delay: tuple(atom(0))
   14: t10
     value: op(or; atom(t9), atom(g1))
-    delay: atom(0)
+    delay: tuple(atom(0))
   15: t11
     value: op(and; atom(t10), atom(p1))
-    delay: atom(0)
+    delay: tuple(atom(0))
   16: t12
     value: op(or; atom(t11), atom(g2))
-    delay: atom(0)
+    delay: tuple(atom(0))
   17: cout2_n_p
     value: op(nand; atom(t12), atom(p2))
-    delay: atom(0)
+    delay: tuple(atom(0))
   18: t13
     value: op(and; atom(cin), atom(p0))
-    delay: atom(0)
+    delay: tuple(atom(0))
   19: t14
     value: op(or; atom(t13), atom(g0))
-    delay: atom(0)
+    delay: tuple(atom(0))
   20: t15
     value: op(and; atom(t14), atom(p1))
-    delay: atom(0)
+    delay: tuple(atom(0))
   21: t16
     value: op(or; atom(t15), atom(g1))
-    delay: atom(0)
+    delay: tuple(atom(0))
   22: t17
     value: op(and; atom(t16), atom(p2))
-    delay: atom(0)
+    delay: tuple(atom(0))
   23: cout2_n_n
     value: op(nor; atom(t17), atom(g2))
-    delay: atom(0)
+    delay: tuple(atom(0))
   24: t18
     value: op(or; atom(cin), atom(g0))
-    delay: atom(0)
+    delay: tuple(atom(0))
   25: t19
     value: op(and; atom(t18), atom(p0))
-    delay: atom(0)
+    delay: tuple(atom(0))
   26: t20
     value: op(or; atom(t19), atom(g1))
-    delay: atom(0)
+    delay: tuple(atom(0))
   27: t21
     value: op(and; atom(t20), atom(p1))
-    delay: atom(0)
+    delay: tuple(atom(0))
   28: t22
     value: op(or; atom(t21), atom(g2))
-    delay: atom(0)
+    delay: tuple(atom(0))
   29: t23
     value: op(and; atom(t22), atom(p2))
-    delay: atom(0)
+    delay: tuple(atom(0))
   30: t24
     value: op(or; atom(t23), atom(g3))
-    delay: atom(0)
+    delay: tuple(atom(0))
   31: cout3_n_p
     value: op(nand; atom(t24), atom(p3))
-    delay: atom(0)
+    delay: tuple(atom(0))
   32: t25
     value: op(and; atom(cin), atom(p0))
-    delay: atom(0)
+    delay: tuple(atom(0))
   33: t26
     value: op(or; atom(t25), atom(g0))
-    delay: atom(0)
+    delay: tuple(atom(0))
   34: t27
     value: op(and; atom(t26), atom(p1))
-    delay: atom(0)
+    delay: tuple(atom(0))
   35: t28
     value: op(or; atom(t27), atom(g1))
-    delay: atom(0)
+    delay: tuple(atom(0))
   36: t29
     value: op(and; atom(t28), atom(p2))
-    delay: atom(0)
+    delay: tuple(atom(0))
   37: t30
     value: op(or; atom(t29), atom(g2))
-    delay: atom(0)
+    delay: tuple(atom(0))
   38: t31
     value: op(and; atom(t30), atom(p3))
-    delay: atom(0)
+    delay: tuple(atom(0))
   39: cout3_n_n
     value: op(nor; atom(t31), atom(g3))
-    delay: atom(0)
+    delay: tuple(atom(0))
   40: t32
     value: op(caseeq; atom(cout0_n_p), atom(cout0_n_n))
-    delay: atom(0)
+    delay: tuple(atom(0))
   41: t33
     value: op(not; atom(cout0_n_p))
-    delay: atom(0)
+    delay: tuple(atom(0))
   42: cout0
     value: op(mux; atom(t32), atom(t33), atom(x))
-    delay: op(+; op(elmore; op(wire; atom(70)), op(*; op(nmos; atom(11)), atom(2))), op(elmore; op(wire; atom(L_cout0)), op(pmos; atom(11))))
+    delay: tuple(op(+; op(elmore; op(wire; atom(70)), op(*; op(nmos; atom(11)), atom(2))), op(elmore; op(wire; atom(L_cout0)), op(pmos; atom(11)))), op(+; op(elmore; op(wire; atom(70)), op(*; op(pmos; atom(11)), atom(2))), op(elmore; op(wire; atom(L_cout0)), op(nmos; atom(5)))))
   43: t34
     value: op(caseeq; atom(cout1_n_p), atom(cout1_n_n))
-    delay: atom(0)
+    delay: tuple(atom(0))
   44: t35
     value: op(not; atom(cout1_n_p))
-    delay: atom(0)
+    delay: tuple(atom(0))
   45: cout1
     value: op(mux; atom(t34), atom(t35), atom(x))
-    delay: op(+; op(elmore; op(wire; atom(94)), op(*; op(nmos; atom(11)), atom(3))), op(elmore; op(wire; atom(L_cout1)), op(pmos; atom(11))))
+    delay: tuple(op(+; op(elmore; op(wire; atom(94)), op(*; op(nmos; atom(11)), atom(3))), op(elmore; op(wire; atom(L_cout1)), op(pmos; atom(11)))), op(+; op(elmore; op(wire; atom(94)), op(*; op(pmos; atom(11)), atom(3))), op(elmore; op(wire; atom(L_cout1)), op(nmos; atom(5)))))
   46: t36
     value: op(caseeq; atom(cout2_n_p), atom(cout2_n_n))
-    delay: atom(0)
+    delay: tuple(atom(0))
   47: t37
     value: op(not; atom(cout2_n_p))
-    delay: atom(0)
+    delay: tuple(atom(0))
   48: cout2
     value: op(mux; atom(t36), atom(t37), atom(x))
-    delay: op(+; op(elmore; op(wire; atom(122)), op(*; op(nmos; atom(11)), atom(4))), op(elmore; op(wire; atom(L_cout2)), op(pmos; atom(11))))
+    delay: tuple(op(+; op(elmore; op(wire; atom(122)), op(*; op(nmos; atom(11)), atom(4))), op(elmore; op(wire; atom(L_cout2)), op(pmos; atom(11)))), op(+; op(elmore; op(wire; atom(122)), op(*; op(pmos; atom(11)), atom(4))), op(elmore; op(wire; atom(L_cout2)), op(nmos; atom(5)))))
   49: t38
     value: op(caseeq; atom(cout3_n_p), atom(cout3_n_n))
-    delay: atom(0)
+    delay: tuple(atom(0))
   50: t39
     value: op(not; atom(cout3_n_p))
-    delay: atom(0)
+    delay: tuple(atom(0))
   51: cout3
     value: op(mux; atom(t38), atom(t39), atom(x))
-    delay: op(+; op(elmore; op(wire; atom(152)), op(*; op(nmos; atom(11)), atom(5))), op(elmore; op(wire; atom(L_cout3)), op(pmos; atom(23))))
+    delay: tuple(op(+; op(elmore; op(wire; atom(152)), op(*; op(nmos; atom(11)), atom(5))), op(elmore; op(wire; atom(L_cout3)), op(pmos; atom(23)))), op(+; op(elmore; op(wire; atom(152)), op(*; op(pmos; atom(11)), atom(5))), op(elmore; op(wire; atom(L_cout3)), op(nmos; atom(12)))))

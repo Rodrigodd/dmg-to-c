@@ -6,10 +6,10 @@ registers: []
 assignments:
   0: t0
     value: op(not; atom(in))
-    delay: atom(0)
+    delay: tuple(atom(0))
   1: t1
     value: op(not; atom(t0))
-    delay: atom(0)
+    delay: tuple(atom(0))
   2: y
     value: op(bufif0; atom(t1), atom(ena_n))
-    delay: op(+; op(elmore; op(wire; atom(152)), op(*; op(nmos; atom(35)), atom(2))), op(elmore; op(wire; atom(L_y)), op(pmos; atom(70))))
+    delay: tuple(op(+; op(elmore; op(wire; atom(152)), op(*; op(nmos; atom(35)), atom(2))), op(elmore; op(wire; atom(L_y)), op(pmos; atom(70)))), op(+; op(elmore; op(wire; atom(125)), op(*; op(pmos; atom(35)), atom(2))), op(elmore; op(wire; atom(L_y)), op(nmos; atom(70)))))

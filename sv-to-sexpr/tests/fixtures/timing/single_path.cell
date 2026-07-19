@@ -8,6 +8,6 @@
 
   (assignments
 
-    (y (and a b) T_single)
+    (y (and a b) (delay T_single T_fall T_off))
   )
 )

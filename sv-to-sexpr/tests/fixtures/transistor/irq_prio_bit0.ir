@@ -43,30 +43,127 @@ Cell {
                         ),
                     ],
                 ),
-                delay: List(
-                    [
-                        Atom(
-                            "+",
-                        ),
+                delay: Two {
+                    rise: TimingExpr(
                         List(
                             [
                                 Atom(
-                                    "elmore",
+                                    "+",
                                 ),
                                 List(
                                     [
                                         Atom(
-                                            "wire",
+                                            "elmore",
                                         ),
-                                        Atom(
-                                            "24",
+                                        List(
+                                            [
+                                                Atom(
+                                                    "wire",
+                                                ),
+                                                Atom(
+                                                    "24",
+                                                ),
+                                            ],
+                                        ),
+                                        List(
+                                            [
+                                                Atom(
+                                                    "*",
+                                                ),
+                                                List(
+                                                    [
+                                                        Atom(
+                                                            "nmos",
+                                                        ),
+                                                        Atom(
+                                                            "3.0",
+                                                        ),
+                                                    ],
+                                                ),
+                                                Atom(
+                                                    "2",
+                                                ),
+                                            ],
                                         ),
                                     ],
                                 ),
                                 List(
                                     [
                                         Atom(
-                                            "*",
+                                            "elmore",
+                                        ),
+                                        List(
+                                            [
+                                                Atom(
+                                                    "wire",
+                                                ),
+                                                Atom(
+                                                    "L_and_y",
+                                                ),
+                                            ],
+                                        ),
+                                        List(
+                                            [
+                                                Atom(
+                                                    "pmos",
+                                                ),
+                                                Atom(
+                                                    "14.5",
+                                                ),
+                                            ],
+                                        ),
+                                    ],
+                                ),
+                            ],
+                        ),
+                    ),
+                    fall: TimingExpr(
+                        List(
+                            [
+                                Atom(
+                                    "+",
+                                ),
+                                List(
+                                    [
+                                        Atom(
+                                            "elmore",
+                                        ),
+                                        List(
+                                            [
+                                                Atom(
+                                                    "wire",
+                                                ),
+                                                Atom(
+                                                    "24",
+                                                ),
+                                            ],
+                                        ),
+                                        List(
+                                            [
+                                                Atom(
+                                                    "pmos",
+                                                ),
+                                                Atom(
+                                                    "3.0",
+                                                ),
+                                            ],
+                                        ),
+                                    ],
+                                ),
+                                List(
+                                    [
+                                        Atom(
+                                            "elmore",
+                                        ),
+                                        List(
+                                            [
+                                                Atom(
+                                                    "wire",
+                                                ),
+                                                Atom(
+                                                    "L_and_y",
+                                                ),
+                                            ],
                                         ),
                                         List(
                                             [
@@ -74,46 +171,16 @@ Cell {
                                                     "nmos",
                                                 ),
                                                 Atom(
-                                                    "3.0",
+                                                    "8.0",
                                                 ),
                                             ],
                                         ),
-                                        Atom(
-                                            "2",
-                                        ),
                                     ],
                                 ),
                             ],
                         ),
-                        List(
-                            [
-                                Atom(
-                                    "elmore",
-                                ),
-                                List(
-                                    [
-                                        Atom(
-                                            "wire",
-                                        ),
-                                        Atom(
-                                            "L_and_y",
-                                        ),
-                                    ],
-                                ),
-                                List(
-                                    [
-                                        Atom(
-                                            "pmos",
-                                        ),
-                                        Atom(
-                                            "14.5",
-                                        ),
-                                    ],
-                                ),
-                            ],
-                        ),
-                    ],
-                ),
+                    ),
+                },
             },
         ),
         Assignment(
@@ -138,33 +205,105 @@ Cell {
                         ),
                     ],
                 ),
-                delay: List(
-                    [
-                        Atom(
-                            "elmore",
-                        ),
+                delay: Three {
+                    rise: TimingExpr(
                         List(
                             [
                                 Atom(
-                                    "wire",
+                                    "elmore",
                                 ),
-                                Atom(
-                                    "L_nand_a_y",
+                                List(
+                                    [
+                                        Atom(
+                                            "wire",
+                                        ),
+                                        Atom(
+                                            "L_nand_a_y",
+                                        ),
+                                    ],
+                                ),
+                                List(
+                                    [
+                                        Atom(
+                                            "pmos",
+                                        ),
+                                        Atom(
+                                            "13",
+                                        ),
+                                    ],
                                 ),
                             ],
                         ),
+                    ),
+                    fall: TimingExpr(
                         List(
                             [
                                 Atom(
-                                    "pmos",
+                                    "elmore",
                                 ),
-                                Atom(
-                                    "13",
+                                List(
+                                    [
+                                        Atom(
+                                            "wire",
+                                        ),
+                                        Atom(
+                                            "L_nand_a_y",
+                                        ),
+                                    ],
+                                ),
+                                List(
+                                    [
+                                        Atom(
+                                            "*",
+                                        ),
+                                        List(
+                                            [
+                                                Atom(
+                                                    "nmos",
+                                                ),
+                                                Atom(
+                                                    "6",
+                                                ),
+                                            ],
+                                        ),
+                                        Atom(
+                                            "2",
+                                        ),
+                                    ],
                                 ),
                             ],
                         ),
-                    ],
-                ),
+                    ),
+                    turn_off: TimingExpr(
+                        List(
+                            [
+                                Atom(
+                                    "elmore",
+                                ),
+                                List(
+                                    [
+                                        Atom(
+                                            "wire",
+                                        ),
+                                        Atom(
+                                            "L_nand_a_y",
+                                        ),
+                                    ],
+                                ),
+                                List(
+                                    [
+                                        Atom(
+                                            "pmos",
+                                        ),
+                                        Atom(
+                                            "13",
+                                        ),
+                                    ],
+                                ),
+                            ],
+                        ),
+                    ),
+                },
             },
         ),
         Assignment(
@@ -183,8 +322,12 @@ Cell {
                         ),
                     ],
                 ),
-                delay: Atom(
-                    "0",
+                delay: One(
+                    TimingExpr(
+                        Atom(
+                            "0",
+                        ),
+                    ),
                 ),
             },
         ),
@@ -210,33 +353,105 @@ Cell {
                         ),
                     ],
                 ),
-                delay: List(
-                    [
-                        Atom(
-                            "elmore",
-                        ),
+                delay: Three {
+                    rise: TimingExpr(
                         List(
                             [
                                 Atom(
-                                    "wire",
+                                    "elmore",
                                 ),
-                                Atom(
-                                    "L_nand_a_y",
+                                List(
+                                    [
+                                        Atom(
+                                            "wire",
+                                        ),
+                                        Atom(
+                                            "L_nand_a_y",
+                                        ),
+                                    ],
+                                ),
+                                List(
+                                    [
+                                        Atom(
+                                            "pmos",
+                                        ),
+                                        Atom(
+                                            "13",
+                                        ),
+                                    ],
                                 ),
                             ],
                         ),
+                    ),
+                    fall: TimingExpr(
                         List(
                             [
                                 Atom(
-                                    "pmos",
+                                    "elmore",
                                 ),
-                                Atom(
-                                    "13",
+                                List(
+                                    [
+                                        Atom(
+                                            "wire",
+                                        ),
+                                        Atom(
+                                            "L_nand_a_y",
+                                        ),
+                                    ],
+                                ),
+                                List(
+                                    [
+                                        Atom(
+                                            "*",
+                                        ),
+                                        List(
+                                            [
+                                                Atom(
+                                                    "nmos",
+                                                ),
+                                                Atom(
+                                                    "6",
+                                                ),
+                                            ],
+                                        ),
+                                        Atom(
+                                            "2",
+                                        ),
+                                    ],
                                 ),
                             ],
                         ),
-                    ],
-                ),
+                    ),
+                    turn_off: TimingExpr(
+                        List(
+                            [
+                                Atom(
+                                    "elmore",
+                                ),
+                                List(
+                                    [
+                                        Atom(
+                                            "wire",
+                                        ),
+                                        Atom(
+                                            "L_nand_a_y",
+                                        ),
+                                    ],
+                                ),
+                                List(
+                                    [
+                                        Atom(
+                                            "pmos",
+                                        ),
+                                        Atom(
+                                            "13",
+                                        ),
+                                    ],
+                                ),
+                            ],
+                        ),
+                    ),
+                },
             },
         ),
         Assignment(
@@ -255,8 +470,12 @@ Cell {
                         ),
                     ],
                 ),
-                delay: Atom(
-                    "0",
+                delay: One(
+                    TimingExpr(
+                        Atom(
+                            "0",
+                        ),
+                    ),
                 ),
             },
         ),
@@ -282,43 +501,125 @@ Cell {
                         ),
                     ],
                 ),
-                delay: List(
-                    [
-                        Atom(
-                            "elmore",
-                        ),
+                delay: Three {
+                    rise: TimingExpr(
                         List(
                             [
                                 Atom(
-                                    "wire",
-                                ),
-                                Atom(
-                                    "L_nand_b_y",
-                                ),
-                            ],
-                        ),
-                        List(
-                            [
-                                Atom(
-                                    "*",
+                                    "elmore",
                                 ),
                                 List(
                                     [
                                         Atom(
-                                            "nmos",
+                                            "wire",
                                         ),
                                         Atom(
-                                            "6",
+                                            "L_nand_b_y",
                                         ),
                                     ],
                                 ),
-                                Atom(
-                                    "2",
+                                List(
+                                    [
+                                        Atom(
+                                            "*",
+                                        ),
+                                        List(
+                                            [
+                                                Atom(
+                                                    "nmos",
+                                                ),
+                                                Atom(
+                                                    "6",
+                                                ),
+                                            ],
+                                        ),
+                                        Atom(
+                                            "2",
+                                        ),
+                                    ],
                                 ),
                             ],
                         ),
-                    ],
-                ),
+                    ),
+                    fall: TimingExpr(
+                        List(
+                            [
+                                Atom(
+                                    "elmore",
+                                ),
+                                List(
+                                    [
+                                        Atom(
+                                            "wire",
+                                        ),
+                                        Atom(
+                                            "L_nand_b_y",
+                                        ),
+                                    ],
+                                ),
+                                List(
+                                    [
+                                        Atom(
+                                            "*",
+                                        ),
+                                        List(
+                                            [
+                                                Atom(
+                                                    "nmos",
+                                                ),
+                                                Atom(
+                                                    "6",
+                                                ),
+                                            ],
+                                        ),
+                                        Atom(
+                                            "2",
+                                        ),
+                                    ],
+                                ),
+                            ],
+                        ),
+                    ),
+                    turn_off: TimingExpr(
+                        List(
+                            [
+                                Atom(
+                                    "elmore",
+                                ),
+                                List(
+                                    [
+                                        Atom(
+                                            "wire",
+                                        ),
+                                        Atom(
+                                            "L_nand_b_y",
+                                        ),
+                                    ],
+                                ),
+                                List(
+                                    [
+                                        Atom(
+                                            "*",
+                                        ),
+                                        List(
+                                            [
+                                                Atom(
+                                                    "nmos",
+                                                ),
+                                                Atom(
+                                                    "6",
+                                                ),
+                                            ],
+                                        ),
+                                        Atom(
+                                            "2",
+                                        ),
+                                    ],
+                                ),
+                            ],
+                        ),
+                    ),
+                },
             },
         ),
         Assignment(
@@ -337,8 +638,12 @@ Cell {
                         ),
                     ],
                 ),
-                delay: Atom(
-                    "0",
+                delay: One(
+                    TimingExpr(
+                        Atom(
+                            "0",
+                        ),
+                    ),
                 ),
             },
         ),
@@ -364,33 +669,95 @@ Cell {
                         ),
                     ],
                 ),
-                delay: List(
-                    [
-                        Atom(
-                            "elmore",
-                        ),
+                delay: Three {
+                    rise: TimingExpr(
                         List(
                             [
                                 Atom(
-                                    "wire",
+                                    "elmore",
                                 ),
-                                Atom(
-                                    "L_dist_nand_a_y_p",
+                                List(
+                                    [
+                                        Atom(
+                                            "wire",
+                                        ),
+                                        Atom(
+                                            "L_dist_nand_a_y_p",
+                                        ),
+                                    ],
+                                ),
+                                List(
+                                    [
+                                        Atom(
+                                            "pmos",
+                                        ),
+                                        Atom(
+                                            "3",
+                                        ),
+                                    ],
                                 ),
                             ],
                         ),
+                    ),
+                    fall: TimingExpr(
                         List(
                             [
                                 Atom(
-                                    "pmos",
+                                    "elmore",
                                 ),
-                                Atom(
-                                    "3",
+                                List(
+                                    [
+                                        Atom(
+                                            "wire",
+                                        ),
+                                        Atom(
+                                            "L_dist_nand_a_y_p",
+                                        ),
+                                    ],
+                                ),
+                                List(
+                                    [
+                                        Atom(
+                                            "pmos",
+                                        ),
+                                        Atom(
+                                            "3",
+                                        ),
+                                    ],
                                 ),
                             ],
                         ),
-                    ],
-                ),
+                    ),
+                    turn_off: TimingExpr(
+                        List(
+                            [
+                                Atom(
+                                    "elmore",
+                                ),
+                                List(
+                                    [
+                                        Atom(
+                                            "wire",
+                                        ),
+                                        Atom(
+                                            "L_dist_nand_a_y_p",
+                                        ),
+                                    ],
+                                ),
+                                List(
+                                    [
+                                        Atom(
+                                            "pmos",
+                                        ),
+                                        Atom(
+                                            "3",
+                                        ),
+                                    ],
+                                ),
+                            ],
+                        ),
+                    ),
+                },
             },
         ),
         Assignment(
@@ -409,8 +776,12 @@ Cell {
                         ),
                     ],
                 ),
-                delay: Atom(
-                    "0",
+                delay: One(
+                    TimingExpr(
+                        Atom(
+                            "0",
+                        ),
+                    ),
                 ),
             },
         ),
@@ -433,8 +804,12 @@ Cell {
                         ),
                     ],
                 ),
-                delay: Atom(
-                    "0",
+                delay: One(
+                    TimingExpr(
+                        Atom(
+                            "0",
+                        ),
+                    ),
                 ),
             },
         ),
@@ -454,43 +829,125 @@ Cell {
                         ),
                     ],
                 ),
-                delay: List(
-                    [
-                        Atom(
-                            "elmore",
-                        ),
+                delay: Three {
+                    rise: TimingExpr(
                         List(
                             [
                                 Atom(
-                                    "wire",
-                                ),
-                                Atom(
-                                    "L_dist_nand_a_y_n",
-                                ),
-                            ],
-                        ),
-                        List(
-                            [
-                                Atom(
-                                    "*",
+                                    "elmore",
                                 ),
                                 List(
                                     [
                                         Atom(
-                                            "nmos",
+                                            "wire",
                                         ),
                                         Atom(
-                                            "3",
+                                            "L_dist_nand_a_y_n",
                                         ),
                                     ],
                                 ),
-                                Atom(
-                                    "2",
+                                List(
+                                    [
+                                        Atom(
+                                            "*",
+                                        ),
+                                        List(
+                                            [
+                                                Atom(
+                                                    "nmos",
+                                                ),
+                                                Atom(
+                                                    "3",
+                                                ),
+                                            ],
+                                        ),
+                                        Atom(
+                                            "2",
+                                        ),
+                                    ],
                                 ),
                             ],
                         ),
-                    ],
-                ),
+                    ),
+                    fall: TimingExpr(
+                        List(
+                            [
+                                Atom(
+                                    "elmore",
+                                ),
+                                List(
+                                    [
+                                        Atom(
+                                            "wire",
+                                        ),
+                                        Atom(
+                                            "L_dist_nand_a_y_n",
+                                        ),
+                                    ],
+                                ),
+                                List(
+                                    [
+                                        Atom(
+                                            "*",
+                                        ),
+                                        List(
+                                            [
+                                                Atom(
+                                                    "nmos",
+                                                ),
+                                                Atom(
+                                                    "3",
+                                                ),
+                                            ],
+                                        ),
+                                        Atom(
+                                            "2",
+                                        ),
+                                    ],
+                                ),
+                            ],
+                        ),
+                    ),
+                    turn_off: TimingExpr(
+                        List(
+                            [
+                                Atom(
+                                    "elmore",
+                                ),
+                                List(
+                                    [
+                                        Atom(
+                                            "wire",
+                                        ),
+                                        Atom(
+                                            "L_dist_nand_a_y_n",
+                                        ),
+                                    ],
+                                ),
+                                List(
+                                    [
+                                        Atom(
+                                            "*",
+                                        ),
+                                        List(
+                                            [
+                                                Atom(
+                                                    "nmos",
+                                                ),
+                                                Atom(
+                                                    "3",
+                                                ),
+                                            ],
+                                        ),
+                                        Atom(
+                                            "2",
+                                        ),
+                                    ],
+                                ),
+                            ],
+                        ),
+                    ),
+                },
             },
         ),
         Assignment(
@@ -515,33 +972,95 @@ Cell {
                         ),
                     ],
                 ),
-                delay: List(
-                    [
-                        Atom(
-                            "elmore",
-                        ),
+                delay: Three {
+                    rise: TimingExpr(
                         List(
                             [
                                 Atom(
-                                    "wire",
+                                    "elmore",
                                 ),
-                                Atom(
-                                    "L_dist_nand_b_y_p",
+                                List(
+                                    [
+                                        Atom(
+                                            "wire",
+                                        ),
+                                        Atom(
+                                            "L_dist_nand_b_y_p",
+                                        ),
+                                    ],
+                                ),
+                                List(
+                                    [
+                                        Atom(
+                                            "pmos",
+                                        ),
+                                        Atom(
+                                            "3",
+                                        ),
+                                    ],
                                 ),
                             ],
                         ),
+                    ),
+                    fall: TimingExpr(
                         List(
                             [
                                 Atom(
-                                    "pmos",
+                                    "elmore",
                                 ),
-                                Atom(
-                                    "3",
+                                List(
+                                    [
+                                        Atom(
+                                            "wire",
+                                        ),
+                                        Atom(
+                                            "L_dist_nand_b_y_p",
+                                        ),
+                                    ],
+                                ),
+                                List(
+                                    [
+                                        Atom(
+                                            "pmos",
+                                        ),
+                                        Atom(
+                                            "3",
+                                        ),
+                                    ],
                                 ),
                             ],
                         ),
-                    ],
-                ),
+                    ),
+                    turn_off: TimingExpr(
+                        List(
+                            [
+                                Atom(
+                                    "elmore",
+                                ),
+                                List(
+                                    [
+                                        Atom(
+                                            "wire",
+                                        ),
+                                        Atom(
+                                            "L_dist_nand_b_y_p",
+                                        ),
+                                    ],
+                                ),
+                                List(
+                                    [
+                                        Atom(
+                                            "pmos",
+                                        ),
+                                        Atom(
+                                            "3",
+                                        ),
+                                    ],
+                                ),
+                            ],
+                        ),
+                    ),
+                },
             },
         ),
         Assignment(
@@ -560,8 +1079,12 @@ Cell {
                         ),
                     ],
                 ),
-                delay: Atom(
-                    "0",
+                delay: One(
+                    TimingExpr(
+                        Atom(
+                            "0",
+                        ),
+                    ),
                 ),
             },
         ),
@@ -581,8 +1104,12 @@ Cell {
                         ),
                     ],
                 ),
-                delay: Atom(
-                    "0",
+                delay: One(
+                    TimingExpr(
+                        Atom(
+                            "0",
+                        ),
+                    ),
                 ),
             },
         ),
@@ -602,33 +1129,95 @@ Cell {
                         ),
                     ],
                 ),
-                delay: List(
-                    [
-                        Atom(
-                            "elmore",
-                        ),
+                delay: Three {
+                    rise: TimingExpr(
                         List(
                             [
                                 Atom(
-                                    "wire",
+                                    "elmore",
                                 ),
-                                Atom(
-                                    "L_dist_nand_b_y_n",
+                                List(
+                                    [
+                                        Atom(
+                                            "wire",
+                                        ),
+                                        Atom(
+                                            "L_dist_nand_b_y_n",
+                                        ),
+                                    ],
+                                ),
+                                List(
+                                    [
+                                        Atom(
+                                            "nmos",
+                                        ),
+                                        Atom(
+                                            "3",
+                                        ),
+                                    ],
                                 ),
                             ],
                         ),
+                    ),
+                    fall: TimingExpr(
                         List(
                             [
                                 Atom(
-                                    "nmos",
+                                    "elmore",
                                 ),
-                                Atom(
-                                    "3",
+                                List(
+                                    [
+                                        Atom(
+                                            "wire",
+                                        ),
+                                        Atom(
+                                            "L_dist_nand_b_y_n",
+                                        ),
+                                    ],
+                                ),
+                                List(
+                                    [
+                                        Atom(
+                                            "nmos",
+                                        ),
+                                        Atom(
+                                            "3",
+                                        ),
+                                    ],
                                 ),
                             ],
                         ),
-                    ],
-                ),
+                    ),
+                    turn_off: TimingExpr(
+                        List(
+                            [
+                                Atom(
+                                    "elmore",
+                                ),
+                                List(
+                                    [
+                                        Atom(
+                                            "wire",
+                                        ),
+                                        Atom(
+                                            "L_dist_nand_b_y_n",
+                                        ),
+                                    ],
+                                ),
+                                List(
+                                    [
+                                        Atom(
+                                            "nmos",
+                                        ),
+                                        Atom(
+                                            "3",
+                                        ),
+                                    ],
+                                ),
+                            ],
+                        ),
+                    ),
+                },
             },
         ),
         Assignment(
@@ -647,8 +1236,12 @@ Cell {
                         ),
                     ],
                 ),
-                delay: Atom(
-                    "0",
+                delay: One(
+                    TimingExpr(
+                        Atom(
+                            "0",
+                        ),
+                    ),
                 ),
             },
         ),
@@ -668,8 +1261,12 @@ Cell {
                         ),
                     ],
                 ),
-                delay: Atom(
-                    "0",
+                delay: One(
+                    TimingExpr(
+                        Atom(
+                            "0",
+                        ),
+                    ),
                 ),
             },
         ),
@@ -689,33 +1286,95 @@ Cell {
                         ),
                     ],
                 ),
-                delay: List(
-                    [
-                        Atom(
-                            "elmore",
-                        ),
+                delay: Three {
+                    rise: TimingExpr(
                         List(
                             [
                                 Atom(
-                                    "wire",
+                                    "elmore",
                                 ),
-                                Atom(
-                                    "L_dist_nor_y_p",
+                                List(
+                                    [
+                                        Atom(
+                                            "wire",
+                                        ),
+                                        Atom(
+                                            "L_dist_nor_y_p",
+                                        ),
+                                    ],
+                                ),
+                                List(
+                                    [
+                                        Atom(
+                                            "pmos",
+                                        ),
+                                        Atom(
+                                            "5",
+                                        ),
+                                    ],
                                 ),
                             ],
                         ),
+                    ),
+                    fall: TimingExpr(
                         List(
                             [
                                 Atom(
-                                    "pmos",
+                                    "elmore",
                                 ),
-                                Atom(
-                                    "5",
+                                List(
+                                    [
+                                        Atom(
+                                            "wire",
+                                        ),
+                                        Atom(
+                                            "L_dist_nor_y_p",
+                                        ),
+                                    ],
+                                ),
+                                List(
+                                    [
+                                        Atom(
+                                            "pmos",
+                                        ),
+                                        Atom(
+                                            "5",
+                                        ),
+                                    ],
                                 ),
                             ],
                         ),
-                    ],
-                ),
+                    ),
+                    turn_off: TimingExpr(
+                        List(
+                            [
+                                Atom(
+                                    "elmore",
+                                ),
+                                List(
+                                    [
+                                        Atom(
+                                            "wire",
+                                        ),
+                                        Atom(
+                                            "L_dist_nor_y_p",
+                                        ),
+                                    ],
+                                ),
+                                List(
+                                    [
+                                        Atom(
+                                            "pmos",
+                                        ),
+                                        Atom(
+                                            "5",
+                                        ),
+                                    ],
+                                ),
+                            ],
+                        ),
+                    ),
+                },
             },
         ),
         Assignment(
@@ -740,20 +1399,121 @@ Cell {
                         ),
                     ],
                 ),
-                delay: List(
-                    [
-                        Atom(
-                            "elmore",
-                        ),
+                delay: Three {
+                    rise: TimingExpr(
                         List(
                             [
                                 Atom(
-                                    "wire",
+                                    "elmore",
                                 ),
-                                Atom(
-                                    "L_dist_nor_y_n",
+                                List(
+                                    [
+                                        Atom(
+                                            "wire",
+                                        ),
+                                        Atom(
+                                            "L_dist_nor_y_n",
+                                        ),
+                                    ],
+                                ),
+                                List(
+                                    [
+                                        Atom(
+                                            "nmos",
+                                        ),
+                                        Atom(
+                                            "3",
+                                        ),
+                                    ],
                                 ),
                             ],
+                        ),
+                    ),
+                    fall: TimingExpr(
+                        List(
+                            [
+                                Atom(
+                                    "elmore",
+                                ),
+                                List(
+                                    [
+                                        Atom(
+                                            "wire",
+                                        ),
+                                        Atom(
+                                            "L_dist_nor_y_n",
+                                        ),
+                                    ],
+                                ),
+                                List(
+                                    [
+                                        Atom(
+                                            "nmos",
+                                        ),
+                                        Atom(
+                                            "3",
+                                        ),
+                                    ],
+                                ),
+                            ],
+                        ),
+                    ),
+                    turn_off: TimingExpr(
+                        List(
+                            [
+                                Atom(
+                                    "elmore",
+                                ),
+                                List(
+                                    [
+                                        Atom(
+                                            "wire",
+                                        ),
+                                        Atom(
+                                            "L_dist_nor_y_n",
+                                        ),
+                                    ],
+                                ),
+                                List(
+                                    [
+                                        Atom(
+                                            "nmos",
+                                        ),
+                                        Atom(
+                                            "3",
+                                        ),
+                                    ],
+                                ),
+                            ],
+                        ),
+                    ),
+                },
+            },
+        ),
+    ],
+}
+timing aliases:
+{
+    "T_Z_dist_nand_a_y_n": TimingExpr(
+        List(
+            [
+                Atom(
+                    "elmore",
+                ),
+                List(
+                    [
+                        Atom(
+                            "wire",
+                        ),
+                        Atom(
+                            "L_dist_nand_a_y_n",
+                        ),
+                    ],
+                ),
+                List(
+                    [
+                        Atom(
+                            "*",
                         ),
                         List(
                             [
@@ -765,639 +1525,642 @@ Cell {
                                 ),
                             ],
                         ),
+                        Atom(
+                            "2",
+                        ),
                     ],
                 ),
-            },
+            ],
         ),
-    ],
-}
-timing aliases:
-{
-    "T_Z_dist_nand_a_y_n": List(
-        [
-            Atom(
-                "elmore",
-            ),
-            List(
-                [
-                    Atom(
-                        "wire",
-                    ),
-                    Atom(
-                        "L_dist_nand_a_y_n",
-                    ),
-                ],
-            ),
-            List(
-                [
-                    Atom(
-                        "*",
-                    ),
-                    List(
-                        [
-                            Atom(
-                                "nmos",
-                            ),
-                            Atom(
-                                "3",
-                            ),
-                        ],
-                    ),
-                    Atom(
-                        "2",
-                    ),
-                ],
-            ),
-        ],
     ),
-    "T_Z_dist_nand_a_y_p": List(
-        [
-            Atom(
-                "elmore",
-            ),
-            List(
-                [
-                    Atom(
-                        "wire",
-                    ),
-                    Atom(
-                        "L_dist_nand_a_y_p",
-                    ),
-                ],
-            ),
-            List(
-                [
-                    Atom(
-                        "pmos",
-                    ),
-                    Atom(
-                        "3",
-                    ),
-                ],
-            ),
-        ],
+    "T_Z_dist_nand_a_y_p": TimingExpr(
+        List(
+            [
+                Atom(
+                    "elmore",
+                ),
+                List(
+                    [
+                        Atom(
+                            "wire",
+                        ),
+                        Atom(
+                            "L_dist_nand_a_y_p",
+                        ),
+                    ],
+                ),
+                List(
+                    [
+                        Atom(
+                            "pmos",
+                        ),
+                        Atom(
+                            "3",
+                        ),
+                    ],
+                ),
+            ],
+        ),
     ),
-    "T_Z_dist_nand_b_y_n": List(
-        [
-            Atom(
-                "elmore",
-            ),
-            List(
-                [
-                    Atom(
-                        "wire",
-                    ),
-                    Atom(
-                        "L_dist_nand_b_y_n",
-                    ),
-                ],
-            ),
-            List(
-                [
-                    Atom(
-                        "nmos",
-                    ),
-                    Atom(
-                        "3",
-                    ),
-                ],
-            ),
-        ],
+    "T_Z_dist_nand_b_y_n": TimingExpr(
+        List(
+            [
+                Atom(
+                    "elmore",
+                ),
+                List(
+                    [
+                        Atom(
+                            "wire",
+                        ),
+                        Atom(
+                            "L_dist_nand_b_y_n",
+                        ),
+                    ],
+                ),
+                List(
+                    [
+                        Atom(
+                            "nmos",
+                        ),
+                        Atom(
+                            "3",
+                        ),
+                    ],
+                ),
+            ],
+        ),
     ),
-    "T_Z_dist_nand_b_y_p": List(
-        [
-            Atom(
-                "elmore",
-            ),
-            List(
-                [
-                    Atom(
-                        "wire",
-                    ),
-                    Atom(
-                        "L_dist_nand_b_y_p",
-                    ),
-                ],
-            ),
-            List(
-                [
-                    Atom(
-                        "pmos",
-                    ),
-                    Atom(
-                        "3",
-                    ),
-                ],
-            ),
-        ],
+    "T_Z_dist_nand_b_y_p": TimingExpr(
+        List(
+            [
+                Atom(
+                    "elmore",
+                ),
+                List(
+                    [
+                        Atom(
+                            "wire",
+                        ),
+                        Atom(
+                            "L_dist_nand_b_y_p",
+                        ),
+                    ],
+                ),
+                List(
+                    [
+                        Atom(
+                            "pmos",
+                        ),
+                        Atom(
+                            "3",
+                        ),
+                    ],
+                ),
+            ],
+        ),
     ),
-    "T_Z_dist_nor_y_n": List(
-        [
-            Atom(
-                "elmore",
-            ),
-            List(
-                [
-                    Atom(
-                        "wire",
-                    ),
-                    Atom(
-                        "L_dist_nor_y_n",
-                    ),
-                ],
-            ),
-            List(
-                [
-                    Atom(
-                        "nmos",
-                    ),
-                    Atom(
-                        "3",
-                    ),
-                ],
-            ),
-        ],
+    "T_Z_dist_nor_y_n": TimingExpr(
+        List(
+            [
+                Atom(
+                    "elmore",
+                ),
+                List(
+                    [
+                        Atom(
+                            "wire",
+                        ),
+                        Atom(
+                            "L_dist_nor_y_n",
+                        ),
+                    ],
+                ),
+                List(
+                    [
+                        Atom(
+                            "nmos",
+                        ),
+                        Atom(
+                            "3",
+                        ),
+                    ],
+                ),
+            ],
+        ),
     ),
-    "T_Z_dist_nor_y_p": List(
-        [
-            Atom(
-                "elmore",
-            ),
-            List(
-                [
-                    Atom(
-                        "wire",
-                    ),
-                    Atom(
-                        "L_dist_nor_y_p",
-                    ),
-                ],
-            ),
-            List(
-                [
-                    Atom(
-                        "pmos",
-                    ),
-                    Atom(
-                        "5",
-                    ),
-                ],
-            ),
-        ],
+    "T_Z_dist_nor_y_p": TimingExpr(
+        List(
+            [
+                Atom(
+                    "elmore",
+                ),
+                List(
+                    [
+                        Atom(
+                            "wire",
+                        ),
+                        Atom(
+                            "L_dist_nor_y_p",
+                        ),
+                    ],
+                ),
+                List(
+                    [
+                        Atom(
+                            "pmos",
+                        ),
+                        Atom(
+                            "5",
+                        ),
+                    ],
+                ),
+            ],
+        ),
     ),
-    "T_Z_nand_a_y": List(
-        [
-            Atom(
-                "elmore",
-            ),
-            List(
-                [
-                    Atom(
-                        "wire",
-                    ),
-                    Atom(
-                        "L_nand_a_y",
-                    ),
-                ],
-            ),
-            List(
-                [
-                    Atom(
-                        "pmos",
-                    ),
-                    Atom(
-                        "13",
-                    ),
-                ],
-            ),
-        ],
+    "T_Z_nand_a_y": TimingExpr(
+        List(
+            [
+                Atom(
+                    "elmore",
+                ),
+                List(
+                    [
+                        Atom(
+                            "wire",
+                        ),
+                        Atom(
+                            "L_nand_a_y",
+                        ),
+                    ],
+                ),
+                List(
+                    [
+                        Atom(
+                            "pmos",
+                        ),
+                        Atom(
+                            "13",
+                        ),
+                    ],
+                ),
+            ],
+        ),
     ),
-    "T_Z_nand_b_y": List(
-        [
-            Atom(
-                "elmore",
-            ),
-            List(
-                [
-                    Atom(
-                        "wire",
-                    ),
-                    Atom(
-                        "L_nand_b_y",
-                    ),
-                ],
-            ),
-            List(
-                [
-                    Atom(
-                        "*",
-                    ),
-                    List(
-                        [
-                            Atom(
-                                "nmos",
-                            ),
-                            Atom(
-                                "6",
-                            ),
-                        ],
-                    ),
-                    Atom(
-                        "2",
-                    ),
-                ],
-            ),
-        ],
+    "T_Z_nand_b_y": TimingExpr(
+        List(
+            [
+                Atom(
+                    "elmore",
+                ),
+                List(
+                    [
+                        Atom(
+                            "wire",
+                        ),
+                        Atom(
+                            "L_nand_b_y",
+                        ),
+                    ],
+                ),
+                List(
+                    [
+                        Atom(
+                            "*",
+                        ),
+                        List(
+                            [
+                                Atom(
+                                    "nmos",
+                                ),
+                                Atom(
+                                    "6",
+                                ),
+                            ],
+                        ),
+                        Atom(
+                            "2",
+                        ),
+                    ],
+                ),
+            ],
+        ),
     ),
-    "T_fall_and_y": List(
-        [
-            Atom(
-                "elmore",
-            ),
-            List(
-                [
-                    Atom(
-                        "wire",
-                    ),
-                    Atom(
-                        "L_and_y",
-                    ),
-                ],
-            ),
-            List(
-                [
-                    Atom(
-                        "nmos",
-                    ),
-                    Atom(
-                        "8.0",
-                    ),
-                ],
-            ),
-        ],
+    "T_fall_and_y": TimingExpr(
+        List(
+            [
+                Atom(
+                    "elmore",
+                ),
+                List(
+                    [
+                        Atom(
+                            "wire",
+                        ),
+                        Atom(
+                            "L_and_y",
+                        ),
+                    ],
+                ),
+                List(
+                    [
+                        Atom(
+                            "nmos",
+                        ),
+                        Atom(
+                            "8.0",
+                        ),
+                    ],
+                ),
+            ],
+        ),
     ),
-    "T_fall_dist_nand_a_y_n": List(
-        [
-            Atom(
-                "elmore",
-            ),
-            List(
-                [
-                    Atom(
-                        "wire",
-                    ),
-                    Atom(
-                        "L_dist_nand_a_y_n",
-                    ),
-                ],
-            ),
-            List(
-                [
-                    Atom(
-                        "*",
-                    ),
-                    List(
-                        [
-                            Atom(
-                                "nmos",
-                            ),
-                            Atom(
-                                "3",
-                            ),
-                        ],
-                    ),
-                    Atom(
-                        "2",
-                    ),
-                ],
-            ),
-        ],
+    "T_fall_dist_nand_a_y_n": TimingExpr(
+        List(
+            [
+                Atom(
+                    "elmore",
+                ),
+                List(
+                    [
+                        Atom(
+                            "wire",
+                        ),
+                        Atom(
+                            "L_dist_nand_a_y_n",
+                        ),
+                    ],
+                ),
+                List(
+                    [
+                        Atom(
+                            "*",
+                        ),
+                        List(
+                            [
+                                Atom(
+                                    "nmos",
+                                ),
+                                Atom(
+                                    "3",
+                                ),
+                            ],
+                        ),
+                        Atom(
+                            "2",
+                        ),
+                    ],
+                ),
+            ],
+        ),
     ),
-    "T_fall_dist_nand_b_y_n": List(
-        [
-            Atom(
-                "elmore",
-            ),
-            List(
-                [
-                    Atom(
-                        "wire",
-                    ),
-                    Atom(
-                        "L_dist_nand_b_y_n",
-                    ),
-                ],
-            ),
-            List(
-                [
-                    Atom(
-                        "nmos",
-                    ),
-                    Atom(
-                        "3",
-                    ),
-                ],
-            ),
-        ],
+    "T_fall_dist_nand_b_y_n": TimingExpr(
+        List(
+            [
+                Atom(
+                    "elmore",
+                ),
+                List(
+                    [
+                        Atom(
+                            "wire",
+                        ),
+                        Atom(
+                            "L_dist_nand_b_y_n",
+                        ),
+                    ],
+                ),
+                List(
+                    [
+                        Atom(
+                            "nmos",
+                        ),
+                        Atom(
+                            "3",
+                        ),
+                    ],
+                ),
+            ],
+        ),
     ),
-    "T_fall_dist_nor_y_n": List(
-        [
-            Atom(
-                "elmore",
-            ),
-            List(
-                [
-                    Atom(
-                        "wire",
-                    ),
-                    Atom(
-                        "L_dist_nor_y_n",
-                    ),
-                ],
-            ),
-            List(
-                [
-                    Atom(
-                        "nmos",
-                    ),
-                    Atom(
-                        "3",
-                    ),
-                ],
-            ),
-        ],
+    "T_fall_dist_nor_y_n": TimingExpr(
+        List(
+            [
+                Atom(
+                    "elmore",
+                ),
+                List(
+                    [
+                        Atom(
+                            "wire",
+                        ),
+                        Atom(
+                            "L_dist_nor_y_n",
+                        ),
+                    ],
+                ),
+                List(
+                    [
+                        Atom(
+                            "nmos",
+                        ),
+                        Atom(
+                            "3",
+                        ),
+                    ],
+                ),
+            ],
+        ),
     ),
-    "T_fall_nand": List(
-        [
-            Atom(
-                "elmore",
-            ),
-            List(
-                [
-                    Atom(
-                        "wire",
-                    ),
-                    Atom(
-                        "24",
-                    ),
-                ],
-            ),
-            List(
-                [
-                    Atom(
-                        "*",
-                    ),
-                    List(
-                        [
-                            Atom(
-                                "nmos",
-                            ),
-                            Atom(
-                                "3.0",
-                            ),
-                        ],
-                    ),
-                    Atom(
-                        "2",
-                    ),
-                ],
-            ),
-        ],
+    "T_fall_nand": TimingExpr(
+        List(
+            [
+                Atom(
+                    "elmore",
+                ),
+                List(
+                    [
+                        Atom(
+                            "wire",
+                        ),
+                        Atom(
+                            "24",
+                        ),
+                    ],
+                ),
+                List(
+                    [
+                        Atom(
+                            "*",
+                        ),
+                        List(
+                            [
+                                Atom(
+                                    "nmos",
+                                ),
+                                Atom(
+                                    "3.0",
+                                ),
+                            ],
+                        ),
+                        Atom(
+                            "2",
+                        ),
+                    ],
+                ),
+            ],
+        ),
     ),
-    "T_fall_nand_a_y": List(
-        [
-            Atom(
-                "elmore",
-            ),
-            List(
-                [
-                    Atom(
-                        "wire",
-                    ),
-                    Atom(
-                        "L_nand_a_y",
-                    ),
-                ],
-            ),
-            List(
-                [
-                    Atom(
-                        "*",
-                    ),
-                    List(
-                        [
-                            Atom(
-                                "nmos",
-                            ),
-                            Atom(
-                                "6",
-                            ),
-                        ],
-                    ),
-                    Atom(
-                        "2",
-                    ),
-                ],
-            ),
-        ],
+    "T_fall_nand_a_y": TimingExpr(
+        List(
+            [
+                Atom(
+                    "elmore",
+                ),
+                List(
+                    [
+                        Atom(
+                            "wire",
+                        ),
+                        Atom(
+                            "L_nand_a_y",
+                        ),
+                    ],
+                ),
+                List(
+                    [
+                        Atom(
+                            "*",
+                        ),
+                        List(
+                            [
+                                Atom(
+                                    "nmos",
+                                ),
+                                Atom(
+                                    "6",
+                                ),
+                            ],
+                        ),
+                        Atom(
+                            "2",
+                        ),
+                    ],
+                ),
+            ],
+        ),
     ),
-    "T_fall_nand_b_y": List(
-        [
-            Atom(
-                "elmore",
-            ),
-            List(
-                [
-                    Atom(
-                        "wire",
-                    ),
-                    Atom(
-                        "L_nand_b_y",
-                    ),
-                ],
-            ),
-            List(
-                [
-                    Atom(
-                        "*",
-                    ),
-                    List(
-                        [
-                            Atom(
-                                "nmos",
-                            ),
-                            Atom(
-                                "6",
-                            ),
-                        ],
-                    ),
-                    Atom(
-                        "2",
-                    ),
-                ],
-            ),
-        ],
+    "T_fall_nand_b_y": TimingExpr(
+        List(
+            [
+                Atom(
+                    "elmore",
+                ),
+                List(
+                    [
+                        Atom(
+                            "wire",
+                        ),
+                        Atom(
+                            "L_nand_b_y",
+                        ),
+                    ],
+                ),
+                List(
+                    [
+                        Atom(
+                            "*",
+                        ),
+                        List(
+                            [
+                                Atom(
+                                    "nmos",
+                                ),
+                                Atom(
+                                    "6",
+                                ),
+                            ],
+                        ),
+                        Atom(
+                            "2",
+                        ),
+                    ],
+                ),
+            ],
+        ),
     ),
-    "T_rise_and_y": List(
-        [
-            Atom(
-                "elmore",
-            ),
-            List(
-                [
-                    Atom(
-                        "wire",
-                    ),
-                    Atom(
-                        "L_and_y",
-                    ),
-                ],
-            ),
-            List(
-                [
-                    Atom(
-                        "pmos",
-                    ),
-                    Atom(
-                        "14.5",
-                    ),
-                ],
-            ),
-        ],
+    "T_rise_and_y": TimingExpr(
+        List(
+            [
+                Atom(
+                    "elmore",
+                ),
+                List(
+                    [
+                        Atom(
+                            "wire",
+                        ),
+                        Atom(
+                            "L_and_y",
+                        ),
+                    ],
+                ),
+                List(
+                    [
+                        Atom(
+                            "pmos",
+                        ),
+                        Atom(
+                            "14.5",
+                        ),
+                    ],
+                ),
+            ],
+        ),
     ),
-    "T_rise_dist_nand_a_y_p": List(
-        [
-            Atom(
-                "elmore",
-            ),
-            List(
-                [
-                    Atom(
-                        "wire",
-                    ),
-                    Atom(
-                        "L_dist_nand_a_y_p",
-                    ),
-                ],
-            ),
-            List(
-                [
-                    Atom(
-                        "pmos",
-                    ),
-                    Atom(
-                        "3",
-                    ),
-                ],
-            ),
-        ],
+    "T_rise_dist_nand_a_y_p": TimingExpr(
+        List(
+            [
+                Atom(
+                    "elmore",
+                ),
+                List(
+                    [
+                        Atom(
+                            "wire",
+                        ),
+                        Atom(
+                            "L_dist_nand_a_y_p",
+                        ),
+                    ],
+                ),
+                List(
+                    [
+                        Atom(
+                            "pmos",
+                        ),
+                        Atom(
+                            "3",
+                        ),
+                    ],
+                ),
+            ],
+        ),
     ),
-    "T_rise_dist_nand_b_y_p": List(
-        [
-            Atom(
-                "elmore",
-            ),
-            List(
-                [
-                    Atom(
-                        "wire",
-                    ),
-                    Atom(
-                        "L_dist_nand_b_y_p",
-                    ),
-                ],
-            ),
-            List(
-                [
-                    Atom(
-                        "pmos",
-                    ),
-                    Atom(
-                        "3",
-                    ),
-                ],
-            ),
-        ],
+    "T_rise_dist_nand_b_y_p": TimingExpr(
+        List(
+            [
+                Atom(
+                    "elmore",
+                ),
+                List(
+                    [
+                        Atom(
+                            "wire",
+                        ),
+                        Atom(
+                            "L_dist_nand_b_y_p",
+                        ),
+                    ],
+                ),
+                List(
+                    [
+                        Atom(
+                            "pmos",
+                        ),
+                        Atom(
+                            "3",
+                        ),
+                    ],
+                ),
+            ],
+        ),
     ),
-    "T_rise_dist_nor_y_p": List(
-        [
-            Atom(
-                "elmore",
-            ),
-            List(
-                [
-                    Atom(
-                        "wire",
-                    ),
-                    Atom(
-                        "L_dist_nor_y_p",
-                    ),
-                ],
-            ),
-            List(
-                [
-                    Atom(
-                        "pmos",
-                    ),
-                    Atom(
-                        "5",
-                    ),
-                ],
-            ),
-        ],
+    "T_rise_dist_nor_y_p": TimingExpr(
+        List(
+            [
+                Atom(
+                    "elmore",
+                ),
+                List(
+                    [
+                        Atom(
+                            "wire",
+                        ),
+                        Atom(
+                            "L_dist_nor_y_p",
+                        ),
+                    ],
+                ),
+                List(
+                    [
+                        Atom(
+                            "pmos",
+                        ),
+                        Atom(
+                            "5",
+                        ),
+                    ],
+                ),
+            ],
+        ),
     ),
-    "T_rise_nand": List(
-        [
-            Atom(
-                "elmore",
-            ),
-            List(
-                [
-                    Atom(
-                        "wire",
-                    ),
-                    Atom(
-                        "24",
-                    ),
-                ],
-            ),
-            List(
-                [
-                    Atom(
-                        "pmos",
-                    ),
-                    Atom(
-                        "3.0",
-                    ),
-                ],
-            ),
-        ],
+    "T_rise_nand": TimingExpr(
+        List(
+            [
+                Atom(
+                    "elmore",
+                ),
+                List(
+                    [
+                        Atom(
+                            "wire",
+                        ),
+                        Atom(
+                            "24",
+                        ),
+                    ],
+                ),
+                List(
+                    [
+                        Atom(
+                            "pmos",
+                        ),
+                        Atom(
+                            "3.0",
+                        ),
+                    ],
+                ),
+            ],
+        ),
     ),
-    "T_rise_nand_a_y": List(
-        [
-            Atom(
-                "elmore",
-            ),
-            List(
-                [
-                    Atom(
-                        "wire",
-                    ),
-                    Atom(
-                        "L_nand_a_y",
-                    ),
-                ],
-            ),
-            List(
-                [
-                    Atom(
-                        "pmos",
-                    ),
-                    Atom(
-                        "13",
-                    ),
-                ],
-            ),
-        ],
+    "T_rise_nand_a_y": TimingExpr(
+        List(
+            [
+                Atom(
+                    "elmore",
+                ),
+                List(
+                    [
+                        Atom(
+                            "wire",
+                        ),
+                        Atom(
+                            "L_nand_a_y",
+                        ),
+                    ],
+                ),
+                List(
+                    [
+                        Atom(
+                            "pmos",
+                        ),
+                        Atom(
+                            "13",
+                        ),
+                    ],
+                ),
+            ],
+        ),
     ),
 }

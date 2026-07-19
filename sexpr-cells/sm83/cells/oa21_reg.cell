@@ -8,7 +8,13 @@
 
   (assignments
 
-    (t0 (or in1 in2) 0)
-    (y (and t0 in3) (+ (elmore (wire 20) (* (nmos 3) 2)) (elmore (wire L_y) (pmos 9))))
+    (t0 (or in1 in2) (delay 0))
+    (y
+      (and t0 in3)
+      (delay
+        (+ (elmore (wire 20) (* (nmos 3) 2)) (elmore (wire L_y) (pmos 9)))
+        (+ (elmore (wire 20) (* (pmos 3) 2)) (elmore (wire L_y) (nmos 5)))
+      )
+    )
   )
 )

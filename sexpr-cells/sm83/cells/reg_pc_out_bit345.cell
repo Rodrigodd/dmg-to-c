@@ -36,9 +36,9 @@
 
   (assignments
 
-    (t0 (and in1 in2) 0)
-    (t1 (and in3 in4) 0)
-    (t2 (or t0 t1) 0)
+    (t0 (and in1 in2) (delay 0))
+    (t1 (and in3 in4) (delay 0))
+    (t2 (or t0 t1) (delay 0))
     (y1
       (bufif1-strength
         0
@@ -46,11 +46,15 @@
         highz1
         strong0
       )
-      (elmore (wire L_y1) (* (nmos 8) 2))
+      (delay
+        (elmore (wire L_y1) (* (nmos 8) 2))
+        (elmore (wire L_y1) (* (nmos 8) 2))
+        (elmore (wire L_y1) (* (nmos 8) 2))
+      )
     )
-    (t3 (and in5 in6) 0)
-    (t4 (and in7 in6) 0)
-    (t5 (or t3 t4) 0)
+    (t3 (and in5 in6) (delay 0))
+    (t4 (and in7 in6) (delay 0))
+    (t5 (or t3 t4) (delay 0))
     (y2
       (bufif1-strength
         0
@@ -58,9 +62,13 @@
         highz1
         strong0
       )
-      (elmore (wire L_y2) (* (nmos 8) 2))
+      (delay
+        (elmore (wire L_y2) (* (nmos 8) 2))
+        (elmore (wire L_y2) (* (nmos 8) 2))
+        (elmore (wire L_y2) (* (nmos 8) 2))
+      )
     )
-    (t6 (and in5 in8) 0)
+    (t6 (and in5 in8) (delay 0))
     (y3
       (bufif1-strength
         0
@@ -68,9 +76,13 @@
         highz1
         strong0
       )
-      (elmore (wire L_y3) (* (nmos 8) 2))
+      (delay
+        (elmore (wire L_y3) (* (nmos 8) 2))
+        (elmore (wire L_y3) (* (nmos 8) 2))
+        (elmore (wire L_y3) (* (nmos 8) 2))
+      )
     )
-    (t7 (and in7 in8) 0)
+    (t7 (and in7 in8) (delay 0))
     (y4
       (bufif1-strength
         0
@@ -78,7 +90,11 @@
         highz1
         strong0
       )
-      (elmore (wire L_y4) (* (nmos 8) 2))
+      (delay
+        (elmore (wire L_y4) (* (nmos 8) 2))
+        (elmore (wire L_y4) (* (nmos 8) 2))
+        (elmore (wire L_y4) (* (nmos 8) 2))
+      )
     )
     (y4
       (bufif1-strength
@@ -87,13 +103,17 @@
         highz1
         strong0
       )
-      (elmore (wire L_y4) (* (nmos 8) 2))
+      (delay
+        (elmore (wire L_y4) (* (nmos 8) 2))
+        (elmore (wire L_y4) (nmos 8))
+        (elmore (wire L_y4) (* (nmos 8) 2))
+      )
     )
-    (t8 (and in11 in12) 0)
-    (t9 (and in13 in14) 0)
-    (t10 (and in19 in20) 0)
-    (t11 (or t8 t9 t10) 0)
-    (t12 (and in10 t11) 0)
+    (t8 (and in11 in12) (delay 0))
+    (t9 (and in13 in14) (delay 0))
+    (t10 (and in19 in20) (delay 0))
+    (t11 (or t8 t9 t10) (delay 0))
+    (t12 (and in10 t11) (delay 0))
     (y5
       (bufif1-strength
         0
@@ -101,9 +121,13 @@
         highz1
         strong0
       )
-      (elmore (wire L_y5) (* (nmos 5) 3))
+      (delay
+        (elmore (wire L_y5) (* (nmos 5) 3))
+        (elmore (wire L_y5) (* (nmos 5) 3))
+        (elmore (wire L_y5) (* (nmos 5) 3))
+      )
     )
-    (t13 (and in10 in18) 0)
+    (t13 (and in10 in18) (delay 0))
     (y5
       (bufif1-strength
         0
@@ -111,11 +135,15 @@
         highz1
         strong0
       )
-      (elmore (wire L_y5) (* (nmos 5) 3))
+      (delay
+        (elmore (wire L_y5) (* (nmos 5) 3))
+        (elmore (wire L_y5) (* (nmos 5) 2))
+        (elmore (wire L_y5) (* (nmos 5) 3))
+      )
     )
-    (t14 (and in10 in15 in16) 0)
-    (t15 (and in10 in13 in17) 0)
-    (t16 (or t14 t15) 0)
+    (t14 (and in10 in15 in16) (delay 0))
+    (t15 (and in10 in13 in17) (delay 0))
+    (t16 (or t14 t15) (delay 0))
     (y6
       (bufif1-strength
         0
@@ -123,7 +151,11 @@
         highz1
         strong0
       )
-      (elmore (wire L_y6) (* (nmos 5) 3))
+      (delay
+        (elmore (wire L_y6) (* (nmos 5) 3))
+        (elmore (wire L_y6) (* (nmos 5) 3))
+        (elmore (wire L_y6) (* (nmos 5) 3))
+      )
     )
   )
 )

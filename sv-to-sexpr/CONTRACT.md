@@ -16,7 +16,7 @@ Each input file produces exactly one form:
   (outputs output_port inout_port_if_driven ...)
   (registers (modeled_state initial_value) ...)
   (assignments
-    (target value-expression delay-expression)
+    (target value-expression (delay timing-expression ...))
     ...
   )
 )
@@ -26,9 +26,10 @@ Names and literals are atoms. A value expression is either one atom or one
 legal value operator whose operands are all non-empty atoms. Operator-valued
 operands are forbidden. Compound source expressions are split in dependency
 order into assignments to deterministic `t0`, `t1`, ... temporaries. Thus
-`(t0 (not a) 0)` followed by `(y (and t0 b) 0)` is legal, while
-`(y (and (not a) b) 0)` is not. Timing expressions have their own operator set
-and may nest recursively.
+`(t0 (not a) (delay 0))` followed by
+`(y (and t0 b) (delay 0))` is legal, while
+`(y (and (not a) b) (delay 0))` is not. Timing expressions have their own
+operator set and may nest recursively inside each delay-tuple component.
 
 `inputs` contains input ports plus inouts that are read. `outputs` contains
 output ports plus inouts that are driven. `registers` contains only modeled
@@ -76,12 +77,12 @@ them by strength kind or driven value. Strength names are atoms from the typed
 
 ## Drivers, state, hierarchy, and strength
 
-An ordinary continuous or procedural driver is `(target value delay)`. Every
-source driver is retained as a separate assignment in source order. Multiple
-drivers are never collapsed into `and` or `or`. A high-impedance branch is
-represented only as the disabled side of `bufif0`/`bufif1`; it is not emitted
-as an ordinary `(mux ... z ...)` value. Signal-valued and literal-valued drives
-use the same form.
+An ordinary continuous or procedural driver is
+`(target value (delay timing-expression ...))`. Every source driver is retained
+as a separate assignment in source order. Multiple drivers are never collapsed
+into `and` or `or`. A high-impedance branch is represented only as the disabled
+side of `bufif0`/`bufif1`; it is not emitted as an ordinary `(mux ... z ...)`
+value. Signal-valued and literal-valued drives use the same form.
 
 An `initial` target and a target with supported stateful procedural retention
 is listed in `registers`. A selected scalar `initial` assignment is accepted
@@ -96,18 +97,18 @@ non-blocking syntax does not change this representation; source-defined
 priority must be preserved.
 
 A keeper instance becomes a distinct zero-delay driver
-`(held_net (keeper) 0)`. It is not a register and is not merged with tri-state
-drivers. This records retention intent without claiming analog charge or keeper
-strength simulation. The accepted source shape is exactly one positional scalar
-visible target and no parameter overrides; named, missing, extra, compound, or
-unknown connections are source-spanned errors.
+`(held_net (keeper) (delay 0))`. It is not a register and is not merged with
+tri-state drivers. This records retention intent without claiming analog charge
+or keeper strength simulation. The accepted source shape is exactly one
+positional scalar visible target and no parameter overrides; named, missing,
+extra, compound, or unknown connections are source-spanned errors.
 
 Transistors are direct drivers:
 
 ```scheme
-(drain (nmos source gate) delay)
-(drain (pmos source gate) delay)
-(drain (rnmos source gate) delay)
+(drain (nmos source gate) (delay timing-expression ...))
+(drain (pmos source gate) (delay timing-expression ...))
+(drain (rnmos source gate) (delay timing-expression ...))
 ```
 
 The forms preserve primitive kind, source, gate polarity semantics, driver
@@ -125,10 +126,10 @@ strength-qualified tri-state primitive uses `bufif0-strength` or
 corpus forms include:
 
 ```scheme
-(pad (bufif0-strength 1 pdrv_n strong1 highz0) delay)
-(pad (bufif1-strength 0 ndrv highz1 strong0) delay)
-(pad (bufif0-strength 1 ena_n_pu pull1 highz0) delay)
-(vdd (drive-strength 1 supply1 supply0) 0)
+(pad (bufif0-strength 1 pdrv_n strong1 highz0) (delay T_rise T_fall T_z))
+(pad (bufif1-strength 0 ndrv highz1 strong0) (delay T_rise T_fall T_z))
+(pad (bufif0-strength 1 ena_n_pu pull1 highz0) (delay T_rise T_fall T_z))
+(vdd (drive-strength 1 supply1 supply0) (delay 0))
 ```
 
 The complete corpus set is `(strong1, highz0)`, `(highz1, strong0)`,
@@ -171,12 +172,27 @@ above rather than ordinary flattening.
 
 ## Timing
 
-A missing source delay is the atom `0`. For every one-, two-, or three-entry
-SystemVerilog delay tuple, exactly the first entry is selected. Later entries
-are parsed and recorded as intentional ignores because the DSL has no separate
-rise/fall/turn-off timing. They are never summed. An explicitly omitted first
-entry, such as `#(, T_fall)`, is an error; it has no unambiguous single-delay
-meaning.
+Every assignment has exactly one tagged delay tuple with one of these forms:
+
+```scheme
+(delay value)
+(delay rise fall)
+(delay rise fall turn-off)
+```
+
+The tag keeps timing metadata distinct from the value expression. A selected
+one-, two-, or three-entry SystemVerilog delay tuple preserves the same arity,
+entry order, and expression structure. Entries are never added to one another,
+copied to fill another transition, or discarded. A missing source delay is the
+one-entry tuple `(delay 0)`. The supported corpus has no omitted tuple
+component; an explicitly omitted component, including `#(, T_fall)`, is an
+error until the DSL contracts an equally explicit representation for the hole.
+
+Downstream compilation or simulation may select the first component as a
+compatibility policy, select a named transition component, or use the tuple by
+output transition. That selection is outside conversion: the converter always
+retains and serializes the complete tuple. A first-component projection helper
+exists only as a compatibility and regression oracle.
 
 The timing operator table is exhaustive. Unlike value expressions, timing
 operands may recursively be timing expressions.
@@ -194,7 +210,8 @@ operands may recursively be timing expressions.
 | `gt` | 2 | `(gt (* 0.2 T_fall_y1) T_Z_min)` |
 | `mux` | 3 | `(mux (gt (* 0.2 T_fall_y1) T_Z_min) (* 0.2 T_fall_y1) T_Z_min)` |
 
-For example, `(+ (elmore (wire L_y) (pmos 5)) extra_delay)` is legal.
+For example,
+`(delay (+ (elmore (wire L_y) (pmos 5)) extra_delay) T_fall_y)` is legal.
 The nested `mux` example is the exact timing clamp shape used by
 `alu_decoder.sv`. Only greater-than is contracted for timing comparison;
 less-than remains an error because no curated timing form requires it.
@@ -207,16 +224,25 @@ selected expression and may not be dropped. Arbitrary timing calls are errors.
 An explicit continuous-assignment or primitive delay takes precedence over
 specify timing. When a source-level continuous, primitive, or procedural
 assignment has no explicit delay, specify lookup uses only its scalar target
-symbol; generated SSA temporaries always retain delay `0`. A single matching
-specify path contributes its selected first tuple entry. If multiple
-control-dependent paths target the same symbol, the one-delay DSL selects the
-first path in source order. Each additional-path control distinction is a
-documented approximation: lowering emits one intentional-ignore diagnostic per
-used target at the second matching path, stating that the additional path is
-ignored because the one-delay DSL selects the first source-ordered path for the
-target. Every specify tuple is still validated and every entry after the first
-is recorded as an intentional ignore, even when that path is not selected by an
-assignment.
+symbol; generated value-SSA temporaries retain `(delay 0)`. A single matching
+specify path contributes its complete tuple.
+
+Milestone 14 temporarily preserves the original target-only specify lookup: if
+multiple control-dependent paths target the same symbol, the first path in
+source order supplies the assignment's complete delay tuple. Lowering emits one
+intentional-ignore diagnostic per used target at the second matching path,
+stating that the additional control-dependent path is deferred. Every path and
+every tuple component is still parsed, validated, and retained by analysis;
+tuple components themselves are not intentional ignores.
+
+Milestones 15 through 17 replace that temporary approximation. They retain all
+control-to-target paths as internal timing constraints, relate them to the
+functional dependency graph, and distribute exact tuples over ordinary
+assignments, including deterministic delay-only identity assignments and
+raw/public output splits where required. Those constraints are an internal
+lowering input and verification oracle only. The cell DSL does not serialize
+timing arcs or a timing table, and an unrepresentable decomposition is an error
+rather than a first-path fallback.
 
 ## Diagnostics and strict mode
 
@@ -229,14 +255,15 @@ assignment.
   from the model. It is printed/tracked separately and never masquerades as
   support or as a warning. Strict mode does not promote it.
 
-The only intentional ignores currently authorized are: delay tuple entries
-after the first; additional control-dependent specify paths after the first
-source-ordered path selected for each used scalar target; comments and
-formatting; and directives/imports proven by analysis to affect neither
-elaborated values nor behavior (the corpus license/timescale and package imports
-whose referenced parameters are resolved). Register initial values and
-strengths are preserved metadata, not intentional ignores. Unknown
-directives/import effects are errors.
+The only intentional ignores currently authorized are: additional
+control-dependent specify paths after the first source-ordered path selected for
+each used scalar target during Milestone 14; comments and formatting; and
+directives/imports proven by analysis to affect neither elaborated values nor
+behavior (the corpus license/timescale and package imports whose referenced
+parameters are resolved). Delay tuple entries, register initial values, and
+strengths are preserved metadata, not intentional ignores. Milestone 17 removes
+the temporary additional-path ignore. Unknown directives/import effects are
+errors.
 
 All diagnostic-capable commands accept `--strict`. Because current stage APIs
 return errors but do not yet produce warnings, accepting the option does not
@@ -262,12 +289,12 @@ contract before any newly discovered corpus category can be emitted.
 | `ItemKind::AlwaysLatch(AlwaysLatch)` | Stateful condition/body analysis M3 and source-ordered next-state lowering M5. |
 | `ItemKind::Always(AlwaysBlock)`; `AlwaysKind::{Plain, Comb, Ff}` | Sensitivity/driver analysis M3; supported scalar procedural lowering M5. Ambiguous state or unsupported combinational procedures are errors. |
 | `Sensitivity::{Any, List}`; `EventControl` with optional edge/expression | Parsed M2; stateful event classification M3; supported procedural lowering M5. Unknown edge names or omitted required event expressions are errors. |
-| `ItemKind::Assign(AssignDecl)` | Continuous scalar driver analysis M3; flat SSA M4; repeated/tri-state drivers M6; selected-first delay M7. |
+| `ItemKind::Assign(AssignDecl)` | Continuous scalar driver analysis M3; flat SSA M4; repeated/tri-state drivers M6; symbolic timing M7; complete delay tuples M14. |
 | `ItemKind::Primitive(PrimitiveCall)` | `bufif0`/`bufif1` lower in M6; `nmos`/`pmos`/`rnmos` in M11. Unknown names, omitted required arguments, and wrong arity are errors. |
 | `ItemKind::Instantiation(Instantiation)` | Named/positional hierarchy and overrides flatten in M9; recognized `keeper` instances use M10. Unknown/recursive modules are errors. |
 | `ParamOverride::{Named, Positional}`; `Connection::{Named, Positional}` | Parsed M2, resolved and substituted M9. Omitted positional parameter entries remain explicit; invalid/unknown ports or parameters are errors. |
 | `Strength` | Exact pair metadata lowers with contracted strength driver forms in M6. Known pairs are `strong1/highz0`, `highz1/strong0`, `pull1/highz0`, and `supply1/supply0`; unknown combinations or resolution-dependent behavior are errors. |
-| `Delay` (`Vec<Option<Expr>>`) | M7 selects exactly entry zero. Entries after zero are intentional-ignore; absent delay becomes `0`; omitted entry zero is an error. |
+| `Delay` (`Vec<Option<Expr>>`) | M14 preserves every present entry as `DelayTuple::{One, Two, Three}`; absent delay becomes `(delay 0)`; any omitted component is an error under the current contract. |
 | `ItemKind::Specify(SpecifyBlock)`; `SpecifyItem::{Specparam, Path}`; `SpecPath` | Parsed M2, preserved/analyzed M3, alias/path timing lowered M7. Unsupported conditional/path structure is an error. |
 | `ItemKind::Generate(Block)` | Alternatives remain separate in M3; exactly one configured `nodelay` branch is selected in M8. Unresolved generate conditions are errors. |
 | `ItemKind::Block(Block)`, `ItemKind::If(IfStmt)` | Typed nesting M2; procedural priority M5 or generate selection M8 according to context. Unsupported `else`/context is an error, never dropped. |
@@ -293,11 +320,11 @@ contract before any newly discovered corpus category can be emitted.
 | Latches, generated DFF/TFF variants, nested priority `if`, reset/enable logic | State analysis M3, next-state lowering M5, and exact four-state register initialization metadata M13; absent initialization is `x`. |
 | High-Z ternaries, direct `bufif*`, precharge/open-drain, and repeated drivers | Source-ordered driver lowering M6; high-Z ternaries normalize only to polarity-equivalent `bufif0`/`bufif1`. |
 | `(strong1, highz0)`, `(highz1, strong0)`, `(pull1, highz0)`, `(supply1, supply0)` | Exact strength-bearing driver forms M6, with no claim of strength-resolution simulation. |
-| One/two/three-entry tuples; timing aliases and paths; `tpd_elmore`, `tpd_z`; resistance factors including real factors | Selected-first symbolic timing M7. Later tuple entries are intentional-ignore and never summed. |
+| One/two/three-entry tuples; timing aliases and paths; `tpd_elmore`, `tpd_z`; resistance factors including real factors | Symbolic timing expressions M7; exact tuple arity and every component preserved M14; complete path decomposition into assignment delays M15-M17. Tuple entries are never summed together. |
 | `(0.2 * T_fall_yN) > T_Z_min ? (0.2 * T_fall_yN) : T_Z_min` in `alu_decoder.sv` | Nested timing `(mux (gt ...) ... ...)` clamp M7; this does not contract general runtime ternaries or less-than comparisons. |
 | `if (nodelay)` generate alternatives | Exactly one M8 branch: delayful/false by default, nodelay/true only by explicit configuration; the unselected branch is not a driver. |
 | Named/positional half-adder and full-adder instances with parameter overrides | Deterministic instance-qualified flattening, substitution, and dependency/source order M9. |
-| `keeper` instances in mux, pad, IDU, and register-bus cells | Direct source-ordered `(held_net (keeper) 0)` driver M10, never a register. |
+| `keeper` instances in mux, pad, IDU, and register-bus cells | Direct source-ordered `(held_net (keeper) (delay 0))` driver M10, never a register. |
 | `nmos`, `pmos`, `rnmos` in IRQ priority, IDU, and bus-injection cells | Direct typed transistor drivers M11; polarity and `rnmos` distinction preserved, compound inputs first flattened to SSA atoms. |
 | License/timescale directives, comments, and formatting | Intentional-ignore only after M1/M3 proves no elaboration/behavior effect. Unknown directives are errors. |
 | Curated package imports | Intentional-ignore only after referenced parameters resolve; unresolved import effects are errors. |

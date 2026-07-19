@@ -188,7 +188,10 @@ endmodule
     fn default_selects_else_and_explicit_nodelay_selects_then() {
         let delayful = lower_file(Path::new("generate_test.sv"), SELECTABLE).unwrap();
         assert_eq!(assignment_targets(&delayful), ["slow", "y"]);
-        assert_eq!(delayful.timing_aliases["T_sel"], IrExpr::Atom("2".into()));
+        assert_eq!(
+            delayful.timing_aliases["T_sel"].as_expr(),
+            &IrExpr::Atom("2".into())
+        );
         assert!(
             !delayful
                 .cell
@@ -204,7 +207,10 @@ endmodule
         )
         .unwrap();
         assert_eq!(assignment_targets(&nodelay), ["fast", "y"]);
-        assert_eq!(nodelay.timing_aliases["T_sel"], IrExpr::Atom("1".into()));
+        assert_eq!(
+            nodelay.timing_aliases["T_sel"].as_expr(),
+            &IrExpr::Atom("1".into())
+        );
         assert!(
             !nodelay
                 .cell

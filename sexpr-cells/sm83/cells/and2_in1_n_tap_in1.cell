@@ -8,12 +8,21 @@
 
   (assignments
 
-    (tap_in1 (not in1_n) (elmore (wire L_tap_in1) (pmos 3)))
+    (tap_in1
+      (not in1_n)
+      (delay (elmore (wire L_tap_in1) (pmos 3)) (elmore (wire L_tap_in1) (nmos 3)))
+    )
     (y
       (and tap_in1 in2)
-      (+
-        (+ (elmore (wire L_tap_in1) (pmos 3)) (elmore (wire 40) (* (nmos 3) 2)))
-        (elmore (wire L_y) (pmos 3))
+      (delay
+        (+
+          (+ (elmore (wire L_tap_in1) (pmos 3)) (elmore (wire 40) (* (nmos 3) 2)))
+          (elmore (wire L_y) (pmos 3))
+        )
+        (+
+          (+ (elmore (wire L_tap_in1) (nmos 3)) (elmore (wire 40) (pmos 3)))
+          (elmore (wire L_y) (nmos 3))
+        )
       )
     )
   )

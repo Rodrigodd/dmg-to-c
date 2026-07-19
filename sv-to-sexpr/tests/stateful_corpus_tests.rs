@@ -14,7 +14,9 @@ use sv_to_sexpr::analyze::{
 use sv_to_sexpr::ast::{AssignOp, ExprKind, Item, ItemKind};
 use sv_to_sexpr::diagnostic::{Diagnostic, DiagnosticKind, DiagnosticPolicy, Span};
 use sv_to_sexpr::elaborate::{GenerateMode, elaborate_design};
-use sv_to_sexpr::ir::{Assignment, Cell, CellItem, Expr, LogicValue, LoweredModule, ValueOperator};
+use sv_to_sexpr::ir::{
+    Assignment, Cell, CellItem, DelayTuple, Expr, LogicValue, LoweredModule, ValueOperator,
+};
 use sv_to_sexpr::lower::lower_file;
 use sv_to_sexpr::parser::parse_file;
 use sv_to_sexpr::serialize::render_cell;
@@ -712,7 +714,7 @@ fn audit_success(
         } else {
             totals.direct_state_assignments += 1;
         }
-        if emitted.delay != Expr::atom("0") {
+        if !is_zero_delay(&emitted.delay) {
             totals.nonzero_state_delays += 1;
         }
     }
@@ -746,18 +748,12 @@ fn audit_success(
         }
     }
 
-    let expected_delay_ignores = count_later_timing_entries(source_items);
     let delay_diagnostics = lowered
         .diagnostics
         .iter()
         .filter(|diagnostic| diagnostic.message.starts_with("delay tuple entry "))
         .collect::<Vec<_>>();
-    if delay_diagnostics.len() != expected_delay_ignores
-        || delay_diagnostics.iter().any(|diagnostic| {
-            diagnostic.kind != DiagnosticKind::IntentionalIgnore
-                || DiagnosticPolicy::new(true).is_failure(diagnostic)
-        })
-    {
+    if !delay_diagnostics.is_empty() {
         totals.delay_diagnostic_mismatches += 1;
     }
     totals.successful_delay_tuple_omissions += delay_diagnostics.len();
@@ -801,51 +797,8 @@ fn audit_success(
     }
 }
 
-fn count_later_timing_entries(items: &[Item]) -> usize {
-    items
-        .iter()
-        .map(|item| match &item.kind {
-            ItemKind::Assign(assign) => assign
-                .delay
-                .as_ref()
-                .map(|delay| delay.values.len().saturating_sub(1))
-                .unwrap_or(0),
-            ItemKind::Primitive(call) => call
-                .delay
-                .as_ref()
-                .map(|delay| delay.values.len().saturating_sub(1))
-                .unwrap_or(0),
-            ItemKind::Generate(block) | ItemKind::Block(block) => {
-                count_later_timing_entries(&block.items)
-            }
-            ItemKind::If(if_stmt) => {
-                count_later_timing_entries(std::slice::from_ref(&if_stmt.then_branch))
-                    + if_stmt
-                        .else_branch
-                        .as_ref()
-                        .map(|item| count_later_timing_entries(std::slice::from_ref(item)))
-                        .unwrap_or(0)
-            }
-            ItemKind::Specify(specify) => specify
-                .items
-                .iter()
-                .map(|item| match item {
-                    sv_to_sexpr::ast::SpecifyItem::Path(path) => {
-                        path.delays.len().saturating_sub(1)
-                    }
-                    sv_to_sexpr::ast::SpecifyItem::Specparam(_) => 0,
-                })
-                .sum(),
-            ItemKind::Import(_)
-            | ItemKind::Decl(_)
-            | ItemKind::Initial(_)
-            | ItemKind::ProcAssign(_)
-            | ItemKind::AlwaysLatch(_)
-            | ItemKind::Always(_)
-            | ItemKind::Instantiation(_)
-            | ItemKind::Empty => 0,
-        })
-        .sum()
+fn is_zero_delay(delay: &DelayTuple) -> bool {
+    delay.len() == 1 && delay.first().as_expr() == &Expr::atom("0")
 }
 
 fn assignments(cell: &Cell) -> Vec<&Assignment> {
@@ -1126,7 +1079,7 @@ fn assert_zero_invariant_failures(totals: &AuditTotals) {
     assert_eq!(totals.initial_one, 0);
     assert_eq!(totals.initial_x, 6);
     assert_eq!(totals.initial_z, 0);
-    assert_eq!(totals.successful_delay_tuple_omissions, 79);
+    assert_eq!(totals.successful_delay_tuple_omissions, 0);
     assert_eq!(totals.successful_specify_ignores, 15);
     assert_eq!(totals.nonzero_state_delays, 26);
     assert_eq!(totals.combinational_procedural_nonregisters, 0);

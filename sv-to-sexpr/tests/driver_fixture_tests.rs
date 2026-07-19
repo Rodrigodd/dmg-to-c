@@ -37,7 +37,7 @@ const CASES: &[FixtureCase] = &[
             ("t1", "(not t0)"),
             ("y", "(bufif0 t1 ena_n)"),
         ],
-        expected_intentional_ignores: 4,
+        expected_intentional_ignores: 1,
     },
     FixtureCase {
         name: "open_drain",
@@ -50,7 +50,7 @@ const CASES: &[FixtureCase] = &[
             ("t0", "(and in1 in2)"),
             ("y", "(bufif1-strength 0 t0 highz1 strong0)"),
         ],
-        expected_intentional_ignores: 2,
+        expected_intentional_ignores: 0,
     },
     FixtureCase {
         name: "precharge",
@@ -60,7 +60,7 @@ const CASES: &[FixtureCase] = &[
         source_targets: &["y"],
         temporary_indices: &[],
         expected_values: &[("y", "(bufif0-strength 1 pch_n strong1 highz0)")],
-        expected_intentional_ignores: 2,
+        expected_intentional_ignores: 0,
     },
     FixtureCase {
         name: "pad_bidir_pu",
@@ -75,7 +75,7 @@ const CASES: &[FixtureCase] = &[
             ("pad", "(bufif0-strength 1 ena_n_pu pull1 highz0)"),
             ("i_n", "(not pad)"),
         ],
-        expected_intentional_ignores: 4,
+        expected_intentional_ignores: 0,
     },
     FixtureCase {
         name: "repeated_bus",
@@ -113,7 +113,7 @@ const CASES: &[FixtureCase] = &[
             ("t15", "(or t13 t14)"),
             ("y6", "(bufif1-strength 0 t15 highz1 strong0)"),
         ],
-        expected_intentional_ignores: 16,
+        expected_intentional_ignores: 0,
     },
     FixtureCase {
         name: "supply_tie",
@@ -201,13 +201,9 @@ fn driver_goldens_are_typed_flat_deterministic_and_source_complete() {
         for diagnostic in &first.diagnostics {
             match diagnostic.kind {
                 DiagnosticKind::IntentionalIgnore => assert!(
-                    diagnostic.message
-                        == "delay tuple entry 2 is intentionally ignored because the cell model selects only entry 1"
-                        || diagnostic.message
-                            == "delay tuple entry 3 is intentionally ignored because the cell model selects only entry 1"
-                        || diagnostic
-                            .message
-                            .starts_with("additional control-dependent specify path for target `")
+                    diagnostic
+                        .message
+                        .starts_with("additional control-dependent specify path for target `")
                 ),
                 DiagnosticKind::Warning => panic!("unexpected lowering warning diagnostic"),
                 DiagnosticKind::Error => panic!("unexpected lowering error diagnostic"),
@@ -428,10 +424,7 @@ fn assert_flat_strength_and_dependency_contract(
                 }
             }
         }
-        assignment
-            .delay
-            .validate_timing("reviewed driver delay")
-            .unwrap();
+        assignment.delay.validate("reviewed driver delay").unwrap();
         if generated_names.contains(&assignment.target) {
             assert!(available.insert(assignment.target.clone()));
         }

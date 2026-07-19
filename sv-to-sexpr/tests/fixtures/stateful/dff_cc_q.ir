@@ -6,43 +6,43 @@ registers: [ff=0, q=0]
 assignments:
   0: t0
     value: op(and; atom(d), atom(clk_n))
-    delay: atom(0)
+    delay: tuple(atom(0))
   1: t1
     value: op(not; atom(d))
-    delay: atom(0)
+    delay: tuple(atom(0))
   2: t2
     value: op(not; atom(clk))
-    delay: atom(0)
+    delay: tuple(atom(0))
   3: t3
     value: op(and; atom(t1), atom(t2))
-    delay: atom(0)
+    delay: tuple(atom(0))
   4: t4
     value: op(or; atom(t0), atom(t3))
-    delay: atom(0)
+    delay: tuple(atom(0))
   5: t5
     value: op(not; atom(d))
-    delay: atom(0)
+    delay: tuple(atom(0))
   6: ff
     value: op(mux; atom(t4), atom(t5), atom(ff))
-    delay: atom(0)
+    delay: tuple(atom(0))
   7: t6
     value: op(and; atom(ff), atom(clk))
-    delay: atom(0)
+    delay: tuple(atom(0))
   8: t7
     value: op(not; atom(ff))
-    delay: atom(0)
+    delay: tuple(atom(0))
   9: t8
     value: op(not; atom(clk_n))
-    delay: atom(0)
+    delay: tuple(atom(0))
   10: t9
     value: op(and; atom(t7), atom(t8))
-    delay: atom(0)
+    delay: tuple(atom(0))
   11: t10
     value: op(or; atom(t6), atom(t9))
-    delay: atom(0)
+    delay: tuple(atom(0))
   12: t11
     value: op(not; atom(ff))
-    delay: atom(0)
+    delay: tuple(atom(0))
   13: q
     value: op(mux; atom(t10), atom(t11), atom(q))
-    delay: op(+; op(+; op(elmore; op(wire; atom(57)), op(*; op(pmos; atom(3)), atom(2))), op(elmore; op(wire; atom(60)), op(nmos; atom(3)))), op(elmore; op(wire; atom(L_q)), op(pmos; atom(11))))
+    delay: tuple(op(+; op(+; op(elmore; op(wire; atom(57)), op(*; op(pmos; atom(3)), atom(2))), op(elmore; op(wire; atom(60)), op(nmos; atom(3)))), op(elmore; op(wire; atom(L_q)), op(pmos; atom(11)))), op(+; op(+; op(elmore; op(wire; atom(57)), op(*; op(nmos; atom(3)), atom(2))), op(elmore; op(wire; atom(60)), op(pmos; atom(3)))), op(elmore; op(wire; atom(L_q)), op(nmos; atom(5)))))

@@ -43,14 +43,14 @@ jobs:
             check sv-cells --stage lower --strict \
             > "$RUNNER_TEMP/lower-delayful.log"
           grep -Fx \
-            "lower check summary: processed=206 warned=0 intentional-ignored=1309 failed=0" \
+            "lower check summary: processed=206 warned=0 intentional-ignored=49 failed=0" \
             "$RUNNER_TEMP/lower-delayful.log"
 
           cargo run --quiet --manifest-path sv-to-sexpr/Cargo.toml -- \
             check sv-cells --stage lower --strict --nodelay \
             > "$RUNNER_TEMP/lower-nodelay.log"
           grep -Fx \
-            "lower check summary: processed=206 warned=0 intentional-ignored=1299 failed=0" \
+            "lower check summary: processed=206 warned=0 intentional-ignored=49 failed=0" \
             "$RUNNER_TEMP/lower-nodelay.log"
 
       - name: Regenerate and compare the authoritative corpus
@@ -63,7 +63,7 @@ jobs:
             convert sv-cells "$generated" --strict --overwrite \
             > "$summary" 2> "$diagnostics"
           test "$(cat "$summary")" = \
-            "convert summary: processed=206 selected=206 skipped=0 warned=0 intentional-ignored=1309 written=206 would-write=0 failed=0"
+            "convert summary: processed=206 selected=206 skipped=0 warned=0 intentional-ignored=49 written=206 would-write=0 failed=0"
 
           find sv-cells -type f -name '*.sv' -printf '%P\n' \
             | sed 's/\.sv$/.cell/' \

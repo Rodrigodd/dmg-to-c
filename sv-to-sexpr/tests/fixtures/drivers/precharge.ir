@@ -6,4 +6,4 @@ registers: []
 assignments:
   0: y
     value: op(bufif0-strength; atom(1), atom(pch_n), strength(strong1, highz0))
-    delay: op(elmore; op(wire; atom(L_y)), op(pmos; atom(7)))
+    delay: tuple(op(elmore; op(wire; atom(L_y)), op(pmos; atom(7))), op(elmore; op(wire; atom(L_y)), op(pmos; atom(7))), op(elmore; op(wire; atom(L_y)), op(pmos; atom(7))))

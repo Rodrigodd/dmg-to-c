@@ -7,9 +7,9 @@ use lowering_support::{
     assert_or_update_fixture, lower_repository_file, render_typed_ir, repository_root,
 };
 use sv_to_sexpr::diagnostic::Span;
-use sv_to_sexpr::ir::{Assignment, Cell, CellItem, Expr, ValueOperator};
+use sv_to_sexpr::ir::{Assignment, Cell, CellItem, DelayTuple, Expr, ValueOperator};
 use sv_to_sexpr::lower::lower_file;
-use sv_to_sexpr::serialize::{render_cell, render_expr};
+use sv_to_sexpr::serialize::{render_cell, render_delay_tuple, render_expr};
 
 struct FixtureCase {
     name: &'static str,
@@ -210,12 +210,11 @@ fn assert_flat_values_and_temporary_delays(assignments: &[&Assignment], case: &F
         }
         assignment
             .delay
-            .validate_timing(&format!("{source}:{} delay", assignment.target))
+            .validate(&format!("{source}:{} delay", assignment.target))
             .unwrap();
         if !source_targets.contains(assignment.target.as_str()) {
-            assert_eq!(
-                assignment.delay,
-                Expr::atom("0"),
+            assert!(
+                is_zero_delay(&assignment.delay),
                 "generated SSA timing leaked onto {} in {source}",
                 assignment.target
             );
@@ -368,11 +367,11 @@ fn unsupported_value_and_timing_forms_report_exact_expression_spans() {
     let delayed = assignments(&delayed.cell);
     assert_eq!(delayed.len(), 2);
     assert_eq!(delayed[0].target, "t0");
-    assert_eq!(render_expr(&delayed[0].delay), "0");
+    assert_eq!(render_delay_tuple(&delayed[0].delay), "(delay 0)");
     assert_eq!(delayed[1].target, "y");
     assert_eq!(
-        render_expr(&delayed[1].delay),
-        "(mux (gt rise minimum) (+ rise extra) minimum)"
+        render_delay_tuple(&delayed[1].delay),
+        "(delay (mux (gt rise minimum) (+ rise extra) minimum))"
     );
     delayed
         .iter()
@@ -395,7 +394,7 @@ fn direct_driver_forms_lower_while_unresolved_hierarchy_fails_at_its_source() {
             render_expr(&assignments[0].expr),
             format!("({primitive} a c)")
         );
-        assert_eq!(render_expr(&assignments[0].delay), "0");
+        assert_eq!(render_delay_tuple(&assignments[0].delay), "(delay 0)");
     }
 
     let path = "diagnostics/hierarchy.sv";
@@ -414,5 +413,9 @@ fn direct_driver_forms_lower_while_unresolved_hierarchy_fails_at_its_source() {
     assert_eq!(assignments.len(), 1);
     assert_eq!(assignments[0].target, "y");
     assert_eq!(render_expr(&assignments[0].expr), "(keeper)");
-    assert_eq!(render_expr(&assignments[0].delay), "0");
+    assert_eq!(render_delay_tuple(&assignments[0].delay), "(delay 0)");
+}
+
+fn is_zero_delay(delay: &DelayTuple) -> bool {
+    delay.len() == 1 && delay.first().as_expr() == &Expr::atom("0")
 }

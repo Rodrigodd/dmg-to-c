@@ -8,6 +8,12 @@
 
   (assignments
 
-    (y (mux sel d1 d0) (+ (elmore (wire 36) (* (nmos 3) 2)) (elmore (wire L_y) (pmos 10))))
+    (y
+      (mux sel d1 d0)
+      (delay
+        (+ (elmore (wire 36) (* (nmos 3) 2)) (elmore (wire L_y) (pmos 10)))
+        (+ (elmore (wire 36) (* (pmos 3) 2)) (elmore (wire L_y) (nmos 5)))
+      )
+    )
   )
 )

@@ -8,7 +8,7 @@
 
   (assignments
 
-    (pad (drive-strength 1 pull1 highz0) 0)
-    (i_n (not pad) (elmore (wire L_i_n) (pmos 15)))
+    (pad (drive-strength 1 pull1 highz0) (delay 0))
+    (i_n (not pad) (delay (elmore (wire L_i_n) (pmos 15)) (elmore (wire L_i_n) (nmos 7))))
   )
 )

@@ -15,7 +15,7 @@
         strong1
         highz0
       )
-      (elmore (wire L_y) (pmos 7))
+      (delay (elmore (wire L_y) (pmos 7)) (elmore (wire L_y) (pmos 7)) (elmore (wire L_y) (pmos 7)))
     )
   )
 )

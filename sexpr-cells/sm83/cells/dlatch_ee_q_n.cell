@@ -8,12 +8,15 @@
 
   (assignments
 
-    (t0 (and d ena) 0)
-    (t1 (not d) 0)
-    (t2 (not ena_n) 0)
-    (t3 (and t1 t2) 0)
-    (t4 (or t0 t3) 0)
-    (t5 (not d) 0)
-    (q_n (mux t4 t5 q_n) (elmore (wire L_q_n) (* (pmos 3) 2)))
+    (t0 (and d ena) (delay 0))
+    (t1 (not d) (delay 0))
+    (t2 (not ena_n) (delay 0))
+    (t3 (and t1 t2) (delay 0))
+    (t4 (or t0 t3) (delay 0))
+    (t5 (not d) (delay 0))
+    (q_n
+      (mux t4 t5 q_n)
+      (delay (elmore (wire L_q_n) (* (pmos 3) 2)) (elmore (wire L_q_n) (* (nmos 3) 2)))
+    )
   )
 )

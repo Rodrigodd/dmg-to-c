@@ -13,11 +13,11 @@
 
   (assignments
 
-    (t1 (not reset_n) 0)
-    (t2 (and enable t1) 0)
-    (q (mux t2 0 q) 0)
-    (t3 (and set t0) 0)
-    (t4 (and enable t3) 0)
-    (q (mux t4 1 q) 0)
+    (t1 (not reset_n) (delay 0))
+    (t2 (and enable t1) (delay 0))
+    (q (mux t2 0 q) (delay 0))
+    (t3 (and set t0) (delay 0))
+    (t4 (and enable t3) (delay 0))
+    (q (mux t4 1 q) (delay 0))
   )
 )

@@ -19,7 +19,7 @@ successful-topology:
   initial-one=0
   initial-x=6
   initial-z=0
-  delay-tuple-intentional-ignores=79
+  delay-tuple-intentional-ignores=0
   specify-intentional-ignores=15
   modeled-state-delays=26
 invariant-failures:

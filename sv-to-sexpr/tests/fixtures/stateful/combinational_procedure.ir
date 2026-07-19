@@ -6,4 +6,4 @@ registers: []
 assignments:
   0: y
     value: op(and; atom(a), atom(b))
-    delay: atom(0)
+    delay: tuple(atom(0))

@@ -2,7 +2,9 @@ use std::fmt::Write as _;
 use std::fs;
 use std::path::{Path, PathBuf};
 
-use sv_to_sexpr::ir::{Cell, CellItem, Expr, TimingOperator, ValueOperator};
+use sv_to_sexpr::ir::{
+    Cell, CellItem, DelayTuple, Expr, TimingExpr, TimingOperator, ValueOperator,
+};
 use sv_to_sexpr::lower::lower_file;
 
 pub fn repository_root() -> PathBuf {
@@ -62,7 +64,7 @@ pub fn render_typed_ir(cell: &Cell) -> String {
                 writeln!(
                     &mut output,
                     "    delay: {}",
-                    render_timing(&assignment.delay)
+                    render_delay(&assignment.delay)
                 )
                 .unwrap();
             }
@@ -97,7 +99,22 @@ fn render_value(expr: &Expr) -> String {
     }
 }
 
-fn render_timing(expr: &Expr) -> String {
+fn render_delay(delay: &DelayTuple) -> String {
+    format!(
+        "tuple({})",
+        delay
+            .components()
+            .map(render_timing)
+            .collect::<Vec<_>>()
+            .join(", ")
+    )
+}
+
+fn render_timing(expr: &TimingExpr) -> String {
+    render_timing_tree(expr.as_expr())
+}
+
+fn render_timing_tree(expr: &Expr) -> String {
     match expr {
         Expr::Atom(atom) => format!("atom({atom})"),
         Expr::List(items) => {
@@ -108,7 +125,7 @@ fn render_timing(expr: &Expr) -> String {
             let operator = TimingOperator::parse(head).expect("validated timing operator");
             let operands = operands
                 .iter()
-                .map(render_timing)
+                .map(render_timing_tree)
                 .collect::<Vec<_>>()
                 .join(", ");
             format!("op({}; {operands})", operator.as_str())

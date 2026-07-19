@@ -15,7 +15,7 @@ use sv_to_sexpr::analyze::{
 use sv_to_sexpr::ast::{BinaryOp, ConstKind, Expr as SvExpr, ExprKind, Strength, UnaryOp};
 use sv_to_sexpr::diagnostic::Diagnostic;
 use sv_to_sexpr::elaborate::GenerateMode;
-use sv_to_sexpr::ir::{Assignment, Cell, CellItem, Expr, StrengthPair, ValueOperator};
+use sv_to_sexpr::ir::{Assignment, Cell, CellItem, DelayTuple, Expr, StrengthPair, ValueOperator};
 use sv_to_sexpr::lower::{lower_design_with_catalog_and_generate_mode, lower_file_structural};
 use sv_to_sexpr::parser::parse_file;
 use sv_to_sexpr::serialize::render_cell;
@@ -523,7 +523,7 @@ fn complete_driver_corpus_is_accounted_flat_and_source_ordered() {
                             Some((ValueOperator::Keeper, []))
                         )
                     })
-                    .inspect(|assignment| assert_eq!(assignment.delay, Expr::atom("0"), "{path}"))
+                    .inspect(|assignment| assert!(is_zero_delay(&assignment.delay), "{path}"))
                     .count();
                 assert_eq!(emitted_keepers, source_keepers, "{path}");
                 audit.emitted_keepers += emitted_keepers;
@@ -613,6 +613,10 @@ fn complete_driver_corpus_is_accounted_flat_and_source_ordered() {
     let summary = render_summary(&audit);
     assert!(!summary.contains(&absolute_root));
     assert_or_update_fixture("corpus_summary", "drivers", &summary);
+}
+
+fn is_zero_delay(delay: &DelayTuple) -> bool {
+    delay.len() == 1 && delay.first().as_expr() == &Expr::atom("0")
 }
 
 fn corpus_paths(root: &Path) -> Vec<String> {

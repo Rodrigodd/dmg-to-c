@@ -8,7 +8,10 @@
 
   (assignments
 
-    (t0 (not in) 0)
-    (y (bufif0 t0 ena_n) (elmore (wire L_y) (* (pmos W_y_p) 2)))
+    (t0 (not in) (delay 0))
+    (y
+      (bufif0 t0 ena_n)
+      (delay (elmore (wire L_y) (* (pmos W_y_p) 2)) (elmore (wire L_y) (* (nmos 35) 2)))
+    )
   )
 )

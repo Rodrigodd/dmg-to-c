@@ -100,12 +100,12 @@
         in46
         in44
       )
-      0
+      (delay 0)
     )
-    (t1 (or in47 in45 in43) 0)
-    (t2 (and in51 t1) 0)
-    (t3 (or in1 t0 t2) 0)
-    (t4 (and in35 t3) 0)
+    (t1 (or in47 in45 in43) (delay 0))
+    (t2 (and in51 t1) (delay 0))
+    (t3 (or in1 t0 t2) (delay 0))
+    (t4 (and in35 t3) (delay 0))
     (y1
       (bufif1-strength
         0
@@ -113,13 +113,21 @@
         highz1
         strong0
       )
-      0
+      (delay
+        0
+        (elmore (wire L_y1) (* (nmos 11) 5))
+        (mux
+          (gt (* 0.2 (elmore (wire L_y1) (* (nmos 11) 5))) 5ps)
+          (* 0.2 (elmore (wire L_y1) (* (nmos 11) 5)))
+          5ps
+        )
+      )
     )
-    (t5 (and in68 in33) 0)
-    (t6 (and in30 in56) 0)
-    (t7 (and in40 in39) 0)
-    (t8 (or in38 t7) 0)
-    (t9 (and in28 t8) 0)
+    (t5 (and in68 in33) (delay 0))
+    (t6 (and in30 in56) (delay 0))
+    (t7 (and in40 in39) (delay 0))
+    (t8 (or in38 t7) (delay 0))
+    (t9 (and in28 t8) (delay 0))
     (t10
       (or
         in69
@@ -129,9 +137,9 @@
         t6
         t9
       )
-      0
+      (delay 0)
     )
-    (t11 (and in36 t10) 0)
+    (t11 (and in36 t10) (delay 0))
     (y2
       (bufif1-strength
         0
@@ -139,19 +147,27 @@
         highz1
         strong0
       )
-      0
+      (delay
+        0
+        (elmore (wire L_y2) (* (nmos 8) 4))
+        (mux
+          (gt (* 0.2 (elmore (wire L_y2) (* (nmos 8) 4))) 5ps)
+          (* 0.2 (elmore (wire L_y2) (* (nmos 8) 4)))
+          5ps
+        )
+      )
     )
-    (t12 (and in27 in21) 0)
-    (t13 (and in26 in25) 0)
-    (t14 (and in68 in32) 0)
-    (t15 (and in50 in29) 0)
-    (t16 (and in4 in67) 0)
-    (t17 (and in48 in55) 0)
-    (t18 (and in38 in37) 0)
-    (t19 (and in55 in47 in5) 0)
-    (t20 (and in11 in37) 0)
-    (t21 (or in4 t20) 0)
-    (t22 (and in57 t21) 0)
+    (t12 (and in27 in21) (delay 0))
+    (t13 (and in26 in25) (delay 0))
+    (t14 (and in68 in32) (delay 0))
+    (t15 (and in50 in29) (delay 0))
+    (t16 (and in4 in67) (delay 0))
+    (t17 (and in48 in55) (delay 0))
+    (t18 (and in38 in37) (delay 0))
+    (t19 (and in55 in47 in5) (delay 0))
+    (t20 (and in11 in37) (delay 0))
+    (t21 (or in4 t20) (delay 0))
+    (t22 (and in57 t21) (delay 0))
     (t23
       (or
         t12
@@ -164,9 +180,9 @@
         t19
         t22
       )
-      0
+      (delay 0)
     )
-    (t24 (and in36 t23) 0)
+    (t24 (and in36 t23) (delay 0))
     (y3
       (bufif1-strength
         0
@@ -174,7 +190,15 @@
         highz1
         strong0
       )
-      0
+      (delay
+        0
+        (elmore (wire L_y3) (* (nmos 8) 4))
+        (mux
+          (gt (* 0.2 (elmore (wire L_y3) (* (nmos 8) 4))) 5ps)
+          (* 0.2 (elmore (wire L_y3) (* (nmos 8) 4)))
+          5ps
+        )
+      )
     )
     (t25
       (and
@@ -183,13 +207,13 @@
         in46
         in44
       )
-      0
+      (delay 0)
     )
-    (t26 (or in48 in45 in43) 0)
-    (t27 (and in51 t26) 0)
-    (t28 (and in60 in11) 0)
-    (t29 (or in2 t28) 0)
-    (t30 (and in57 t29) 0)
+    (t26 (or in48 in45 in43) (delay 0))
+    (t27 (and in51 t26) (delay 0))
+    (t28 (and in60 in11) (delay 0))
+    (t29 (or in2 t28) (delay 0))
+    (t30 (and in57 t29) (delay 0))
     (t31
       (or
         in6
@@ -197,9 +221,9 @@
         t27
         t30
       )
-      0
+      (delay 0)
     )
-    (t32 (and in35 t31) 0)
+    (t32 (and in35 t31) (delay 0))
     (y4
       (bufif1-strength
         0
@@ -207,7 +231,15 @@
         highz1
         strong0
       )
-      0
+      (delay
+        0
+        (elmore (wire L_y4) (* (nmos 11) 5))
+        (mux
+          (gt (* 0.2 (elmore (wire L_y4) (* (nmos 11) 5))) 5ps)
+          (* 0.2 (elmore (wire L_y4) (* (nmos 11) 5)))
+          5ps
+        )
+      )
     )
     (t33
       (and
@@ -216,12 +248,12 @@
         in45
         in44
       )
-      0
+      (delay 0)
     )
-    (t34 (or in47 in46 in43) 0)
-    (t35 (and in51 t34) 0)
-    (t36 (or in2 in60) 0)
-    (t37 (and in57 in11 t36) 0)
+    (t34 (or in47 in46 in43) (delay 0))
+    (t35 (and in51 t34) (delay 0))
+    (t36 (or in2 in60) (delay 0))
+    (t37 (and in57 in11 t36) (delay 0))
     (t38
       (or
         in7
@@ -229,9 +261,9 @@
         t35
         t37
       )
-      0
+      (delay 0)
     )
-    (t39 (and in35 t38) 0)
+    (t39 (and in35 t38) (delay 0))
     (y5
       (bufif1-strength
         0
@@ -239,7 +271,15 @@
         highz1
         strong0
       )
-      0
+      (delay
+        0
+        (elmore (wire L_y5) (* (nmos 11) 5))
+        (mux
+          (gt (* 0.2 (elmore (wire L_y5) (* (nmos 11) 5))) 5ps)
+          (* 0.2 (elmore (wire L_y5) (* (nmos 11) 5)))
+          5ps
+        )
+      )
     )
     (t40
       (and
@@ -248,11 +288,11 @@
         in45
         in44
       )
-      0
+      (delay 0)
     )
-    (t41 (or in48 in46 in43) 0)
-    (t42 (and in51 t41) 0)
-    (t43 (and in57 in2 in10) 0)
+    (t41 (or in48 in46 in43) (delay 0))
+    (t42 (and in51 t41) (delay 0))
+    (t43 (and in57 in2 in10) (delay 0))
     (t44
       (or
         in8
@@ -260,9 +300,9 @@
         t42
         t43
       )
-      0
+      (delay 0)
     )
-    (t45 (and in35 t44) 0)
+    (t45 (and in35 t44) (delay 0))
     (y6
       (bufif1-strength
         0
@@ -270,7 +310,15 @@
         highz1
         strong0
       )
-      0
+      (delay
+        0
+        (elmore (wire L_y6) (* (nmos 11) 5))
+        (mux
+          (gt (* 0.2 (elmore (wire L_y6) (* (nmos 11) 5))) 5ps)
+          (* 0.2 (elmore (wire L_y6) (* (nmos 11) 5)))
+          5ps
+        )
+      )
     )
     (t46
       (and
@@ -279,11 +327,11 @@
         in46
         in43
       )
-      0
+      (delay 0)
     )
-    (t47 (or in47 in45 in44) 0)
-    (t48 (and in51 t47) 0)
-    (t49 (and in57 in2 in10) 0)
+    (t47 (or in47 in45 in44) (delay 0))
+    (t48 (and in51 t47) (delay 0))
+    (t49 (and in57 in2 in10) (delay 0))
     (t50
       (or
         in9
@@ -291,9 +339,9 @@
         t48
         t49
       )
-      0
+      (delay 0)
     )
-    (t51 (and in35 t50) 0)
+    (t51 (and in35 t50) (delay 0))
     (y7
       (bufif1-strength
         0
@@ -301,10 +349,18 @@
         highz1
         strong0
       )
-      0
+      (delay
+        0
+        (elmore (wire L_y7) (* (nmos 11) 5))
+        (mux
+          (gt (* 0.2 (elmore (wire L_y7) (* (nmos 11) 5))) 5ps)
+          (* 0.2 (elmore (wire L_y7) (* (nmos 11) 5)))
+          5ps
+        )
+      )
     )
-    (t52 (and in68 in31) 0)
-    (t53 (and in10 in57) 0)
+    (t52 (and in68 in31) (delay 0))
+    (t53 (and in10 in57) (delay 0))
     (t54
       (or
         in67
@@ -312,9 +368,9 @@
         t52
         t53
       )
-      0
+      (delay 0)
     )
-    (t55 (and in36 t54) 0)
+    (t55 (and in36 t54) (delay 0))
     (y8
       (bufif1-strength
         0
@@ -322,7 +378,15 @@
         highz1
         strong0
       )
-      0
+      (delay
+        0
+        (elmore (wire L_y8) (* (nmos 8) 3))
+        (mux
+          (gt (* 0.2 (elmore (wire L_y8) (* (nmos 8) 3))) 5ps)
+          (* 0.2 (elmore (wire L_y8) (* (nmos 8) 3)))
+          5ps
+        )
+      )
     )
     (t56
       (and
@@ -331,19 +395,19 @@
         in46
         in43
       )
-      0
+      (delay 0)
     )
-    (t57 (or in48 in45 in44) 0)
-    (t58 (and in51 t57) 0)
-    (t59 (and in3 in4) 0)
-    (t60 (and in2 in5) 0)
-    (t61 (or t59 t60) 0)
-    (t62 (and in10 t61) 0)
-    (t63 (and in66 in60) 0)
-    (t64 (or in64 in4 t63) 0)
-    (t65 (and in11 t64) 0)
-    (t66 (or t62 t65) 0)
-    (t67 (and in57 t66) 0)
+    (t57 (or in48 in45 in44) (delay 0))
+    (t58 (and in51 t57) (delay 0))
+    (t59 (and in3 in4) (delay 0))
+    (t60 (and in2 in5) (delay 0))
+    (t61 (or t59 t60) (delay 0))
+    (t62 (and in10 t61) (delay 0))
+    (t63 (and in66 in60) (delay 0))
+    (t64 (or in64 in4 t63) (delay 0))
+    (t65 (and in11 t64) (delay 0))
+    (t66 (or t62 t65) (delay 0))
+    (t67 (and in57 t66) (delay 0))
     (t68
       (or
         in12
@@ -351,9 +415,9 @@
         t58
         t67
       )
-      0
+      (delay 0)
     )
-    (t69 (and in35 t68) 0)
+    (t69 (and in35 t68) (delay 0))
     (y9
       (bufif1-strength
         0
@@ -361,7 +425,15 @@
         highz1
         strong0
       )
-      0
+      (delay
+        0
+        (elmore (wire L_y9) (+ (* (nmos 11) 4) (nmos 6)))
+        (mux
+          (gt (* 0.2 (elmore (wire L_y9) (+ (* (nmos 11) 4) (nmos 6)))) 5ps)
+          (* 0.2 (elmore (wire L_y9) (+ (* (nmos 11) 4) (nmos 6))))
+          5ps
+        )
+      )
     )
     (t70
       (and
@@ -370,16 +442,16 @@
         in45
         in43
       )
-      0
+      (delay 0)
     )
-    (t71 (or in47 in46 in44) 0)
-    (t72 (and in51 t71) 0)
-    (t73 (and in2 in5 in10) 0)
-    (t74 (and in66 in60) 0)
-    (t75 (or in64 in4 t74) 0)
-    (t76 (and in11 t75) 0)
-    (t77 (or t73 t76) 0)
-    (t78 (and in57 t77) 0)
+    (t71 (or in47 in46 in44) (delay 0))
+    (t72 (and in51 t71) (delay 0))
+    (t73 (and in2 in5 in10) (delay 0))
+    (t74 (and in66 in60) (delay 0))
+    (t75 (or in64 in4 t74) (delay 0))
+    (t76 (and in11 t75) (delay 0))
+    (t77 (or t73 t76) (delay 0))
+    (t78 (and in57 t77) (delay 0))
     (t79
       (or
         in13
@@ -387,9 +459,9 @@
         t72
         t78
       )
-      0
+      (delay 0)
     )
-    (t80 (and in35 t79) 0)
+    (t80 (and in35 t79) (delay 0))
     (y10
       (bufif1-strength
         0
@@ -397,7 +469,15 @@
         highz1
         strong0
       )
-      0
+      (delay
+        0
+        (elmore (wire L_y10) (+ (* (nmos 11) 4) (nmos 6)))
+        (mux
+          (gt (* 0.2 (elmore (wire L_y10) (+ (* (nmos 11) 4) (nmos 6)))) 5ps)
+          (* 0.2 (elmore (wire L_y10) (+ (* (nmos 11) 4) (nmos 6))))
+          5ps
+        )
+      )
     )
     (t81
       (and
@@ -406,12 +486,12 @@
         in45
         in43
       )
-      0
+      (delay 0)
     )
-    (t82 (or in48 in46 in44) 0)
-    (t83 (and in51 t82) 0)
-    (t84 (or in2 in4) 0)
-    (t85 (and in57 in10 t84) 0)
+    (t82 (or in48 in46 in44) (delay 0))
+    (t83 (and in51 t82) (delay 0))
+    (t84 (or in2 in4) (delay 0))
+    (t85 (and in57 in10 t84) (delay 0))
     (t86
       (or
         in14
@@ -419,9 +499,9 @@
         t83
         t85
       )
-      0
+      (delay 0)
     )
-    (t87 (and in35 t86) 0)
+    (t87 (and in35 t86) (delay 0))
     (y11
       (bufif1-strength
         0
@@ -429,12 +509,20 @@
         highz1
         strong0
       )
-      0
+      (delay
+        0
+        (elmore (wire L_y11) (* (nmos 11) 5))
+        (mux
+          (gt (* 0.2 (elmore (wire L_y11) (* (nmos 11) 5))) 5ps)
+          (* 0.2 (elmore (wire L_y11) (* (nmos 11) 5)))
+          5ps
+        )
+      )
     )
-    (t88 (and in48 in45 in4) 0)
-    (t89 (and in47 in45 in5) 0)
-    (t90 (and in15 in47 in46) 0)
-    (t91 (and in48 in46 in16) 0)
+    (t88 (and in48 in45 in4) (delay 0))
+    (t89 (and in47 in45 in5) (delay 0))
+    (t90 (and in15 in47 in46) (delay 0))
+    (t91 (and in48 in46 in16) (delay 0))
     (t92
       (or
         t88
@@ -442,9 +530,9 @@
         t90
         t91
       )
-      0
+      (delay 0)
     )
-    (t93 (and in36 in41 t92) 0)
+    (t93 (and in36 in41 t92) (delay 0))
     (y12
       (bufif1-strength
         0
@@ -452,7 +540,15 @@
         highz1
         strong0
       )
-      0
+      (delay
+        0
+        (elmore (wire L_y12) (+ (* (nmos 6) 4) (nmos 5)))
+        (mux
+          (gt (* 0.2 (elmore (wire L_y12) (+ (* (nmos 6) 4) (nmos 5)))) 5ps)
+          (* 0.2 (elmore (wire L_y12) (+ (* (nmos 6) 4) (nmos 5))))
+          5ps
+        )
+      )
     )
     (t94
       (and
@@ -462,7 +558,7 @@
         in46
         in44
       )
-      0
+      (delay 0)
     )
     (t95
       (and
@@ -472,7 +568,7 @@
         in46
         in44
       )
-      0
+      (delay 0)
     )
     (t96
       (and
@@ -482,7 +578,7 @@
         in45
         in44
       )
-      0
+      (delay 0)
     )
     (t97
       (and
@@ -492,7 +588,7 @@
         in45
         in44
       )
-      0
+      (delay 0)
     )
     (t98
       (and
@@ -502,7 +598,7 @@
         in46
         in43
       )
-      0
+      (delay 0)
     )
     (t99
       (and
@@ -512,7 +608,7 @@
         in46
         in43
       )
-      0
+      (delay 0)
     )
     (t100
       (and
@@ -522,7 +618,7 @@
         in45
         in43
       )
-      0
+      (delay 0)
     )
     (t101
       (and
@@ -532,9 +628,9 @@
         in45
         in43
       )
-      0
+      (delay 0)
     )
-    (t102 (and in68 in59) 0)
+    (t102 (and in68 in59) (delay 0))
     (t103
       (or
         in65
@@ -542,9 +638,9 @@
         in39
         in57
       )
-      0
+      (delay 0)
     )
-    (t104 (and in53 t103) 0)
+    (t104 (and in53 t103) (delay 0))
     (t105
       (or
         in67
@@ -552,9 +648,9 @@
         in55
         in54
       )
-      0
+      (delay 0)
     )
-    (t106 (and in16 t105) 0)
+    (t106 (and in16 t105) (delay 0))
     (t107
       (or
         t94
@@ -569,9 +665,9 @@
         t104
         t106
       )
-      0
+      (delay 0)
     )
-    (t108 (and in36 t107) 0)
+    (t108 (and in36 t107) (delay 0))
     (y13
       (bufif1-strength
         0
@@ -579,15 +675,23 @@
         highz1
         strong0
       )
-      0
+      (delay
+        0
+        (elmore (wire L_y13) (* (nmos 8) 6))
+        (mux
+          (gt (* 0.2 (elmore (wire L_y13) (* (nmos 8) 6))) 5ps)
+          (* 0.2 (elmore (wire L_y13) (* (nmos 8) 6)))
+          5ps
+        )
+      )
     )
-    (t109 (and in40 in39) 0)
-    (t110 (and in52 in4) 0)
-    (t111 (or in5 in48) 0)
-    (t112 (and in58 t111) 0)
-    (t113 (and in61 in47) 0)
-    (t114 (or in54 t113) 0)
-    (t115 (and in4 t114) 0)
+    (t109 (and in40 in39) (delay 0))
+    (t110 (and in52 in4) (delay 0))
+    (t111 (or in5 in48) (delay 0))
+    (t112 (and in58 t111) (delay 0))
+    (t113 (and in61 in47) (delay 0))
+    (t114 (or in54 t113) (delay 0))
+    (t115 (and in4 t114) (delay 0))
     (t116
       (or
         in42
@@ -596,9 +700,9 @@
         t112
         t115
       )
-      0
+      (delay 0)
     )
-    (t117 (and in35 t116) 0)
+    (t117 (and in35 t116) (delay 0))
     (y14
       (bufif1-strength
         0
@@ -606,7 +710,15 @@
         highz1
         strong0
       )
-      0
+      (delay
+        0
+        (elmore (wire L_y14) (* (nmos 11) 4))
+        (mux
+          (gt (* 0.2 (elmore (wire L_y14) (* (nmos 11) 4))) 5ps)
+          (* 0.2 (elmore (wire L_y14) (* (nmos 11) 4)))
+          5ps
+        )
+      )
     )
   )
 )

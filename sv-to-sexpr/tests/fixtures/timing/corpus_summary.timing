@@ -29,11 +29,17 @@ source-specify:
 lowering:
   succeeded=206 failed=0
   assignments=1958 temps=1168 source-targets=790
-  source-dispositions explicit=525 explicit-nonzero=511 explicit-with-specify=0 specify=210 specify-nonzero=210 zero=55
-  emitted zero=1237 nonzero=721 nested=721
-  outer-resistance-multiplications expected=421 emitted=421
-  warnings=0 specify-ignores=49 later-ignores=1260
-emitted-timing-operators:
+  source-dispositions explicit=525 explicit-nonzero=525 explicit-with-specify=0 specify=210 specify-nonzero=210 zero=55
+  emitted zero=1223 nonzero=735 nested=735
+  outer-resistance-multiplications expected=1198 emitted=1198
+  warnings=0 specify-ignores=49 later-ignores=0
+emitted-tuples:
+  arity1=1223 arity2=276 arity3=459 total=1958
+  noncanonical-one-entry=0
+first-component-compatibility:
+  comparisons=1958 explicit=525 specify=210 forced-zero=6 missing-zero=49 generated-zero=1168 mismatches=0
+  outer-resistance-multiplications=421
+first-component-timing-operators:
   +=258
   -=0
   *=423
@@ -44,6 +50,17 @@ emitted-timing-operators:
   nmos=511
   gt=0
   mux=0
+emitted-timing-operators:
+  +=675
+  -=0
+  *=1228
+  /=0
+  elmore=2293
+  wire=2293
+  pmos=833
+  nmos=1771
+  gt=14
+  mux=14
 invariants:
   temp-nonzero-delays=0
   specify-ignore-contract-failures=0
@@ -52,9 +69,12 @@ invariants:
   invalid-cells=0
   nondeterministic-results=0
   absolute-path-leaks=0
-  uncontracted-timing=0
+  first-component-uncontracted-timing=0
+  all-component-uncontracted-timing=0
+  first-projection-mismatches=0
+  noncanonical-one-entry-delays=0
 acceptance-witnesses:
-  tuple-arity-1=[synthetic-unit:lower::tests::delay_tuples_select_exactly_the_first_entry]
+  tuple-arity-1=[synthetic-unit:lower::tests::delay_tuples_preserve_exact_arity_and_first_projection]
   tuple-arity-2=[sv-cells/dmg_cpu_b/cells/and2.sv,sv-cells/dmg_cpu_b/cells/and3.sv,sv-cells/dmg_cpu_b/cells/and4.sv,sv-cells/dmg_cpu_b/cells/ao21.sv,sv-cells/dmg_cpu_b/cells/ao22.sv,sv-cells/dmg_cpu_b/cells/ao222.sv]
   tuple-arity-3=[sv-cells/dmg_cpu_b/cells/buf_if0.sv,sv-cells/dmg_cpu_b/cells/not_if0.sv,sv-cells/dmg_cpu_b/cells/not_if1.sv,sv-cells/sm83/cells/alu_decoder.sv,sv-cells/sm83/cells/alu_pggen.sv,sv-cells/sm83/cells/alu_shifter.sv]
   precharge-first-rise=[sv-cells/sm83/cells/alu_pggen.sv,sv-cells/sm83/cells/dff_cc_ee_pch_d_reg_sp_bit.sv,sv-cells/sm83/cells/dffn_ee_pch_d_alu_flag.sv,sv-cells/sm83/cells/dffs_cc_ee_pch_d_reg_pc_bit.sv,sv-cells/sm83/cells/idu_bit123456.sv,sv-cells/sm83/cells/idu_bit7.sv]

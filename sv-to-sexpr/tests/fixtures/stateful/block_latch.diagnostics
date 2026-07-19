@@ -1,7 +1,3 @@
 diagnostics:
-  intentional-ignore | sv-cells/dmg_cpu_b/cells/nand_latch.sv:24:29 | delay tuple entry 2 is intentionally ignored because the cell model selects only entry 1
-  intentional-ignore | sv-cells/dmg_cpu_b/cells/nand_latch.sv:25:3 | additional control-dependent specify path for target `q` is intentionally ignored because the one-delay cell DSL selects the first source-ordered path for the target
-  intentional-ignore | sv-cells/dmg_cpu_b/cells/nand_latch.sv:25:42 | delay tuple entry 2 is intentionally ignored because the cell model selects only entry 1
-  intentional-ignore | sv-cells/dmg_cpu_b/cells/nand_latch.sv:26:42 | delay tuple entry 2 is intentionally ignored because the cell model selects only entry 1
-  intentional-ignore | sv-cells/dmg_cpu_b/cells/nand_latch.sv:27:3 | additional control-dependent specify path for target `q_n` is intentionally ignored because the one-delay cell DSL selects the first source-ordered path for the target
-  intentional-ignore | sv-cells/dmg_cpu_b/cells/nand_latch.sv:27:31 | delay tuple entry 2 is intentionally ignored because the cell model selects only entry 1
+  intentional-ignore | sv-cells/dmg_cpu_b/cells/nand_latch.sv:25:3 | additional control-dependent specify path for target `q` is intentionally ignored because delay-tuple lowering temporarily selects the first source-ordered path for the target
+  intentional-ignore | sv-cells/dmg_cpu_b/cells/nand_latch.sv:27:3 | additional control-dependent specify path for target `q_n` is intentionally ignored because delay-tuple lowering temporarily selects the first source-ordered path for the target

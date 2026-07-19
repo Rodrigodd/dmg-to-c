@@ -6,13 +6,13 @@ registers: []
 assignments:
   0: pad
     value: op(bufif1-strength; atom(0), atom(ndrv), strength(highz1, strong0))
-    delay: op(elmore; op(wire; atom(L_pad)), op(pmos; atom(140)))
+    delay: tuple(op(elmore; op(wire; atom(L_pad)), op(pmos; atom(140))), op(elmore; op(wire; atom(L_pad)), op(nmos; atom(140))))
   1: pad
     value: op(bufif0-strength; atom(1), atom(pdrv_n), strength(strong1, highz0))
-    delay: op(elmore; op(wire; atom(L_pad)), op(pmos; atom(140)))
+    delay: tuple(op(elmore; op(wire; atom(L_pad)), op(pmos; atom(140))), op(elmore; op(wire; atom(L_pad)), op(nmos; atom(140))))
   2: pad
     value: op(bufif0-strength; atom(1), atom(ena_n_pu), strength(pull1, highz0))
-    delay: op(*; op(elmore; op(wire; atom(L_pad)), op(pmos; atom(140))), atom(10))
+    delay: tuple(op(*; op(elmore; op(wire; atom(L_pad)), op(pmos; atom(140))), atom(10)), op(elmore; op(wire; atom(L_pad)), op(nmos; atom(140))))
   3: i_n
     value: op(not; atom(pad))
-    delay: op(elmore; op(wire; atom(L_i_n)), op(pmos; atom(15)))
+    delay: tuple(op(elmore; op(wire; atom(L_i_n)), op(pmos; atom(15))), op(elmore; op(wire; atom(L_i_n)), op(nmos; atom(7))))

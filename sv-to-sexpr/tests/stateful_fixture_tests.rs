@@ -8,10 +8,10 @@ use stateful_support::{
     render_typed_ir, repository_root,
 };
 use sv_to_sexpr::ast::{ExprKind, ItemKind};
-use sv_to_sexpr::ir::{Assignment, Cell, CellItem, Expr, LogicValue, ValueOperator};
+use sv_to_sexpr::ir::{Assignment, Cell, CellItem, DelayTuple, Expr, LogicValue, ValueOperator};
 use sv_to_sexpr::lower::lower_file;
 use sv_to_sexpr::parser::parse_file;
-use sv_to_sexpr::serialize::{render_cell, render_expr};
+use sv_to_sexpr::serialize::{render_cell, render_delay_tuple, render_expr};
 
 struct FixtureCase {
     name: &'static str,
@@ -205,7 +205,7 @@ fn assert_flat_values(assignments: &[&Assignment], source: &str) {
         }
         assignment
             .delay
-            .validate_timing(&format!("{source}:{} delay", assignment.target))
+            .validate(&format!("{source}:{} delay", assignment.target))
             .unwrap();
     }
 }
@@ -290,9 +290,8 @@ fn assert_temporary_order(cell: &Cell, assignments: &[&Assignment], case: &Fixtu
             }
         }
         if temp_index(&assignment.target).is_some() && !source_names.contains(&assignment.target) {
-            assert_eq!(
-                assignment.delay,
-                Expr::atom("0"),
+            assert!(
+                is_zero_delay(&assignment.delay),
                 "generated SSA temporary {} acquired source timing",
                 assignment.target
             );
@@ -360,10 +359,14 @@ fn assignment_triplets(assignments: &[&Assignment]) -> Vec<(String, String, Stri
             (
                 assignment.target.clone(),
                 render_expr(&assignment.expr),
-                render_expr(&assignment.delay),
+                render_delay_tuple(&assignment.delay),
             )
         })
         .collect()
+}
+
+fn is_zero_delay(delay: &DelayTuple) -> bool {
+    delay.len() == 1 && delay.first().as_expr() == &Expr::atom("0")
 }
 
 fn assert_case_semantics(case: &FixtureCase, assignments: &[&Assignment]) {
@@ -376,7 +379,7 @@ fn assert_case_semantics(case: &FixtureCase, assignments: &[&Assignment]) {
                 (
                     "q".into(),
                     "(mux ena d q)".into(),
-                    "(+ (+ (elmore (wire 73) (pmos 10)) (elmore (wire 101) (nmos 10))) (elmore (wire L_q) (pmos 35)))".into(),
+                    "(delay (+ (+ (elmore (wire 73) (pmos 10)) (elmore (wire 101) (nmos 10))) (elmore (wire L_q) (pmos 35))) (+ (+ (elmore (wire 73) (nmos 10)) (elmore (wire 101) (pmos 10))) (elmore (wire L_q) (nmos 35))))".into(),
                 )
             );
             assert_eq!(assignments[1].target, "q_n");
@@ -385,13 +388,13 @@ fn assert_case_semantics(case: &FixtureCase, assignments: &[&Assignment]) {
         "set_reset_latch" => assert_eq!(
             triplets,
             vec![
-                ("t0".into(), "(not r_n)".into(), "0".into()),
-                ("t1".into(), "(or t0 s)".into(), "0".into()),
-                ("t2".into(), "(and s r_n)".into(), "0".into()),
+                ("t0".into(), "(not r_n)".into(), "(delay 0)".into()),
+                ("t1".into(), "(or t0 s)".into(), "(delay 0)".into()),
+                ("t2".into(), "(and s r_n)".into(), "(delay 0)".into()),
                 (
                     "q".into(),
                     "(mux t1 t2 q)".into(),
-                    "(+ (elmore (wire 51) (* (nmos 16.5) 2)) (elmore (wire L_q) (pmos 11.0)))"
+                    "(delay (+ (elmore (wire 51) (* (nmos 16.5) 2)) (elmore (wire L_q) (pmos 11.0))) (+ (elmore (wire 51) (pmos 16.5)) (elmore (wire L_q) (nmos 5.0))))"
                         .into(),
                 ),
             ]
@@ -399,16 +402,19 @@ fn assert_case_semantics(case: &FixtureCase, assignments: &[&Assignment]) {
         "nested_priority" => assert_eq!(
             triplets,
             vec![
-                ("t1".into(), "(not reset_n)".into(), "0".into()),
-                ("t2".into(), "(and enable t1)".into(), "0".into()),
-                ("q".into(), "(mux t2 0 q)".into(), "0".into()),
-                ("t3".into(), "(and set t0)".into(), "0".into()),
-                ("t4".into(), "(and enable t3)".into(), "0".into()),
-                ("q".into(), "(mux t4 1 q)".into(), "0".into()),
+                ("t1".into(), "(not reset_n)".into(), "(delay 0)".into()),
+                ("t2".into(), "(and enable t1)".into(), "(delay 0)".into()),
+                ("q".into(), "(mux t2 0 q)".into(), "(delay 0)".into()),
+                ("t3".into(), "(and set t0)".into(), "(delay 0)".into()),
+                ("t4".into(), "(and enable t3)".into(), "(delay 0)".into()),
+                ("q".into(), "(mux t4 1 q)".into(), "(delay 0)".into()),
             ]
         ),
         "combinational_procedure" => {
-            assert_eq!(triplets, vec![("y".into(), "(and a b)".into(), "0".into())])
+            assert_eq!(
+                triplets,
+                vec![("y".into(), "(and a b)".into(), "(delay 0)".into())]
+            )
         }
         "dff_cc_q" | "block_latch" => {}
         other => panic!("unreviewed stateful fixture case {other}"),

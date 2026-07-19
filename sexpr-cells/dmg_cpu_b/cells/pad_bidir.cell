@@ -15,7 +15,7 @@
         highz1
         strong0
       )
-      (elmore (wire L_pad) (pmos 140))
+      (delay (elmore (wire L_pad) (pmos 140)) (elmore (wire L_pad) (nmos 140)))
     )
     (pad
       (bufif0-strength
@@ -24,8 +24,8 @@
         strong1
         highz0
       )
-      (elmore (wire L_pad) (pmos 140))
+      (delay (elmore (wire L_pad) (pmos 140)) (elmore (wire L_pad) (nmos 140)))
     )
-    (i_n (not pad) (elmore (wire L_i_n) (pmos 15)))
+    (i_n (not pad) (delay (elmore (wire L_i_n) (pmos 15)) (elmore (wire L_i_n) (nmos 7))))
   )
 )

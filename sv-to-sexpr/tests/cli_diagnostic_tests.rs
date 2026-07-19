@@ -73,9 +73,9 @@ fn ambiguous_specify_intentional_ignore_succeeds_normally_and_in_strict_mode() {
     let ordinary_stderr = String::from_utf8(ordinary.stderr).unwrap();
     assert!(ordinary_stdout.starts_with("(cell\n  timing_ambiguous_paths\n"));
     assert_eq!(ordinary_stderr.matches(": warning:").count(), 0);
-    assert_eq!(ordinary_stderr.matches(": intentional-ignore:").count(), 3);
+    assert_eq!(ordinary_stderr.matches(": intentional-ignore:").count(), 1);
     assert!(ordinary_stderr.contains(
-        "additional control-dependent specify path for target `y` is intentionally ignored because the one-delay cell DSL selects the first source-ordered path for the target"
+        "additional control-dependent specify path for target `y` is intentionally ignored because delay-tuple lowering temporarily selects the first source-ordered path for the target"
     ));
     assert!(!output.exists());
 
@@ -94,9 +94,9 @@ fn ambiguous_specify_intentional_ignore_succeeds_normally_and_in_strict_mode() {
     assert_eq!(strict_stdout, ordinary_stdout);
     let strict_stderr = String::from_utf8(strict.stderr).unwrap();
     assert_eq!(strict_stderr.matches(": warning:").count(), 0);
-    assert_eq!(strict_stderr.matches(": intentional-ignore:").count(), 3);
+    assert_eq!(strict_stderr.matches(": intentional-ignore:").count(), 1);
     assert!(strict_stderr.contains(
-        "intentional-ignore: additional control-dependent specify path for target `y` is intentionally ignored because the one-delay cell DSL selects the first source-ordered path for the target"
+        "intentional-ignore: additional control-dependent specify path for target `y` is intentionally ignored because delay-tuple lowering temporarily selects the first source-ordered path for the target"
     ));
     assert!(!output.exists());
 }

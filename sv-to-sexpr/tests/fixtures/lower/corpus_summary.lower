@@ -13,8 +13,8 @@ successful-cell-capabilities:
   atom_value_assignments=17
   temporary_assignments=1168
   repeated_target_assignments=77
-  delayed_assignments=721
-  nested_timing_delay_assignments=721
+  delayed_assignments=735
+  nested_timing_delay_assignments=735
   cells_with_registers=27
   registers=48
 value-operators:

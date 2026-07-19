@@ -7,7 +7,7 @@ a milestone acceptance condition changes or is completed.
 
 Last audited on 2026-07-18:
 
-- `cargo test` passes 145 unit tests and 70 integration/corpus tests; the sibling
+- `cargo test` passes 153 unit tests and 70 integration/corpus tests; the sibling
   formatter passes 7 unit and 4 integration tests.
 - Lexing succeeds for all 206 curated files.
 - Parsing succeeds for all 206 curated files.
@@ -25,28 +25,36 @@ Last audited on 2026-07-18:
 - Both configured modes lower all 206 files with zero failures. Every cell is
   deterministic, structurally valid, and contains only flat contracted value
   expressions. The default delayful corpus audit covers 1,958 assignments,
-  including 1,168 generated temporaries and 721 modeled nonzero delays; nodelay
+  including 1,168 generated temporaries and 735 modeled nonzero delays; nodelay
   contains 1,955 assignments and the same 1,168 temporaries. Exactly 27 cells
   contain 48 modeled registers: 42 with explicit initial value `0` and 6 with
   implicit initial value `x`.
-- Default delayful lowering reports 1,309 visible intentional ignores: 1,260
-  delay tuple entries after the first and 49 additional control-dependent
-  specify paths after the selected first path for each used target. Nodelay
-  reports 1,299. They remain non-failing under `--strict`. Valid selected
-  initializers are typed register metadata, emit no assignment or diagnostic,
-  and are no longer an ignore category. Both configured modes report zero
-  warnings and zero failures under strict policy.
+- Every assignment carries a tagged delay tuple. The delayful corpus emits
+  1,223 one-entry, 276 two-entry, and 459 three-entry tuples. The source audit
+  preserves exactly 45/60 assignment, 21/399 primitive, and 263/3 specify
+  two-/three-entry tuples. An independent compatibility oracle compares the
+  first component of all 1,958 assignments with the former selected-first
+  semantics and reports zero mismatches; the full-component audit reports no
+  discarded, filled, reordered, or uncontracted timing expression.
+- Delayful and nodelay lowering each report exactly 49 visible intentional
+  ignores, all for additional control-dependent specify paths after the
+  temporary selected first path for each used target. Later tuple entries are
+  preserved and produce no diagnostic. The remaining ignores stay non-failing
+  under `--strict`. Valid selected initializers are typed register metadata,
+  emit no assignment or diagnostic, and are no longer an ignore category. Both
+  configured modes report zero warnings and zero failures under strict policy.
 - No curated lowering failure remains. The exact transistor audit accounts for
   10 files and 25 direct value drivers: 17 `nmos`, 7 `pmos`, and 1 `rnmos`.
 - All 206 checked generated cells are valid generic S-expressions, canonical
   and idempotent under `sexpr-fmt`, and exact path mirrors of the 206 curated
   sources. The checked reference byte-matches the reviewed timing fixture.
 - Flat SSA, combinational operators, register lists, supported stateful
-  behavior, driver/strength normalizations, and first-entry symbolic timing
-  have completed fixture and corpus review.
-- The reference cell's `q_n`, `q`, and `d` assignments now match the accepted
-  first applicable source/specify entry policy, including all resistance
-  multipliers, and the checked-in reference has been updated accordingly.
+  behavior, driver/strength normalizations, and complete selected symbolic
+  delay tuples have completed fixture and corpus review.
+- The reference cell's `q_n`, `q`, and `d` assignments preserve the complete
+  selected source/specify tuples, including all resistance multipliers and
+  transition components; their first components still match the accepted
+  temporary first-applicable-path policy.
 - The current CLI has `lex`, `parse`, `analyze`, `lower`, transactional corpus
   `convert`, `convert-file`, `survey`, and staged `check`. Configured analysis,
   catalog-aware lowering, conversion, and analyze/lower checks accept
@@ -95,12 +103,12 @@ Last audited on 2026-07-18:
   combining mutually exclusive generate alternatives. The audit also accounts
   for all six keeper drivers, all of which are emitted distinctly.
 - Milestone 7: complete. Timing aliases resolve deterministically without
-  dropping resistance sums, real factors, or outer multipliers; assignments and
-  primitives use exactly tuple entry zero, and every later entry is tracked as
-  an intentional ignore. Source-level writes without an explicit delay use the
-  first source-ordered specify path for their scalar target, with one strict-mode
-  intentional ignore for each used target having additional control-dependent
-  paths. Reviewed timing goldens include
+  dropping resistance sums, real factors, or outer multipliers. Its historical
+  selected-first tuple policy was superseded by Milestone 14, which preserves
+  every selected tuple component. Source-level writes without an explicit delay
+  still use the first source-ordered specify path for their scalar target, with
+  one strict-mode intentional ignore for each used target having additional
+  control-dependent paths. Reviewed timing goldens include
   explicit precedence, procedural state, ambiguity diagnostics, and the exact
   reference `q_n`, `q`, and `d` assignments. The configured corpus audit
   accounts for all 206 files, 266 structural specify paths, 790 selected source
@@ -122,13 +130,13 @@ Last audited on 2026-07-18:
   requirement or hierarchy-only failure.
 - Milestone 10: complete. Validated special keeper instances carry typed target
   connections, a distinct `KeeperDriven` signal role, and a source-ordered
-  keeper driver. Lowering emits exactly `(target (keeper) 0)`, bypasses specify
+  keeper driver. Lowering emits exactly `(target (keeper) (delay 0))`, bypasses specify
   delays, preserves independent neighboring drivers, and never adds the target
   to registers. Reviewed fixtures cover the five required cells; the exact
   audit accounts for all six source keepers as distinct emitted drivers.
 - Milestone 11: complete. Direct `nmos`, `pmos`, and `rnmos` value operators
   preserve primitive identity, source/gate topology and polarity, source order,
-  repeated drivers, and first-entry timing. Compound operands flatten
+  repeated drivers, and complete selected timing tuples. Compound operands flatten
   dependency-first into atom-only roots; `rnmos` is never weakened and no
   transistor is normalized to `bufif*`. Reviewed fixtures cover `dlatch_ee_irq`,
   `idu_bit0`, `idu_bit123456`, and the IRQ forms. The exact dual-mode audit
@@ -151,7 +159,18 @@ Last audited on 2026-07-18:
   initializers at the second target. Focused tests cover all contracted values;
   the exact corpus audit proves 42 zero-initialized and 6 unknown-initialized
   registers, unchanged assignment totals, no initializer diagnostics, canonical
-  regenerated outputs, and strict ignore totals of 1,309/1,299.
+  regenerated outputs, and the then-current strict ignore totals of
+  1,309/1,299, subsequently reduced by Milestone 14.
+- Milestone 14: complete. Validated `TimingExpr` and exact-arity `DelayTuple`
+  types preserve every component of selected explicit, primitive, specify, and
+  hierarchy-substituted delays. Serialization emits only `(delay value)`,
+  `(delay rise fall)`, or `(delay rise fall turn-off)` on ordinary assignments;
+  missing and generated timing uses canonical `(delay 0)`. The full audit
+  freezes 1,958 emitted tuples with arities 1,223/276/459 and proves zero
+  mismatches across all first-component compatibility projections. Repeated
+  strict conversion is byte-identical and all 206 checked cells remain
+  formatter-canonical. The only remaining diagnostics are 49 intentional
+  ignores for additional specify paths in either generate mode.
 
 ## Review Policy
 

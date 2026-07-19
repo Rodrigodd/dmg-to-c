@@ -8,6 +8,6 @@
 
   (assignments
 
-    (y (not in) (elmore (wire L_y) (pmos 105)))
+    (y (not in) (delay (elmore (wire L_y) (pmos 105)) (elmore (wire L_y) (nmos 105))))
   )
 )

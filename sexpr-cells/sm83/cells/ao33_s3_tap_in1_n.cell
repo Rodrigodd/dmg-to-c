@@ -14,9 +14,18 @@
 
   (assignments
 
-    (t0 (and in1 in2 in3) 0)
-    (t1 (and in4 in5 in3) 0)
-    (y (or t0 t1) (+ (elmore (wire 14) (* (nmos 3) 3)) (elmore (wire L_y) (pmos 3))))
-    (tap_in1_n (not in1) (elmore (wire L_tap_in1_n) (pmos 4)))
+    (t0 (and in1 in2 in3) (delay 0))
+    (t1 (and in4 in5 in3) (delay 0))
+    (y
+      (or t0 t1)
+      (delay
+        (+ (elmore (wire 14) (* (nmos 3) 3)) (elmore (wire L_y) (pmos 3)))
+        (+ (elmore (wire 14) (* (pmos 3) 2)) (elmore (wire L_y) (nmos 3)))
+      )
+    )
+    (tap_in1_n
+      (not in1)
+      (delay (elmore (wire L_tap_in1_n) (pmos 4)) (elmore (wire L_tap_in1_n) (nmos 4)))
+    )
   )
 )

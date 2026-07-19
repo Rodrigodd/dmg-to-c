@@ -20,10 +20,10 @@
 
   (assignments
 
-    (a_y (not a_in) (elmore (wire L_a_y) (pmos 5)))
-    (b_y (not b_in) (elmore (wire L_b_y) (pmos 5)))
-    (c_y (not c_in) (elmore (wire L_c_y) (pmos 5)))
-    (d_y (not d_in) (elmore (wire L_d_y) (pmos 14)))
-    (e_y (not e_in) (elmore (wire L_e_y) (pmos 14)))
+    (a_y (not a_in) (delay (elmore (wire L_a_y) (pmos 5)) (elmore (wire L_a_y) (nmos 5))))
+    (b_y (not b_in) (delay (elmore (wire L_b_y) (pmos 5)) (elmore (wire L_b_y) (nmos 5))))
+    (c_y (not c_in) (delay (elmore (wire L_c_y) (pmos 5)) (elmore (wire L_c_y) (nmos 5))))
+    (d_y (not d_in) (delay (elmore (wire L_d_y) (pmos 14)) (elmore (wire L_d_y) (nmos 8))))
+    (e_y (not e_in) (delay (elmore (wire L_e_y) (pmos 14)) (elmore (wire L_e_y) (nmos 8))))
   )
 )

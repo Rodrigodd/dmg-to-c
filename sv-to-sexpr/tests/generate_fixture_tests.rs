@@ -123,7 +123,7 @@ fn cli_plumbs_generate_mode_through_convert_analyze_and_lower() {
     );
     let delayful_stderr = String::from_utf8(delayful.stderr).unwrap();
     let nodelay_stderr = String::from_utf8(nodelay.stderr).unwrap();
-    assert_eq!(delayful_stderr.matches(": intentional-ignore:").count(), 6);
+    assert_eq!(delayful_stderr.matches(": intentional-ignore:").count(), 0);
     assert_eq!(nodelay_stderr.matches(": intentional-ignore:").count(), 0);
     assert_eq!(delayful_stderr.matches(": warning:").count(), 0);
     assert_eq!(nodelay_stderr.matches(": warning:").count(), 0);
@@ -243,7 +243,7 @@ fn assert_selected_dffr_cc(mode: GenerateMode, module: &ModuleAnalysis, lowered:
             );
             assert_eq!(
                 diagnostic_count(diagnostics, DiagnosticKind::IntentionalIgnore),
-                6
+                0
             );
             for absent in ["ff", "clk_buf", "clk_n_buf", "r_n_buf"] {
                 assert!(!module.symbols.contains_key(absent));

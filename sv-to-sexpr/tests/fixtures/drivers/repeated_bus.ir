@@ -6,73 +6,73 @@ registers: []
 assignments:
   0: t0
     value: op(and; atom(in1), atom(in2))
-    delay: atom(0)
+    delay: tuple(atom(0))
   1: t1
     value: op(and; atom(in3), atom(in4))
-    delay: atom(0)
+    delay: tuple(atom(0))
   2: t2
     value: op(or; atom(t0), atom(t1))
-    delay: atom(0)
+    delay: tuple(atom(0))
   3: y1
     value: op(bufif1-strength; atom(0), atom(t2), strength(highz1, strong0))
-    delay: op(elmore; op(wire; atom(L_y1)), op(*; op(nmos; atom(8)), atom(2)))
+    delay: tuple(op(elmore; op(wire; atom(L_y1)), op(*; op(nmos; atom(8)), atom(2))), op(elmore; op(wire; atom(L_y1)), op(*; op(nmos; atom(8)), atom(2))), op(elmore; op(wire; atom(L_y1)), op(*; op(nmos; atom(8)), atom(2))))
   4: t3
     value: op(and; atom(in5), atom(in6))
-    delay: atom(0)
+    delay: tuple(atom(0))
   5: t4
     value: op(and; atom(in7), atom(in6))
-    delay: atom(0)
+    delay: tuple(atom(0))
   6: t5
     value: op(or; atom(t3), atom(t4))
-    delay: atom(0)
+    delay: tuple(atom(0))
   7: y2
     value: op(bufif1-strength; atom(0), atom(t5), strength(highz1, strong0))
-    delay: op(elmore; op(wire; atom(L_y2)), op(*; op(nmos; atom(8)), atom(2)))
+    delay: tuple(op(elmore; op(wire; atom(L_y2)), op(*; op(nmos; atom(8)), atom(2))), op(elmore; op(wire; atom(L_y2)), op(*; op(nmos; atom(8)), atom(2))), op(elmore; op(wire; atom(L_y2)), op(*; op(nmos; atom(8)), atom(2))))
   8: t6
     value: op(and; atom(in5), atom(in8))
-    delay: atom(0)
+    delay: tuple(atom(0))
   9: y3
     value: op(bufif1-strength; atom(0), atom(t6), strength(highz1, strong0))
-    delay: op(elmore; op(wire; atom(L_y3)), op(*; op(nmos; atom(8)), atom(2)))
+    delay: tuple(op(elmore; op(wire; atom(L_y3)), op(*; op(nmos; atom(8)), atom(2))), op(elmore; op(wire; atom(L_y3)), op(*; op(nmos; atom(8)), atom(2))), op(elmore; op(wire; atom(L_y3)), op(*; op(nmos; atom(8)), atom(2))))
   10: t7
     value: op(and; atom(in7), atom(in8))
-    delay: atom(0)
+    delay: tuple(atom(0))
   11: y4
     value: op(bufif1-strength; atom(0), atom(t7), strength(highz1, strong0))
-    delay: op(elmore; op(wire; atom(L_y4)), op(*; op(nmos; atom(8)), atom(2)))
+    delay: tuple(op(elmore; op(wire; atom(L_y4)), op(*; op(nmos; atom(8)), atom(2))), op(elmore; op(wire; atom(L_y4)), op(*; op(nmos; atom(8)), atom(2))), op(elmore; op(wire; atom(L_y4)), op(*; op(nmos; atom(8)), atom(2))))
   12: y4
     value: op(bufif1-strength; atom(0), atom(in9), strength(highz1, strong0))
-    delay: op(elmore; op(wire; atom(L_y4)), op(*; op(nmos; atom(8)), atom(2)))
+    delay: tuple(op(elmore; op(wire; atom(L_y4)), op(*; op(nmos; atom(8)), atom(2))), op(elmore; op(wire; atom(L_y4)), op(nmos; atom(8))), op(elmore; op(wire; atom(L_y4)), op(*; op(nmos; atom(8)), atom(2))))
   13: t8
     value: op(and; atom(in11), atom(in12))
-    delay: atom(0)
+    delay: tuple(atom(0))
   14: t9
     value: op(and; atom(in13), atom(in14))
-    delay: atom(0)
+    delay: tuple(atom(0))
   15: t10
     value: op(or; atom(t8), atom(t9))
-    delay: atom(0)
+    delay: tuple(atom(0))
   16: t11
     value: op(and; atom(in10), atom(t10))
-    delay: atom(0)
+    delay: tuple(atom(0))
   17: y5
     value: op(bufif1-strength; atom(0), atom(t11), strength(highz1, strong0))
-    delay: op(elmore; op(wire; atom(L_y5)), op(*; op(nmos; atom(5)), atom(3)))
+    delay: tuple(op(elmore; op(wire; atom(L_y5)), op(*; op(nmos; atom(5)), atom(3))), op(elmore; op(wire; atom(L_y5)), op(*; op(nmos; atom(5)), atom(3))), op(elmore; op(wire; atom(L_y5)), op(*; op(nmos; atom(5)), atom(3))))
   18: t12
     value: op(and; atom(in10), atom(in18))
-    delay: atom(0)
+    delay: tuple(atom(0))
   19: y5
     value: op(bufif1-strength; atom(0), atom(t12), strength(highz1, strong0))
-    delay: op(elmore; op(wire; atom(L_y5)), op(*; op(nmos; atom(5)), atom(3)))
+    delay: tuple(op(elmore; op(wire; atom(L_y5)), op(*; op(nmos; atom(5)), atom(3))), op(elmore; op(wire; atom(L_y5)), op(*; op(nmos; atom(5)), atom(2))), op(elmore; op(wire; atom(L_y5)), op(*; op(nmos; atom(5)), atom(3))))
   20: t13
     value: op(and; atom(in10), atom(in15), atom(in16))
-    delay: atom(0)
+    delay: tuple(atom(0))
   21: t14
     value: op(and; atom(in10), atom(in13), atom(in17))
-    delay: atom(0)
+    delay: tuple(atom(0))
   22: t15
     value: op(or; atom(t13), atom(t14))
-    delay: atom(0)
+    delay: tuple(atom(0))
   23: y6
     value: op(bufif1-strength; atom(0), atom(t15), strength(highz1, strong0))
-    delay: op(elmore; op(wire; atom(L_y6)), op(*; op(nmos; atom(5)), atom(3)))
+    delay: tuple(op(elmore; op(wire; atom(L_y6)), op(*; op(nmos; atom(5)), atom(3))), op(elmore; op(wire; atom(L_y6)), op(*; op(nmos; atom(5)), atom(3))), op(elmore; op(wire; atom(L_y6)), op(*; op(nmos; atom(5)), atom(3))))

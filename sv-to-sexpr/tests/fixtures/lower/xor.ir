@@ -5,4 +5,4 @@ registers: []
 assignments:
   0: y
     value: op(xor; atom(in1), atom(in2))
-    delay: op(+; op(+; op(elmore; op(wire; atom(51)), op(pmos; atom(3))), op(elmore; op(wire; atom(40)), op(*; op(nmos; atom(5)), atom(2)))), op(elmore; op(wire; atom(L_y)), op(pmos; atom(13))))
+    delay: tuple(op(+; op(+; op(elmore; op(wire; atom(51)), op(pmos; atom(3))), op(elmore; op(wire; atom(40)), op(*; op(nmos; atom(5)), atom(2)))), op(elmore; op(wire; atom(L_y)), op(pmos; atom(13)))), op(+; op(+; op(elmore; op(wire; atom(51)), op(*; op(nmos; atom(3)), atom(2))), op(elmore; op(wire; atom(40)), op(*; op(pmos; atom(5)), atom(2)))), op(elmore; op(wire; atom(L_y)), op(nmos; atom(8)))))

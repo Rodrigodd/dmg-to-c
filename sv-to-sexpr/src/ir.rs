@@ -50,7 +50,7 @@ pub enum CellItem {
 pub struct Assignment {
     pub target: String,
     pub expr: Expr,
-    pub delay: Expr,
+    pub delay: DelayTuple,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -62,7 +62,7 @@ pub enum Expr {
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct LoweredModule {
     pub cell: Cell,
-    pub timing_aliases: BTreeMap<String, Expr>,
+    pub timing_aliases: BTreeMap<String, TimingExpr>,
     /// Non-failing source diagnostics produced while constructing this cell.
     ///
     /// Diagnostics are deliberately kept outside [`Cell`], so they can be
@@ -264,6 +264,200 @@ impl TimingOperator {
     }
 }
 
+/// A structurally validated timing expression.
+///
+/// The inner S-expression remains private so callers cannot construct a timing
+/// expression containing an uncontracted operator without validation. The
+/// existing [`Expr`] timing APIs remain available during the delay-tuple
+/// migration.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct TimingExpr(Expr);
+
+impl TimingExpr {
+    const VALIDATION_CONTEXT: &'static str = "timing expression";
+
+    pub fn atom(value: impl Into<String>) -> Result<Self, ValidationError> {
+        Self::try_from_expr(Expr::atom(value))
+    }
+
+    pub fn operation(
+        operator: TimingOperator,
+        operands: Vec<TimingExpr>,
+    ) -> Result<Self, ValidationError> {
+        Self::try_from_expr(Expr::timing(
+            operator,
+            operands.into_iter().map(|operand| operand.0).collect(),
+        ))
+    }
+
+    pub fn try_from_expr(expr: Expr) -> Result<Self, ValidationError> {
+        expr.validate_timing(Self::VALIDATION_CONTEXT)?;
+        Ok(Self(expr))
+    }
+
+    pub fn as_expr(&self) -> &Expr {
+        &self.0
+    }
+
+    pub fn validate(&self, context: &str) -> Result<(), ValidationError> {
+        self.0.validate_timing(context)
+    }
+}
+
+impl AsRef<Expr> for TimingExpr {
+    fn as_ref(&self) -> &Expr {
+        self.as_expr()
+    }
+}
+
+impl TryFrom<Expr> for TimingExpr {
+    type Error = ValidationError;
+
+    fn try_from(expr: Expr) -> Result<Self, Self::Error> {
+        Self::try_from_expr(expr)
+    }
+}
+
+/// The exact one-, two-, or three-entry timing tuple attached to an assignment.
+///
+/// The variants preserve source arity and component order. They deliberately do
+/// not provide transition fallback or fill a missing component.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum DelayTuple {
+    One(TimingExpr),
+    Two {
+        rise: TimingExpr,
+        fall: TimingExpr,
+    },
+    Three {
+        rise: TimingExpr,
+        fall: TimingExpr,
+        turn_off: TimingExpr,
+    },
+}
+
+impl DelayTuple {
+    pub fn first(&self) -> &TimingExpr {
+        match self {
+            Self::One(value) => value,
+            Self::Two { rise, .. } | Self::Three { rise, .. } => rise,
+        }
+    }
+
+    pub const fn len(&self) -> usize {
+        match self {
+            Self::One(_) => 1,
+            Self::Two { .. } => 2,
+            Self::Three { .. } => 3,
+        }
+    }
+
+    pub const fn is_empty(&self) -> bool {
+        false
+    }
+
+    pub fn components(&self) -> DelayTupleComponents<'_> {
+        DelayTupleComponents {
+            tuple: self,
+            index: 0,
+        }
+    }
+
+    pub fn map(self, mut map: impl FnMut(TimingExpr) -> TimingExpr) -> Self {
+        match self {
+            Self::One(value) => Self::One(map(value)),
+            Self::Two { rise, fall } => {
+                let rise = map(rise);
+                let fall = map(fall);
+                Self::Two { rise, fall }
+            }
+            Self::Three {
+                rise,
+                fall,
+                turn_off,
+            } => {
+                let rise = map(rise);
+                let fall = map(fall);
+                let turn_off = map(turn_off);
+                Self::Three {
+                    rise,
+                    fall,
+                    turn_off,
+                }
+            }
+        }
+    }
+
+    pub fn try_map<E>(
+        self,
+        mut map: impl FnMut(TimingExpr) -> Result<TimingExpr, E>,
+    ) -> Result<Self, E> {
+        match self {
+            Self::One(value) => Ok(Self::One(map(value)?)),
+            Self::Two { rise, fall } => {
+                let rise = map(rise)?;
+                let fall = map(fall)?;
+                Ok(Self::Two { rise, fall })
+            }
+            Self::Three {
+                rise,
+                fall,
+                turn_off,
+            } => {
+                let rise = map(rise)?;
+                let fall = map(fall)?;
+                let turn_off = map(turn_off)?;
+                Ok(Self::Three {
+                    rise,
+                    fall,
+                    turn_off,
+                })
+            }
+        }
+    }
+
+    pub fn validate(&self, context: &str) -> Result<(), ValidationError> {
+        for (index, component) in self.components().enumerate() {
+            component.validate(&format!("{context} component {}", index + 1))?;
+        }
+        Ok(())
+    }
+
+    fn component(&self, index: usize) -> Option<&TimingExpr> {
+        match (self, index) {
+            (Self::One(value), 0) => Some(value),
+            (Self::Two { rise, .. }, 0) | (Self::Three { rise, .. }, 0) => Some(rise),
+            (Self::Two { fall, .. }, 1) | (Self::Three { fall, .. }, 1) => Some(fall),
+            (Self::Three { turn_off, .. }, 2) => Some(turn_off),
+            _ => None,
+        }
+    }
+}
+
+#[derive(Debug, Clone)]
+pub struct DelayTupleComponents<'a> {
+    tuple: &'a DelayTuple,
+    index: usize,
+}
+
+impl<'a> Iterator for DelayTupleComponents<'a> {
+    type Item = &'a TimingExpr;
+
+    fn next(&mut self) -> Option<Self::Item> {
+        let component = self.tuple.component(self.index)?;
+        self.index += 1;
+        Some(component)
+    }
+
+    fn size_hint(&self) -> (usize, Option<usize>) {
+        let remaining = self.tuple.len() - self.index;
+        (remaining, Some(remaining))
+    }
+}
+
+impl ExactSizeIterator for DelayTupleComponents<'_> {}
+impl std::iter::FusedIterator for DelayTupleComponents<'_> {}
+
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct ValidationError {
     pub context: String,
@@ -344,7 +538,7 @@ impl Assignment {
         self.expr
             .validate_value(&format!("assignment `{}` value", self.target))?;
         self.delay
-            .validate_timing(&format!("assignment `{}` delay", self.target))
+            .validate(&format!("assignment `{}` delay", self.target))
     }
 }
 
@@ -508,7 +702,18 @@ mod tests {
         Assignment {
             target: "y".to_string(),
             expr,
-            delay,
+            delay: DelayTuple::One(TimingExpr::try_from_expr(delay).unwrap()),
+        }
+    }
+
+    fn timing_atom(value: &str) -> TimingExpr {
+        TimingExpr::atom(value).unwrap()
+    }
+
+    fn timing_atom_value(expression: &TimingExpr) -> &str {
+        match expression.as_expr() {
+            Expr::Atom(value) => value,
+            Expr::List(_) => panic!("expected timing atom"),
         }
     }
 
@@ -673,6 +878,171 @@ mod tests {
             ],
         );
         assignment(Expr::atom("a"), nested).validate().unwrap();
+    }
+
+    #[test]
+    fn typed_timing_expressions_validate_construction_and_read_only_access() {
+        let nested = TimingExpr::operation(
+            TimingOperator::Add,
+            vec![
+                TimingExpr::operation(
+                    TimingOperator::Elmore,
+                    vec![
+                        TimingExpr::operation(TimingOperator::Wire, vec![timing_atom("L_y")])
+                            .unwrap(),
+                        TimingExpr::operation(TimingOperator::Pmos, vec![timing_atom("5")])
+                            .unwrap(),
+                    ],
+                )
+                .unwrap(),
+                timing_atom("extra_delay"),
+            ],
+        )
+        .unwrap();
+
+        nested.validate("nested delay").unwrap();
+        assert_eq!(
+            nested.as_expr(),
+            &Expr::timing(
+                TimingOperator::Add,
+                vec![
+                    Expr::timing(
+                        TimingOperator::Elmore,
+                        vec![
+                            Expr::timing(TimingOperator::Wire, vec![Expr::atom("L_y")]),
+                            Expr::timing(TimingOperator::Pmos, vec![Expr::atom("5")]),
+                        ],
+                    ),
+                    Expr::atom("extra_delay"),
+                ],
+            )
+        );
+        assert_eq!(nested.as_ref(), nested.as_expr());
+    }
+
+    #[test]
+    fn typed_timing_expressions_reject_invalid_atoms_value_operators_and_arity() {
+        let empty = TimingExpr::atom("").unwrap_err();
+        assert_eq!(empty.context, "timing expression");
+        assert_eq!(empty.message, "atom must not be empty");
+
+        let value_operator = TimingExpr::try_from_expr(Expr::value(
+            ValueOperator::And,
+            vec![Expr::atom("a"), Expr::atom("b")],
+        ))
+        .unwrap_err();
+        assert_eq!(value_operator.context, "timing expression");
+        assert_eq!(value_operator.message, "unknown timing operator `and`");
+
+        let wrong_arity =
+            TimingExpr::operation(TimingOperator::Elmore, vec![timing_atom("only")]).unwrap_err();
+        assert_eq!(wrong_arity.context, "timing expression");
+        assert_eq!(
+            wrong_arity.message,
+            "wrong arity for timing operator `elmore`: got 1"
+        );
+    }
+
+    #[test]
+    fn delay_tuples_preserve_exact_arity_order_and_first_component() {
+        let one = DelayTuple::One(timing_atom("value"));
+        let two = DelayTuple::Two {
+            rise: timing_atom("rise"),
+            fall: timing_atom("fall"),
+        };
+        let three = DelayTuple::Three {
+            rise: timing_atom("rise"),
+            fall: timing_atom("fall"),
+            turn_off: timing_atom("turn_off"),
+        };
+
+        for (tuple, expected) in [
+            (&one, vec!["value"]),
+            (&two, vec!["rise", "fall"]),
+            (&three, vec!["rise", "fall", "turn_off"]),
+        ] {
+            assert_eq!(tuple.len(), expected.len());
+            assert!(!tuple.is_empty());
+            assert_eq!(tuple.components().len(), expected.len());
+            assert_eq!(timing_atom_value(tuple.first()), expected[0]);
+            assert_eq!(
+                tuple
+                    .components()
+                    .map(timing_atom_value)
+                    .collect::<Vec<_>>(),
+                expected
+            );
+        }
+    }
+
+    #[test]
+    fn delay_tuple_map_preserves_variant_and_component_order() {
+        let tuple = DelayTuple::Three {
+            rise: timing_atom("rise"),
+            fall: timing_atom("fall"),
+            turn_off: timing_atom("turn_off"),
+        };
+        let mut visited = Vec::new();
+        let mapped = tuple.map(|component| {
+            let value = timing_atom_value(&component);
+            visited.push(value.to_string());
+            timing_atom(&format!("mapped_{value}"))
+        });
+
+        assert_eq!(visited, ["rise", "fall", "turn_off"]);
+        assert!(matches!(mapped, DelayTuple::Three { .. }));
+        assert_eq!(
+            mapped
+                .components()
+                .map(timing_atom_value)
+                .collect::<Vec<_>>(),
+            ["mapped_rise", "mapped_fall", "mapped_turn_off"]
+        );
+    }
+
+    #[test]
+    fn delay_tuple_try_map_is_ordered_and_stops_on_later_error() {
+        let tuple = DelayTuple::Three {
+            rise: timing_atom("rise"),
+            fall: timing_atom("fall"),
+            turn_off: timing_atom("turn_off"),
+        };
+        let mut visited = Vec::new();
+        let result = tuple.try_map(|component| {
+            let value = timing_atom_value(&component).to_string();
+            visited.push(value.clone());
+            if value == "fall" {
+                Err("fall mapping failed")
+            } else {
+                Ok(component)
+            }
+        });
+
+        assert_eq!(result.unwrap_err(), "fall mapping failed");
+        assert_eq!(visited, ["rise", "fall"]);
+
+        let successful = DelayTuple::Two {
+            rise: timing_atom("rise"),
+            fall: timing_atom("fall"),
+        }
+        .try_map::<std::convert::Infallible>(Ok)
+        .unwrap();
+        assert!(matches!(successful, DelayTuple::Two { .. }));
+    }
+
+    #[test]
+    fn delay_tuple_validation_checks_every_component() {
+        let invalid_later_component =
+            TimingExpr(Expr::value(ValueOperator::Not, vec![Expr::atom("signal")]));
+        let tuple = DelayTuple::Three {
+            rise: timing_atom("rise"),
+            fall: timing_atom("fall"),
+            turn_off: invalid_later_component,
+        };
+
+        let error = tuple.validate("assignment `q` delay").unwrap_err();
+        assert_eq!(error.context, "assignment `q` delay component 3");
+        assert_eq!(error.message, "unknown timing operator `not`");
     }
 
     #[test]

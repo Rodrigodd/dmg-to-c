@@ -20,7 +20,7 @@
         highz1
         strong0
       )
-      (elmore (wire L_pad) (pmos 140))
+      (delay (elmore (wire L_pad) (pmos 140)) (elmore (wire L_pad) (nmos 140)))
     )
     (pad
       (bufif0-strength
@@ -29,7 +29,7 @@
         strong1
         highz0
       )
-      (elmore (wire L_pad) (pmos 140))
+      (delay (elmore (wire L_pad) (pmos 140)) (elmore (wire L_pad) (nmos 140)))
     )
     (pad
       (bufif0-strength
@@ -38,16 +38,22 @@
         pull1
         highz0
       )
-      (* (elmore (wire L_pad) (pmos 140)) 10)
+      (delay (* (elmore (wire L_pad) (pmos 140)) 10) (elmore (wire L_pad) (nmos 140)))
     )
-    (r_n pad 0)
-    (s_n (not pad) (elmore (wire 210) (pmos 25)))
-    (t0 (not s_n) 0)
-    (t1 (not r_n) 0)
-    (t2 (or t0 t1) 0)
-    (t3 (not s_n) 0)
-    (ff (mux t2 t3 ff) 0)
-    (q ff (+ (elmore (wire 190) (* (nmos 7) 2)) (elmore (wire 190) (pmos 4))))
-    (i_n (not q) (elmore (wire L_i_n) (pmos 25)))
+    (r_n pad (delay 0))
+    (s_n (not pad) (delay (elmore (wire 210) (pmos 25)) (elmore (wire 210) (nmos 7))))
+    (t0 (not s_n) (delay 0))
+    (t1 (not r_n) (delay 0))
+    (t2 (or t0 t1) (delay 0))
+    (t3 (not s_n) (delay 0))
+    (ff (mux t2 t3 ff) (delay 0))
+    (q
+      ff
+      (delay
+        (+ (elmore (wire 190) (* (nmos 7) 2)) (elmore (wire 190) (pmos 4)))
+        (+ (elmore (wire 190) (pmos 4)) (elmore (wire 190) (* (nmos 4) 2)))
+      )
+    )
+    (i_n (not q) (delay (elmore (wire L_i_n) (pmos 25)) (elmore (wire L_i_n) (nmos 7))))
   )
 )

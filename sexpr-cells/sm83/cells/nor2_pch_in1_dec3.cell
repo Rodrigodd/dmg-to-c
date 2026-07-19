@@ -8,7 +8,7 @@
 
   (assignments
 
-    (y (nor in1 in2) (elmore (wire L_y) (* (pmos 17) 2)))
+    (y (nor in1 in2) (delay (elmore (wire L_y) (* (pmos 17) 2)) (elmore (wire L_y) (nmos 8))))
     (in1
       (bufif0-strength
         1
@@ -16,7 +16,11 @@
         strong1
         highz0
       )
-      (elmore (wire L_in1) (pmos 8))
+      (delay
+        (elmore (wire L_in1) (pmos 8))
+        (elmore (wire L_in1) (pmos 8))
+        (elmore (wire L_in1) (pmos 8))
+      )
     )
   )
 )

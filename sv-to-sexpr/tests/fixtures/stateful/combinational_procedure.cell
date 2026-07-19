@@ -8,6 +8,6 @@
 
   (assignments
 
-    (y (and a b) 0)
+    (y (and a b) (delay 0))
   )
 )

@@ -301,7 +301,7 @@ fn non_directory_output_root_and_nonregular_target_fail_without_mutation() {
 }
 
 #[test]
-fn nodelay_changes_selected_register_metadata_and_strict_keeps_ignores_non_failing() {
+fn nodelay_changes_selected_register_metadata_and_strict_accepts_preserved_tuples() {
     let tree = TempTree::new("convert-mode-policy");
     let input = tree.path("input");
     let dffr = repository_root().join("sv-cells/dmg_cpu_b/cells/dffr_cc.sv");
@@ -313,7 +313,7 @@ fn nodelay_changes_selected_register_metadata_and_strict_keeps_ignores_non_faili
     let delayful_report = convert(&delayful);
     assert!(delayful_report.succeeded());
     assert_eq!(delayful_report.warned, 0);
-    assert!(delayful_report.intentional_ignored > 0);
+    assert_eq!(delayful_report.intentional_ignored, 0);
 
     let nodelay_output = tree.path("nodelay");
     let mut nodelay = ConvertOptions::new(&input, &nodelay_output);

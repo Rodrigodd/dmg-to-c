@@ -872,7 +872,7 @@ fn collect_item_visible_names(items: &[Item], visible: &mut BTreeMap<String, Spa
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::ir::{CellItem, Expr as IrExpr, LogicValue, Register};
+    use crate::ir::{CellItem, DelayTuple, Expr as IrExpr, LogicValue, Register, TimingOperator};
     use crate::lower::lower_design_with_catalog;
     use crate::parser::parse_file;
     use std::path::Path;
@@ -881,7 +881,7 @@ mod tests {
         parse_file(Path::new(path), source).unwrap()
     }
 
-    fn assignments(lowered: &crate::ir::LoweredModule) -> Vec<(&str, &IrExpr, &IrExpr)> {
+    fn assignments(lowered: &crate::ir::LoweredModule) -> Vec<(&str, &IrExpr, &DelayTuple)> {
         lowered
             .cell
             .items
@@ -980,15 +980,77 @@ endmodule
                 IrExpr::Atom("b".into()),
             ])
         );
-        assert_eq!(assignments[2].2, &IrExpr::Atom("7".into()));
-        assert_eq!(assignments[4].2, &IrExpr::Atom("8".into()));
-        assert_eq!(assignments[6].2, &IrExpr::Atom("3".into()));
-        assert_eq!(lowered.timing_aliases["u1__T"], IrExpr::Atom("7".into()));
-        assert_eq!(lowered.timing_aliases["u2__T"], IrExpr::Atom("8".into()));
-        assert_eq!(lowered.timing_aliases["u3__T"], IrExpr::Atom("3".into()));
+        assert_eq!(
+            assignments[2].2.first().as_expr(),
+            &IrExpr::Atom("7".into())
+        );
+        assert_eq!(
+            assignments[4].2.first().as_expr(),
+            &IrExpr::Atom("8".into())
+        );
+        assert_eq!(
+            assignments[6].2.first().as_expr(),
+            &IrExpr::Atom("3".into())
+        );
+        assert_eq!(
+            lowered.timing_aliases["u1__T"].as_expr(),
+            &IrExpr::Atom("7".into())
+        );
+        assert_eq!(
+            lowered.timing_aliases["u2__T"].as_expr(),
+            &IrExpr::Atom("8".into())
+        );
+        assert_eq!(
+            lowered.timing_aliases["u3__T"].as_expr(),
+            &IrExpr::Atom("3".into())
+        );
         assert!(!format!("{lowered:?}").contains("ci1"));
         assert!(!format!("{lowered:?}").contains("ci2"));
         assert!(!format!("{lowered:?}").contains("co"));
+    }
+
+    #[test]
+    fn hierarchy_substitution_rewrites_every_delay_tuple_component() {
+        let child = parse(
+            "delay_child.sv",
+            r#"module delay_child #(parameter real P = 3) (input logic a, output logic y);
+  assign #(P, P + 1, P + 2) y = a;
+endmodule
+"#,
+        );
+        let root = parse(
+            "root.sv",
+            r#"module root(input logic a, output logic y);
+  delay_child #(.P(7)) u(.a(a), .y(y));
+endmodule
+"#,
+        );
+        let catalog = ModuleCatalog::from_designs(&[root.clone(), child]).unwrap();
+        let lowered = lower_design_with_catalog(&root, &catalog).unwrap();
+        let assignments = assignments(&lowered);
+
+        assert_eq!(assignments.len(), 1);
+        assert_eq!(assignments[0].0, "y");
+        assert_eq!(assignments[0].1, &IrExpr::Atom("a".into()));
+        assert_eq!(
+            assignments[0]
+                .2
+                .components()
+                .map(|component| component.as_expr())
+                .collect::<Vec<_>>(),
+            [
+                &IrExpr::Atom("7".into()),
+                &IrExpr::timing(
+                    TimingOperator::Add,
+                    vec![IrExpr::atom("7"), IrExpr::atom("1")],
+                ),
+                &IrExpr::timing(
+                    TimingOperator::Add,
+                    vec![IrExpr::atom("7"), IrExpr::atom("2")],
+                ),
+            ]
+        );
+        assert!(lowered.diagnostics.is_empty());
     }
 
     #[test]

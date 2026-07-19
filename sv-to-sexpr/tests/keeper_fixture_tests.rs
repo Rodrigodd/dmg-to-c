@@ -6,8 +6,8 @@ use std::process::Command;
 use sv_to_sexpr::analyze::{DriverSource, InstantiationResolution, SignalRole};
 use sv_to_sexpr::diagnostic::Diagnostic;
 use sv_to_sexpr::elaborate::GenerateMode;
-use sv_to_sexpr::ir::{CellItem, Expr, LoweredModule, ValueOperator};
-use sv_to_sexpr::serialize::{render_cell, render_expr};
+use sv_to_sexpr::ir::{CellItem, DelayTuple, Expr, LoweredModule, ValueOperator};
+use sv_to_sexpr::serialize::{render_cell, render_delay_tuple, render_expr};
 use sv_to_sexpr::survey::{
     analyze_file_with_sibling_catalog_and_generate_mode,
     lower_file_with_sibling_catalog_and_generate_mode,
@@ -150,10 +150,10 @@ fn idu_bit0_keeps_keeper_and_nmos_distinct_source_ordered_drivers() {
         })
         .unwrap();
     assert!(keeper_index < nmos_index);
-    assert_eq!(assignments[keeper_index].delay, Expr::atom("0"));
+    assert!(is_zero_delay(&assignments[keeper_index].delay));
     assert_eq!(
-        render_expr(&assignments[nmos_index].delay),
-        "(elmore (wire L_aoi_buf_y) (nmos 17))"
+        render_delay_tuple(&assignments[nmos_index].delay),
+        "(delay (elmore (wire L_aoi_buf_y) (nmos 17)) (elmore (wire L_aoi_buf_y) (nmos 17)) (elmore (wire L_aoi_buf_y) (nmos 17)))"
     );
     assert_eq!(
         render_cell(&lowered.cell),
@@ -300,7 +300,7 @@ fn assert_keeper_case(
         .iter()
         .filter(|assignment| {
             assignment.expr == Expr::value(ValueOperator::Keeper, vec![])
-                && assignment.delay == Expr::atom("0")
+                && is_zero_delay(&assignment.delay)
         })
         .count();
     assert_eq!(keepers, 1);
@@ -317,6 +317,10 @@ fn assert_keeper_case(
             );
         }
     }
+}
+
+fn is_zero_delay(delay: &DelayTuple) -> bool {
+    delay.len() == 1 && delay.first().as_expr() == &Expr::atom("0")
 }
 
 fn render_cli_ir(lowered: &LoweredModule) -> String {

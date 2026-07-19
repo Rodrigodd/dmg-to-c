@@ -1,2 +1,1 @@
-diagnostics:
-  intentional-ignore | sv-cells/sm83/cells/dff_cc_q.sv:28:60 | delay tuple entry 2 is intentionally ignored because the cell model selects only entry 1
+diagnostics: []

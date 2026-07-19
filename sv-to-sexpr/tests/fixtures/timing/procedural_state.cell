@@ -8,7 +8,7 @@
 
   (assignments
 
-    (t0 (and a b) 0)
-    (q (mux ena t0 q) T_state)
+    (t0 (and a b) (delay 0))
+    (q (mux ena t0 q) (delay T_state T_state_fall))
   )
 )

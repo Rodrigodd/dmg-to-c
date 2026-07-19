@@ -41,8 +41,12 @@ plan is revised:
   either the SystemVerilog source or generated cells.
 - Analog-accurate transistor or strength simulation beyond a documented DSL
   representation.
-- Per-transition rise, fall, turn-off, or high-Z delays. The DSL stores one
-  delay per assignment and uses only the first SystemVerilog delay tuple entry.
+- Runtime event scheduling or selection of a delay-tuple component. The DSL
+  preserves source rise, fall, and turn-off entries, while a downstream
+  compiler or simulator chooses how to consume them.
+- Serialized timing arcs or a timing-constraint table. Source timing paths may
+  be retained internally while deriving ordinary per-assignment delays, but
+  every emitted delay remains attached to an assignment.
 - Guessing semantics for unsupported constructs. The tool must reject them.
 
 ## Target Output Contract
@@ -56,7 +60,7 @@ Each converted file contains one cell form:
   (outputs ...)
   (registers (register initial-value) ...)
   (assignments
-    (target expression delay)
+    (target expression (delay timing-expression ...))
     ...
   )
 )
@@ -87,13 +91,17 @@ The following rules are part of the contract and must be tested:
   be emitted only after they are added to the DSL contract and covered by
   reviewed fixtures; otherwise they are expressed using the contracted
   primitive operators.
-- Only the first entry of a SystemVerilog delay tuple is lowered. All later tuple
-  entries are intentionally ignored because the DSL does not model separate
-  transition delays. A missing delay is `0`; an explicitly omitted first tuple
-  entry is rejected unless Milestone 0 defines an equivalent single delay.
-- Delay expressions may be nested. Timing sums within the selected first tuple
-  entry use `(+ ...)`, and timing primitives use forms such as
+- Every assignment carries exactly one tagged delay tuple: `(delay value)`,
+  `(delay rise fall)`, or `(delay rise fall turn-off)`. Its arity and entries
+  preserve the selected source delay tuple exactly; entries are neither filled,
+  summed, nor discarded. A missing source delay becomes `(delay 0)`. An omitted
+  tuple entry is rejected until an equally explicit representation is
+  contracted.
+- Delay expressions may be nested. Timing sums within any tuple entry use
+  `(+ ...)`, and timing primitives use forms such as
   `(elmore (wire L_x) (pmos 5))`.
+- Selecting only the first tuple component remains a supported downstream
+  compatibility policy, but selection does not occur during conversion.
 - Unknown, ambiguous, or unrepresentable behavior is an error in strict mode
   and is never silently simplified.
 
@@ -101,15 +109,18 @@ For example, this is valid because each value expression is flat while the delay
 expression may be nested:
 
 ```scheme
-(t0 (not a) 0)
-(t1 (and t0 b) 0)
-(y (mux select t1 c) (+ (elmore (wire L_y) (pmos 5)) extra_delay))
+(t0 (not a) (delay 0))
+(t1 (and t0 b) (delay 0))
+(y (mux select t1 c)
+  (delay
+    (+ (elmore (wire L_y) (pmos 5)) extra_delay)
+    T_fall_y))
 ```
 
 This is invalid because the `not` value expression is nested inside `and`:
 
 ```scheme
-(y (and (not a) b) 0)
+(y (and (not a) b) (delay 0))
 ```
 
 ## Validation Rules
@@ -145,7 +156,9 @@ Expected to be working after this milestone:
 
 - A documented list of legal value, driver, state, and timing forms.
 - A documented decision for initial values, repeated drivers, keepers,
-  transistor primitives, omitted first delays, and the single-delay policy.
+  transistor primitives, omitted delays, and the then-current selected-first
+  policy. Milestone 14 supersedes that timing policy with exact tuple
+  preservation.
 - A diagnostic classification with `error`, `warning`, and intentional-ignore
   categories.
 - `--strict` semantics: warnings become failures; errors always fail.
@@ -431,6 +444,10 @@ recorded as intentional ignores, 999 later-entry ignores, and 372 preserved
 emitted resistance multiplications. The corpus has no one-entry delay tuple, so
 that required case remains covered by its focused unit test while two- and
 three-entry forms are covered by corpus witnesses.
+
+This section records the acceptance contract used for the original release.
+Milestone 14 supersedes its selected-first output policy without invalidating
+the historical implementation and test results recorded here.
 
 Implement nested delay expressions using the DSL's first-entry-only policy.
 
@@ -728,6 +745,255 @@ Acceptance conditions:
   repeated strict conversion; the checked reference remains equal to its
   reviewed timing fixture.
 
+### Milestone 14: Preserve Complete Delay Tuples
+
+Status: complete as of 2026-07-18. Every assignment now carries a validated,
+tagged one-, two-, or three-entry delay tuple. The exact corpus audit covers
+1,958 delayful assignments with emitted arities 1,223/276/459, preserves every
+component of all selected source tuples, and compares all 1,958 first-component
+projections with the former selected-first behavior with zero mismatches. Both
+configured modes lower all 206 files with zero warnings, zero failures, and
+exactly 49 intentional ignores, all for additional specify paths. All 206
+checked cells are formatter-canonical and byte-identical to repeated strict
+conversion. This milestone preserves the current explicit-delay precedence and
+temporary first-source-ordered specify-path selection; it does not yet infer
+shared physical paths, redistribute delay between assignments, or emit a
+timing-arc representation.
+
+Expected to be working after this milestone:
+
+- Every IR assignment carries a typed one-, two-, or three-entry delay tuple.
+- Every present source tuple entry is preserved in source order, including
+  nested symbolic timing expressions.
+- Missing source timing is represented uniformly as `(delay 0)`.
+- Serialized assignments use exactly `(delay value)`, `(delay rise fall)`, or
+  `(delay rise fall turn-off)`.
+- A downstream compiler can select the first component and recover the prior
+  single-delay behavior without regenerating cells.
+- Later tuple entries no longer produce intentional-ignore diagnostics.
+
+Expected not to be working yet:
+
+- Multiple control-dependent specify paths for one target still select the
+  first path in source order and produce one intentional-ignore diagnostic per
+  used target at the second path.
+- Assignment delays need not yet reconstruct every overlapping specify path.
+- No timing arcs or constraint tables are serialized.
+
+Implementation phases:
+
+1. Freeze this roadmap and revise [CONTRACT.md](CONTRACT.md) to define tagged
+   tuple syntax, exact source arity, downstream selection compatibility, and
+   the temporary first-path policy. This phase changes no Rust or generated
+   output.
+2. In `src/ir.rs`, create typed `TimingExpr` and `DelayTuple` representations;
+   migrate `Assignment::delay` and `LoweredModule::timing_aliases`; add tuple
+   iteration, mapping, validation, and first-component projection helpers. In
+   `src/lower.rs`, replace single-expression tuple lowering with
+   `lower_delay_tuple`, retain every component for explicit and specify timing,
+   use a typed one-entry zero tuple for missing delays, and remove later-entry
+   intentional ignores. Update hierarchy substitution and qualification to map
+   every tuple component. Compile-focused tests complete this phase; serialized
+   syntax and checked goldens may remain temporarily unmigrated within the
+   phase branch.
+3. In `src/serialize.rs`, render tagged delay tuples. Migrate test builders,
+   IR/cell fixtures, corpus audit expectations, the reference cell, and all 206
+   checked outputs. Do not change assignment placement or value SSA during this
+   mechanical migration.
+4. Add exact inventory tests and a compatibility oracle that projects every
+   tuple through its first component and compares it with the pre-Milestone 14
+   semantics. Update release documentation and run the complete acceptance
+   gate before marking the milestone complete.
+
+Files, types, and functions:
+
+- `src/ir.rs`: make `TimingExpr` a validated newtype over the existing
+  S-expression tree, constructible only through timing atoms/operators, so a
+  value operator cannot enter a delay accidentally. Define
+  `DelayTuple::One(TimingExpr)`, `DelayTuple::Two { rise, fall }`, and
+  `DelayTuple::Three { rise, fall, turn_off }`; add
+  `DelayTuple::{first, components, map, try_map, validate}`. Migrate
+  `Assignment::delay`, `LoweredModule::timing_aliases`, and structural
+  validation.
+- `src/lower.rs`: `lower_delay_tuple`, `zero_delay_tuple`, and tuple-aware
+  explicit/specify lookup; remove the later-entry-ignore path while preserving
+  first-source-ordered path selection.
+- `src/hierarchy.rs`: parameter substitution and qualified-name rewriting over
+  every timing component.
+- `src/serialize.rs`: deterministic `(delay ...)` rendering.
+- `src/convert.rs`, `src/survey.rs`, test helpers, fixtures, and checked cells:
+  migrate tuple-aware counts, comparison, and output.
+- `CONTRACT.md`, `README.md`, `PLAN.md`, `STATUS.md`, and CI expectations:
+  document and verify the accepted representation. `PLAN.md` and `STATUS.md`
+  completion updates occur only after all acceptance checks pass.
+
+No new production dependency is required. `sexpr-fmt` remains the canonical
+output parser and formatter.
+
+Acceptance conditions:
+
+- Source inventory is preserved exactly: assignment delays contain 45
+  two-entry and 60 three-entry tuples; primitive delays contain 21 two-entry
+  and 399 three-entry tuples; specify paths contain 263 two-entry and 3
+  three-entry tuples. The curated corpus contains no omitted tuple component.
+- Tuple arity, expression structure, factors, and source ordering are unchanged;
+  no entry is copied, filled, summed with another entry, or discarded.
+- First-component projection reproduces the pre-Milestone 14 delay expression
+  for every assignment, including the temporary selected first specify path.
+- Assignment totals remain exactly 1,958 delayful and 1,955 nodelay.
+- Strict delayful and nodelay lowering process all 206 files with zero warnings
+  and zero failures. Intentional ignores are exactly 49 in each mode, all for
+  additional specify paths; no tuple-entry ignore remains.
+- All focused and full tests, `cargo fmt --check`, and clippy pass. All 206
+  checked outputs parse and are canonical/idempotent under `sexpr-fmt`, and a
+  repeated strict conversion is byte-identical.
+
+### Milestone 15: Build the Functional Timing Graph
+
+Status: planned after Milestone 14. Preserve every specify path as an internal
+constraint and relate it to the flat functional IR without changing serialized
+output or the temporary first-path assignment placement.
+
+Expected to be working after this milestone:
+
+- Every specify control, target, transition tuple, and source span is retained
+  in a deterministic timing-constraint graph.
+- Functional dependencies distinguish combinational edges, register/state
+  boundaries, operand position, timing polarity, and reconvergence.
+- Reachability, dominator, and post-dominator information identifies candidate
+  shared prefixes, shared suffixes, and public-output splits.
+- The 49 ambiguous target groups have a deterministic structural
+  classification instead of being visible only as lowering diagnostics.
+
+Implementation plan:
+
+- Add `src/timing_graph.rs` with `TimingGraph`, `TimingNodeId`,
+  `TimingNodeKind`, `DependencyEdge`, `TimingSense`, `Transition`, and
+  `TimingConstraint`.
+- Implement `build_timing_graph`, `cut_register_cycles`,
+  `collect_timing_constraints`, `classify_timing_sense`,
+  `validate_constraint_reachability`, and deterministic graph reporting.
+- Add `src/timing_terms.rs` with `DelayTerm`, `AdditiveDelay`, exact flattening
+  of associative timing `+`, opaque structural terms for all other timing
+  expressions, and deterministic reconstruction. No algebraic simplification
+  or symbolic subtraction is permitted.
+- Add `petgraph = "0.8"` as the only new production dependency for stable
+  directed graphs, strongly connected components, topological traversal,
+  reachability, and dominance algorithms. Continue to use source-ordered
+  `Vec` and `BTreeMap` for stable external ordering; do not add `indexmap`.
+- Keep timing constraints internal to analysis/lowering. The serializer must
+  continue to emit only ordinary assignments with tagged delay tuples.
+
+Acceptance conditions:
+
+- All 266 structural specify paths and 480 scalar controls are retained exactly
+  once with their full tuples and source provenance; the deterministic report
+  contains 203 target groups and identifies the known 49 multiple-path groups.
+- Register feedback is cut only at modeled state boundaries; ordinary
+  combinational cycles and unreachable controls are source-spanned errors.
+- Positive-unate, negative-unate, non-unate/conditional, and state-control
+  dependencies have focused tests, including inversion of rise/fall sense.
+- Graph construction is deterministic across repeated runs and filesystem
+  traversal order.
+- Milestone 14 cell output and diagnostics remain byte-identical.
+
+### Milestone 16: Decompose Timing Paths into Assignment Delays
+
+Status: planned after Milestone 15. Convert internal control-to-target timing
+constraints into exact delay tuples on ordinary assignments. Timing arcs remain
+an implementation input and verification oracle; they are never serialized.
+
+Expected to be working after this milestone:
+
+- Shared path suffixes are placed on shared assignments, while source-specific
+  prefixes are represented by deterministic delay-only identity assignments.
+- Outputs that are read internally can be split into an internal raw value and
+  a public identity assignment, preventing an output-local delay from being
+  counted again on a derived output.
+- Every accepted control-to-target transition reconstructs the original timing
+  expression exactly from the delays along its emitted functional path.
+- Unrepresentable hidden topology or conflicting reconvergent paths produce a
+  source-spanned error rather than a heuristic approximation.
+
+Files, types, and functions:
+
+- Add `src/timing_decompose.rs` with `DelayPlacement`, `Decomposition`,
+  `DecompositionError`, `decompose_timing`, `insert_edge_delay`,
+  `split_public_output`, and `verify_decomposition`.
+- Add deterministic `d0`, `d1`, ... names for timing-only identity assignments
+  without perturbing logical `t0`, `t1`, ... numbering; reject collisions.
+- Extend `src/timing_terms.rs` with exact ordered term containment,
+  factor/recompose operations, and structural equality for each tuple
+  component. Non-additive subexpressions such as `elmore`, multiplication,
+  clamps, and aliases remain indivisible terms.
+- Rewrite all tuple components jointly with edge timing sense so inversion maps
+  rise and fall constraints correctly and turn-off remains distinct.
+- Use deterministic exact-cover/backtracking over the small per-cell candidate
+  placement set. Prefer existing assignments, then shared post-dominator
+  placement, then sites nearer the target, with source order as the final tie
+  breaker. Do not introduce floating-point linear programming, negative
+  coefficients, or synthesized timing subtraction.
+- Add `proptest = "1"` as a development dependency for generated acyclic graph
+  properties, especially decompose/reconstruct equality. Do not add `good_lp`
+  or `microlp`; their floating-point models are not authoritative for exact
+  symbolic golden output. Exact rational crates remain deferred unless corpus
+  evidence proves whole-term placement insufficient.
+
+Acceptance conditions:
+
+- Reviewed fixtures cover `ao21`, `dffsr`, complementary outputs, shared
+  suffixes, source-specific prefixes, inversion, state boundaries,
+  reconvergence, and a precise unrepresentable case.
+- The `dffsr` public `q_n` equation does not accumulate `q`'s public output
+  delay; both outputs derive from the appropriate raw state/path region.
+- Every accepted original path and transition is independently reconstructed
+  and structurally equals its source constraint.
+- Removing `dN` identities and collapsing raw/public output splits preserves
+  the original value equations, driver order, registers, and initial metadata.
+- No serialized timing arc, timing table, negative delay, arbitrary subtraction,
+  or first-path fallback is produced.
+- Output, synthetic naming, and diagnostics are deterministic and all unchanged
+  non-timing fixtures remain stable.
+
+### Milestone 17: Full-Corpus Timing Closure
+
+Status: planned after Milestone 16. Close every former multiple-specify-path
+approximation across the 206-cell corpus and make exact per-assignment timing a
+release gate.
+
+Implementation plan:
+
+- Run decomposition and independent reconstruction across both delayful and
+  nodelay modes. Classify every failure as a conflicting constraint,
+  reconvergent/non-unate analysis gap, or hidden physical topology absent from
+  the functional RTL.
+- Improve the generic graph/decomposition implementation before introducing
+  cell-specific knowledge. If exact hidden topology cannot be recovered, stop
+  for a reviewed contract decision. A permitted fallback must be a typed,
+  checked-in topology hint with validated module/signal/term references, never
+  a name-string heuristic or arbitrary output override.
+- Only if reviewed hints are required, add a schema and `serde` with derive plus
+  the compatible `toml` crate. Only if exact coefficient splitting is proven
+  necessary, add `num-rational`, `num-bigint`, and `num-traits`; floating-point
+  solving remains prohibited.
+- Regenerate and manually review affected fixtures and checked cells, then run
+  the full release gate and update documentation/status.
+
+Acceptance conditions:
+
+- All 49 former additional-path intentional ignores are gone in delayful and
+  nodelay modes; all 206 files lower with zero warnings, zero intentional
+  ignores, and zero failures.
+- Every emitted delay placement passes independent full-tuple path
+  reconstruction against all retained source constraints.
+- All output remains assignment-only, formatter-canonical, idempotent, and
+  byte-identical across repeated strict conversion.
+- Full converter tests, formatter tests, formatting, clippy, staged corpus
+  checks, and CI pass; every changed golden is manually compared with its
+  SystemVerilog source and this contract.
+- `PLAN.md` and `STATUS.md` record completion only after the preceding checks
+  and the chosen treatment of any hidden-topology case are reviewed.
+
 ## Required Test Layout
 
 Tests may remain next to small units, but corpus and golden coverage should be
@@ -749,7 +1015,8 @@ sv-to-sexpr/tests/
 
 ## Definition of Done
 
-The project is done only when Milestone 13 is accepted. In particular:
+The original full-corpus release baseline was accepted at Milestone 13. The
+revised timing work is done only when Milestone 17 is accepted. In particular:
 
 - All 206 files produce deterministic, structurally valid, manually reviewed
   fixture output for every supported construct family.
@@ -758,10 +1025,12 @@ The project is done only when Milestone 13 is accepted. In particular:
 - Generate branches are not combined accidentally.
 - Tri-state drivers never encode high-Z as an ordinary mux value unless that is
   explicitly part of the DSL contract.
-- Each source delay uses only its first tuple entry; later transition entries are
-  intentionally ignored and are never summed.
-- Specify timing required by the reference and corpus is present.
+- Every source delay tuple preserves its exact arity and every present entry;
+  transition entries are never filled, summed together, or discarded.
+- Specify timing required by the reference and corpus is decomposed into
+  ordinary assignment delays and independently reconstructs every retained
+  control-to-target transition constraint.
 - Every value expression is flat, and SSA temporary order is deterministic.
-- No in-scope construct, strength, multiplier, driver, or first-entry timing path
-  is silently lost. Later delay tuple entries are excluded by explicit policy.
+- No in-scope construct, strength, multiplier, driver, tuple entry, or timing
+  path is silently lost.
 - Strict conversion succeeds with zero unsupported constructs.

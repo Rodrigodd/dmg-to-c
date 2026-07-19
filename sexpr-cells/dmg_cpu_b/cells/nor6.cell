@@ -24,7 +24,7 @@
         in5
         in6
       )
-      (elmore (wire L_y) (* (pmos 35) 6))
+      (delay (elmore (wire L_y) (* (pmos 35) 6)) (elmore (wire L_y) (nmos 35)))
     )
   )
 )

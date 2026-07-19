@@ -69,14 +69,40 @@ convert-file <input.sv> <output.cell> [--dry-run] [--strict] [--overwrite]
 Its dry run prints the canonical cell to stdout. A real conversion refuses to
 replace an existing file unless `--overwrite` is present.
 
+## Delay tuples
+
+Every serialized assignment carries one tagged delay tuple. The only emitted
+forms are:
+
+```text
+(delay value)
+(delay rise fall)
+(delay rise fall turn-off)
+```
+
+The converter preserves the exact one-, two-, or three-entry arity and source
+order of the selected SystemVerilog delay. It does not fill, copy, sum, or
+discard tuple components. Assignments without source timing, including
+generated SSA temporaries, use the canonical one-entry `(delay 0)` form.
+
+A downstream compiler can project the first component to reproduce the
+converter's pre-tuple single-delay behavior. A simulator may instead select
+the rise, fall, or turn-off component according to its transition policy. The
+cell format remains assignment-only: explicit delays retain precedence and the
+first source-ordered specify path is temporarily attached to the assignment,
+but no timing arcs or timing-constraint tables are serialized.
+
 ## Diagnostics and summaries
 
 Errors always fail. Warnings describe a supported conversion with a documented
 fidelity limitation and fail only in strict mode. Intentional ignores are
 explicitly excluded by the cell contract and never fail, even in strict mode.
-The current approved ignores include later delay-tuple entries and additional
-control-dependent specify paths after the first selected source-ordered path.
-Register initial values are preserved metadata and do not produce diagnostics.
+Later delay-tuple entries are preserved and do not produce diagnostics. The
+remaining temporary intentional ignores are exactly the 49 additional
+control-dependent specify paths after the first selected source-ordered path in
+either generate mode. Milestones 15 through 17 will retain, analyze, and
+redistribute those overlapping paths. Register initial values are preserved
+metadata and do not produce diagnostics.
 
 Each modeled register is serialized as `(name initial-value)`, where the value
 is one of `0`, `1`, `x`, or `z`. A selected scalar contracted literal `initial`

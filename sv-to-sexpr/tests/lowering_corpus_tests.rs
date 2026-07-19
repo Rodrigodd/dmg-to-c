@@ -247,13 +247,17 @@ fn audit_success(cell: &Cell, source_names: &BTreeSet<String>, totals: &mut Audi
             }
         }
 
-        if assignment.delay.validate_timing("corpus audit").is_err() {
+        if assignment.delay.validate("corpus audit").is_err() {
             totals.timing_validation_failures += 1;
         }
-        if assignment.delay != Expr::atom("0") {
+        if assignment.delay.len() != 1 || assignment.delay.first().as_expr() != &Expr::atom("0") {
             totals.delayed_assignments += 1;
         }
-        if timing_has_nested_operation(&assignment.delay) {
+        if assignment
+            .delay
+            .components()
+            .any(|component| timing_has_nested_operation(component.as_expr()))
+        {
             totals.nested_timing_delay_assignments += 1;
         }
         if generated_temps.contains(&assignment.target) {
@@ -314,8 +318,8 @@ fn assert_exact_baseline(totals: &AuditTotals, failures: &[FailedFile]) {
     assert_eq!(totals.atom_value_assignments, 17);
     assert_eq!(totals.temporary_assignments, 1168);
     assert_eq!(totals.repeated_target_assignments, 77);
-    assert_eq!(totals.delayed_assignments, 721);
-    assert_eq!(totals.nested_timing_delay_assignments, 721);
+    assert_eq!(totals.delayed_assignments, 735);
+    assert_eq!(totals.nested_timing_delay_assignments, 735);
     assert_eq!(totals.cells_with_registers, 27);
     assert_eq!(totals.registers, 48);
     assert_eq!(

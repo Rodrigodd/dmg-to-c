@@ -11,13 +11,12 @@ use sv_to_sexpr::ast::{
 use sv_to_sexpr::diagnostic::{DiagnosticKind, DiagnosticPolicy, Span};
 use sv_to_sexpr::elaborate::GenerateMode;
 use sv_to_sexpr::hierarchy::flatten_design_with_catalog_and_generate_mode;
-use sv_to_sexpr::ir::{CellItem, Expr, TimingOperator};
+use sv_to_sexpr::ir::{CellItem, DelayTuple, Expr, TimingOperator};
 use sv_to_sexpr::lower::lower_design_with_catalog_and_generate_mode;
 use sv_to_sexpr::parser::parse_file;
-use sv_to_sexpr::serialize::{render_cell, render_expr};
+use sv_to_sexpr::serialize::{render_cell, render_delay_tuple, render_timing_expr};
 use sv_to_sexpr::survey::collect_sv_files;
 
-const DELAY_IGNORE_PREFIX: &str = "delay tuple entry ";
 const SPECIFY_IGNORE_PREFIX: &str = "additional control-dependent specify path for target `";
 const REFERENCE: &str = "sv-cells/sm83/cells/dffs_cc_ee_pch_d_reg_pc_bit.sv";
 
@@ -112,6 +111,15 @@ struct LowerAudit {
     emitted_zero_delays: usize,
     emitted_nonzero_delays: usize,
     emitted_nested_delays: usize,
+    emitted_tuple_arities: [usize; 4],
+    noncanonical_one_entry_delays: usize,
+    first_projection_comparisons: usize,
+    first_projection_explicit: usize,
+    first_projection_specify: usize,
+    first_projection_forced_zero: usize,
+    first_projection_missing_zero: usize,
+    first_projection_generated_zero: usize,
+    first_projection_mismatches: usize,
     warnings: usize,
     specify_ignores: usize,
     later_ignores: usize,
@@ -121,10 +129,16 @@ struct LowerAudit {
     invalid_cells: usize,
     nondeterministic_results: usize,
     absolute_path_leaks: usize,
-    uncontracted_timing: usize,
-    operator_counts: BTreeMap<String, usize>,
     expected_outer_resistance_multiplications: usize,
-    emitted_outer_resistance_multiplications: usize,
+    all_components: TimingExprInventory,
+    first_components: TimingExprInventory,
+}
+
+#[derive(Default)]
+struct TimingExprInventory {
+    operator_counts: BTreeMap<String, usize>,
+    outer_resistance_multiplications: usize,
+    uncontracted: usize,
 }
 
 #[derive(Clone, Copy)]
@@ -500,7 +514,8 @@ fn finalize_source_inventory(paths: &[String], inventory: &mut SourceInventory) 
     assert_eq!(inventory.primitive_tuples.arities[1], 0);
     assert_eq!(inventory.specify_tuples.arities[1], 0);
     inventory.witnesses.tuple_arity[1].insert(
-        "synthetic-unit:lower::tests::delay_tuples_select_exactly_the_first_entry".to_string(),
+        "synthetic-unit:lower::tests::delay_tuples_preserve_exact_arity_and_first_projection"
+            .to_string(),
     );
     assert!(!inventory.witnesses.tuple_arity[1].is_empty());
     assert!(!inventory.witnesses.tuple_arity[2].is_empty());
@@ -606,64 +621,86 @@ fn audit_success(
             "{path}"
         );
         let matches = specify.get(&source_assignment.target);
-        let expected = if source_assignment.force_zero {
+        let (expected, expected_first) = if source_assignment.force_zero {
             audit.zero_delays += 1;
-            "0".to_string()
+            audit.first_projection_forced_zero += 1;
+            ("(delay 0)".to_string(), "0".to_string())
         } else if let Some(explicit) = source_assignment.explicit {
             audit.explicit_delays += 1;
+            audit.first_projection_explicit += 1;
             if matches.is_some_and(|paths| !paths.is_empty()) {
                 audit.explicit_with_specify_match += 1;
             }
             let shape = source_tuple_shape(explicit, &aliases);
-            if shape != "0" {
+            if shape != "(delay 0)" {
                 audit.explicit_nonzero_delays += 1;
             }
-            shape
+            (shape, source_first_shape(explicit, &aliases))
         } else if let Some(paths) = matches.filter(|paths| !paths.is_empty()) {
             audit.specify_delays += 1;
+            audit.first_projection_specify += 1;
             if paths.len() > 1 {
                 used_ambiguous_targets.insert(source_assignment.target.clone());
             }
-            let shape = source_tuple_shape(
-                TupleRef {
-                    span: paths[0].span,
-                    values: paths[0].values,
-                },
-                &aliases,
-            );
-            if shape != "0" {
+            let selected = TupleRef {
+                span: paths[0].span,
+                values: paths[0].values,
+            };
+            let shape = source_tuple_shape(selected, &aliases);
+            if shape != "(delay 0)" {
                 audit.specify_nonzero_delays += 1;
             }
-            shape
+            (shape, source_first_shape(selected, &aliases))
         } else {
             audit.zero_delays += 1;
-            "0".to_string()
+            audit.first_projection_missing_zero += 1;
+            ("(delay 0)".to_string(), "0".to_string())
         };
         audit.expected_outer_resistance_multiplications +=
             expected.matches("(* (pmos ").count() + expected.matches("(* (nmos ").count();
-        if render_expr(&emitted_assignment.delay) != expected {
+        if render_delay_tuple(&emitted_assignment.delay) != expected {
             audit.source_delay_mismatches += 1;
+        }
+        audit.first_projection_comparisons += 1;
+        if render_timing_expr(emitted_assignment.delay.first()) != expected_first {
+            audit.first_projection_mismatches += 1;
         }
     }
 
     for assignment in &emitted {
-        assignment
-            .delay
-            .validate_timing("timing corpus delay")
-            .unwrap();
+        assignment.delay.validate("timing corpus delay").unwrap();
         let is_temp = !source_names.contains(&assignment.target);
-        if is_temp && assignment.delay != Expr::atom("0") {
-            audit.temp_nonzero_delays += 1;
+        if is_temp {
+            audit.first_projection_generated_zero += 1;
+            audit.first_projection_comparisons += 1;
+            if !is_zero_delay(&assignment.delay) {
+                audit.temp_nonzero_delays += 1;
+                audit.first_projection_mismatches += 1;
+            }
         }
-        if assignment.delay == Expr::atom("0") {
+        audit.emitted_tuple_arities[assignment.delay.len()] += 1;
+        if assignment.delay.len() == 1 && !is_zero_delay(&assignment.delay) {
+            audit.noncanonical_one_entry_delays += 1;
+        }
+        if is_zero_delay(&assignment.delay) {
             audit.emitted_zero_delays += 1;
         } else {
             audit.emitted_nonzero_delays += 1;
-            if matches!(assignment.delay, Expr::List(_)) {
+            if assignment
+                .delay
+                .components()
+                .any(|component| matches!(component.as_expr(), Expr::List(_)))
+            {
                 audit.emitted_nested_delays += 1;
             }
         }
-        inventory_ir_timing(&assignment.delay, audit);
+        inventory_ir_timing(
+            assignment.delay.first().as_expr(),
+            &mut audit.first_components,
+        );
+        for component in assignment.delay.components() {
+            inventory_ir_timing(component.as_expr(), &mut audit.all_components);
+        }
     }
 
     let expected_diagnostics = expected_diagnostics(module, &specify, &used_ambiguous_targets);
@@ -685,9 +722,7 @@ fn audit_success(
                 audit.warnings += 1;
             }
             DiagnosticKind::IntentionalIgnore => {
-                if diagnostic.message.starts_with(DELAY_IGNORE_PREFIX) {
-                    audit.later_ignores += 1;
-                } else if diagnostic.message.starts_with(SPECIFY_IGNORE_PREFIX) {
+                if diagnostic.message.starts_with(SPECIFY_IGNORE_PREFIX) {
                     audit.specify_ignores += 1;
                     if DiagnosticPolicy::new(false).is_failure(diagnostic)
                         || DiagnosticPolicy::new(true).is_failure(diagnostic)
@@ -845,12 +880,38 @@ fn timing_aliases(module: &sv_to_sexpr::ast::Module) -> BTreeMap<String, &SvExpr
 }
 
 fn source_tuple_shape(tuple: TupleRef<'_>, aliases: &BTreeMap<String, &SvExpr>) -> String {
+    assert!(
+        (1..=3).contains(&tuple.values.len()),
+        "invalid tuple arity at {:?}",
+        tuple.span
+    );
+    format!(
+        "(delay {})",
+        tuple
+            .values
+            .iter()
+            .map(|component| {
+                let component = component
+                    .as_ref()
+                    .unwrap_or_else(|| panic!("omitted tuple component at {:?}", tuple.span));
+                source_timing_shape(component, aliases, &mut Vec::new())
+            })
+            .collect::<Vec<_>>()
+            .join(" ")
+    )
+}
+
+fn source_first_shape(tuple: TupleRef<'_>, aliases: &BTreeMap<String, &SvExpr>) -> String {
+    assert!(
+        (1..=3).contains(&tuple.values.len()),
+        "invalid tuple arity at {:?}",
+        tuple.span
+    );
     let first = tuple
         .values
         .first()
-        .unwrap_or_else(|| panic!("missing first tuple at {:?}", tuple.span))
-        .as_ref()
-        .unwrap_or_else(|| panic!("omitted first tuple at {:?}", tuple.span));
+        .and_then(Option::as_ref)
+        .unwrap_or_else(|| panic!("omitted first tuple component at {:?}", tuple.span));
     source_timing_shape(first, aliases, &mut Vec::new())
 }
 
@@ -962,19 +1023,18 @@ fn resistance_factor_shape(
 }
 
 fn expected_diagnostics(
-    module: &sv_to_sexpr::ast::Module,
+    _module: &sv_to_sexpr::ast::Module,
     specify: &BTreeMap<String, Vec<SpecifyPathRef<'_>>>,
     used_ambiguous_targets: &BTreeSet<String>,
 ) -> Vec<ExpectedDiagnostic> {
     let mut expected = Vec::new();
-    collect_expected_item_diagnostics(&module.items, &mut expected);
     for (target, paths) in specify {
         if used_ambiguous_targets.contains(target) {
             expected.push(ExpectedDiagnostic {
                 kind: DiagnosticKind::IntentionalIgnore,
                 span: paths[1].span.clone(),
                 message: format!(
-                    "additional control-dependent specify path for target `{target}` is intentionally ignored because the one-delay cell DSL selects the first source-ordered path for the target"
+                    "additional control-dependent specify path for target `{target}` is intentionally ignored because delay-tuple lowering temporarily selects the first source-ordered path for the target"
                 ),
             });
         }
@@ -989,81 +1049,24 @@ fn expected_diagnostics(
     expected
 }
 
-fn collect_expected_item_diagnostics(items: &[Item], expected: &mut Vec<ExpectedDiagnostic>) {
-    for item in items {
-        match &item.kind {
-            ItemKind::Initial(_) => {}
-            ItemKind::Assign(assign) => {
-                if let Some(delay) = &assign.delay {
-                    expected_tuple_ignores(&delay.span, &delay.values, expected);
-                }
-            }
-            ItemKind::Primitive(call) => {
-                if let Some(delay) = &call.delay {
-                    expected_tuple_ignores(&delay.span, &delay.values, expected);
-                }
-            }
-            ItemKind::Specify(specify) => {
-                for specify_item in &specify.items {
-                    if let SpecifyItem::Path(path) = specify_item {
-                        expected_tuple_ignores(&path.span, &path.delays, expected);
-                    }
-                }
-            }
-            ItemKind::Generate(block) | ItemKind::Block(block) => {
-                collect_expected_item_diagnostics(&block.items, expected)
-            }
-            ItemKind::If(if_stmt) => {
-                collect_expected_item_diagnostics(
-                    std::slice::from_ref(if_stmt.then_branch.as_ref()),
-                    expected,
-                );
-                if let Some(else_branch) = &if_stmt.else_branch {
-                    collect_expected_item_diagnostics(
-                        std::slice::from_ref(else_branch.as_ref()),
-                        expected,
-                    );
-                }
-            }
-            _ => {}
-        }
-    }
+fn is_zero_delay(delay: &DelayTuple) -> bool {
+    delay.len() == 1 && delay.first().as_expr() == &Expr::atom("0")
 }
 
-fn expected_tuple_ignores(
-    span: &Span,
-    values: &[Option<SvExpr>],
-    expected: &mut Vec<ExpectedDiagnostic>,
-) {
-    for (index, value) in values.iter().enumerate().skip(1) {
-        expected.push(ExpectedDiagnostic {
-            kind: DiagnosticKind::IntentionalIgnore,
-            span: value
-                .as_ref()
-                .map(|expr| expr.span.clone())
-                .unwrap_or_else(|| span.clone()),
-            message: format!(
-                "delay tuple entry {} is intentionally ignored because the cell model selects only entry 1",
-                index + 1
-            ),
-        });
-    }
-}
-
-fn inventory_ir_timing(expr: &Expr, audit: &mut LowerAudit) {
+fn inventory_ir_timing(expr: &Expr, inventory: &mut TimingExprInventory) {
     let Expr::List(items) = expr else {
         return;
     };
     let (head, operands) = items.split_first().unwrap();
     let Expr::Atom(head) = head else {
-        audit.uncontracted_timing += 1;
+        inventory.uncontracted += 1;
         return;
     };
     if TimingOperator::parse(head).is_none() {
-        audit.uncontracted_timing += 1;
+        inventory.uncontracted += 1;
         return;
     }
-    *audit.operator_counts.entry(head.clone()).or_default() += 1;
+    *inventory.operator_counts.entry(head.clone()).or_default() += 1;
     if head == "*"
         && operands.iter().any(|operand| {
             matches!(
@@ -1073,10 +1076,10 @@ fn inventory_ir_timing(expr: &Expr, audit: &mut LowerAudit) {
             )
         })
     {
-        audit.emitted_outer_resistance_multiplications += 1;
+        inventory.outer_resistance_multiplications += 1;
     }
     for operand in operands {
-        inventory_ir_timing(operand, audit);
+        inventory_ir_timing(operand, inventory);
     }
 }
 
@@ -1118,35 +1121,73 @@ fn assert_exact_contract(source: &SourceInventory, lower: &LowerAudit) {
         790
     );
     assert_eq!(lower.explicit_delays, 525);
-    assert_eq!(lower.explicit_nonzero_delays, 511);
+    assert_eq!(lower.explicit_nonzero_delays, 525);
     assert_eq!(lower.specify_delays, 210);
     assert_eq!(lower.specify_nonzero_delays, 210);
     assert_eq!(lower.zero_delays, 55);
     assert_eq!(
         lower.explicit_nonzero_delays + lower.specify_nonzero_delays,
-        721
+        735
     );
-    assert_eq!(lower.emitted_nonzero_delays, 721);
-    assert_eq!(lower.emitted_zero_delays, 1_237);
-    assert_eq!(lower.emitted_nested_delays, 721);
+    assert_eq!(lower.emitted_nonzero_delays, 735);
+    assert_eq!(lower.emitted_zero_delays, 1_223);
+    assert_eq!(lower.emitted_nested_delays, 735);
+    assert_eq!(lower.emitted_tuple_arities, [0, 1_223, 276, 459]);
+    assert_eq!(
+        lower.emitted_tuple_arities[1..].iter().sum::<usize>(),
+        lower.assignments
+    );
+    assert_eq!(lower.noncanonical_one_entry_delays, 0);
+    assert_eq!(lower.first_projection_comparisons, 1_958);
+    assert_eq!(lower.first_projection_explicit, 525);
+    assert_eq!(lower.first_projection_specify, 210);
+    assert_eq!(lower.first_projection_forced_zero, 6);
+    assert_eq!(lower.first_projection_missing_zero, 49);
+    assert_eq!(lower.first_projection_generated_zero, 1_168);
+    assert_eq!(lower.first_projection_mismatches, 0);
+    assert_eq!(
+        lower.first_projection_forced_zero
+            + lower.first_projection_missing_zero
+            + lower.first_projection_generated_zero,
+        lower.emitted_tuple_arities[1]
+    );
+    assert_eq!(
+        lower.first_projection_explicit + lower.first_projection_specify,
+        lower.emitted_tuple_arities[2] + lower.emitted_tuple_arities[3]
+    );
     assert_eq!(lower.warnings, 0);
     assert_eq!(lower.specify_ignores, 49);
-    assert_eq!(lower.later_ignores, 1_260);
+    assert_eq!(lower.later_ignores, 0);
     assert_eq!(lower.specify_ignore_contract_failures, 0);
     assert_eq!(lower.diagnostic_mismatches, 0);
     assert_eq!(lower.source_delay_mismatches, 0);
     assert_eq!(lower.invalid_cells, 0);
     assert_eq!(lower.nondeterministic_results, 0);
     assert_eq!(lower.absolute_path_leaks, 0);
-    assert_eq!(lower.uncontracted_timing, 0);
+    assert_eq!(lower.all_components.uncontracted, 0);
+    assert_eq!(lower.first_components.uncontracted, 0);
     assert!(lower.expected_outer_resistance_multiplications > 0);
     assert_eq!(
-        lower.emitted_outer_resistance_multiplications,
+        lower.all_components.outer_resistance_multiplications,
         lower.expected_outer_resistance_multiplications
     );
-    assert_eq!(lower.expected_outer_resistance_multiplications, 421);
+    assert_eq!(lower.expected_outer_resistance_multiplications, 1_198);
     assert_eq!(
-        lower.operator_counts,
+        lower.all_components.operator_counts,
+        BTreeMap::from([
+            ("+".to_string(), 675),
+            ("*".to_string(), 1_228),
+            ("elmore".to_string(), 2_293),
+            ("gt".to_string(), 14),
+            ("mux".to_string(), 14),
+            ("wire".to_string(), 2_293),
+            ("pmos".to_string(), 833),
+            ("nmos".to_string(), 1_771),
+        ])
+    );
+    assert_eq!(lower.first_components.outer_resistance_multiplications, 421);
+    assert_eq!(
+        lower.first_components.operator_counts,
         BTreeMap::from([
             ("+".to_string(), 258),
             ("*".to_string(), 423),
@@ -1277,7 +1318,7 @@ fn render_summary(source: &SourceInventory, lower: &LowerAudit) -> String {
         &mut output,
         "  outer-resistance-multiplications expected={} emitted={}",
         lower.expected_outer_resistance_multiplications,
-        lower.emitted_outer_resistance_multiplications
+        lower.all_components.outer_resistance_multiplications
     )
     .unwrap();
     writeln!(
@@ -1286,6 +1327,56 @@ fn render_summary(source: &SourceInventory, lower: &LowerAudit) -> String {
         lower.warnings, lower.specify_ignores, lower.later_ignores
     )
     .unwrap();
+    writeln!(&mut output, "emitted-tuples:").unwrap();
+    writeln!(
+        &mut output,
+        "  arity1={} arity2={} arity3={} total={}",
+        lower.emitted_tuple_arities[1],
+        lower.emitted_tuple_arities[2],
+        lower.emitted_tuple_arities[3],
+        lower.emitted_tuple_arities[1..].iter().sum::<usize>()
+    )
+    .unwrap();
+    writeln!(
+        &mut output,
+        "  noncanonical-one-entry={}",
+        lower.noncanonical_one_entry_delays
+    )
+    .unwrap();
+    writeln!(&mut output, "first-component-compatibility:").unwrap();
+    writeln!(
+        &mut output,
+        "  comparisons={} explicit={} specify={} forced-zero={} missing-zero={} generated-zero={} mismatches={}",
+        lower.first_projection_comparisons,
+        lower.first_projection_explicit,
+        lower.first_projection_specify,
+        lower.first_projection_forced_zero,
+        lower.first_projection_missing_zero,
+        lower.first_projection_generated_zero,
+        lower.first_projection_mismatches
+    )
+    .unwrap();
+    writeln!(
+        &mut output,
+        "  outer-resistance-multiplications={}",
+        lower.first_components.outer_resistance_multiplications
+    )
+    .unwrap();
+    writeln!(&mut output, "first-component-timing-operators:").unwrap();
+    for operator in TimingOperator::ALL {
+        writeln!(
+            &mut output,
+            "  {}={}",
+            operator.as_str(),
+            lower
+                .first_components
+                .operator_counts
+                .get(operator.as_str())
+                .copied()
+                .unwrap_or(0)
+        )
+        .unwrap();
+    }
     writeln!(&mut output, "emitted-timing-operators:").unwrap();
     for operator in TimingOperator::ALL {
         writeln!(
@@ -1293,6 +1384,7 @@ fn render_summary(source: &SourceInventory, lower: &LowerAudit) -> String {
             "  {}={}",
             operator.as_str(),
             lower
+                .all_components
                 .operator_counts
                 .get(operator.as_str())
                 .copied()
@@ -1312,7 +1404,22 @@ fn render_summary(source: &SourceInventory, lower: &LowerAudit) -> String {
         ("invalid-cells", lower.invalid_cells),
         ("nondeterministic-results", lower.nondeterministic_results),
         ("absolute-path-leaks", lower.absolute_path_leaks),
-        ("uncontracted-timing", lower.uncontracted_timing),
+        (
+            "first-component-uncontracted-timing",
+            lower.first_components.uncontracted,
+        ),
+        (
+            "all-component-uncontracted-timing",
+            lower.all_components.uncontracted,
+        ),
+        (
+            "first-projection-mismatches",
+            lower.first_projection_mismatches,
+        ),
+        (
+            "noncanonical-one-entry-delays",
+            lower.noncanonical_one_entry_delays,
+        ),
     ] {
         writeln!(&mut output, "  {name}={value}").unwrap();
     }

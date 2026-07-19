@@ -8,6 +8,6 @@
 
   (assignments
 
-    (y a T_explicit)
+    (y a (delay T_explicit T_explicit_fall))
   )
 )

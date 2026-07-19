@@ -21,8 +21,8 @@
 
   (assignments
 
-    (b_y_n (not b_y) (elmore (wire L_b_y_n) (pmos 15)))
-    (c_y_n (not c_y) (elmore (wire L_c_y_n) (pmos 15)))
+    (b_y_n (not b_y) (delay (elmore (wire L_b_y_n) (pmos 15)) (elmore (wire L_b_y_n) (nmos 5))))
+    (c_y_n (not c_y) (delay (elmore (wire L_c_y_n) (pmos 15)) (elmore (wire L_c_y_n) (nmos 8))))
     (a_y
       (bufif0-strength
         1
@@ -30,7 +30,11 @@
         strong1
         highz0
       )
-      (elmore (wire L_a_y) (pmos 10))
+      (delay
+        (elmore (wire L_a_y) (pmos 10))
+        (elmore (wire L_a_y) (pmos 10))
+        (elmore (wire L_a_y) (pmos 10))
+      )
     )
     (b_y
       (bufif0-strength
@@ -39,7 +43,11 @@
         strong1
         highz0
       )
-      (elmore (wire L_b_y) (pmos 15))
+      (delay
+        (elmore (wire L_b_y) (pmos 15))
+        (elmore (wire L_b_y) (pmos 15))
+        (elmore (wire L_b_y) (pmos 15))
+      )
     )
     (c_y
       (bufif0-strength
@@ -48,11 +56,29 @@
         strong1
         highz0
       )
-      (elmore (wire L_c_y) (pmos 15))
+      (delay
+        (elmore (wire L_c_y) (pmos 15))
+        (elmore (wire L_c_y) (* (nmos 8) 3))
+        (elmore (wire L_c_y) (pmos 15))
+      )
     )
-    (t0 (and pch_n c_zero_a) 0)
-    (c_y (bufif1 0 t0) (elmore (wire L_c_y) (pmos 15)))
-    (t1 (and pch_n c_zero_b1 c_zero_b2) 0)
-    (c_y (bufif1 0 t1) (elmore (wire L_c_y) (pmos 15)))
+    (t0 (and pch_n c_zero_a) (delay 0))
+    (c_y
+      (bufif1 0 t0)
+      (delay
+        (elmore (wire L_c_y) (pmos 15))
+        (elmore (wire L_c_y) (* (nmos 8) 2))
+        (elmore (wire L_c_y) (pmos 15))
+      )
+    )
+    (t1 (and pch_n c_zero_b1 c_zero_b2) (delay 0))
+    (c_y
+      (bufif1 0 t1)
+      (delay
+        (elmore (wire L_c_y) (pmos 15))
+        (elmore (wire L_c_y) (* (nmos 8) 3))
+        (elmore (wire L_c_y) (pmos 15))
+      )
+    )
   )
 )

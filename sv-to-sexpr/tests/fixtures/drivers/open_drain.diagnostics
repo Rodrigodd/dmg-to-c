@@ -1,3 +1,1 @@
-diagnostics:
-  intentional-ignore | sv-cells/sm83/cells/nand2_od_a_dbus.sv:14:36 | delay tuple entry 2 is intentionally ignored because the cell model selects only entry 1
-  intentional-ignore | sv-cells/sm83/cells/nand2_od_a_dbus.sv:14:46 | delay tuple entry 3 is intentionally ignored because the cell model selects only entry 1
+diagnostics: []

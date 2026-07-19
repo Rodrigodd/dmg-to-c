@@ -681,7 +681,14 @@ impl Parser {
             return Ok(None);
         }
         let start = self.expect_punct(Punct::LParen)?.span.clone();
-        let values = self.parse_optional_expr_list(Punct::RParen)?;
+        let mut values = self.parse_optional_expr_list(Punct::RParen)?;
+        if self
+            .tokens
+            .get(self.index.saturating_sub(1))
+            .is_some_and(|token| token.kind == TokenKind::Punct(Punct::Comma))
+        {
+            values.push(None);
+        }
         self.expect_punct(Punct::RParen)?;
         Ok(Some(Delay {
             span: start,

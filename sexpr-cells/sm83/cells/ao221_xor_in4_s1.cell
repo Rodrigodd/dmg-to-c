@@ -14,9 +14,15 @@
 
   (assignments
 
-    (t0 (and in1 in2) 0)
-    (t1 (xor in1 in4) 0)
-    (t2 (and in3 t1) 0)
-    (y (or t0 t2 in5) (+ (elmore (wire 45) (* (nmos 5) 2)) (elmore (wire L_y) (pmos 22))))
+    (t0 (and in1 in2) (delay 0))
+    (t1 (xor in1 in4) (delay 0))
+    (t2 (and in3 t1) (delay 0))
+    (y
+      (or t0 t2 in5)
+      (delay
+        (+ (elmore (wire 45) (* (nmos 5) 2)) (elmore (wire L_y) (pmos 22)))
+        (+ (elmore (wire 45) (* (pmos 5) 3)) (elmore (wire L_y) (nmos 11)))
+      )
+    )
   )
 )

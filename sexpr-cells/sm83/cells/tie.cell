@@ -8,7 +8,7 @@
 
   (assignments
 
-    (gnd (drive-strength 0 supply1 supply0) 0)
-    (vdd (drive-strength 1 supply1 supply0) 0)
+    (gnd (drive-strength 0 supply1 supply0) (delay 0))
+    (vdd (drive-strength 1 supply1 supply0) (delay 0))
   )
 )

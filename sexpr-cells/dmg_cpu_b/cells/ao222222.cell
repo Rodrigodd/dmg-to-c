@@ -21,12 +21,12 @@
 
   (assignments
 
-    (t0 (and in1 in2) 0)
-    (t1 (and in3 in4) 0)
-    (t2 (and in5 in6) 0)
-    (t3 (and in7 in8) 0)
-    (t4 (and in9 in10) 0)
-    (t5 (and in11 in12) 0)
+    (t0 (and in1 in2) (delay 0))
+    (t1 (and in3 in4) (delay 0))
+    (t2 (and in5 in6) (delay 0))
+    (t3 (and in7 in8) (delay 0))
+    (t4 (and in9 in10) (delay 0))
+    (t5 (and in11 in12) (delay 0))
     (y
       (or
         t0
@@ -36,7 +36,10 @@
         t4
         t5
       )
-      (+ (elmore (wire 284) (* (nmos 35) 2)) (elmore (wire L_y) (pmos 35)))
+      (delay
+        (+ (elmore (wire 284) (* (nmos 35) 2)) (elmore (wire L_y) (pmos 35)))
+        (+ (elmore (wire 284) (* (pmos 35) 6)) (elmore (wire L_y) (nmos 35)))
+      )
     )
   )
 )

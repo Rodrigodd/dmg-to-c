@@ -8,6 +8,6 @@
 
   (assignments
 
-    (a pad 0)
+    (a pad (delay 0))
   )
 )

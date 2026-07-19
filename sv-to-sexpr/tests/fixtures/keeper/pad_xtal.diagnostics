@@ -1,7 +1,1 @@
-diagnostics:
-  intentional-ignore | sv-cells/dmg_cpu_b/cells/pad_xtal.sv:18:23 | delay tuple entry 2 is intentionally ignored because the cell model selects only entry 1
-  intentional-ignore | sv-cells/dmg_cpu_b/cells/pad_xtal.sv:23:44 | delay tuple entry 2 is intentionally ignored because the cell model selects only entry 1
-  intentional-ignore | sv-cells/dmg_cpu_b/cells/pad_xtal.sv:24:44 | delay tuple entry 2 is intentionally ignored because the cell model selects only entry 1
-  intentional-ignore | sv-cells/dmg_cpu_b/cells/pad_xtal.sv:25:44 | delay tuple entry 2 is intentionally ignored because the cell model selects only entry 1
-  intentional-ignore | sv-cells/dmg_cpu_b/cells/pad_xtal.sv:30:27 | delay tuple entry 2 is intentionally ignored because the cell model selects only entry 1
-  intentional-ignore | sv-cells/dmg_cpu_b/cells/pad_xtal.sv:34:25 | delay tuple entry 2 is intentionally ignored because the cell model selects only entry 1
+diagnostics: []

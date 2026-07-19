@@ -6,8 +6,8 @@ use crate::ast::*;
 use crate::diagnostic::{Diagnostic, DiagnosticKind, Span};
 use crate::elaborate::{GenerateMode, elaborate_design};
 use crate::ir::{
-    Assignment, Cell, CellItem, Expr, LogicValue, LoweredModule, Register, StrengthPair,
-    TimingOperator, ValueOperator,
+    Assignment, Cell, CellItem, DelayTuple, Expr, LogicValue, LoweredModule, Register,
+    StrengthPair, TimingExpr, TimingOperator, ValueOperator,
 };
 use std::collections::{BTreeMap, BTreeSet};
 use std::path::Path;
@@ -156,7 +156,7 @@ struct Lowerer<'a> {
     module: &'a Module,
     cell: Cell,
     timing_alias_sources: BTreeMap<String, TimingAliasSource>,
-    timing_aliases: BTreeMap<String, Expr>,
+    timing_aliases: BTreeMap<String, TimingExpr>,
     timing_alias_stack: Vec<String>,
     specify_delays: BTreeMap<String, Vec<SpecifyDelay>>,
     ignored_additional_specify_targets: BTreeSet<String>,
@@ -177,7 +177,7 @@ struct TimingAliasSource {
 #[derive(Debug, Clone, PartialEq, Eq)]
 struct SpecifyDelay {
     path_span: Span,
-    delay: Expr,
+    delay: DelayTuple,
 }
 
 impl<'a> Lowerer<'a> {
@@ -347,7 +347,11 @@ impl<'a> Lowerer<'a> {
         Ok(())
     }
 
-    fn resolve_timing_alias(&mut self, name: &str, reference_span: &Span) -> LowerResult<Expr> {
+    fn resolve_timing_alias(
+        &mut self,
+        name: &str,
+        reference_span: &Span,
+    ) -> LowerResult<TimingExpr> {
         if let Some(resolved) = self.timing_aliases.get(name) {
             return Ok(resolved.clone());
         }
@@ -405,7 +409,7 @@ impl<'a> Lowerer<'a> {
                         "specify path target must be a scalar symbol",
                     )
                 })?;
-                let delay = self.lower_timing_tuple(&path.span, &path.delays)?;
+                let delay = self.lower_delay_tuple(&path.span, &path.delays)?;
                 self.specify_delays
                     .entry(target)
                     .or_default()
@@ -418,16 +422,20 @@ impl<'a> Lowerer<'a> {
         Ok(())
     }
 
-    fn source_delay_for(&mut self, target: &str, explicit: Option<&Delay>) -> LowerResult<Expr> {
+    fn source_delay_for(
+        &mut self,
+        target: &str,
+        explicit: Option<&Delay>,
+    ) -> LowerResult<DelayTuple> {
         match explicit {
-            Some(delay) => self.lower_timing_expr_from_delay(delay),
+            Some(delay) => self.lower_delay_tuple(&delay.span, &delay.values),
             None => Ok(self.specify_delay_for(target)),
         }
     }
 
-    fn specify_delay_for(&mut self, target: &str) -> Expr {
+    fn specify_delay_for(&mut self, target: &str) -> DelayTuple {
         let Some(matches) = self.specify_delays.get(target) else {
-            return Expr::atom("0");
+            return zero_delay_tuple();
         };
         let first = matches[0].delay.clone();
         let additional_path_span = matches.get(1).map(|candidate| candidate.path_span.clone());
@@ -439,7 +447,7 @@ impl<'a> Lowerer<'a> {
             self.diagnostics.push(Diagnostic::intentional_ignore(
                 span,
                 format!(
-                    "additional control-dependent specify path for target `{target}` is intentionally ignored because the one-delay cell DSL selects the first source-ordered path for the target"
+                    "additional control-dependent specify path for target `{target}` is intentionally ignored because delay-tuple lowering temporarily selects the first source-ordered path for the target"
                 ),
             ));
         }
@@ -498,7 +506,7 @@ impl<'a> Lowerer<'a> {
         self.emit_assignment(
             keeper.connection.target,
             Expr::value(ValueOperator::Keeper, vec![]),
-            Expr::atom("0"),
+            zero_delay_tuple(),
             &keeper.connection.span,
         )
     }
@@ -924,7 +932,7 @@ impl<'a> Lowerer<'a> {
         &mut self,
         target: String,
         expr: Expr,
-        delay: Expr,
+        delay: DelayTuple,
         source_span: &Span,
     ) -> LowerResult<()> {
         let expr = self.flatten_value_root(expr, source_span)?;
@@ -973,7 +981,7 @@ impl<'a> Lowerer<'a> {
                     self.push_validated_assignment(
                         temporary.clone(),
                         nested,
-                        Expr::atom("0"),
+                        zero_delay_tuple(),
                         source_span,
                     )?;
                     flat_operands.push(Expr::atom(temporary));
@@ -997,7 +1005,7 @@ impl<'a> Lowerer<'a> {
         &mut self,
         target: String,
         expr: Expr,
-        delay: Expr,
+        delay: DelayTuple,
         source_span: &Span,
     ) -> LowerResult<()> {
         let assignment = Assignment {
@@ -1061,7 +1069,30 @@ impl<'a> Lowerer<'a> {
         }
     }
 
-    fn lower_timing_expr(&mut self, expr: &SvExpr) -> LowerResult<Expr> {
+    fn timing_atom(&self, value: impl Into<String>, source_span: &Span) -> LowerResult<TimingExpr> {
+        TimingExpr::atom(value).map_err(|error| {
+            Diagnostic::new(
+                source_span.clone(),
+                format!("invalid lowered timing expression: {error}"),
+            )
+        })
+    }
+
+    fn timing_operation(
+        &self,
+        operator: TimingOperator,
+        operands: Vec<TimingExpr>,
+        source_span: &Span,
+    ) -> LowerResult<TimingExpr> {
+        TimingExpr::operation(operator, operands).map_err(|error| {
+            Diagnostic::new(
+                source_span.clone(),
+                format!("invalid lowered timing expression: {error}"),
+            )
+        })
+    }
+
+    fn lower_timing_expr(&mut self, expr: &SvExpr) -> LowerResult<TimingExpr> {
         match &expr.kind {
             ExprKind::Path(segments) => {
                 if segments.len() == 1 {
@@ -1070,15 +1101,20 @@ impl<'a> Lowerer<'a> {
                         return self.resolve_timing_alias(name, &expr.span);
                     }
                 }
-                Ok(Expr::atom(segments.join("::")))
+                self.timing_atom(segments.join("::"), &expr.span)
             }
-            ExprKind::Integer(value) | ExprKind::Real(value) => Ok(Expr::atom(value.clone())),
-            ExprKind::Constant(kind) => Ok(Expr::atom(match kind {
-                ConstKind::Zero => "0",
-                ConstKind::One => "1",
-                ConstKind::Z => "z",
-                ConstKind::X => "x",
-            })),
+            ExprKind::Integer(value) | ExprKind::Real(value) => {
+                self.timing_atom(value.clone(), &expr.span)
+            }
+            ExprKind::Constant(kind) => self.timing_atom(
+                match kind {
+                    ConstKind::Zero => "0",
+                    ConstKind::One => "1",
+                    ConstKind::Z => "z",
+                    ConstKind::X => "x",
+                },
+                &expr.span,
+            ),
             ExprKind::Group(inner) => self.lower_timing_expr(inner),
             ExprKind::Unary { op, expr: operand } => {
                 let operator = match op {
@@ -1091,10 +1127,9 @@ impl<'a> Lowerer<'a> {
                         ));
                     }
                 };
-                Ok(Expr::timing(
-                    operator,
-                    vec![Expr::atom("0"), self.lower_timing_expr(operand)?],
-                ))
+                let zero = self.timing_atom("0", &expr.span)?;
+                let operand = self.lower_timing_expr(operand)?;
+                self.timing_operation(operator, vec![zero, operand], &expr.span)
             }
             ExprKind::Binary { op, left, right } => {
                 let operator = match op {
@@ -1127,68 +1162,79 @@ impl<'a> Lowerer<'a> {
                         ));
                     }
                 };
-                Ok(Expr::timing(
-                    operator,
-                    vec![
-                        self.lower_timing_expr(left)?,
-                        self.lower_timing_expr(right)?,
-                    ],
-                ))
+                let left = self.lower_timing_expr(left)?;
+                let right = self.lower_timing_expr(right)?;
+                self.timing_operation(operator, vec![left, right], &expr.span)
             }
             ExprKind::Ternary {
                 condition,
                 then_expr,
                 else_expr,
-            } => Ok(Expr::timing(
-                TimingOperator::Mux,
-                vec![
-                    self.lower_timing_expr(condition)?,
-                    self.lower_timing_expr(then_expr)?,
-                    self.lower_timing_expr(else_expr)?,
-                ],
-            )),
+            } => {
+                let condition = self.lower_timing_expr(condition)?;
+                let then_expr = self.lower_timing_expr(then_expr)?;
+                let else_expr = self.lower_timing_expr(else_expr)?;
+                self.timing_operation(
+                    TimingOperator::Mux,
+                    vec![condition, then_expr, else_expr],
+                    &expr.span,
+                )
+            }
             ExprKind::Call { callee, args } => self.lower_timing_call(callee, args),
         }
     }
 
-    fn lower_timing_expr_from_delay(&mut self, delay: &Delay) -> LowerResult<Expr> {
-        self.lower_timing_tuple(&delay.span, &delay.values)
-    }
-
-    fn lower_timing_tuple(
+    fn lower_delay_tuple(
         &mut self,
         tuple_span: &Span,
         values: &[Option<SvExpr>],
-    ) -> LowerResult<Expr> {
-        for (index, ignored) in values.iter().enumerate().skip(1) {
-            let span = ignored
-                .as_ref()
-                .map(|expression| expression.span.clone())
-                .unwrap_or_else(|| tuple_span.clone());
-            self.diagnostics.push(Diagnostic::intentional_ignore(
-                span,
+    ) -> LowerResult<DelayTuple> {
+        if !(1..=3).contains(&values.len()) {
+            return Err(Diagnostic::new(
+                tuple_span.clone(),
                 format!(
-                    "delay tuple entry {} is intentionally ignored because the cell model selects only entry 1",
-                    index + 1
+                    "delay tuple must contain between one and three entries; got {}",
+                    values.len()
                 ),
             ));
         }
-        let Some(first) = values.first() else {
-            return Err(Diagnostic::new(
-                tuple_span.clone(),
-                "delay tuple must contain a first entry",
-            ));
-        };
-        let first = first.as_ref().ok_or_else(|| {
-            Diagnostic::new(
-                tuple_span.clone(),
-                "explicitly omitted first delay tuple entry is unsupported",
-            )
-        })?;
-        self.lower_timing_expr(first)
+
+        let mut components = Vec::with_capacity(values.len());
+        for (index, value) in values.iter().enumerate() {
+            let value = value.as_ref().ok_or_else(|| {
+                Diagnostic::new(
+                    tuple_span.clone(),
+                    format!(
+                        "explicitly omitted delay tuple entry {} is unsupported",
+                        index + 1
+                    ),
+                )
+            })?;
+            components.push(self.lower_timing_expr(value)?);
+        }
+
+        let mut components = components.into_iter();
+        let first = components.next().expect("validated nonempty tuple");
+        Ok(match values.len() {
+            1 => DelayTuple::One(first),
+            2 => DelayTuple::Two {
+                rise: first,
+                fall: components.next().expect("validated two-entry tuple"),
+            },
+            3 => DelayTuple::Three {
+                rise: first,
+                fall: components.next().expect("validated three-entry tuple"),
+                turn_off: components.next().expect("validated three-entry tuple"),
+            },
+            _ => unreachable!("validated delay tuple arity"),
+        })
     }
 
-    fn lower_timing_call(&mut self, callee: &SvExpr, args: &[Option<SvExpr>]) -> LowerResult<Expr> {
+    fn lower_timing_call(
+        &mut self,
+        callee: &SvExpr,
+        args: &[Option<SvExpr>],
+    ) -> LowerResult<TimingExpr> {
         let name = expr_symbol(callee).unwrap_or_else(|| render_call_callee(callee));
         match name.as_str() {
             "tpd_elmore" => {
@@ -1204,13 +1250,10 @@ impl<'a> Lowerer<'a> {
                 let resistance = args[1].as_ref().ok_or_else(|| {
                     Diagnostic::new(callee.span.clone(), "expected resistance argument")
                 })?;
-                Ok(Expr::timing(
-                    TimingOperator::Elmore,
-                    vec![
-                        Expr::timing(TimingOperator::Wire, vec![self.lower_timing_expr(wire)?]),
-                        self.lower_timing_resistance(resistance)?,
-                    ],
-                ))
+                let wire = self.lower_timing_expr(wire)?;
+                let wire = self.timing_operation(TimingOperator::Wire, vec![wire], &callee.span)?;
+                let resistance = self.lower_timing_resistance(resistance)?;
+                self.timing_operation(TimingOperator::Elmore, vec![wire, resistance], &callee.span)
             }
             "tpd_z" => {
                 let Some(arg) = args.iter().find_map(|arg| arg.as_ref()) else {
@@ -1230,7 +1273,7 @@ impl<'a> Lowerer<'a> {
         }
     }
 
-    fn lower_timing_resistance(&mut self, expr: &SvExpr) -> LowerResult<Expr> {
+    fn lower_timing_resistance(&mut self, expr: &SvExpr) -> LowerResult<TimingExpr> {
         // Resistance networks use the ordinary recursive timing grammar. In
         // particular, do not peel off a resistance call from multiplication:
         // the outer factor is part of the modeled expression.
@@ -1242,7 +1285,7 @@ impl<'a> Lowerer<'a> {
         operator: TimingOperator,
         callee: &SvExpr,
         args: &[Option<SvExpr>],
-    ) -> LowerResult<Expr> {
+    ) -> LowerResult<TimingExpr> {
         if args.len() != 1 {
             return Err(Diagnostic::new(
                 callee.span.clone(),
@@ -1260,10 +1303,10 @@ impl<'a> Lowerer<'a> {
             operator,
             TimingOperator::Pmos | TimingOperator::Nmos
         ));
-        Ok(Expr::timing(operator, vec![value]))
+        self.timing_operation(operator, vec![value], &callee.span)
     }
 
-    fn extract_unit_factor(&mut self, expr: &SvExpr) -> LowerResult<Expr> {
+    fn extract_unit_factor(&mut self, expr: &SvExpr) -> LowerResult<TimingExpr> {
         match &expr.kind {
             ExprKind::Group(inner) => self.extract_unit_factor(inner),
             ExprKind::Binary {
@@ -1286,11 +1329,11 @@ impl<'a> Lowerer<'a> {
         }
     }
 
-    fn lower_resistance_factor(&mut self, expr: &SvExpr) -> LowerResult<Expr> {
+    fn lower_resistance_factor(&mut self, expr: &SvExpr) -> LowerResult<TimingExpr> {
         match &expr.kind {
             ExprKind::Group(inner) => self.lower_resistance_factor(inner),
             ExprKind::Path(segments) if segments.len() == 1 && segments[0] == "L_unit" => {
-                Ok(Expr::atom("1"))
+                self.timing_atom("1", &expr.span)
             }
             ExprKind::Integer(_) | ExprKind::Real(_) | ExprKind::Path(_) => {
                 self.lower_timing_expr(expr)
@@ -1301,6 +1344,10 @@ impl<'a> Lowerer<'a> {
             )),
         }
     }
+}
+
+fn zero_delay_tuple() -> DelayTuple {
+    DelayTuple::One(TimingExpr::atom("0").expect("zero is a valid timing atom"))
 }
 
 fn lower_strength_pair(strength: &Strength) -> LowerResult<StrengthPair> {
@@ -1434,7 +1481,7 @@ fn is_l_unit(expr: &SvExpr) -> bool {
 mod tests {
     use super::*;
     use crate::diagnostic::DiagnosticPolicy;
-    use crate::serialize::render_expr;
+    use crate::serialize::{render_delay_tuple, render_expr, render_timing_expr};
     use std::fs;
 
     fn lower_path(path: &str) -> LoweredModule {
@@ -1452,7 +1499,23 @@ mod tests {
                 CellItem::Assignment(assignment) => Some((
                     assignment.target.clone(),
                     render_expr(&assignment.expr),
-                    render_expr(&assignment.delay),
+                    render_timing_expr(assignment.delay.first()),
+                )),
+                _ => None,
+            })
+            .collect()
+    }
+
+    fn assignment_tuple_strings(lowered: &LoweredModule) -> Vec<(String, String, String)> {
+        lowered
+            .cell
+            .items
+            .iter()
+            .filter_map(|item| match item {
+                CellItem::Assignment(assignment) => Some((
+                    assignment.target.clone(),
+                    render_expr(&assignment.expr),
+                    render_delay_tuple(&assignment.delay),
                 )),
                 _ => None,
             })
@@ -2123,30 +2186,39 @@ endmodule
     }
 
     #[test]
-    fn delay_tuples_select_exactly_the_first_entry() {
-        for (delay, expected, ignored) in [
-            ("#(1)", "1", 0),
-            ("#(1, 2)", "1", 1),
-            ("#(1, 2, 3)", "1", 2),
+    fn delay_tuples_preserve_exact_arity_and_first_projection() {
+        for (delay, expected) in [
+            ("#(1)", "(delay 1)"),
+            ("#(1, 2)", "(delay 1 2)"),
+            ("#(1, 2, 3)", "(delay 1 2 3)"),
         ] {
             let input = format!(
                 "module sample(input logic a, output logic y); assign {delay} y = a; endmodule"
             );
             let lowered = lower_snippet(&input).unwrap();
-            assert_eq!(assignment_strings(&lowered)[0].2, expected);
-            assert_eq!(lowered.diagnostics.len(), ignored);
-            assert!(
-                lowered
-                    .diagnostics
-                    .iter()
-                    .all(|diagnostic| diagnostic.kind == DiagnosticKind::IntentionalIgnore)
-            );
+            assert_eq!(assignment_tuple_strings(&lowered)[0].2, expected);
+            assert_eq!(assignment_strings(&lowered)[0].2, "1");
+            assert!(lowered.diagnostics.is_empty());
         }
         let lowered =
             lower_snippet("module sample(input logic a, output logic y); assign y = a; endmodule")
                 .unwrap();
-        assert_eq!(assignment_strings(&lowered)[0].2, "0");
+        assert_eq!(assignment_tuple_strings(&lowered)[0].2, "(delay 0)");
         assert!(lowered.diagnostics.is_empty());
+    }
+
+    #[test]
+    fn delay_tuple_arity_outside_one_through_three_is_rejected() {
+        for (delay, arity) in [("#()", 0), ("#(1, 2, 3, 4)", 4)] {
+            let input = format!(
+                "module sample(input logic a, output logic y); assign {delay} y = a; endmodule"
+            );
+            let error = lower_snippet(&input).unwrap_err();
+            assert_eq!(
+                error.message,
+                format!("delay tuple must contain between one and three entries; got {arity}")
+            );
+        }
     }
 
     #[test]
@@ -2165,10 +2237,10 @@ endmodule
         )
         .unwrap();
         assert_eq!(
-            assignment_strings(&lowered),
+            assignment_tuple_strings(&lowered),
             vec![
-                ("y".into(), "a".into(), "T_first".into()),
-                ("y".into(), "b".into(), "T_first".into()),
+                ("y".into(), "a".into(), "(delay T_first)".into()),
+                ("y".into(), "b".into(), "(delay T_first)".into()),
             ]
         );
         let [diagnostic] = lowered.diagnostics.as_slice() else {
@@ -2178,14 +2250,14 @@ endmodule
         assert_eq!(diagnostic.span, Span::new("snippet.sv", 6, 5));
         assert_eq!(
             diagnostic.message,
-            "additional control-dependent specify path for target `y` is intentionally ignored because the one-delay cell DSL selects the first source-ordered path for the target"
+            "additional control-dependent specify path for target `y` is intentionally ignored because delay-tuple lowering temporarily selects the first source-ordered path for the target"
         );
         assert!(!DiagnosticPolicy::new(false).is_failure(diagnostic));
         assert!(!DiagnosticPolicy::new(true).is_failure(diagnostic));
     }
 
     #[test]
-    fn symbolic_precharge_and_high_z_tuples_keep_only_entry_zero() {
+    fn symbolic_precharge_and_high_z_tuples_preserve_every_component() {
         let lowered = lower_snippet(
             "module sample(input logic a, ena_n, output logic y0, y1);\n\
              bufif0 #(T_rise, T_Z, T_Z) (y0, a, ena_n);\n\
@@ -2194,31 +2266,32 @@ endmodule
         )
         .unwrap();
         assert_eq!(
-            assignment_strings(&lowered),
+            assignment_tuple_strings(&lowered),
             vec![
-                ("y0".into(), "(bufif0 a ena_n)".into(), "T_rise".into()),
-                ("y1".into(), "a".into(), "T_Z".into()),
+                (
+                    "y0".into(),
+                    "(bufif0 a ena_n)".into(),
+                    "(delay T_rise T_Z T_Z)".into(),
+                ),
+                ("y1".into(), "a".into(), "(delay T_Z T_fall T_off)".into(),),
             ]
         );
-        assert_eq!(lowered.diagnostics.len(), 4);
+        assert!(lowered.diagnostics.is_empty());
     }
 
     #[test]
-    fn omitted_later_delay_entries_are_visible_non_failing_ignores() {
-        let lowered = lower_snippet(
-            "module sample(input logic a, output logic y); assign #(1, , 3) y = a; endmodule",
-        )
-        .unwrap();
-        assert_eq!(assignment_strings(&lowered)[0].2, "1");
-        assert_eq!(lowered.diagnostics.len(), 2);
-        assert_eq!(lowered.diagnostics[0].span, Span::new("snippet.sv", 1, 55));
-        assert_eq!(lowered.diagnostics[1].span, Span::new("snippet.sv", 1, 61));
-        assert!(
-            lowered
-                .diagnostics
-                .iter()
-                .all(|diagnostic| diagnostic.kind == DiagnosticKind::IntentionalIgnore)
-        );
+    fn every_omitted_delay_tuple_component_is_an_error() {
+        for (tuple, omitted_entry) in [("(, 2)", 1), ("(1, , 3)", 2), ("(1, 2, )", 3)] {
+            let source = format!(
+                "module sample(input logic a, output logic y); assign #{tuple} y = a; endmodule"
+            );
+            let error = lower_snippet(&source).unwrap_err();
+            assert_eq!(error.span, Span::new("snippet.sv", 1, 55));
+            assert_eq!(
+                error.message,
+                format!("explicitly omitted delay tuple entry {omitted_entry} is unsupported")
+            );
+        }
     }
 
     #[test]
@@ -2305,15 +2378,6 @@ endmodule
             error.message,
             "cyclic timing alias dependency: T_A -> T_B -> T_A"
         );
-    }
-
-    #[test]
-    fn explicitly_omitted_first_delay_entry_is_an_error() {
-        let error = lower_snippet(
-            "module sample(input logic a, output logic y); assign #(, 2) y = a; endmodule",
-        )
-        .unwrap_err();
-        assert!(error.message.contains("omitted first delay"));
     }
 
     #[test]
@@ -2497,7 +2561,7 @@ endmodule
     }
 
     #[test]
-    fn transistor_delays_use_first_explicit_entry_or_specify_fallback() {
+    fn transistor_delays_preserve_explicit_tuple_or_complete_specify_fallback() {
         let lowered = lower_snippet(
             "module sample(input logic a, g, output logic explicit, fallback);\n\
              nmos #(D_first, D_later, D_off) (explicit, a, g);\n\
@@ -2510,19 +2574,21 @@ endmodule
         )
         .unwrap();
         assert_eq!(
-            assignment_strings(&lowered),
+            assignment_tuple_strings(&lowered),
             vec![
-                ("explicit".into(), "(nmos a g)".into(), "D_first".into()),
-                ("fallback".into(), "(pmos a g)".into(), "S_fallback".into()),
+                (
+                    "explicit".into(),
+                    "(nmos a g)".into(),
+                    "(delay D_first D_later D_off)".into(),
+                ),
+                (
+                    "fallback".into(),
+                    "(pmos a g)".into(),
+                    "(delay S_fallback)".into(),
+                ),
             ]
         );
-        assert_eq!(lowered.diagnostics.len(), 2);
-        assert!(lowered.diagnostics.iter().all(|diagnostic| {
-            diagnostic.kind == DiagnosticKind::IntentionalIgnore
-                && diagnostic.message.contains(
-                    "is intentionally ignored because the cell model selects only entry 1",
-                )
-        }));
+        assert!(lowered.diagnostics.is_empty());
         lowered.cell.validate().unwrap();
     }
 

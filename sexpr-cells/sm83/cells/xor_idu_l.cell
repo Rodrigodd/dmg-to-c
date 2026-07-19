@@ -10,9 +10,15 @@
 
     (y
       (xor in1 in2)
-      (+
-        (+ (elmore (wire 51) (pmos 3)) (elmore (wire 40) (* (nmos 5) 2)))
-        (elmore (wire L_y) (pmos 13))
+      (delay
+        (+
+          (+ (elmore (wire 51) (pmos 3)) (elmore (wire 40) (* (nmos 5) 2)))
+          (elmore (wire L_y) (pmos 13))
+        )
+        (+
+          (+ (elmore (wire 51) (* (nmos 3) 2)) (elmore (wire 40) (* (pmos 5) 2)))
+          (elmore (wire L_y) (nmos 8))
+        )
       )
     )
   )

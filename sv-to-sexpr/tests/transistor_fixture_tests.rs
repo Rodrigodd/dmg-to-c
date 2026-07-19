@@ -6,8 +6,8 @@ use std::process::Command;
 use sv_to_sexpr::analyze::{AnalysisReport, DriverSource};
 use sv_to_sexpr::diagnostic::{Diagnostic, DiagnosticKind};
 use sv_to_sexpr::elaborate::GenerateMode;
-use sv_to_sexpr::ir::{Assignment, CellItem, Expr, LoweredModule, ValueOperator};
-use sv_to_sexpr::serialize::{render_cell, render_expr};
+use sv_to_sexpr::ir::{Assignment, CellItem, DelayTuple, Expr, LoweredModule, ValueOperator};
+use sv_to_sexpr::serialize::{render_cell, render_expr, render_timing_expr};
 use sv_to_sexpr::survey::{
     analyze_file_with_sibling_catalog_and_generate_mode,
     lower_file_with_sibling_catalog_and_generate_mode,
@@ -134,7 +134,7 @@ const CASES: &[Case] = &[
         path: "sv-cells/sm83/cells/dlatch_ee_irq.sv",
         registers: &["q_n"],
         warnings: 0,
-        intentional_ignores: 5,
+        intentional_ignores: 1,
         transistors: DLATCH_TRANSISTORS,
     },
     Case {
@@ -142,7 +142,7 @@ const CASES: &[Case] = &[
         path: "sv-cells/sm83/cells/idu_bit0.sv",
         registers: &[],
         warnings: 0,
-        intentional_ignores: 21,
+        intentional_ignores: 0,
         transistors: IDU_BIT0_TRANSISTORS,
     },
     Case {
@@ -150,7 +150,7 @@ const CASES: &[Case] = &[
         path: "sv-cells/sm83/cells/idu_bit123456.sv",
         registers: &[],
         warnings: 0,
-        intentional_ignores: 18,
+        intentional_ignores: 0,
         transistors: IDU_BIT123456_TRANSISTORS,
     },
     Case {
@@ -158,7 +158,7 @@ const CASES: &[Case] = &[
         path: "sv-cells/sm83/cells/irq_prio_bit0.sv",
         registers: &[],
         warnings: 0,
-        intentional_ignores: 19,
+        intentional_ignores: 0,
         transistors: IRQ_PRIO_BIT0_TRANSISTORS,
     },
 ];
@@ -351,7 +351,7 @@ fn assert_transistor_case(case: &Case, analysis: &AnalysisReport, lowered: &Lowe
             operands,
             [Expr::atom(expected.source), Expr::atom(expected.gate_atom)]
         );
-        assert_eq!(render_expr(&assignment.delay), expected.delay);
+        assert_eq!(render_timing_expr(assignment.delay.first()), expected.delay);
         assert!(index >= expected.dependencies.len());
         for (actual, (target, expression)) in assignments
             [index - expected.dependencies.len()..index]
@@ -360,7 +360,7 @@ fn assert_transistor_case(case: &Case, analysis: &AnalysisReport, lowered: &Lowe
         {
             assert_eq!(actual.target, *target);
             assert_eq!(render_expr(&actual.expr), *expression);
-            assert_eq!(actual.delay, Expr::atom("0"));
+            assert!(is_zero_delay(&actual.delay));
         }
     }
 
@@ -389,6 +389,10 @@ fn assert_transistor_case(case: &Case, analysis: &AnalysisReport, lowered: &Lowe
             && !message.contains("unsupported primitive pmos")
             && !message.contains("unsupported primitive rnmos")
     }));
+}
+
+fn is_zero_delay(delay: &DelayTuple) -> bool {
+    delay.len() == 1 && delay.first().as_expr() == &Expr::atom("0")
 }
 
 fn assignments(lowered: &LoweredModule) -> Vec<&Assignment> {

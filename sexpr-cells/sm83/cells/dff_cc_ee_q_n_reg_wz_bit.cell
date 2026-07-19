@@ -14,24 +14,30 @@
 
   (assignments
 
-    (t0 (and d clk_n ena) 0)
-    (t1 (not d) 0)
-    (t2 (not clk) 0)
-    (t3 (not ena_n) 0)
-    (t4 (and t1 t2 t3) 0)
-    (t5 (or t0 t4) 0)
-    (ff (mux t5 d ff) 0)
-    (t6 (and ff clk) 0)
-    (t7 (not ff) 0)
-    (t8 (not clk_n) 0)
-    (t9 (and t7 t8) 0)
-    (t10 (or t6 t9) 0)
-    (t11 (not ff) 0)
+    (t0 (and d clk_n ena) (delay 0))
+    (t1 (not d) (delay 0))
+    (t2 (not clk) (delay 0))
+    (t3 (not ena_n) (delay 0))
+    (t4 (and t1 t2 t3) (delay 0))
+    (t5 (or t0 t4) (delay 0))
+    (ff (mux t5 d ff) (delay 0))
+    (t6 (and ff clk) (delay 0))
+    (t7 (not ff) (delay 0))
+    (t8 (not clk_n) (delay 0))
+    (t9 (and t7 t8) (delay 0))
+    (t10 (or t6 t9) (delay 0))
+    (t11 (not ff) (delay 0))
     (q_n
       (mux t10 t11 q_n)
-      (+
-        (+ (elmore (wire 23) (* (pmos 3) 2)) (elmore (wire 35) (nmos 4)))
-        (elmore (wire L_q_n) (pmos 8))
+      (delay
+        (+
+          (+ (elmore (wire 23) (* (pmos 3) 2)) (elmore (wire 35) (nmos 4)))
+          (elmore (wire L_q_n) (pmos 8))
+        )
+        (+
+          (+ (elmore (wire 23) (* (nmos 3) 2)) (elmore (wire 35) (pmos 4)))
+          (elmore (wire L_q_n) (nmos 6))
+        )
       )
     )
   )

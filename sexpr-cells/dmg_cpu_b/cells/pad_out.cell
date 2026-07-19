@@ -8,6 +8,6 @@
 
   (assignments
 
-    (pad (not o_n) (elmore (wire L_pad) (pmos 140)))
+    (pad (not o_n) (delay (elmore (wire L_pad) (pmos 140)) (elmore (wire L_pad) (nmos 140))))
   )
 )

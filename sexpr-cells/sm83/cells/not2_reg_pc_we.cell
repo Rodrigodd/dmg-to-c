@@ -8,7 +8,7 @@
 
   (assignments
 
-    (a_y (not a_in) (elmore (wire L_a_y) (pmos 15.0)))
-    (b_y (not b_in) (elmore (wire L_b_y) (pmos 4.5)))
+    (a_y (not a_in) (delay (elmore (wire L_a_y) (pmos 15.0)) (elmore (wire L_a_y) (nmos 9.0))))
+    (b_y (not b_in) (delay (elmore (wire L_b_y) (pmos 4.5)) (elmore (wire L_b_y) (nmos 4.5))))
   )
 )

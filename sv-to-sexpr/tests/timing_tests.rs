@@ -5,7 +5,7 @@ use std::path::{Path, PathBuf};
 use sv_to_sexpr::diagnostic::{Diagnostic, DiagnosticKind, DiagnosticPolicy, Span};
 use sv_to_sexpr::ir::{Assignment, CellItem, LoweredModule};
 use sv_to_sexpr::lower::lower_file;
-use sv_to_sexpr::serialize::{render_cell, render_expr};
+use sv_to_sexpr::serialize::{render_cell, render_delay_tuple, render_expr};
 
 struct TimingCase {
     name: &'static str,
@@ -19,30 +19,33 @@ const CASES: &[TimingCase] = &[
     TimingCase {
         name: "single_path",
         source: "sv-to-sexpr/tests/fixtures/timing/single_path.sv",
-        expected_assignments: &[("y", "(and a b)", "T_single")],
+        expected_assignments: &[("y", "(and a b)", "(delay T_single T_fall T_off)")],
         warnings: 0,
-        intentional_ignores: 2,
+        intentional_ignores: 0,
     },
     TimingCase {
         name: "ambiguous_paths",
         source: "sv-to-sexpr/tests/fixtures/timing/ambiguous_paths.sv",
-        expected_assignments: &[("y", "(or a b)", "T_first")],
+        expected_assignments: &[("y", "(or a b)", "(delay T_first T_first_fall)")],
         warnings: 0,
-        intentional_ignores: 3,
+        intentional_ignores: 1,
     },
     TimingCase {
         name: "explicit_precedence",
         source: "sv-to-sexpr/tests/fixtures/timing/explicit_precedence.sv",
-        expected_assignments: &[("y", "a", "T_explicit")],
+        expected_assignments: &[("y", "a", "(delay T_explicit T_explicit_fall)")],
         warnings: 0,
-        intentional_ignores: 2,
+        intentional_ignores: 0,
     },
     TimingCase {
         name: "procedural_state",
         source: "sv-to-sexpr/tests/fixtures/timing/procedural_state.sv",
-        expected_assignments: &[("t0", "(and a b)", "0"), ("q", "(mux ena t0 q)", "T_state")],
+        expected_assignments: &[
+            ("t0", "(and a b)", "(delay 0)"),
+            ("q", "(mux ena t0 q)", "(delay T_state T_state_fall)"),
+        ],
         warnings: 0,
-        intentional_ignores: 1,
+        intentional_ignores: 0,
     },
 ];
 
@@ -107,28 +110,28 @@ fn reference_cell_has_exact_first_applicable_q_q_n_and_d_assignments() {
             .unwrap_or_else(|| panic!("missing reference assignment {target}"));
         (
             render_expr(&assignment.expr),
-            render_expr(&assignment.delay),
+            render_delay_tuple(&assignment.delay),
         )
     };
     assert_eq!(
         exact("q_n"),
         (
             "(mux t19 ff2 q_n)".to_string(),
-            "(+ (+ (elmore (wire 55) (* (pmos 3) 2)) (elmore (wire 25) (* (nmos 3) 2))) (elmore (wire L_q_n) (pmos 13)))".to_string(),
+            "(delay (+ (+ (elmore (wire 55) (* (pmos 3) 2)) (elmore (wire 25) (* (nmos 3) 2))) (elmore (wire L_q_n) (pmos 13))) (+ (+ (elmore (wire 55) (* (nmos 3) 2)) (elmore (wire 25) (* (pmos 3) 2))) (elmore (wire L_q_n) (nmos 6))))".to_string(),
         )
     );
     assert_eq!(
         exact("q"),
         (
             "(not q_n)".to_string(),
-            "(+ (+ (+ (elmore (wire 55) (* (nmos 3) 2)) (elmore (wire 25) (* (pmos 3) 2))) (elmore (wire L_q_n) (nmos 6))) (elmore (wire L_q) (pmos 13)))".to_string(),
+            "(delay (+ (+ (+ (elmore (wire 55) (* (nmos 3) 2)) (elmore (wire 25) (* (pmos 3) 2))) (elmore (wire L_q_n) (nmos 6))) (elmore (wire L_q) (pmos 13))) (+ (+ (+ (elmore (wire 55) (* (pmos 3) 2)) (elmore (wire 25) (* (nmos 3) 2))) (elmore (wire L_q_n) (pmos 13))) (elmore (wire L_q) (nmos 6))))".to_string(),
         )
     );
     assert_eq!(
         exact("d"),
         (
             "(bufif0-strength 1 pch_n strong1 highz0)".to_string(),
-            "(elmore (wire L_d) (pmos 5))".to_string(),
+            "(delay (elmore (wire L_d) (pmos 5)) (elmore (wire L_d) (pmos 5)) (elmore (wire L_d) (pmos 5)))".to_string(),
         )
     );
     assert_eq!(
@@ -145,7 +148,7 @@ fn reference_cell_has_exact_first_applicable_q_q_n_and_d_assignments() {
             .iter()
             .filter(|diagnostic| diagnostic.kind == DiagnosticKind::IntentionalIgnore)
             .count(),
-        4
+        0
     );
     assert_or_update_fixture("reference", "cell", &render_cell(&first.cell));
     assert_or_update_fixture(
@@ -181,15 +184,15 @@ fn specify_paths_reject_non_scalar_controls_and_targets_at_exact_spans() {
 }
 
 #[test]
-fn specify_tuples_require_entry_zero_and_ignore_additional_path_once_per_repeated_target() {
+fn specify_tuples_require_complete_supported_arity_and_ignore_additional_path_once() {
     for (source, expected_message) in [
         (
             "module bad(input logic a, output logic y); assign y = a; specify (a *> y) = (); endspecify endmodule",
-            "delay tuple must contain a first entry",
+            "delay tuple must contain between one and three entries; got 0",
         ),
         (
             "module bad(input logic a, output logic y); assign y = a; specify (a *> y) = (, 2); endspecify endmodule",
-            "explicitly omitted first delay tuple entry is unsupported",
+            "explicitly omitted delay tuple entry 1 is unsupported",
         ),
     ] {
         let error = lower_file(Path::new("bad_tuple.sv"), source).unwrap_err();
@@ -205,8 +208,8 @@ fn specify_tuples_require_entry_zero_and_ignore_additional_path_once_per_repeate
     assert_eq!(
         assignment_triplets(&repeated),
         vec![
-            ("y", "a".to_string(), "T_first".to_string()),
-            ("y", "b".to_string(), "T_first".to_string()),
+            ("y", "a".to_string(), "(delay T_first)".to_string()),
+            ("y", "b".to_string(), "(delay T_first)".to_string()),
         ]
     );
     let additional_path_ignores = repeated
@@ -226,7 +229,7 @@ fn specify_tuples_require_entry_zero_and_ignore_additional_path_once_per_repeate
     );
     assert_eq!(
         additional_path_ignores[0].message,
-        "additional control-dependent specify path for target `y` is intentionally ignored because the one-delay cell DSL selects the first source-ordered path for the target"
+        "additional control-dependent specify path for target `y` is intentionally ignored because delay-tuple lowering temporarily selects the first source-ordered path for the target"
     );
     assert!(!DiagnosticPolicy::new(false).is_failure(additional_path_ignores[0]));
     assert!(!DiagnosticPolicy::new(true).is_failure(additional_path_ignores[0]));
@@ -271,7 +274,7 @@ fn assignment_triplets(lowered: &LoweredModule) -> Vec<(&str, String, String)> {
             (
                 assignment.target.as_str(),
                 render_expr(&assignment.expr),
-                render_expr(&assignment.delay),
+                render_delay_tuple(&assignment.delay),
             )
         })
         .collect()

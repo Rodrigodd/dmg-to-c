@@ -10,19 +10,34 @@
 
     (q
       (mux ena d q)
-      (+
-        (+ (elmore (wire 73) (pmos 10)) (elmore (wire 101) (nmos 10)))
-        (elmore (wire L_q) (pmos 35))
+      (delay
+        (+
+          (+ (elmore (wire 73) (pmos 10)) (elmore (wire 101) (nmos 10)))
+          (elmore (wire L_q) (pmos 35))
+        )
+        (+
+          (+ (elmore (wire 73) (nmos 10)) (elmore (wire 101) (pmos 10)))
+          (elmore (wire L_q) (nmos 35))
+        )
       )
     )
     (q_n
       (not q)
-      (+
+      (delay
         (+
-          (+ (elmore (wire 73) (nmos 10)) (elmore (wire 101) (pmos 10)))
-          (elmore (wire 127) (nmos 10))
+          (+
+            (+ (elmore (wire 73) (nmos 10)) (elmore (wire 101) (pmos 10)))
+            (elmore (wire 127) (nmos 10))
+          )
+          (elmore (wire L_q_n) (pmos 35))
         )
-        (elmore (wire L_q_n) (pmos 35))
+        (+
+          (+
+            (+ (elmore (wire 73) (pmos 10)) (elmore (wire 101) (nmos 10)))
+            (elmore (wire 127) (pmos 10))
+          )
+          (elmore (wire L_q_n) (nmos 35))
+        )
       )
     )
   )

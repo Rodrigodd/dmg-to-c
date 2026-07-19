@@ -6,7 +6,7 @@ registers: []
 assignments:
   0: gnd
     value: op(drive-strength; atom(0), strength(supply1, supply0))
-    delay: atom(0)
+    delay: tuple(atom(0))
   1: vdd
     value: op(drive-strength; atom(1), strength(supply1, supply0))
-    delay: atom(0)
+    delay: tuple(atom(0))

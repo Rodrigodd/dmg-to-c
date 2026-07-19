@@ -8,7 +8,7 @@
 
   (assignments
 
-    (ena_n (not ena) (elmore (wire 130) (pmos 7)))
+    (ena_n (not ena) (delay (elmore (wire 130) (pmos 7)) (elmore (wire 130) (nmos 7))))
     (clk
       (bufif0-strength
         1
@@ -16,7 +16,7 @@
         strong1
         highz0
       )
-      (elmore (wire 130) (pmos 7))
+      (delay (elmore (wire 130) (pmos 7)) (elmore (wire 130) (nmos 28)))
     )
     (clk
       (bufif0-strength
@@ -25,7 +25,7 @@
         strong1
         highz0
       )
-      (elmore (wire 130) (pmos 33))
+      (delay (elmore (wire 130) (pmos 33)) (elmore (wire 130) (nmos 28)))
     )
     (clk
       (bufif1-strength
@@ -34,10 +34,16 @@
         highz1
         strong0
       )
-      (elmore (wire 130) (pmos 33))
+      (delay (elmore (wire 130) (pmos 33)) (elmore (wire 130) (nmos 28)))
     )
-    (clk (keeper) 0)
-    (out_pad (not clk) (elmore (wire L_out_pad) (pmos 62)))
-    (clk_n (not clk) (elmore (wire L_clk_n) (pmos 13.5)))
+    (clk (keeper) (delay 0))
+    (out_pad
+      (not clk)
+      (delay (elmore (wire L_out_pad) (pmos 62)) (elmore (wire L_out_pad) (nmos 25)))
+    )
+    (clk_n
+      (not clk)
+      (delay (elmore (wire L_clk_n) (pmos 13.5)) (elmore (wire L_clk_n) (nmos 10.8)))
+    )
   )
 )

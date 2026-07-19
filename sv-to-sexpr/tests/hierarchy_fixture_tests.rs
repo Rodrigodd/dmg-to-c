@@ -6,7 +6,7 @@ use std::process::Command;
 use sv_to_sexpr::analyze::{
     ConnectionSource, InstantiationResolution, ParameterBindingSource, ResolvedInstantiation,
 };
-use sv_to_sexpr::diagnostic::{Diagnostic, DiagnosticKind};
+use sv_to_sexpr::diagnostic::Diagnostic;
 use sv_to_sexpr::elaborate::GenerateMode;
 use sv_to_sexpr::ir::{CellItem, Expr, LoweredModule};
 use sv_to_sexpr::serialize::render_cell;
@@ -90,7 +90,7 @@ fn cli_lower_and_convert_use_sibling_catalog_and_match_goldens() {
                     .unwrap()
                     .matches(": intentional-ignore:")
                     .count(),
-                case.instance_count
+                0
             );
 
             let output = temporary_output(case.name, nodelay);
@@ -187,14 +187,7 @@ fn assert_case(case: Case, result: &ConfiguredResult) {
     assert_eq!(module.instantiations.len(), case.instance_count);
     assert_eq!(source_targets(&result.lowered), case.targets);
     assert!(result.lowered.cell.registers.is_empty());
-    assert_eq!(result.lowered.diagnostics.len(), case.instance_count);
-    assert!(
-        result
-            .lowered
-            .diagnostics
-            .iter()
-            .all(|diagnostic| diagnostic.kind == DiagnosticKind::IntentionalIgnore)
-    );
+    assert!(result.lowered.diagnostics.is_empty());
 
     match case.name {
         "half_add" => {
@@ -432,6 +425,9 @@ fn fixture(name: &str, extension: &str) -> String {
 
 fn assert_fixture(name: &str, extension: &str, actual: &str) {
     let path = fixture_path(name, extension);
+    if std::env::var_os("UPDATE_HIERARCHY_GOLDENS").is_some() {
+        fs::write(&path, actual).unwrap();
+    }
     let expected = fs::read_to_string(&path)
         .unwrap_or_else(|error| panic!("failed to read {}: {error}", path.display()));
     assert_eq!(

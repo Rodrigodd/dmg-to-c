@@ -14,10 +14,19 @@
 
   (assignments
 
-    (a_y (and a_in1 a_in2) (+ (elmore (wire 29) (* (nmos 3) 2)) (elmore (wire L_a_y) (pmos 8))))
+    (a_y
+      (and a_in1 a_in2)
+      (delay
+        (+ (elmore (wire 29) (* (nmos 3) 2)) (elmore (wire L_a_y) (pmos 8)))
+        (+ (elmore (wire 29) (pmos 3)) (elmore (wire L_a_y) (nmos 5)))
+      )
+    )
     (b_y
       (and b_in1 b_in2 b_in3)
-      (+ (elmore (wire 35) (* (nmos 3) 3)) (elmore (wire L_b_y) (pmos 10)))
+      (delay
+        (+ (elmore (wire 35) (* (nmos 3) 3)) (elmore (wire L_b_y) (pmos 10)))
+        (+ (elmore (wire 35) (pmos 3)) (elmore (wire L_b_y) (nmos 8)))
+      )
     )
   )
 )

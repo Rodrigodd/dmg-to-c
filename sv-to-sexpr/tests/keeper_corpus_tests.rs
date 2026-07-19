@@ -13,7 +13,7 @@ use sv_to_sexpr::analyze::{
 };
 use sv_to_sexpr::diagnostic::DiagnosticKind;
 use sv_to_sexpr::elaborate::GenerateMode;
-use sv_to_sexpr::ir::{CellItem, Expr, ValueOperator};
+use sv_to_sexpr::ir::{CellItem, DelayTuple, Expr, ValueOperator};
 use sv_to_sexpr::lower::lower_design_with_catalog_and_generate_mode;
 
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -62,8 +62,8 @@ fn configured_keeper_corpus_is_exact_distinct_and_fully_emitted() {
     assert!(nodelay.failures.is_empty());
     assert_eq!(delayful.warnings, 0);
     assert_eq!(nodelay.warnings, 0);
-    assert_eq!(delayful.ignores, 1309);
-    assert_eq!(nodelay.ignores, 1299);
+    assert_eq!(delayful.ignores, 49);
+    assert_eq!(nodelay.ignores, 49);
     assert_eq!(delayful.supported, 3);
     assert_eq!(delayful.deferred, 203);
     assert_eq!(nodelay.supported, 3);
@@ -196,7 +196,7 @@ fn audit_mode(mode: GenerateMode) -> ModeAudit {
                         .enumerate()
                         .filter(|(_, (_, assignment))| {
                             assignment.expr == Expr::value(ValueOperator::Keeper, vec![])
-                                && assignment.delay == Expr::atom("0")
+                                && is_zero_delay(&assignment.delay)
                         })
                         .collect::<Vec<_>>();
                     assert_eq!(keeper_assignments.len(), 1, "{path}");
@@ -248,6 +248,10 @@ fn audit_mode(mode: GenerateMode) -> ModeAudit {
         6
     );
     audit
+}
+
+fn is_zero_delay(delay: &DelayTuple) -> bool {
+    delay.len() == 1 && delay.first().as_expr() == &Expr::atom("0")
 }
 
 fn render_audit(audit: &ModeAudit) -> String {
