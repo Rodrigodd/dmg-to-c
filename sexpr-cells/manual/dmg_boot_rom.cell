@@ -1,0 +1,178 @@
+(cell
+  dmg_boot_rom
+
+  (inputs
+    row0_n row1_n row2_n row3_n
+    col0 col1 col2 col3
+    a2 a3 a6 a7
+    a2_n a3_n a6_n a7_n
+    oe oe_n
+    bl_pch_n
+    wl_pch
+    wl_ena_n
+  )
+
+  (outputs
+    d0 d1 d2 d3 d4 d5 d6 d7
+  )
+
+  (memories
+    (boot_rom 256 8)
+  )
+
+  (registers
+    (bl_data 255)
+    (last_wl_adr -1)
+    (wl_adr_valid 0)
+  )
+
+  (assignments
+
+    ;; ------------------------------------------------------------
+    ;; Word-line address
+    ;; ------------------------------------------------------------
+
+    (t0 (pack8 a3 a2) (delay 0))
+    (t1 (pack8 a3_n a2_n) (delay 0))
+    (t2 (not t1) (delay 0))
+    (t3 (eq t0 t2) (delay 0))
+    (t4 (and t3 wl_adr_valid) (delay 0))
+    (t5 (pack8 a3 a2 0 0) (delay 0))
+    (wl_adr (mux t4 t5 -1) (delay 0))
+
+    ;; ------------------------------------------------------------
+    ;; Column-mux address
+    ;; ------------------------------------------------------------
+
+    (t6 (pack8 a7 a6) (delay 0))
+    (t7 (pack8 a7_n a6_n) (delay 0))
+    (t8 (not t7) (delay 0))
+    (t9 (eq t6 t8) (delay 0))
+    (t10 (pack8 a7 a6 0 0 0 0 0 0) (delay 0))
+    (cm_adr (mux t9 t10 -1) (delay 0))
+
+    ;; ------------------------------------------------------------
+    ;; Row decoder
+    ;; ------------------------------------------------------------
+
+    (t11 (pack8 row3_n row2_n row1_n row0_n) (delay 0))
+
+    (t12 (eq t11 14) (delay 0))
+    (t13 (eq t11 13) (delay 0))
+    (t14 (eq t11 11) (delay 0))
+    (t15 (eq t11 7) (delay 0))
+
+    (t16 (mux t15 3 -1) (delay 0))
+    (t17 (mux t14 2 t16) (delay 0))
+    (t18 (mux t13 1 t17) (delay 0))
+    (row_adr (mux t12 0 t18) (delay 0))
+
+    ;; ------------------------------------------------------------
+    ;; Column decoder
+    ;; ------------------------------------------------------------
+
+    (t19 (pack8 col3 col2 col1 col0) (delay 0))
+
+    (t20 (eq t19 1) (delay 0))
+    (t21 (eq t19 2) (delay 0))
+    (t22 (eq t19 4) (delay 0))
+    (t23 (eq t19 8) (delay 0))
+
+    (t24 (mux t23 48 -1) (delay 0))
+    (t25 (mux t22 32 t24) (delay 0))
+    (t26 (mux t21 16 t25) (delay 0))
+    (col_adr (mux t20 0 t26) (delay 0))
+
+    ;; ------------------------------------------------------------
+    ;; Final address
+    ;; ------------------------------------------------------------
+
+    (t27 (or cm_adr col_adr) (delay 0))
+    (t28 (or t27 wl_adr) (delay 0))
+    (adr (or t28 row_adr) (delay 0))
+
+    ;; ------------------------------------------------------------
+    ;; Word-line latch
+    ;; ------------------------------------------------------------
+
+    (t29 (eq last_wl_adr -1) (delay 0))
+    (t30 (neq wl_adr -1) (delay 0))
+    (t31 (and t29 t30) (delay 0))
+
+    (t32 (eq wl_adr -1) (delay 0))
+    (t33 (neq last_wl_adr wl_adr) (delay 0))
+    (t34 (or t32 t33) (delay 0))
+
+    (last_wl_adr
+      (mux
+        wl_pch
+        -1
+        (mux
+          (not wl_ena_n)
+          (mux t31 wl_adr last_wl_adr)
+          last_wl_adr))
+      (delay 0))
+
+    (wl_adr_valid
+      (mux
+        wl_pch
+        1
+        (mux
+          (not wl_ena_n)
+          (mux t34 0 wl_adr_valid)
+          wl_adr_valid))
+      (delay 0))
+
+    ;; ------------------------------------------------------------
+    ;; Bitline data
+    ;; ------------------------------------------------------------
+
+    (t35 (neq adr -1) (delay 0))
+    (t36 (read_mem boot_rom adr) (delay 0))
+    (t37 (mux t35 t36 x) (delay 0))
+    (t38 (and bl_data t37) (delay 0))
+
+    (bl_data
+      (mux
+        (not bl_pch_n)
+        255
+        t38)
+      (delay 0))
+
+    ;; ------------------------------------------------------------
+    ;; Tri-state outputs
+    ;; ------------------------------------------------------------
+
+    (t39 (bit bl_data 0) (delay 0))
+    (d0 (bufif0-strength t39 oe_n strong1 highz0) (delay (elmore (wire L_d0) (* (pmos 136) 2)) (elmore (wire L_d0) (* (nmos 100) 2))))
+    (d0 (bufif1-strength t39 oe highz1 strong0) (delay (elmore (wire L_d0) (* (pmos 136) 2)) (elmore (wire L_d0) (* (nmos 100) 2))))
+
+    (t40 (bit bl_data 1) (delay 0))
+    (d1 (bufif0-strength t40 oe_n strong1 highz0) (delay (elmore (wire L_d1) (* (pmos 136) 2)) (elmore (wire L_d1) (* (nmos 100) 2))))
+    (d1 (bufif1-strength t40 oe highz1 strong0) (delay (elmore (wire L_d1) (* (pmos 136) 2)) (elmore (wire L_d1) (* (nmos 100) 2))))
+
+    (t41 (bit bl_data 2) (delay 0))
+    (d2 (bufif0-strength t41 oe_n strong1 highz0) (delay (elmore (wire L_d2) (* (pmos 136) 2)) (elmore (wire L_d2) (* (nmos 100) 2))))
+    (d2 (bufif1-strength t41 oe highz1 strong0) (delay (elmore (wire L_d2) (* (pmos 136) 2)) (elmore (wire L_d2) (* (nmos 100) 2))))
+
+    (t42 (bit bl_data 3) (delay 0))
+    (d3 (bufif0-strength t42 oe_n strong1 highz0) (delay (elmore (wire L_d3) (* (pmos 136) 2)) (elmore (wire L_d3) (* (nmos 100) 2))))
+    (d3 (bufif1-strength t42 oe highz1 strong0) (delay (elmore (wire L_d3) (* (pmos 136) 2)) (elmore (wire L_d3) (* (nmos 100) 2))))
+
+    (t43 (bit bl_data 4) (delay 0))
+    (d4 (bufif0-strength t43 oe_n strong1 highz0) (delay (elmore (wire L_d4) (* (pmos 136) 2)) (elmore (wire L_d4) (* (nmos 100) 2))))
+    (d4 (bufif1-strength t43 oe highz1 strong0) (delay (elmore (wire L_d4) (* (pmos 136) 2)) (elmore (wire L_d4) (* (nmos 100) 2))))
+
+    (t44 (bit bl_data 5) (delay 0))
+    (d5 (bufif0-strength t44 oe_n strong1 highz0) (delay (elmore (wire L_d5) (* (pmos 136) 2)) (elmore (wire L_d5) (* (nmos 100) 2))))
+    (d5 (bufif1-strength t44 oe highz1 strong0) (delay (elmore (wire L_d5) (* (pmos 136) 2)) (elmore (wire L_d5) (* (nmos 100) 2))))
+
+    (t45 (bit bl_data 6) (delay 0))
+    (d6 (bufif0-strength t45 oe_n strong1 highz0) (delay (elmore (wire L_d6) (* (pmos 136) 2)) (elmore (wire L_d6) (* (nmos 100) 2))))
+    (d6 (bufif1-strength t45 oe highz1 strong0) (delay (elmore (wire L_d6) (* (pmos 136) 2)) (elmore (wire L_d6) (* (nmos 100) 2))))
+
+    (t46 (bit bl_data 7) (delay 0))
+    (d7 (bufif0-strength t46 oe_n strong1 highz0) (delay (elmore (wire L_d7) (* (pmos 136) 2)) (elmore (wire L_d7) (* (nmos 100) 2))))
+    (d7 (bufif1-strength t46 oe highz1 strong0) (delay (elmore (wire L_d7) (* (pmos 136) 2)) (elmore (wire L_d7) (* (nmos 100) 2))))
+  )
+)
