@@ -1,0 +1,205 @@
+(cell
+  dmg_audio
+
+  (inputs
+    ch1_0 ch1_1 ch1_2 ch1_3
+    ch2_0 ch2_1 ch2_2 ch2_3
+    ch3_0 ch3_1 ch3_2 ch3_3
+    ch4_0 ch4_1 ch4_2 ch4_3
+
+    ena
+    ena_n
+    ch1_ena_n
+    ch2_ena_n
+    ch3_ena_n
+    ch4_ena_n
+
+    r_vin_ena
+    rmixer0
+    rmixer1
+    rmixer2
+    rmixer3
+
+    l_vin_ena
+    lmixer0
+    lmixer1
+    lmixer2
+    lmixer3
+
+    rvolume_n0
+    rvolume_n1
+    rvolume_n2
+
+    lvolume_n0
+    lvolume_n1
+    lvolume_n2
+
+    vin
+  )
+
+  (outputs
+    rout
+    lout
+  )
+
+  (registers)
+
+  (assignments
+
+    ;; ------------------------------------------------------------
+    ;; Pack buses
+    ;; ------------------------------------------------------------
+
+    (t0  (pack8 ch1_0 ch1_1 ch1_2 ch1_3) (delay 60))
+    (t1  (pack8 ch2_0 ch2_1 ch2_2 ch2_3) (delay 60))
+    (t2  (pack8 ch3_0 ch3_1 ch3_2 ch3_3) (delay 60))
+    (t3  (pack8 ch4_0 ch4_1 ch4_2 ch4_3) (delay 60))
+
+    (t4  (pack8 rvolume_n0 rvolume_n1 rvolume_n2) (delay 0))
+    (t5  (pack8 lvolume_n0 lvolume_n1 lvolume_n2) (delay 0))
+
+    ;; ------------------------------------------------------------
+    ;; Enable
+    ;; ------------------------------------------------------------
+
+    (t6  (not ena_n) (delay 0))
+    (ena_dl (and ena t6) (delay 60))
+
+    ;; ------------------------------------------------------------
+    ;; Right mixer enables
+    ;; ------------------------------------------------------------
+
+    (t7  (not ch4_ena_n) (delay 0))
+    (t8  (and rmixer3 t7 ena t6) (delay 60))
+
+    (t9  (not ch3_ena_n) (delay 0))
+    (t10 (and rmixer2 t9 ena t6) (delay 60))
+
+    (t11 (not ch2_ena_n) (delay 0))
+    (t12 (and rmixer1 t11 ena t6) (delay 60))
+
+    (t13 (not ch1_ena_n) (delay 0))
+    (t14 (and rmixer0 t13 ena t6) (delay 60))
+
+    (t15 (and r_vin_ena ena t6) (delay 60))
+
+    ;; ------------------------------------------------------------
+    ;; Left mixer enables
+    ;; ------------------------------------------------------------
+
+    (t16 (and lmixer3 t7 ena t6) (delay 60))
+    (t17 (and lmixer2 t9 ena t6) (delay 60))
+    (t18 (and lmixer1 t11 ena t6) (delay 60))
+    (t19 (and lmixer0 t13 ena t6) (delay 60))
+    (t20 (and l_vin_ena ena t6) (delay 60))
+
+    ;; ------------------------------------------------------------
+    ;; Volumes
+    ;; ------------------------------------------------------------
+
+    (t21 (not t4) (delay 0))
+    (rvol_dl (add t21 1) (delay 60))
+
+    (t22 (not t5) (delay 0))
+    (lvol_dl (add t22 1) (delay 60))
+
+    ;; ------------------------------------------------------------
+    ;; Channel outputs
+    ;; ------------------------------------------------------------
+
+    (t23 (itof t0) (delay 0))
+    (t24 (fdiv t23 5.0) (delay 0))
+    (ch1_out (fadd t24 0.7) (delay 0))
+
+    (t25 (itof t1) (delay 0))
+    (t26 (fdiv t25 5.0) (delay 0))
+    (ch2_out (fadd t26 0.7) (delay 0))
+
+    (t27 (itof t2) (delay 0))
+    (t28 (fdiv t27 5.0) (delay 0))
+    (ch3_out (fadd t28 0.7) (delay 0))
+
+    (t29 (itof t3) (delay 0))
+    (t30 (fdiv t29 5.0) (delay 0))
+    (ch4_out (fadd t30 0.7) (delay 0))
+
+    ;; ------------------------------------------------------------
+    ;; Right mixer contributions
+    ;; ------------------------------------------------------------
+
+    (t31 (fsub ch4_out 2.2) (delay 0))
+    (t32 (fmux t8 t31 0.0) (delay 0))
+    (t33 (fmul t32 0.25) (delay 0))
+
+    (t34 (fsub ch3_out 2.2) (delay 0))
+    (t35 (fmux t10 t34 0.0) (delay 0))
+    (t36 (fmul t35 0.25) (delay 0))
+
+    (t37 (fsub ch2_out 2.2) (delay 0))
+    (t38 (fmux t12 t37 0.0) (delay 0))
+    (t39 (fmul t38 0.25) (delay 0))
+
+    (t40 (fsub ch1_out 2.2) (delay 0))
+    (t41 (fmux t14 t40 0.0) (delay 0))
+    (t42 (fmul t41 0.25) (delay 0))
+
+    (t43 (fsub vin 2.2) (delay 0))
+    (t44 (fmux t15 t43 0.0) (delay 0))
+    (t45 (fmul t44 0.25) (delay 0))
+
+    (t46 (fadd t33 t36) (delay 0))
+    (t47 (fadd t46 t39) (delay 0))
+    (t48 (fadd t47 t42) (delay 0))
+    (t49 (fadd t48 t45) (delay 0))
+
+    (t50 (itof rvol_dl) (delay 0))
+    (t51 (fdiv t50 8.0) (delay 0))
+    (t52 (fneg t51) (delay 0))
+    (t53 (fmul t49 t52) (delay 0))
+    (radj (fadd t53 2.2) (delay 0))
+
+    ;; ------------------------------------------------------------
+    ;; Left mixer
+    ;; ------------------------------------------------------------
+
+    (t54 (fmux t16 t31 0.0) (delay 0))
+    (t55 (fmul t54 0.25) (delay 0))
+
+    (t56 (fmux t17 t34 0.0) (delay 0))
+    (t57 (fmul t56 0.25) (delay 0))
+
+    (t58 (fmux t18 t37 0.0) (delay 0))
+    (t59 (fmul t58 0.25) (delay 0))
+
+    (t60 (fmux t19 t40 0.0) (delay 0))
+    (t61 (fmul t60 0.25) (delay 0))
+
+    (t62 (fmux t20 t43 0.0) (delay 0))
+    (t63 (fmul t62 0.25) (delay 0))
+
+    (t64 (fadd t55 t57) (delay 0))
+    (t65 (fadd t64 t59) (delay 0))
+    (t66 (fadd t65 t61) (delay 0))
+    (t67 (fadd t66 t63) (delay 0))
+
+    (t68 (itof lvol_dl) (delay 0))
+    (t69 (fdiv t68 8.0) (delay 0))
+    (t70 (fneg t69) (delay 0))
+    (t71 (fmul t67 t70) (delay 0))
+    (ladj (fadd t71 2.2) (delay 0))
+
+    ;; ------------------------------------------------------------
+    ;; Clamp right
+    ;; ------------------------------------------------------------
+
+    (t72 (fclamp radj 0.3 4.3) (delay 0))
+    (rout (fmux ena_dl t72 2.2) (delay 0))
+
+    ;; ------------------------------------------------------------
+    ;; Clamp left
+    ;; ------------------------------------------------------------
+
+    (t73 (fclamp ladj 0.3 4.3) (delay 0))
+    (lout (fmux ena_dl t73 2.2) (delay 0))
+  )
+)
