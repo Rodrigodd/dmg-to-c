@@ -97,11 +97,11 @@
     ;; Volumes
     ;; ------------------------------------------------------------
 
-    (t21 (not t4) (delay 0))
-    (rvol_dl (add t21 1) (delay 60))
+    (t21 (inot t4) (delay 0))
+    (rvol_dl (iadd t21 1) (delay 60))
 
-    (t22 (not t5) (delay 0))
-    (lvol_dl (add t22 1) (delay 60))
+    (t22 (inot t5) (delay 0))
+    (lvol_dl (iadd t22 1) (delay 60))
 
     ;; ------------------------------------------------------------
     ;; Channel outputs
