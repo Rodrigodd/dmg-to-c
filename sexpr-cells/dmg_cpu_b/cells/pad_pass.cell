@@ -10,6 +10,6 @@
 
   (assignments
 
-    (pad a (delay 0))
+    (pad (fbuf a) (delay 0))
   )
 )
