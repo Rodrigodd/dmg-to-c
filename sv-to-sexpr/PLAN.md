@@ -850,9 +850,20 @@ Acceptance conditions:
 
 ### Milestone 15: Build the Functional Timing Graph
 
-Status: planned after Milestone 14. Preserve every specify path as an internal
-constraint and relate it to the flat functional IR without changing serialized
-output or the temporary first-path assignment placement.
+Status: complete as of 2026-07-24. Timing-aware lowering retains all 266
+source-owned specify paths, 480 scalar controls, 203 target groups, and 49
+multiple-path groups with exact tuples and source provenance. Hierarchy
+expansion deterministically produces 273 constraints, 494 controls, and 210
+target groups. The typed functional graph distinguishes operand, drive,
+state-control, state-boundary, and multiply-driven resolved-net-boundary edges;
+its separately cut DAG supports reachability, dominance, shared-prefix,
+shared-suffix, reconvergence, and public-output-split analysis while preserving
+the full graph for inspection. Exact additive timing-term reconstruction passes
+for every constraint in both generate modes. All 206 cells pass the
+timing-aware corpus audit under forward and reversed traversal, while ordinary
+Milestone 14 output, diagnostics, and the aggregate checked-cell digest remain
+byte-identical. Timing constraints remain internal and no timing arc or table is
+serialized.
 
 Expected to be working after this milestone:
 

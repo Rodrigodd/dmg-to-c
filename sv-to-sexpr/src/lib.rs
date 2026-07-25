@@ -12,5 +12,7 @@ pub mod lower;
 pub mod parser;
 pub mod serialize;
 pub mod survey;
+pub mod timing_graph;
+pub mod timing_terms;
 
 pub use cli::run;

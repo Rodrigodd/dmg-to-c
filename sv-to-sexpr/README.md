@@ -92,6 +92,42 @@ cell format remains assignment-only: explicit delays retain precedence and the
 first source-ordered specify path is temporarily attached to the assignment,
 but no timing arcs or timing-constraint tables are serialized.
 
+## Internal timing graph
+
+The library exposes timing-aware lowering separately from the ordinary CLI
+conversion path. It retains every scalar specify control, target, complete
+delay tuple, and source span, then relates those constraints to the flat
+assignment IR through a deterministic functional timing graph. This graph and
+its constraints are analysis inputs only: neither durable graph IDs nor timing
+arcs/tables are part of the `.cell` syntax.
+
+Signal and assignment nodes have durable source/build-ordered IDs. Dependency
+edges retain operand position and positive, negative, non-unate, conditional,
+or state-control sense. Modeled register updates are cut only at typed state
+boundaries for combinational SCC/topological analysis. Separately, assignment
+results entering a source-declared resolved net (`inout`, `wire`, or `tri`) are
+resolution boundaries only when the net has multiple emitted drivers. These
+edges remain present in the full graph for reachability and dominance; the cut
+models resolution iteration and does not create register state or collapse
+drivers. Single-driver resolved loops and multiply-driven ordinary `logic`
+loops remain combinational-cycle errors.
+
+Every specify control must reach its target in the full graph. Reports expose
+per-control path senses, cross-target shared-prefix candidates,
+cross-control shared-suffix candidates, reconvergence, and public-output split
+candidates using durable IDs only. Complete delay tuples also have an exact
+Add-only term view: top-level associative timing `+` is flattened in source
+order, every other expression is opaque, and reconstruction must reproduce the
+original tuple exactly. No symbolic simplification or subtraction occurs.
+
+`petgraph 0.8` is the only direct production dependency added for stable
+directed graphs, SCCs, topological traversal, reachability, and dominance.
+Externally visible ordering remains source-ordered `Vec` plus `BTreeMap`; raw
+petgraph indices and hash traversal order never enter reports. Ordinary
+serialization still uses the Milestone 14 first-path assignment placement and
+49 intentional ignores until assignment-delay decomposition is enabled in a
+later milestone.
+
 ## Diagnostics and summaries
 
 Errors always fail. Warnings describe a supported conversion with a documented
@@ -100,9 +136,9 @@ explicitly excluded by the cell contract and never fail, even in strict mode.
 Later delay-tuple entries are preserved and do not produce diagnostics. The
 remaining temporary intentional ignores are exactly the 49 additional
 control-dependent specify paths after the first selected source-ordered path in
-either generate mode. Milestones 15 through 17 will retain, analyze, and
-redistribute those overlapping paths. Register initial values are preserved
-metadata and do not produce diagnostics.
+either generate mode. The internal timing graph retains and analyzes all of
+those paths, while ordinary serialization continues to defer redistribution.
+Register initial values are preserved metadata and do not produce diagnostics.
 
 Each modeled register is serialized as `(name initial-value)`, where the value
 is one of `0`, `1`, `x`, or `z`. A selected scalar contracted literal `initial`

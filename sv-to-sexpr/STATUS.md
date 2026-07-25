@@ -5,9 +5,9 @@ a milestone acceptance condition changes or is completed.
 
 ## Verified Baseline
 
-Last audited on 2026-07-18:
+Last audited on 2026-07-24:
 
-- `cargo test` passes 153 unit tests and 70 integration/corpus tests; the sibling
+- `cargo test` passes 187 unit tests and 71 integration/corpus tests; the sibling
   formatter passes 7 unit and 4 integration tests.
 - Lexing succeeds for all 206 curated files.
 - Parsing succeeds for all 206 curated files.
@@ -36,6 +36,14 @@ Last audited on 2026-07-18:
   first component of all 1,958 assignments with the former selected-first
   semantics and reports zero mismatches; the full-component audit reports no
   discarded, filled, reordered, or uncontracted timing expression.
+- Timing-aware lowering retains all 266 source-owned specify paths, 480 scalar
+  controls, 203 target groups, and 49 multiple-path groups with full tuples and
+  source provenance in both generate modes. Hierarchy expansion produces 273
+  constraints, 494 controls, and 210 target groups. The typed functional graph
+  and its separately cut DAG classify combinational, state, and multiply-driven
+  resolved-net boundaries and deterministically report reachability, path
+  sense, shared prefixes and suffixes, reconvergence, and public-output splits.
+  Exact additive reconstruction succeeds for every retained constraint.
 - Delayful and nodelay lowering each report exactly 49 visible intentional
   ignores, all for additional control-dependent specify paths after the
   temporary selected first path for each used target. Later tuple entries are
@@ -171,6 +179,15 @@ Last audited on 2026-07-18:
   strict conversion is byte-identical and all 206 checked cells remain
   formatter-canonical. The only remaining diagnostics are 49 intentional
   ignores for additional specify paths in either generate mode.
+- Milestone 15: complete. Internal timing-aware lowering preserves every
+  specify path and scalar control with full tuple and source provenance, relates
+  them to a deterministic typed functional graph, and separately cuts modeled
+  state and multiply-driven resolved-net boundaries for DAG analysis. Exact
+  additive timing terms, reachability, dominance, shared-prefix/shared-suffix,
+  reconvergence, path-sense, and public-output-split reports are covered by
+  focused fixtures and a dual-mode 206-file audit. Reversed catalog/traversal
+  order is identical, all retained paths reconstruct exactly, and ordinary
+  Milestone 14 output and diagnostics remain byte-identical.
 
 ## Review Policy
 

@@ -235,14 +235,41 @@ stating that the additional control-dependent path is deferred. Every path and
 every tuple component is still parsed, validated, and retained by analysis;
 tuple components themselves are not intentional ignores.
 
-Milestones 15 through 17 replace that temporary approximation. They retain all
-control-to-target paths as internal timing constraints, relate them to the
-functional dependency graph, and distribute exact tuples over ordinary
-assignments, including deterministic delay-only identity assignments and
-raw/public output splits where required. Those constraints are an internal
-lowering input and verification oracle only. The cell DSL does not serialize
-timing arcs or a timing table, and an unrepresentable decomposition is an error
-rather than a first-path fallback.
+Timing-aware library lowering retains all control-to-target paths as internal
+constraints and relates them to the flat functional IR without changing the
+ordinary Milestone 14 assignment placement. Signal and assignment nodes use
+durable IDs; dependency edges retain operand position and timing sense.
+Reachability, dominance/post-dominance, reconvergence, and public-output split
+classifications are deterministic verification oracles for later
+assignment-delay decomposition.
+
+The graph cuts modeled-register update edges only as typed state boundaries.
+It separately recognizes source-declared resolved nets from `inout`, `wire`,
+and `tri` syntax. An assignment-result edge into such a net is a
+`ResolvedNetBoundary` only when the emitted IR has multiple drivers for that
+target. Resolution boundaries remain in the full reachability/dominance graph
+and are excluded separately from state boundaries only for SCC/topological
+analysis. This models resolution iteration; it neither creates serialized
+state nor collapses source drivers. A single-driver resolved self-loop and a
+multiply-driven ordinary `logic` loop remain ordinary combinational-cycle
+errors.
+
+Each complete delay tuple also has an exact additive-term view. Only
+associative timing `+` at the current expression level is flattened, in source
+order; every other timing expression remains an opaque term. Reconstruction is
+a checked invariant and must reproduce every tuple component exactly. No
+deduplication, reordering, simplification, or symbolic subtraction is
+permitted.
+
+The timing graph and its constraints are internal lowering inputs and
+verification oracles only. The cell DSL does not serialize durable graph IDs,
+timing arcs, or a timing table. `petgraph 0.8` supplies stable directed graphs,
+SCC/topological traversal, reachability, and dominance; public ordering remains
+source-ordered `Vec` and `BTreeMap`. Ordinary CLI serialization retains the
+temporary first-path fallback and its 49 intentional ignores until a later
+milestone distributes exact tuples over ordinary assignments. An
+unrepresentable decomposition is an error rather than an implicit
+approximation.
 
 ## Diagnostics and strict mode
 
@@ -320,7 +347,7 @@ contract before any newly discovered corpus category can be emitted.
 | Latches, generated DFF/TFF variants, nested priority `if`, reset/enable logic | State analysis M3, next-state lowering M5, and exact four-state register initialization metadata M13; absent initialization is `x`. |
 | High-Z ternaries, direct `bufif*`, precharge/open-drain, and repeated drivers | Source-ordered driver lowering M6; high-Z ternaries normalize only to polarity-equivalent `bufif0`/`bufif1`. |
 | `(strong1, highz0)`, `(highz1, strong0)`, `(pull1, highz0)`, `(supply1, supply0)` | Exact strength-bearing driver forms M6, with no claim of strength-resolution simulation. |
-| One/two/three-entry tuples; timing aliases and paths; `tpd_elmore`, `tpd_z`; resistance factors including real factors | Symbolic timing expressions M7; exact tuple arity and every component preserved M14; complete path decomposition into assignment delays M15-M17. Tuple entries are never summed together. |
+| One/two/three-entry tuples; timing aliases and paths; `tpd_elmore`, `tpd_z`; resistance factors including real factors | Symbolic timing expressions M7; exact tuple arity and every component preserved M14; internal functional timing graph M15; assignment-delay decomposition in later milestones. Tuple entries are never summed together. |
 | `(0.2 * T_fall_yN) > T_Z_min ? (0.2 * T_fall_yN) : T_Z_min` in `alu_decoder.sv` | Nested timing `(mux (gt ...) ... ...)` clamp M7; this does not contract general runtime ternaries or less-than comparisons. |
 | `if (nodelay)` generate alternatives | Exactly one M8 branch: delayful/false by default, nodelay/true only by explicit configuration; the unselected branch is not a driver. |
 | Named/positional half-adder and full-adder instances with parameter overrides | Deterministic instance-qualified flattening, substitution, and dependency/source order M9. |

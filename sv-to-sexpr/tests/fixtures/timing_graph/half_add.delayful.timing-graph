@@ -1,0 +1,38 @@
+timing-analysis
+node n0 signal a roles=input @sv-cells/dmg_cpu_b/cells/half_add.sv:7:3
+node n1 signal b roles=input @sv-cells/dmg_cpu_b/cells/half_add.sv:7:3
+node n2 signal cout roles=output @sv-cells/dmg_cpu_b/cells/half_add.sv:8:3
+node n3 signal sum roles=output @sv-cells/dmg_cpu_b/cells/half_add.sv:8:3
+node n4 assignment order=0 target=cout function=and @sv-cells/dmg_cpu_b/cells/and2.sv:12:2
+node n5 assignment order=1 target=sum function=xor @sv-cells/dmg_cpu_b/cells/xor.sv:12:2
+dependency n0 -> n4 kind=operand operand=0 sense=positive event=- @sv-cells/dmg_cpu_b/cells/and2.sv:12:2
+dependency n1 -> n4 kind=operand operand=1 sense=positive event=- @sv-cells/dmg_cpu_b/cells/and2.sv:12:2
+dependency n4 -> n2 kind=drive operand=- sense=positive event=- @sv-cells/dmg_cpu_b/cells/and2.sv:12:2
+dependency n0 -> n5 kind=operand operand=0 sense=non-unate event=- @sv-cells/dmg_cpu_b/cells/xor.sv:12:2
+dependency n1 -> n5 kind=operand operand=1 sense=non-unate event=- @sv-cells/dmg_cpu_b/cells/xor.sv:12:2
+dependency n5 -> n3 kind=drive operand=- sense=positive event=- @sv-cells/dmg_cpu_b/cells/xor.sv:12:2
+cut-order n1,n0,n5,n3,n4,n2
+cut-dependency n0 -> n4 kind=operand
+cut-dependency n1 -> n4 kind=operand
+cut-dependency n4 -> n2 kind=drive
+cut-dependency n0 -> n5 kind=operand
+cut-dependency n1 -> n5 kind=operand
+cut-dependency n5 -> n3 kind=drive
+constraint p0 order=0 target=cout target@sv-cells/dmg_cpu_b/cells/half_add.sv:11:45 path@sv-cells/dmg_cpu_b/cells/and2.sv:20:3 delay=(delay (+ (elmore (wire 122) (* (nmos 35) 2)) (elmore (wire L_cout) (pmos 35))) (+ (elmore (wire 122) (pmos 35)) (elmore (wire L_cout) (nmos 35))))
+  terms[0]=(elmore (wire 122) (* (nmos 35) 2)) + (elmore (wire L_cout) (pmos 35))
+  terms[1]=(elmore (wire 122) (pmos 35)) + (elmore (wire L_cout) (nmos 35))
+  control c0 order=0 signal=a event=- @sv-cells/dmg_cpu_b/cells/half_add.sv:11:57
+  control c1 order=1 signal=b event=- @sv-cells/dmg_cpu_b/cells/half_add.sv:11:66
+constraint p1 order=1 target=sum target@sv-cells/dmg_cpu_b/cells/half_add.sv:12:45 path@sv-cells/dmg_cpu_b/cells/xor.sv:20:3 delay=(delay (+ (elmore (wire 122) (nmos 35)) (elmore (wire L_sum) (* (pmos 35) 2))) (+ (elmore (wire 122) (* (pmos 35) 2)) (elmore (wire L_sum) (* (nmos 35) 2))))
+  terms[0]=(elmore (wire 122) (nmos 35)) + (elmore (wire L_sum) (* (pmos 35) 2))
+  terms[1]=(elmore (wire 122) (* (pmos 35) 2)) + (elmore (wire L_sum) (* (nmos 35) 2))
+  control c2 order=0 signal=a event=- @sv-cells/dmg_cpu_b/cells/half_add.sv:12:57
+  control c3 order=1 signal=b event=- @sv-cells/dmg_cpu_b/cells/half_add.sv:12:66
+control-group signal=a source=n0 kind=multiple-targets constraints=p0,p1 controls=c0,c2 targets=n2,n3 prefix=
+control-group signal=b source=n1 kind=multiple-targets constraints=p0,p1 controls=c1,c3 targets=n2,n3 prefix=
+group target=cout kind=single constraints=p0 controls=c0,c1 suffix=n4 reconvergent=n4 split=not-required
+  control-report c0 constraint=p0 source=n0 target=n2 slice=n0,n2,n4 dominators=n0,n2,n4 post-dominators=n0,n2,n4 senses=positive
+  control-report c1 constraint=p0 source=n1 target=n2 slice=n1,n2,n4 dominators=n1,n2,n4 post-dominators=n1,n2,n4 senses=positive
+group target=sum kind=single constraints=p1 controls=c2,c3 suffix=n5 reconvergent=n5 split=not-required
+  control-report c2 constraint=p1 source=n0 target=n3 slice=n0,n3,n5 dominators=n0,n3,n5 post-dominators=n0,n3,n5 senses=non-unate
+  control-report c3 constraint=p1 source=n1 target=n3 slice=n1,n3,n5 dominators=n1,n3,n5 post-dominators=n1,n3,n5 senses=non-unate

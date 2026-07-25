@@ -9,11 +9,60 @@ use crate::ir::{
     Assignment, Cell, CellItem, DelayTuple, Expr, LogicValue, LoweredModule, Register,
     StrengthPair, TimingExpr, TimingOperator, ValueOperator,
 };
+use crate::timing_graph::{
+    AssignmentOrigin, AssignmentProvenance, CutTimingGraph, SourceAssignmentOrigin,
+    StateControlProvenance, TimingAnalysisReport, TimingConstraintSource, TimingControlSource,
+    TimingGraph, TimingSignalMetadata, TimingSignalRole, Transition, analyze_timing_graph,
+    build_timing_graph, cut_register_cycles,
+};
 use std::collections::{BTreeMap, BTreeSet};
 use std::path::Path;
 
 pub type LowerResult<T> = Result<T, Diagnostic>;
 type SvExpr = crate::ast::Expr;
+
+#[derive(Debug, Clone)]
+pub struct LoweredTimingModel {
+    lowered: LoweredModule,
+    assignment_provenance: Vec<AssignmentProvenance>,
+    functional_graph: TimingGraph,
+    cut_graph: CutTimingGraph,
+    timing_analysis: TimingAnalysisReport,
+}
+
+impl LoweredTimingModel {
+    pub fn lowered(&self) -> &LoweredModule {
+        &self.lowered
+    }
+
+    pub fn assignment_provenance(&self) -> &[AssignmentProvenance] {
+        &self.assignment_provenance
+    }
+
+    pub fn functional_graph(&self) -> &TimingGraph {
+        &self.functional_graph
+    }
+
+    pub fn cut_graph(&self) -> &CutTimingGraph {
+        &self.cut_graph
+    }
+
+    pub fn timing_analysis(&self) -> &TimingAnalysisReport {
+        &self.timing_analysis
+    }
+
+    pub fn into_lowered(self) -> LoweredModule {
+        self.lowered
+    }
+}
+
+#[derive(Debug, Clone)]
+struct LoweringArtifacts {
+    lowered: LoweredModule,
+    signal_metadata: Vec<TimingSignalMetadata>,
+    assignment_provenance: Vec<AssignmentProvenance>,
+    timing_constraint_sources: Vec<TimingConstraintSource>,
+}
 
 pub fn lower_file(path: &Path, input: &str) -> LowerResult<LoweredModule> {
     lower_file_with_generate_mode(path, input, GenerateMode::default())
@@ -94,12 +143,71 @@ pub fn lower_design_with_catalog(
     lower_design_with_catalog_and_generate_mode(design, catalog, GenerateMode::default())
 }
 
+/// Configured timing-aware lowering without a sibling hierarchy catalog.
+pub fn lower_design_with_timing_and_generate_mode(
+    design: &Design,
+    mode: GenerateMode,
+) -> LowerResult<LoweredTimingModel> {
+    let elaborated = elaborate_design(design, mode)?;
+    let analysis = analyze_design_structural(&elaborated);
+    lower_timing_model_for_elaborated_design(&elaborated, &analysis)
+}
+
+/// Configured timing-aware lowering with ordinary hierarchy flattening.
+pub fn lower_design_with_timing_and_catalog_and_generate_mode(
+    design: &Design,
+    catalog: &ModuleCatalog,
+    mode: GenerateMode,
+) -> LowerResult<LoweredTimingModel> {
+    let configured = analyze_design_with_catalog_and_generate_mode(design, catalog, mode)?;
+    if let Some(diagnostic) = configured
+        .diagnostics
+        .iter()
+        .find(|diagnostic| diagnostic.kind == DiagnosticKind::Error)
+    {
+        return Err(diagnostic.clone());
+    }
+    let flattened =
+        crate::hierarchy::flatten_design_with_catalog_and_generate_mode(design, catalog, mode)?;
+    let analysis = analyze_design_structural(&flattened);
+    lower_timing_model_for_elaborated_design(&flattened, &analysis)
+}
+
 /// Lowers a design that has already had its generate configuration selected.
 /// The supplied analysis must describe that exact elaborated design.
 pub fn lower_elaborated_design(
     design: &Design,
     analysis: &crate::analyze::AnalysisReport,
 ) -> LowerResult<LoweredModule> {
+    Ok(lower_elaborated_design_artifacts(design, analysis)?.lowered)
+}
+
+fn lower_timing_model_for_elaborated_design(
+    design: &Design,
+    analysis: &crate::analyze::AnalysisReport,
+) -> LowerResult<LoweredTimingModel> {
+    let artifacts = lower_elaborated_design_artifacts(design, analysis)?;
+    let functional_graph = build_timing_graph(
+        &artifacts.lowered.cell,
+        &artifacts.signal_metadata,
+        &artifacts.assignment_provenance,
+        &artifacts.timing_constraint_sources,
+    )?;
+    let cut_graph = cut_register_cycles(&functional_graph)?;
+    let timing_analysis = analyze_timing_graph(&functional_graph, &cut_graph)?;
+    Ok(LoweredTimingModel {
+        lowered: artifacts.lowered,
+        assignment_provenance: artifacts.assignment_provenance,
+        functional_graph,
+        cut_graph,
+        timing_analysis,
+    })
+}
+
+fn lower_elaborated_design_artifacts(
+    design: &Design,
+    analysis: &crate::analyze::AnalysisReport,
+) -> LowerResult<LoweringArtifacts> {
     if let Some(diagnostic) = analysis
         .diagnostics
         .iter()
@@ -113,14 +221,14 @@ pub fn lower_elaborated_design(
     let module_analysis = analysis.modules.first().ok_or_else(|| {
         Diagnostic::new(Span::new("<lower>", 1, 1), "expected one analysis module")
     })?;
-    lower_module(module, module_analysis)
+    lower_module_artifacts(module, module_analysis)
 }
 
-fn lower_module(
+fn lower_module_artifacts(
     module: &Module,
     analysis: &crate::analyze::ModuleAnalysis,
-) -> LowerResult<LoweredModule> {
-    let mut lowerer = Lowerer::new(module, analysis);
+) -> LowerResult<LoweringArtifacts> {
+    let mut lowerer = Lowerer::new(module, analysis)?;
     lowerer.lower_module()
 }
 
@@ -134,6 +242,7 @@ enum ProceduralMode {
 struct ProceduralContext {
     mode: ProceduralMode,
     condition: Option<Expr>,
+    state_controls: Vec<StateControlProvenance>,
 }
 
 impl ProceduralContext {
@@ -141,15 +250,52 @@ impl ProceduralContext {
         Self {
             mode: ProceduralMode::Combinational,
             condition: None,
+            state_controls: Vec::new(),
         }
     }
 
-    fn stateful(condition: Option<Expr>) -> Self {
+    fn stateful(condition: Option<Expr>, state_controls: Vec<StateControlProvenance>) -> Self {
         Self {
             mode: ProceduralMode::Stateful,
             condition,
+            state_controls,
         }
     }
+}
+
+#[derive(Debug, Clone)]
+struct SourceEmission {
+    assignment_span: Span,
+    expression_span: Span,
+    origin: SourceAssignmentOrigin,
+    state_controls: Vec<StateControlProvenance>,
+}
+
+impl SourceEmission {
+    fn new(
+        assignment_span: &Span,
+        expression_span: &Span,
+        origin: SourceAssignmentOrigin,
+        state_controls: Vec<StateControlProvenance>,
+    ) -> Self {
+        Self {
+            assignment_span: assignment_span.clone(),
+            expression_span: expression_span.clone(),
+            origin,
+            state_controls,
+        }
+    }
+}
+
+struct PendingAssignment {
+    target: String,
+    expr: Expr,
+    delay: DelayTuple,
+    source_assignment_order: usize,
+    diagnostic_span: Span,
+    provenance_span: Span,
+    origin: AssignmentOrigin,
+    state_controls: Vec<StateControlProvenance>,
 }
 
 struct Lowerer<'a> {
@@ -165,6 +311,10 @@ struct Lowerer<'a> {
     reserved_names: BTreeSet<String>,
     signal_names: BTreeSet<String>,
     signal_spans: BTreeMap<String, Span>,
+    signal_metadata: Vec<TimingSignalMetadata>,
+    assignment_provenance: Vec<AssignmentProvenance>,
+    timing_constraint_sources: Vec<TimingConstraintSource>,
+    next_source_assignment_order: usize,
     next_temp_index: usize,
 }
 
@@ -181,7 +331,7 @@ struct SpecifyDelay {
 }
 
 impl<'a> Lowerer<'a> {
-    fn new(module: &'a Module, analysis: &crate::analyze::ModuleAnalysis) -> Self {
+    fn new(module: &'a Module, analysis: &crate::analyze::ModuleAnalysis) -> LowerResult<Self> {
         let signal_names = analysis
             .symbols
             .iter()
@@ -214,7 +364,7 @@ impl<'a> Lowerer<'a> {
         reserved_names.extend(analysis.inputs.iter().cloned());
         reserved_names.extend(analysis.outputs.iter().cloned());
         reserved_names.extend(analysis.registers.iter().cloned());
-        Self {
+        Ok(Self {
             module,
             cell: Cell {
                 name: module.name.clone(),
@@ -240,11 +390,15 @@ impl<'a> Lowerer<'a> {
             reserved_names,
             signal_names,
             signal_spans,
+            signal_metadata: timing_signal_metadata(analysis)?,
+            assignment_provenance: Vec::new(),
+            timing_constraint_sources: Vec::new(),
+            next_source_assignment_order: 0,
             next_temp_index: 0,
-        }
+        })
     }
 
-    fn lower_module(&mut self) -> LowerResult<LoweredModule> {
+    fn lower_module(&mut self) -> LowerResult<LoweringArtifacts> {
         self.collect_timing_aliases()?;
         self.collect_specify_delays()?;
         for item in &self.module.items {
@@ -266,10 +420,15 @@ impl<'a> Lowerer<'a> {
                 .then_with(|| left.span.column.cmp(&right.span.column))
         });
 
-        Ok(LoweredModule {
-            cell: self.cell.clone(),
-            timing_aliases: self.timing_aliases.clone(),
-            diagnostics: self.diagnostics.clone(),
+        Ok(LoweringArtifacts {
+            lowered: LoweredModule {
+                cell: self.cell.clone(),
+                timing_aliases: self.timing_aliases.clone(),
+                diagnostics: self.diagnostics.clone(),
+            },
+            signal_metadata: self.signal_metadata.clone(),
+            assignment_provenance: self.assignment_provenance.clone(),
+            timing_constraint_sources: self.timing_constraint_sources.clone(),
         })
     }
 
@@ -395,14 +554,19 @@ impl<'a> Lowerer<'a> {
                 let SpecifyItem::Path(path) = specify_item else {
                     continue;
                 };
-                for control in &path.controls {
-                    if scalar_expr_symbol(control).is_none() {
-                        return Err(Diagnostic::new(
-                            control.span.clone(),
-                            "specify path control must be a scalar symbol",
-                        ));
-                    }
-                }
+                let controls = path
+                    .controls
+                    .iter()
+                    .map(|control| {
+                        let signal = scalar_expr_symbol(control).ok_or_else(|| {
+                            Diagnostic::new(
+                                control.span.clone(),
+                                "specify path control must be a scalar symbol",
+                            )
+                        })?;
+                        TimingControlSource::new(signal, None, control.span.clone())
+                    })
+                    .collect::<LowerResult<Vec<_>>>()?;
                 let target = scalar_expr_symbol(&path.target).ok_or_else(|| {
                     Diagnostic::new(
                         path.target.span.clone(),
@@ -410,6 +574,15 @@ impl<'a> Lowerer<'a> {
                     )
                 })?;
                 let delay = self.lower_delay_tuple(&path.span, &path.delays)?;
+                let constraint = TimingConstraintSource::new_with_target_span(
+                    self.timing_constraint_sources.len(),
+                    controls,
+                    target.clone(),
+                    delay.clone(),
+                    path.target.span.clone(),
+                    path.span.clone(),
+                )?;
+                self.timing_constraint_sources.push(constraint);
                 self.specify_delays
                     .entry(target)
                     .or_default()
@@ -468,7 +641,10 @@ impl<'a> Lowerer<'a> {
                     .as_ref()
                     .map(|expr| self.lower_expr(expr))
                     .transpose()?;
-                self.lower_procedural_body(&always.body, ProceduralContext::stateful(condition))
+                self.lower_procedural_body(
+                    &always.body,
+                    ProceduralContext::stateful(condition, Vec::new()),
+                )
             }
             ItemKind::Always(always) => {
                 let stateful = matches!(always.kind, AlwaysKind::Ff)
@@ -478,7 +654,14 @@ impl<'a> Lowerer<'a> {
                         .map(|sensitivity| sensitivity_is_stateful(sensitivity, always.kind))
                         .unwrap_or(false);
                 let context = if stateful {
-                    ProceduralContext::stateful(None)
+                    ProceduralContext::stateful(
+                        None,
+                        always
+                            .sensitivity
+                            .as_ref()
+                            .map(state_controls_from_sensitivity)
+                            .unwrap_or_default(),
+                    )
                 } else {
                     ProceduralContext::combinational()
                 };
@@ -507,7 +690,12 @@ impl<'a> Lowerer<'a> {
             keeper.connection.target,
             Expr::value(ValueOperator::Keeper, vec![]),
             zero_delay_tuple(),
-            &keeper.connection.span,
+            SourceEmission::new(
+                &keeper.connection.span,
+                &keeper.connection.span,
+                SourceAssignmentOrigin::Keeper,
+                Vec::new(),
+            ),
         )
     }
 
@@ -590,7 +778,10 @@ impl<'a> Lowerer<'a> {
                 };
                 self.lower_procedural_body(
                     &stmt.then_branch,
-                    ProceduralContext::stateful(Some(next_condition)),
+                    ProceduralContext::stateful(
+                        Some(next_condition),
+                        context.state_controls.clone(),
+                    ),
                 )
             }
             ItemKind::Initial(_)
@@ -630,7 +821,21 @@ impl<'a> Lowerer<'a> {
             );
         }
         let delay = self.source_delay_for(&target, None)?;
-        self.emit_assignment(target, expr, delay, &stmt.span)
+        let origin = match context.mode {
+            ProceduralMode::Combinational => SourceAssignmentOrigin::ProceduralCombinational,
+            ProceduralMode::Stateful => SourceAssignmentOrigin::ProceduralStateful,
+        };
+        self.emit_assignment(
+            target,
+            expr,
+            delay,
+            SourceEmission::new(
+                &stmt.span,
+                &stmt.value.span,
+                origin,
+                context.state_controls.clone(),
+            ),
+        )
     }
 
     fn lower_continuous_assign(&mut self, assign: &AssignDecl) -> LowerResult<()> {
@@ -645,7 +850,17 @@ impl<'a> Lowerer<'a> {
             expr = apply_strength(expr, lower_strength_pair(strength)?);
         }
         let delay = self.source_delay_for(&target, assign.delay.as_ref())?;
-        self.emit_assignment(target, expr, delay, &assign.span)
+        self.emit_assignment(
+            target,
+            expr,
+            delay,
+            SourceEmission::new(
+                &assign.span,
+                &assign.value.span,
+                SourceAssignmentOrigin::Continuous,
+                Vec::new(),
+            ),
+        )
     }
 
     fn lower_continuous_value(&mut self, expr: &SvExpr) -> LowerResult<Expr> {
@@ -883,7 +1098,17 @@ impl<'a> Lowerer<'a> {
         };
         let expr = Expr::value(operator, vec![source, gate]);
         let delay = self.source_delay_for(&drain, call.delay.as_ref())?;
-        self.emit_assignment(drain, expr, delay, &call.span)
+        self.emit_assignment(
+            drain,
+            expr,
+            delay,
+            SourceEmission::new(
+                &call.span,
+                &call.span,
+                SourceAssignmentOrigin::Primitive,
+                Vec::new(),
+            ),
+        )
     }
 
     fn lower_bufif_call(&mut self, call: &PrimitiveCall) -> LowerResult<()> {
@@ -925,7 +1150,17 @@ impl<'a> Lowerer<'a> {
         };
         let expr = Expr::value(operator, operands);
         let delay = self.source_delay_for(&target, call.delay.as_ref())?;
-        self.emit_assignment(target, expr, delay, &call.span)
+        self.emit_assignment(
+            target,
+            expr,
+            delay,
+            SourceEmission::new(
+                &call.span,
+                &call.span,
+                SourceAssignmentOrigin::Primitive,
+                Vec::new(),
+            ),
+        )
     }
 
     fn emit_assignment(
@@ -933,36 +1168,55 @@ impl<'a> Lowerer<'a> {
         target: String,
         expr: Expr,
         delay: DelayTuple,
-        source_span: &Span,
+        emission: SourceEmission,
     ) -> LowerResult<()> {
-        let expr = self.flatten_value_root(expr, source_span)?;
-        self.push_validated_assignment(target, expr, delay, source_span)
+        let source_assignment_order = self.next_source_assignment_order;
+        self.next_source_assignment_order += 1;
+        let expr = self.flatten_value_root(expr, &emission, source_assignment_order)?;
+        self.push_validated_assignment(PendingAssignment {
+            target,
+            expr,
+            delay,
+            source_assignment_order,
+            diagnostic_span: emission.assignment_span.clone(),
+            provenance_span: emission.assignment_span,
+            origin: AssignmentOrigin::Source(emission.origin),
+            state_controls: emission.state_controls,
+        })
     }
 
-    fn flatten_value_root(&mut self, expr: Expr, source_span: &Span) -> LowerResult<Expr> {
+    fn flatten_value_root(
+        &mut self,
+        expr: Expr,
+        emission: &SourceEmission,
+        source_assignment_order: usize,
+    ) -> LowerResult<Expr> {
         let Expr::List(items) = expr else {
             return Ok(expr);
         };
         let mut items = items.into_iter();
         let head = items.next().ok_or_else(|| {
-            Diagnostic::new(source_span.clone(), "value operator list must not be empty")
+            Diagnostic::new(
+                emission.assignment_span.clone(),
+                "value operator list must not be empty",
+            )
         })?;
         let Expr::Atom(head) = head else {
             return Err(Diagnostic::new(
-                source_span.clone(),
+                emission.assignment_span.clone(),
                 "value operator must be an atom",
             ));
         };
         let operator = ValueOperator::parse(&head).ok_or_else(|| {
             Diagnostic::new(
-                source_span.clone(),
+                emission.assignment_span.clone(),
                 format!("uncontracted value operator `{head}`"),
             )
         })?;
         let operands = items.collect::<Vec<_>>();
         if !operator.accepts_arity(operands.len()) {
             return Err(Diagnostic::new(
-                source_span.clone(),
+                emission.assignment_span.clone(),
                 format!(
                     "wrong arity for value operator `{}`: got {}",
                     operator.as_str(),
@@ -976,14 +1230,21 @@ impl<'a> Lowerer<'a> {
             match operand {
                 Expr::Atom(_) => flat_operands.push(operand),
                 Expr::List(_) => {
-                    let nested = self.flatten_value_root(operand, source_span)?;
+                    let nested =
+                        self.flatten_value_root(operand, emission, source_assignment_order)?;
                     let temporary = self.allocate_temporary();
-                    self.push_validated_assignment(
-                        temporary.clone(),
-                        nested,
-                        zero_delay_tuple(),
-                        source_span,
-                    )?;
+                    self.push_validated_assignment(PendingAssignment {
+                        target: temporary.clone(),
+                        expr: nested,
+                        delay: zero_delay_tuple(),
+                        source_assignment_order,
+                        diagnostic_span: emission.assignment_span.clone(),
+                        provenance_span: emission.expression_span.clone(),
+                        origin: AssignmentOrigin::GeneratedTemporary {
+                            parent: emission.origin,
+                        },
+                        state_controls: Vec::new(),
+                    })?;
                     flat_operands.push(Expr::atom(temporary));
                 }
             }
@@ -1001,25 +1262,28 @@ impl<'a> Lowerer<'a> {
         }
     }
 
-    fn push_validated_assignment(
-        &mut self,
-        target: String,
-        expr: Expr,
-        delay: DelayTuple,
-        source_span: &Span,
-    ) -> LowerResult<()> {
+    fn push_validated_assignment(&mut self, pending: PendingAssignment) -> LowerResult<()> {
         let assignment = Assignment {
-            target,
-            expr,
-            delay,
+            target: pending.target,
+            expr: pending.expr,
+            delay: pending.delay,
         };
         assignment.validate().map_err(|error| {
             Diagnostic::new(
-                source_span.clone(),
+                pending.diagnostic_span.clone(),
                 format!("invalid lowered assignment: {error}"),
             )
         })?;
+        let assignment_order = self.assignment_provenance.len();
+        let provenance = AssignmentProvenance::new(
+            assignment_order,
+            pending.source_assignment_order,
+            pending.provenance_span,
+            pending.origin,
+            pending.state_controls,
+        )?;
         self.cell.items.push(CellItem::Assignment(assignment));
+        self.assignment_provenance.push(provenance);
         Ok(())
     }
 
@@ -1346,6 +1610,85 @@ impl<'a> Lowerer<'a> {
     }
 }
 
+fn timing_signal_metadata(
+    analysis: &crate::analyze::ModuleAnalysis,
+) -> LowerResult<Vec<TimingSignalMetadata>> {
+    let modeled_registers = analysis.registers.iter().collect::<BTreeSet<_>>();
+    analysis
+        .symbols
+        .iter()
+        .filter(|(_, symbol)| {
+            matches!(
+                symbol.category,
+                crate::analyze::SymbolCategory::Port | crate::analyze::SymbolCategory::Declaration
+            )
+        })
+        .map(|(name, symbol)| {
+            let mut roles = BTreeSet::new();
+            match symbol.category {
+                crate::analyze::SymbolCategory::Port => {
+                    let port = &analysis.ports[name];
+                    if port.is_input {
+                        roles.insert(TimingSignalRole::Input);
+                    }
+                    if port.is_output {
+                        roles.insert(TimingSignalRole::Output);
+                    }
+                    if port.direction == Direction::Inout {
+                        roles.insert(TimingSignalRole::Inout);
+                    }
+                    if port.direction == Direction::Inout
+                        || port
+                            .modifiers
+                            .iter()
+                            .any(|modifier| matches!(modifier.as_str(), "tri" | "wire"))
+                    {
+                        roles.insert(TimingSignalRole::ResolvedNet);
+                    }
+                }
+                crate::analyze::SymbolCategory::Declaration => {
+                    roles.insert(TimingSignalRole::Internal);
+                    if matches!(
+                        analysis.declarations[name].kind,
+                        DeclKind::Tri | DeclKind::Wire
+                    ) {
+                        roles.insert(TimingSignalRole::ResolvedNet);
+                    }
+                }
+                crate::analyze::SymbolCategory::Parameter
+                | crate::analyze::SymbolCategory::Localparam
+                | crate::analyze::SymbolCategory::Specparam => {
+                    unreachable!("timing signal metadata filters non-signal symbol categories")
+                }
+            }
+            if modeled_registers.contains(&name) {
+                roles.insert(TimingSignalRole::ModeledRegister);
+            }
+            TimingSignalMetadata::new(name.clone(), roles, symbol.span.clone())
+        })
+        .collect()
+}
+
+fn state_controls_from_sensitivity(sensitivity: &Sensitivity) -> Vec<StateControlProvenance> {
+    let SensitivityKind::List(events) = &sensitivity.kind else {
+        return Vec::new();
+    };
+    events
+        .iter()
+        .map(|event| {
+            let transition = match event.edge.as_deref() {
+                Some("posedge") => Some(Transition::Rise),
+                Some("negedge") => Some(Transition::Fall),
+                Some(_) | None => None,
+            };
+            match event.expr.as_ref().and_then(scalar_expr_symbol) {
+                Some(signal) => StateControlProvenance::new(signal, transition, event.span.clone()),
+                None => StateControlProvenance::unrepresentable(transition, event.span.clone()),
+            }
+        })
+        .collect()
+}
+
 fn zero_delay_tuple() -> DelayTuple {
     DelayTuple::One(TimingExpr::atom("0").expect("zero is a valid timing atom"))
 }
@@ -1533,6 +1876,11 @@ mod tests {
         lower_file(Path::new("snippet.sv"), input)
     }
 
+    fn lower_timing_snippet(input: &str) -> LowerResult<LoweredTimingModel> {
+        let design = crate::parser::parse_file(Path::new("snippet.sv"), input)?;
+        lower_design_with_timing_and_generate_mode(&design, GenerateMode::default())
+    }
+
     fn registers(lowered: &LoweredModule) -> Vec<(&str, LogicValue)> {
         lowered
             .cell
@@ -1636,7 +1984,8 @@ endmodule
             "multiple initial assignments for register `q` cannot be represented by one register initial value"
         );
 
-        let mut lowerer = Lowerer::new(design.first_module().unwrap(), &analysis.modules[0]);
+        let mut lowerer =
+            Lowerer::new(design.first_module().unwrap(), &analysis.modules[0]).unwrap();
         let error = lowerer.lower_module().unwrap_err();
         assert_eq!(error.span, Span::new("snippet.sv", 3, 11));
         assert_eq!(error.message, requirement.reason);
@@ -2762,5 +3111,383 @@ endmodule
         .unwrap_err();
         assert_eq!(target.span, Span::new("snippet.sv", 2, 11));
         assert_eq!(target.message, "expected bufif target symbol");
+    }
+
+    #[test]
+    fn timing_aware_lowering_records_actual_state_controls_and_preserves_compatibility() {
+        let source = "module sample(input logic d, clk, reset_n, output logic q);\n  always_ff @(posedge clk, negedge reset_n) q <= d;\nendmodule\n";
+        let compatibility = lower_snippet(source).unwrap();
+        let timing = lower_timing_snippet(source).unwrap();
+
+        assert_eq!(timing.lowered(), &compatibility);
+        assert!(compatibility.diagnostics.is_empty());
+        assert_eq!(timing.assignment_provenance().len(), 1);
+        let provenance = &timing.assignment_provenance()[0];
+        assert_eq!(
+            provenance.origin(),
+            AssignmentOrigin::Source(SourceAssignmentOrigin::ProceduralStateful)
+        );
+        assert_eq!(
+            provenance
+                .state_controls()
+                .iter()
+                .map(|control| (control.signal(), control.transition(), control.span().line))
+                .collect::<Vec<_>>(),
+            vec![
+                (Some("clk"), Some(Transition::Rise), 2),
+                (Some("reset_n"), Some(Transition::Fall), 2),
+            ]
+        );
+
+        let state_controls = timing
+            .functional_graph()
+            .dependencies()
+            .iter()
+            .filter(|dependency| {
+                dependency.edge().kind() == crate::timing_graph::DependencyKind::StateControl
+            })
+            .collect::<Vec<_>>();
+        assert_eq!(state_controls.len(), 2);
+        assert_eq!(
+            state_controls
+                .iter()
+                .map(|dependency| dependency.edge().event_transition())
+                .collect::<Vec<_>>(),
+            vec![Some(Transition::Rise), Some(Transition::Fall)]
+        );
+        assert_eq!(timing.cut_graph().excluded_state_boundaries().len(), 1);
+        assert_eq!(
+            timing
+                .cut_graph()
+                .dependencies()
+                .iter()
+                .filter(|dependency| dependency.edge().kind()
+                    == crate::timing_graph::DependencyKind::StateControl)
+                .count(),
+            2
+        );
+    }
+
+    #[test]
+    fn timing_aware_path_rejects_non_scalar_state_events_without_changing_m14_lowering() {
+        let source = "module sample(input logic d, clk, ena, output logic q);\n  always_ff @(posedge (clk & ena)) q <= d;\nendmodule\n";
+        let compatibility = lower_snippet(source).unwrap();
+        assert!(compatibility.diagnostics.is_empty());
+
+        let error = lower_timing_snippet(source).unwrap_err();
+        assert_eq!(error.span.line, 2);
+        assert_eq!(
+            error.message,
+            "stateful event control must be a scalar signal"
+        );
+    }
+
+    #[test]
+    fn a_clock_named_combinational_operand_is_not_a_state_control() {
+        let source =
+            "module sample(input logic clk, output logic q);\n  always @* q = clk;\nendmodule\n";
+        let timing = lower_timing_snippet(source).unwrap();
+
+        assert!(timing.lowered().cell.registers.is_empty());
+        assert_eq!(
+            timing.assignment_provenance()[0].origin(),
+            AssignmentOrigin::Source(SourceAssignmentOrigin::ProceduralCombinational)
+        );
+        assert!(
+            timing.assignment_provenance()[0]
+                .state_controls()
+                .is_empty()
+        );
+        assert!(
+            timing
+                .functional_graph()
+                .dependencies()
+                .iter()
+                .all(|dependency| dependency.edge().kind()
+                    != crate::timing_graph::DependencyKind::StateControl)
+        );
+    }
+
+    #[test]
+    fn generated_temporary_provenance_is_aligned_parented_and_graph_visible() {
+        let source = "module sample(input logic a, b, c, d, output logic y);\n  assign y = (a & b) | (c & d);\nendmodule\n";
+        let compatibility = lower_snippet(source).unwrap();
+        let timing = lower_timing_snippet(source).unwrap();
+        assert_eq!(timing.lowered(), &compatibility);
+
+        assert_eq!(timing.assignment_provenance().len(), 3);
+        assert_eq!(
+            timing
+                .assignment_provenance()
+                .iter()
+                .map(AssignmentProvenance::assignment_order)
+                .collect::<Vec<_>>(),
+            vec![0, 1, 2]
+        );
+        assert_eq!(
+            timing
+                .assignment_provenance()
+                .iter()
+                .map(AssignmentProvenance::source_assignment_order)
+                .collect::<Vec<_>>(),
+            vec![0, 0, 0]
+        );
+        assert!(timing.assignment_provenance()[0].origin().is_temporary());
+        assert!(timing.assignment_provenance()[1].origin().is_temporary());
+        assert_eq!(
+            timing.assignment_provenance()[2].origin(),
+            AssignmentOrigin::Source(SourceAssignmentOrigin::Continuous)
+        );
+        assert_eq!(timing.assignment_provenance()[0].span().line, 2);
+        assert_eq!(timing.assignment_provenance()[1].span().line, 2);
+
+        for temporary in ["t0", "t1"] {
+            let id = timing.functional_graph().signal_id(temporary).unwrap();
+            assert!(matches!(
+                timing.functional_graph().node(id).unwrap().kind(),
+                crate::timing_graph::TimingNodeKind::Signal(signal)
+                    if signal.has_role(TimingSignalRole::Internal)
+                        && signal.has_role(TimingSignalRole::Temporary)
+            ));
+        }
+    }
+
+    #[test]
+    fn timing_signal_metadata_uses_only_typed_resolved_net_declarations() {
+        let timing = lower_timing_snippet(
+            "module sample(input logic il, input wire iw, output logic ol, output tri ot, inout logic io);\n\
+  wire w;\n\
+  tri t;\n\
+  logic l;\n\
+endmodule\n",
+        )
+        .unwrap();
+        let roles = timing
+            .functional_graph()
+            .nodes()
+            .filter_map(|node| match node.kind() {
+                crate::timing_graph::TimingNodeKind::Signal(signal) => {
+                    Some((signal.name(), signal.roles()))
+                }
+                crate::timing_graph::TimingNodeKind::Assignment(_) => None,
+            })
+            .collect::<BTreeMap<_, _>>();
+
+        for resolved in ["iw", "ot", "io", "w", "t"] {
+            assert!(
+                roles[resolved].contains(&TimingSignalRole::ResolvedNet),
+                "{resolved} lost its typed resolved-net classification"
+            );
+        }
+        for variable in ["il", "ol", "l"] {
+            assert!(
+                !roles[variable].contains(&TimingSignalRole::ResolvedNet),
+                "{variable} was inferred resolved without wire/tri/inout source semantics"
+            );
+        }
+        assert!(roles["io"].contains(&TimingSignalRole::Inout));
+    }
+
+    #[test]
+    fn timing_aware_lowering_captures_every_specify_path_tuple_and_exact_source_order() {
+        let source = "module sample(input logic a, b, c, output logic y0, y1, y2, y3, y4, y5);\n\
+  assign y0 = a; assign y1 = b; assign y2 = c;\n\
+  assign y3 = a; assign y4 = b; assign y5 = c;\n\
+  specify\n\
+    (a *> y0) = (A0);\n\
+  endspecify\n\
+  specify\n\
+    (b *> y1) = (B0, B1);\n\
+    (c *> y2) = (C0, C1, C2);\n\
+  endspecify\n\
+  specify\n\
+    (a *> y3) = (D0 + D1, D2);\n\
+    (b *> y4) = ((E0 + E1) + E2, E3 + (E4 + E5), E6);\n\
+    (c *> y5) = (F0);\n\
+  endspecify\n\
+endmodule\n";
+        let compatibility = lower_snippet(source).unwrap();
+        let timing = lower_timing_snippet(source).unwrap();
+        assert_eq!(timing.lowered(), &compatibility);
+
+        let constraints = timing.functional_graph().constraints();
+        assert_eq!(constraints.len(), 6);
+        assert_eq!(
+            constraints
+                .iter()
+                .map(|constraint| (
+                    constraint.path_order(),
+                    constraint.target(),
+                    constraint.span().line,
+                    constraint.target_span().line,
+                    constraint
+                        .controls()
+                        .iter()
+                        .map(|control| (control.source().signal(), control.source().span().line))
+                        .collect::<Vec<_>>(),
+                    render_delay_tuple(constraint.delay()),
+                ))
+                .collect::<Vec<_>>(),
+            vec![
+                (0, "y0", 5, 5, vec![("a", 5)], "(delay A0)".to_string()),
+                (1, "y1", 8, 8, vec![("b", 8)], "(delay B0 B1)".to_string()),
+                (
+                    2,
+                    "y2",
+                    9,
+                    9,
+                    vec![("c", 9)],
+                    "(delay C0 C1 C2)".to_string()
+                ),
+                (
+                    3,
+                    "y3",
+                    12,
+                    12,
+                    vec![("a", 12)],
+                    "(delay (+ D0 D1) D2)".to_string()
+                ),
+                (
+                    4,
+                    "y4",
+                    13,
+                    13,
+                    vec![("b", 13)],
+                    "(delay (+ (+ E0 E1) E2) (+ E3 (+ E4 E5)) E6)".to_string()
+                ),
+                (5, "y5", 14, 14, vec![("c", 14)], "(delay F0)".to_string()),
+            ]
+        );
+        for constraint in constraints {
+            assert_eq!(
+                constraint.additive_delay().to_delay_tuple().unwrap(),
+                *constraint.delay()
+            );
+        }
+        assert_eq!(
+            constraints[4]
+                .additive_delay()
+                .components()
+                .map(|component| {
+                    component
+                        .terms()
+                        .iter()
+                        .map(|term| render_timing_expr(term.as_timing_expr()))
+                        .collect::<Vec<_>>()
+                })
+                .collect::<Vec<_>>(),
+            vec![
+                vec!["E0".to_string(), "E1".to_string(), "E2".to_string()],
+                vec!["E3".to_string(), "E4".to_string(), "E5".to_string()],
+                vec!["E6".to_string()],
+            ]
+        );
+    }
+
+    #[test]
+    fn timing_aware_unreachable_control_is_exact_without_changing_ordinary_lowering() {
+        let source = "module sample(input logic a, unused, output logic y);\n\
+  assign y = a;\n\
+  specify\n\
+    (unused *> y) = (T);\n\
+  endspecify\n\
+endmodule\n";
+        let compatibility = lower_snippet(source).unwrap();
+        assert!(compatibility.diagnostics.is_empty());
+
+        let error = lower_timing_snippet(source).unwrap_err();
+        assert_eq!(error.span, Span::new("snippet.sv", 4, 2));
+        assert_eq!(
+            error.message,
+            "timing constraint p0 control c0 `unused` cannot reach target `y` in the full functional graph"
+        );
+    }
+
+    #[test]
+    fn full_graph_keeps_state_boundary_reachability_and_reports_event_transition() {
+        let source = "module sample(input logic d, clk, output logic q);\n\
+  always_ff @(posedge clk) q <= d;\n\
+  specify\n\
+    (clk *> q) = (T_rise, T_fall);\n\
+  endspecify\n\
+endmodule\n";
+        let timing = lower_timing_snippet(source).unwrap();
+        assert_eq!(timing.cut_graph().excluded_state_boundaries().len(), 1);
+        let report = &timing.timing_analysis().target_groups()[0].control_reports()[0];
+        assert_eq!(
+            report.path_senses(),
+            &[crate::timing_graph::TimingPathSense::StateControl {
+                event_transition: Some(Transition::Rise),
+                target_effect: Some(crate::timing_graph::TransitionEffect::Exact(
+                    Transition::Rise
+                )),
+            }]
+        );
+        assert!(report.reachable_nodes().contains(&report.target_node()));
+    }
+
+    #[test]
+    fn timing_analysis_reports_all_functional_sense_classes_and_public_splits() {
+        let source = "module sample(input logic a, b, ena, clk, output logic yp, yn, yx, yc, q, derived);\n\
+  logic internal;\n\
+  assign yp = a;\n\
+  assign yn = ~a;\n\
+  assign yx = a ^ b;\n\
+  assign yc = ena ? a : 'z;\n\
+  always_ff @(posedge clk) q <= a;\n\
+  assign derived = ~yp;\n\
+  assign internal = a;\n\
+  specify\n\
+    (a *> yp) = (TP);\n\
+    (a *> yn) = (TN);\n\
+    (a *> yx) = (TX);\n\
+    (ena *> yc) = (TC);\n\
+    (clk *> q) = (TQ);\n\
+    (a *> internal) = (TI);\n\
+  endspecify\n\
+endmodule\n";
+        let timing = lower_timing_snippet(source).unwrap();
+        let groups = timing
+            .timing_analysis()
+            .target_groups()
+            .iter()
+            .map(|report| (report.group().target(), report))
+            .collect::<BTreeMap<_, _>>();
+        let senses = |target: &str| groups[target].control_reports()[0].path_senses().to_vec();
+        assert_eq!(
+            senses("yp"),
+            vec![crate::timing_graph::TimingPathSense::PositiveUnate]
+        );
+        assert_eq!(
+            senses("yn"),
+            vec![crate::timing_graph::TimingPathSense::NegativeUnate]
+        );
+        assert_eq!(
+            senses("yx"),
+            vec![crate::timing_graph::TimingPathSense::NonUnate]
+        );
+        assert_eq!(
+            senses("yc"),
+            vec![crate::timing_graph::TimingPathSense::Conditional]
+        );
+        assert!(matches!(
+            senses("q").as_slice(),
+            [crate::timing_graph::TimingPathSense::StateControl {
+                event_transition: Some(Transition::Rise),
+                ..
+            }]
+        ));
+        assert_eq!(
+            groups["yp"].public_output_split(),
+            crate::timing_graph::PublicOutputSplit::Candidate
+        );
+        assert_eq!(
+            groups["yn"].public_output_split(),
+            crate::timing_graph::PublicOutputSplit::NotRequired
+        );
+        assert_eq!(
+            groups["internal"].public_output_split(),
+            crate::timing_graph::PublicOutputSplit::NotPublic
+        );
     }
 }

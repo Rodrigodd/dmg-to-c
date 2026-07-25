@@ -1,0 +1,37 @@
+timing-analysis
+node n0 signal in1 roles=input @sv-cells/dmg_cpu_b/cells/ao21.sv:6:3
+node n1 signal in2 roles=input @sv-cells/dmg_cpu_b/cells/ao21.sv:6:3
+node n2 signal in3 roles=input @sv-cells/dmg_cpu_b/cells/ao21.sv:6:3
+node n3 signal y roles=output @sv-cells/dmg_cpu_b/cells/ao21.sv:7:3
+node n4 signal t0 roles=internal,temporary @sv-cells/dmg_cpu_b/cells/ao21.sv:12:13
+node n5 assignment order=0 target=t0 function=and @sv-cells/dmg_cpu_b/cells/ao21.sv:12:13
+node n6 assignment order=1 target=y function=or @sv-cells/dmg_cpu_b/cells/ao21.sv:12:2
+dependency n0 -> n5 kind=operand operand=0 sense=positive event=- @sv-cells/dmg_cpu_b/cells/ao21.sv:12:13
+dependency n1 -> n5 kind=operand operand=1 sense=positive event=- @sv-cells/dmg_cpu_b/cells/ao21.sv:12:13
+dependency n5 -> n4 kind=drive operand=- sense=positive event=- @sv-cells/dmg_cpu_b/cells/ao21.sv:12:13
+dependency n4 -> n6 kind=operand operand=0 sense=positive event=- @sv-cells/dmg_cpu_b/cells/ao21.sv:12:2
+dependency n2 -> n6 kind=operand operand=1 sense=positive event=- @sv-cells/dmg_cpu_b/cells/ao21.sv:12:2
+dependency n6 -> n3 kind=drive operand=- sense=positive event=- @sv-cells/dmg_cpu_b/cells/ao21.sv:12:2
+cut-order n2,n1,n0,n5,n4,n6,n3
+cut-dependency n0 -> n5 kind=operand
+cut-dependency n1 -> n5 kind=operand
+cut-dependency n5 -> n4 kind=drive
+cut-dependency n4 -> n6 kind=operand
+cut-dependency n2 -> n6 kind=operand
+cut-dependency n6 -> n3 kind=drive
+constraint p0 order=0 target=y target@sv-cells/dmg_cpu_b/cells/ao21.sv:21:16 path@sv-cells/dmg_cpu_b/cells/ao21.sv:21:3 delay=(delay (+ (elmore (wire 112) (* (nmos 35) 2)) (elmore (wire L_y) (pmos 35))) (+ (elmore (wire 112) (* (pmos 35) 2)) (elmore (wire L_y) (nmos 35))))
+  terms[0]=(elmore (wire 112) (* (nmos 35) 2)) + (elmore (wire L_y) (pmos 35))
+  terms[1]=(elmore (wire 112) (* (pmos 35) 2)) + (elmore (wire L_y) (nmos 35))
+  control c0 order=0 signal=in1 event=- @sv-cells/dmg_cpu_b/cells/ao21.sv:21:4
+  control c1 order=1 signal=in2 event=- @sv-cells/dmg_cpu_b/cells/ao21.sv:21:9
+constraint p1 order=1 target=y target@sv-cells/dmg_cpu_b/cells/ao21.sv:22:16 path@sv-cells/dmg_cpu_b/cells/ao21.sv:22:3 delay=(delay (+ (elmore (wire 112) (nmos 35)) (elmore (wire L_y) (pmos 35))) (+ (elmore (wire 112) (* (pmos 35) 2)) (elmore (wire L_y) (nmos 35))))
+  terms[0]=(elmore (wire 112) (nmos 35)) + (elmore (wire L_y) (pmos 35))
+  terms[1]=(elmore (wire 112) (* (pmos 35) 2)) + (elmore (wire L_y) (nmos 35))
+  control c2 order=0 signal=in3 event=- @sv-cells/dmg_cpu_b/cells/ao21.sv:22:4
+control-group signal=in1 source=n0 kind=single-target constraints=p0 controls=c0 targets=n3 prefix=n4,n5,n6
+control-group signal=in2 source=n1 kind=single-target constraints=p0 controls=c1 targets=n3 prefix=n4,n5,n6
+control-group signal=in3 source=n2 kind=single-target constraints=p1 controls=c2 targets=n3 prefix=n6
+group target=y kind=multiple constraints=p0,p1 controls=c0,c1,c2 suffix=n6 reconvergent=n5,n6 split=not-required
+  control-report c0 constraint=p0 source=n0 target=n3 slice=n0,n3,n4,n5,n6 dominators=n0,n3,n4,n5,n6 post-dominators=n0,n3,n4,n5,n6 senses=positive
+  control-report c1 constraint=p0 source=n1 target=n3 slice=n1,n3,n4,n5,n6 dominators=n1,n3,n4,n5,n6 post-dominators=n1,n3,n4,n5,n6 senses=positive
+  control-report c2 constraint=p1 source=n2 target=n3 slice=n2,n3,n6 dominators=n2,n3,n6 post-dominators=n2,n3,n6 senses=positive
