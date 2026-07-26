@@ -100,6 +100,13 @@ pub enum TimingSignalRole {
     ModeledRegister,
     Internal,
     Temporary,
+    /// A deterministic `dN` signal introduced only to carry an exact timing
+    /// placement or a raw/public split.
+    TimingTemporary,
+    /// A signal introduced by a resolved physical topology overlay.
+    ///
+    /// This is neither a logical temporary nor a timing identity signal.
+    TopologyTemporary,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -255,12 +262,17 @@ pub enum SourceAssignmentOrigin {
 pub enum AssignmentOrigin {
     Source(SourceAssignmentOrigin),
     GeneratedTemporary { parent: SourceAssignmentOrigin },
+    GeneratedTimingIdentity { parent: SourceAssignmentOrigin },
+    GeneratedTopology { parent: SourceAssignmentOrigin },
 }
 
 impl AssignmentOrigin {
     pub const fn source(self) -> SourceAssignmentOrigin {
         match self {
-            Self::Source(source) | Self::GeneratedTemporary { parent: source } => source,
+            Self::Source(source)
+            | Self::GeneratedTemporary { parent: source }
+            | Self::GeneratedTimingIdentity { parent: source }
+            | Self::GeneratedTopology { parent: source } => source,
         }
     }
 
@@ -268,10 +280,40 @@ impl AssignmentOrigin {
         matches!(self, Self::GeneratedTemporary { .. })
     }
 
+    pub const fn is_timing_identity(self) -> bool {
+        matches!(self, Self::GeneratedTimingIdentity { .. })
+    }
+
+    pub const fn is_topology_generated(self) -> bool {
+        matches!(self, Self::GeneratedTopology { .. })
+    }
+
     pub const fn is_stateful_source(self) -> bool {
         matches!(
             self,
             Self::Source(SourceAssignmentOrigin::ProceduralStateful)
+        )
+    }
+}
+
+/// Typed origin of the delay tuple aligned with one emitted assignment.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum AssignmentDelayOrigin {
+    ImplicitZero,
+    GeneratedLogicalTemporaryZero,
+    KeeperZero,
+    ExplicitSourceDelay,
+    PrimitiveSourceDelay,
+    LegacySelectedSpecifyFallback,
+    DecompositionPlacement,
+    TopologyPlacement,
+}
+
+impl AssignmentDelayOrigin {
+    pub const fn is_intrinsic_source_delay(self) -> bool {
+        matches!(
+            self,
+            Self::ExplicitSourceDelay | Self::PrimitiveSourceDelay | Self::KeeperZero
         )
     }
 }
@@ -325,6 +367,7 @@ pub struct AssignmentProvenance {
     source_assignment_order: usize,
     span: Span,
     origin: AssignmentOrigin,
+    delay_origin: AssignmentDelayOrigin,
     state_controls: Vec<StateControlProvenance>,
 }
 
@@ -334,6 +377,37 @@ impl AssignmentProvenance {
         source_assignment_order: usize,
         span: Span,
         origin: AssignmentOrigin,
+        state_controls: Vec<StateControlProvenance>,
+    ) -> Result<Self, Diagnostic> {
+        let delay_origin = match origin {
+            AssignmentOrigin::GeneratedTemporary { .. } => {
+                AssignmentDelayOrigin::GeneratedLogicalTemporaryZero
+            }
+            AssignmentOrigin::GeneratedTimingIdentity { .. } => {
+                AssignmentDelayOrigin::DecompositionPlacement
+            }
+            AssignmentOrigin::GeneratedTopology { .. } => AssignmentDelayOrigin::TopologyPlacement,
+            AssignmentOrigin::Source(SourceAssignmentOrigin::Keeper) => {
+                AssignmentDelayOrigin::KeeperZero
+            }
+            AssignmentOrigin::Source(_) => AssignmentDelayOrigin::ImplicitZero,
+        };
+        Self::new_with_delay_origin(
+            assignment_order,
+            source_assignment_order,
+            span,
+            origin,
+            delay_origin,
+            state_controls,
+        )
+    }
+
+    pub fn new_with_delay_origin(
+        assignment_order: usize,
+        source_assignment_order: usize,
+        span: Span,
+        origin: AssignmentOrigin,
+        delay_origin: AssignmentDelayOrigin,
         state_controls: Vec<StateControlProvenance>,
     ) -> Result<Self, Diagnostic> {
         if !origin.is_stateful_source() && !state_controls.is_empty() {
@@ -347,6 +421,7 @@ impl AssignmentProvenance {
             source_assignment_order,
             span,
             origin,
+            delay_origin,
             state_controls,
         })
     }
@@ -367,6 +442,10 @@ impl AssignmentProvenance {
 
     pub const fn origin(&self) -> AssignmentOrigin {
         self.origin
+    }
+
+    pub const fn delay_origin(&self) -> AssignmentDelayOrigin {
+        self.delay_origin
     }
 
     pub fn state_controls(&self) -> &[StateControlProvenance] {
@@ -689,6 +768,22 @@ pub struct TimingConstraintSource {
 }
 
 impl TimingConstraintSource {
+    pub fn from_constraint(constraint: &TimingConstraint) -> Self {
+        Self {
+            path_order: constraint.path_order,
+            controls: constraint
+                .controls
+                .iter()
+                .map(|control| control.source.clone())
+                .collect(),
+            target: constraint.target.clone(),
+            target_span: constraint.target_span.clone(),
+            delay: constraint.delay.clone(),
+            additive_delay: constraint.additive_delay.clone(),
+            span: constraint.span.clone(),
+        }
+    }
+
     pub fn new(
         path_order: usize,
         controls: Vec<TimingControlSource>,
@@ -1455,7 +1550,7 @@ pub fn build_functional_timing_graph(
         assignments.iter().zip(assignment_provenance).enumerate()
     {
         validate_provenance_order(order, provenance)?;
-        if provenance.origin().is_temporary() {
+        if provenance.origin().is_temporary() && graph.signal_id(&assignment.target).is_none() {
             graph.add_signal(
                 assignment.target.clone(),
                 [TimingSignalRole::Internal, TimingSignalRole::Temporary]
@@ -2416,6 +2511,8 @@ const fn timing_signal_role_name(role: TimingSignalRole) -> &'static str {
         TimingSignalRole::ModeledRegister => "register",
         TimingSignalRole::Internal => "internal",
         TimingSignalRole::Temporary => "temporary",
+        TimingSignalRole::TimingTemporary => "timing-temporary",
+        TimingSignalRole::TopologyTemporary => "topology-temporary",
     }
 }
 
@@ -3750,5 +3847,25 @@ mod tests {
         let direct = functional_cell("y", Expr::atom("a"), false);
         let error = build_functional_timing_graph(&direct, &metadata, &[]).unwrap_err();
         assert!(error.message.contains("provenance length mismatch"));
+    }
+
+    #[test]
+    fn topology_generated_origin_and_role_are_distinct_and_typed() {
+        let origin = AssignmentOrigin::GeneratedTopology {
+            parent: SourceAssignmentOrigin::ProceduralStateful,
+        };
+        assert_eq!(origin.source(), SourceAssignmentOrigin::ProceduralStateful);
+        assert!(origin.is_topology_generated());
+        assert!(!origin.is_temporary());
+        assert!(!origin.is_timing_identity());
+        let provenance = AssignmentProvenance::new(0, 3, span(1), origin, Vec::new()).unwrap();
+        assert_eq!(
+            provenance.delay_origin(),
+            AssignmentDelayOrigin::TopologyPlacement
+        );
+        assert_eq!(
+            timing_signal_role_name(TimingSignalRole::TopologyTemporary),
+            "topology-temporary"
+        );
     }
 }

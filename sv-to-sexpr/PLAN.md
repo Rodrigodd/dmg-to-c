@@ -910,9 +910,14 @@ Acceptance conditions:
 
 ### Milestone 16: Decompose Timing Paths into Assignment Delays
 
-Status: planned after Milestone 15. Convert internal control-to-target timing
-constraints into exact delay tuples on ordinary assignments. Timing arcs remain
-an implementation input and verification oracle; they are never serialized.
+Status: complete as of 2026-07-26. Generic exact-cover decomposition now
+distributes ordered timing terms across ordinary assignments, maximizes
+compatible shared prefixes and suffixes, and introduces deterministic `dN`
+identities only for source-specific edges. A checked-in, typed physical-topology
+hint handles the hidden internal regions of delayful `dmg_dffsr`; all twelve
+rise/fall recipes independently reconstruct the six source constraints without
+routing `q_n` through `q`'s public output delay. Timing arcs remain an internal
+verification oracle and are never serialized.
 
 Expected to be working after this milestone:
 
@@ -929,8 +934,12 @@ Expected to be working after this milestone:
 Files, types, and functions:
 
 - Add `src/timing_decompose.rs` with `DelayPlacement`, `Decomposition`,
-  `DecompositionError`, `decompose_timing`, `insert_edge_delay`,
-  `split_public_output`, and `verify_decomposition`.
+  `DecompositionError`, `decompose_timing`, and `verify_decomposition`.
+- Add `src/timing_apply.rs` with typed transformation facts, independent
+  verification against the rebuilt graph, deterministic application of edge
+  identities through `insert_edge_delay`, raw/public transformations through
+  `split_public_output`, and exact erasure back to the baseline equations,
+  driver provenance, registers, and signal metadata.
 - Add deterministic `d0`, `d1`, ... names for timing-only identity assignments
   without perturbing logical `t0`, `t1`, ... numbering; reject collisions.
 - Extend `src/timing_terms.rs` with exact ordered term containment,
@@ -941,9 +950,19 @@ Files, types, and functions:
   rise and fall constraints correctly and turn-off remains distinct.
 - Use deterministic exact-cover/backtracking over the small per-cell candidate
   placement set. Prefer existing assignments, then shared post-dominator
-  placement, then sites nearer the target, with source order as the final tie
-  breaker. Do not introduce floating-point linear programming, negative
-  coefficients, or synthesized timing subtraction.
+  placement with maximal compatible path breadth, then sites nearer the target,
+  with source order as the final tie breaker. Do not introduce floating-point
+  linear programming, negative coefficients, or synthesized timing
+  subtraction.
+- Add `src/topology_hint.rs`, `src/topology_apply.rs`, and
+  `src/topology_verify.rs` for source-spanned typed physical-topology overlays,
+  exact materialization and erasure, and independent reconstruction from the
+  actual transformed graph. Keep the reviewed delayful `dmg_dffsr` topology in
+  `topology-hints/dmg_dffsr.toml`; its knownness guards select the exact
+  baseline equations whenever a four-state input or state value is not binary.
+- Use `serde` derives and `toml` for the checked-in topology schema. Keep
+  source-ordered `Vec` and `BTreeMap` as the deterministic external boundary;
+  do not add a second graph or ordered-map crate.
 - Add `proptest = "1"` as a development dependency for generated acyclic graph
   properties, especially decompose/reconstruct equality. Do not add `good_lp`
   or `microlp`; their floating-point models are not authoritative for exact
@@ -968,9 +987,9 @@ Acceptance conditions:
 
 ### Milestone 17: Full-Corpus Timing Closure
 
-Status: planned after Milestone 16. Close every former multiple-specify-path
-approximation across the 206-cell corpus and make exact per-assignment timing a
-release gate.
+Status: next after the completed Milestone 16. Close every former
+multiple-specify-path approximation across the 206-cell corpus and make exact
+per-assignment timing a release gate.
 
 Implementation plan:
 

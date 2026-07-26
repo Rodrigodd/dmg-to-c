@@ -5,9 +5,9 @@ a milestone acceptance condition changes or is completed.
 
 ## Verified Baseline
 
-Last audited on 2026-07-24:
+Last audited on 2026-07-26:
 
-- `cargo test` passes 187 unit tests and 71 integration/corpus tests; the sibling
+- `cargo test` passes 260 unit tests and 72 integration/corpus tests; the sibling
   formatter passes 7 unit and 4 integration tests.
 - Lexing succeeds for all 206 curated files.
 - Parsing succeeds for all 206 curated files.
@@ -44,6 +44,19 @@ Last audited on 2026-07-24:
   resolved-net boundaries and deterministically report reachability, path
   sense, shared prefixes and suffixes, reconvergence, and public-output splits.
   Exact additive reconstruction succeeds for every retained constraint.
+- Opt-in decomposed timing lowering converts accepted constraints to ordinary
+  assignment delay tuples and independently verifies the rebuilt graph. Generic
+  exact-cover planning keeps single paths compact while maximizing compatible
+  shared topology; the reviewed `ao21` fixture places its distinct input
+  prefixes on `t0`/`d0` and its common tuple suffix once on `y`. Transformation
+  erasure exactly recovers the baseline value equations, source driver order,
+  register metadata, and signal metadata.
+- Delayful `dmg_dffsr` selects a checked-in typed physical-topology overlay with
+  38 generated assignments, 12 two-component delay-bearing regions, exact
+  four-state fallback guards, and 12 independently reconstructed rise/fall
+  recipes covering all six specify paths. Its `q_n` routes branch before the
+  public `q` output region, so they never accumulate `q`'s output delay; the
+  transformed cell remains assignment-only and preserves `ff=0` and `q=0`.
 - Delayful and nodelay lowering each report exactly 49 visible intentional
   ignores, all for additional control-dependent specify paths after the
   temporary selected first path for each used target. Later tuple entries are
@@ -188,6 +201,16 @@ Last audited on 2026-07-24:
   focused fixtures and a dual-mode 206-file audit. Reversed catalog/traversal
   order is identical, all retained paths reconstruct exactly, and ordinary
   Milestone 14 output and diagnostics remain byte-identical.
+- Milestone 16: complete. Exact ordered timing terms are factored across
+  existing assignments, typed `dN` edge identities, and raw/public output
+  splits by deterministic exact-cover search. Application is verified from the
+  actual rebuilt graph and is exactly erasable. `serde`/`toml`-validated
+  physical-topology hints cover functional RTL that hides timing regions; the
+  reviewed `dmg_dffsr` overlay preserves four-state fallback behavior,
+  independently reconstructs every rise/fall source constraint, and keeps
+  `q_n` off `q`'s public delay. Reviewed `ao21` and `dffsr` output fixtures are
+  canonical and deterministic, and no arc, timing table, negative delay,
+  subtraction, or selected-first fallback is emitted by decomposed lowering.
 
 ## Review Policy
 

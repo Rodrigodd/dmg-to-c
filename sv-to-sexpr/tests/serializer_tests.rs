@@ -60,7 +60,7 @@ fn every_cell_fixture_is_parseable_canonical_and_idempotent() {
     let mut paths = Vec::new();
     collect_cell_files(&fixture_root, &mut paths);
     paths.sort();
-    assert_eq!(paths.len(), 38);
+    assert_eq!(paths.len(), 40);
 
     for path in paths {
         let source = fs::read_to_string(&path).unwrap();

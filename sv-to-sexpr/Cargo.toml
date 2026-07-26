@@ -5,4 +5,9 @@ edition = "2024"
 
 [dependencies]
 petgraph = "0.8"
+serde = { version = "1", features = ["derive"] }
 sexpr-fmt = { path = "../sexpr-fmt" }
+toml = "1"
+
+[dev-dependencies]
+proptest = "1"

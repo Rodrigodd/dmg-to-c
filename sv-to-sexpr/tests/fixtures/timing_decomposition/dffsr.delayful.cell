@@ -1,0 +1,119 @@
+(cell
+  dmg_dffsr
+  (inputs
+    d
+    clk
+    s_n
+    r_n
+  )
+
+  (outputs q q_n)
+
+  (registers (ff 0) (q 0))
+
+  (assignments
+
+    (clk_buf clk (delay 0))
+    (s_n_buf s_n (delay 0))
+    (r_n_buf r_n (delay 0))
+    (t0 (not clk_buf) (delay 0))
+    (t1 (not s_n_buf) (delay 0))
+    (t2 (not r_n_buf) (delay 0))
+    (t3 (or t0 t1 t2) (delay 0))
+    (t4 (not s_n_buf) (delay 0))
+    (t5 (or d t4) (delay 0))
+    (t6 (and t5 r_n_buf) (delay 0))
+    (ff (mux t3 t6 ff) (delay 0))
+    (t7 (not s_n_buf) (delay 0))
+    (t8 (not r_n_buf) (delay 0))
+    (t9 (or clk_buf t7 t8) (delay 0))
+    (t10 (not s_n_buf) (delay 0))
+    (t11 (or ff t10) (delay 0))
+    (t12 (and t11 r_n_buf) (delay 0))
+    (top_q_reset_inv
+      (not r_n_buf)
+      (delay (elmore (wire L_r_out) (pmos 35)) (elmore (wire L_r_out) (nmos 35)))
+    )
+    (top_q_n_reset_view
+      (not r_n_buf)
+      (delay (elmore (wire L_r_out) (nmos 35)) (elmore (wire L_r_out) (pmos 35)))
+    )
+    (top_clock_inv
+      (not clk_buf)
+      (delay (elmore (wire L_clk_n_out) (pmos 35)) (elmore (wire L_clk_n_out) (nmos 35)))
+    )
+    (top_restored_clock
+      (not top_clock_inv)
+      (delay (elmore (wire L_clk_out) (pmos 35)) (elmore (wire L_clk_out) (nmos 35)))
+    )
+    (top_master_ff_comp (not ff) (delay 0))
+    (top_master_gate (and top_master_ff_comp s_n_buf) (delay 0))
+    (top_master_aoi
+      (nor top_q_reset_inv top_master_gate)
+      (delay (elmore (wire 146) (* (pmos 8) 2)) (elmore (wire 146) (* (nmos 8) 2)))
+    )
+    (top_curr_q_comp (not q) (delay 0))
+    (top_slave_feedback_gate (and top_curr_q_comp s_n_buf) (delay 0))
+    (top_slave_feedback_aoi
+      (nor top_q_reset_inv top_slave_feedback_gate)
+      (delay (elmore (wire 146) (* (pmos 8) 2)) (elmore (wire 146) (* (nmos 8) 2)))
+    )
+    (top_fast_mux
+      (mux top_clock_inv top_slave_feedback_aoi top_master_aoi)
+      (delay (elmore (wire 101) (pmos 8)) 0)
+    )
+    (top_slow_mux
+      (mux top_restored_clock top_master_aoi top_slave_feedback_aoi)
+      (delay 0 (elmore (wire 101) (nmos 8)))
+    )
+    (top_selector_mux (mux top_fast_mux top_fast_mux top_slow_mux) (delay 0))
+    (top_not4
+      (not top_selector_mux)
+      (delay (elmore (wire 104) (pmos 8)) (elmore (wire 104) (nmos 8)))
+    )
+    (top_physical_q
+      (not top_not4)
+      (delay (elmore (wire L_q) (pmos 35)) (elmore (wire L_q) (nmos 35)))
+    )
+    (top_poststate_gate (and top_not4 s_n_buf) (delay 0))
+    (top_poststate_aoi
+      (nor top_q_n_reset_view top_poststate_gate)
+      (delay (elmore (wire 146) (* (pmos 8) 2)) (elmore (wire 146) (* (nmos 8) 2)))
+    )
+    (top_physical_q_n
+      (not top_poststate_aoi)
+      (delay (elmore (wire L_q_n) (pmos 35)) (elmore (wire L_q_n) (nmos 35)))
+    )
+    (top_known_clk_zero (caseeq clk_buf 0) (delay 0))
+    (top_known_clk_one (caseeq clk_buf 1) (delay 0))
+    (top_known_s_zero (caseeq s_n_buf 0) (delay 0))
+    (top_known_s_one (caseeq s_n_buf 1) (delay 0))
+    (top_known_r_zero (caseeq r_n_buf 0) (delay 0))
+    (top_known_r_one (caseeq r_n_buf 1) (delay 0))
+    (top_known_ff_zero (caseeq ff 0) (delay 0))
+    (top_known_ff_one (caseeq ff 1) (delay 0))
+    (top_known_q_zero (caseeq q 0) (delay 0))
+    (top_known_q_one (caseeq q 1) (delay 0))
+    (top_known_clk (or top_known_clk_zero top_known_clk_one) (delay 0))
+    (top_known_s (or top_known_s_zero top_known_s_one) (delay 0))
+    (top_known_r (or top_known_r_zero top_known_r_one) (delay 0))
+    (top_known_ff (or top_known_ff_zero top_known_ff_one) (delay 0))
+    (top_known_q (or top_known_q_zero top_known_q_one) (delay 0))
+    (top_all_known
+      (and
+        top_known_clk
+        top_known_s
+        top_known_r
+        top_known_ff
+        top_known_q
+      )
+      (delay 0)
+    )
+    (top_q_fallback (mux t9 t12 q) (delay 0))
+    (top_q_replacement (mux top_all_known top_physical_q top_q_fallback) (delay 0))
+    (top_q_n_fallback (not q) (delay 0))
+    (top_q_n_replacement (mux top_all_known top_physical_q_n top_q_n_fallback) (delay 0))
+    (q top_q_replacement (delay 0))
+    (q_n top_q_n_replacement (delay 0))
+  )
+)
