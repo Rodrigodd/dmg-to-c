@@ -22,12 +22,7 @@
     )
     (t0 (and b_in1 b_in2 b_in3) (delay 0))
     (b_y
-      (bufif1-strength
-        0
-        t0
-        highz1
-        strong0
-      )
+      (bufif-sz 0 t0)
       (delay
         (elmore (wire L_b_y) (* (nmos 9) 3))
         (elmore (wire L_b_y) (* (nmos 9) 3))

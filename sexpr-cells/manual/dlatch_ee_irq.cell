@@ -67,11 +67,9 @@
     )
 
     (gated_q
-      (bufif0-strength
+      (bufif-zs
         1
         pch_n
-        strong1
-        highz0
       )
       (delay
         (elmore (wire 19) (pmos 6))

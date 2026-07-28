@@ -60,35 +60,35 @@
 
     ;; Both source bufif drivers are retained for every bidirectional pin.
     (t28 (ibit last_bl_data 0) (delay 0))
-    (d0 (bufif0-strength t28 oe_n strong1 highz0) (delay (elmore (wire L_d0) (* (pmos 120) 2)) (elmore (wire L_d0) (* (nmos 80) 2))))
-    (d0 (bufif1-strength t28 oe highz1 strong0) (delay (elmore (wire L_d0) (* (pmos 120) 2)) (elmore (wire L_d0) (* (nmos 80) 2))))
+    (d0 (bufif-zs t28 oe_n) (delay (elmore (wire L_d0) (* (pmos 120) 2)) (elmore (wire L_d0) (* (nmos 80) 2))))
+    (d0 (bufif-sz t28 oe) (delay (elmore (wire L_d0) (* (pmos 120) 2)) (elmore (wire L_d0) (* (nmos 80) 2))))
 
     (t29 (ibit last_bl_data 1) (delay 0))
-    (d1 (bufif0-strength t29 oe_n strong1 highz0) (delay (elmore (wire L_d1) (* (pmos 120) 2)) (elmore (wire L_d1) (* (nmos 80) 2))))
-    (d1 (bufif1-strength t29 oe highz1 strong0) (delay (elmore (wire L_d1) (* (pmos 120) 2)) (elmore (wire L_d1) (* (nmos 80) 2))))
+    (d1 (bufif-zs t29 oe_n) (delay (elmore (wire L_d1) (* (pmos 120) 2)) (elmore (wire L_d1) (* (nmos 80) 2))))
+    (d1 (bufif-sz t29 oe) (delay (elmore (wire L_d1) (* (pmos 120) 2)) (elmore (wire L_d1) (* (nmos 80) 2))))
 
     (t30 (ibit last_bl_data 2) (delay 0))
-    (d2 (bufif0-strength t30 oe_n strong1 highz0) (delay (elmore (wire L_d2) (* (pmos 120) 2)) (elmore (wire L_d2) (* (nmos 80) 2))))
-    (d2 (bufif1-strength t30 oe highz1 strong0) (delay (elmore (wire L_d2) (* (pmos 120) 2)) (elmore (wire L_d2) (* (nmos 80) 2))))
+    (d2 (bufif-zs t30 oe_n) (delay (elmore (wire L_d2) (* (pmos 120) 2)) (elmore (wire L_d2) (* (nmos 80) 2))))
+    (d2 (bufif-sz t30 oe) (delay (elmore (wire L_d2) (* (pmos 120) 2)) (elmore (wire L_d2) (* (nmos 80) 2))))
 
     (t31 (ibit last_bl_data 3) (delay 0))
-    (d3 (bufif0-strength t31 oe_n strong1 highz0) (delay (elmore (wire L_d3) (* (pmos 120) 2)) (elmore (wire L_d3) (* (nmos 80) 2))))
-    (d3 (bufif1-strength t31 oe highz1 strong0) (delay (elmore (wire L_d3) (* (pmos 120) 2)) (elmore (wire L_d3) (* (nmos 80) 2))))
+    (d3 (bufif-zs t31 oe_n) (delay (elmore (wire L_d3) (* (pmos 120) 2)) (elmore (wire L_d3) (* (nmos 80) 2))))
+    (d3 (bufif-sz t31 oe) (delay (elmore (wire L_d3) (* (pmos 120) 2)) (elmore (wire L_d3) (* (nmos 80) 2))))
 
     (t32 (ibit last_bl_data 4) (delay 0))
-    (d4 (bufif0-strength t32 oe_n strong1 highz0) (delay (elmore (wire L_d4) (* (pmos 120) 2)) (elmore (wire L_d4) (* (nmos 80) 2))))
-    (d4 (bufif1-strength t32 oe highz1 strong0) (delay (elmore (wire L_d4) (* (pmos 120) 2)) (elmore (wire L_d4) (* (nmos 80) 2))))
+    (d4 (bufif-zs t32 oe_n) (delay (elmore (wire L_d4) (* (pmos 120) 2)) (elmore (wire L_d4) (* (nmos 80) 2))))
+    (d4 (bufif-sz t32 oe) (delay (elmore (wire L_d4) (* (pmos 120) 2)) (elmore (wire L_d4) (* (nmos 80) 2))))
 
     (t33 (ibit last_bl_data 5) (delay 0))
-    (d5 (bufif0-strength t33 oe_n strong1 highz0) (delay (elmore (wire L_d5) (* (pmos 120) 2)) (elmore (wire L_d5) (* (nmos 80) 2))))
-    (d5 (bufif1-strength t33 oe highz1 strong0) (delay (elmore (wire L_d5) (* (pmos 120) 2)) (elmore (wire L_d5) (* (nmos 80) 2))))
+    (d5 (bufif-zs t33 oe_n) (delay (elmore (wire L_d5) (* (pmos 120) 2)) (elmore (wire L_d5) (* (nmos 80) 2))))
+    (d5 (bufif-sz t33 oe) (delay (elmore (wire L_d5) (* (pmos 120) 2)) (elmore (wire L_d5) (* (nmos 80) 2))))
 
     (t34 (ibit last_bl_data 6) (delay 0))
-    (d6 (bufif0-strength t34 oe_n strong1 highz0) (delay (elmore (wire L_d6) (* (pmos 120) 2)) (elmore (wire L_d6) (* (nmos 80) 2))))
-    (d6 (bufif1-strength t34 oe highz1 strong0) (delay (elmore (wire L_d6) (* (pmos 120) 2)) (elmore (wire L_d6) (* (nmos 80) 2))))
+    (d6 (bufif-zs t34 oe_n) (delay (elmore (wire L_d6) (* (pmos 120) 2)) (elmore (wire L_d6) (* (nmos 80) 2))))
+    (d6 (bufif-sz t34 oe) (delay (elmore (wire L_d6) (* (pmos 120) 2)) (elmore (wire L_d6) (* (nmos 80) 2))))
 
     (t35 (ibit last_bl_data 7) (delay 0))
-    (d7 (bufif0-strength t35 oe_n strong1 highz0) (delay (elmore (wire L_d7) (* (pmos 120) 2)) (elmore (wire L_d7) (* (nmos 80) 2))))
-    (d7 (bufif1-strength t35 oe highz1 strong0) (delay (elmore (wire L_d7) (* (pmos 120) 2)) (elmore (wire L_d7) (* (nmos 80) 2))))
+    (d7 (bufif-zs t35 oe_n) (delay (elmore (wire L_d7) (* (pmos 120) 2)) (elmore (wire L_d7) (* (nmos 80) 2))))
+    (d7 (bufif-sz t35 oe) (delay (elmore (wire L_d7) (* (pmos 120) 2)) (elmore (wire L_d7) (* (nmos 80) 2))))
   )
 )
