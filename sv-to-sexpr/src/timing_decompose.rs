@@ -2265,6 +2265,7 @@ fn solve_exact_cover(
         candidates.len(),
         paths.len(),
     );
+    let coverage_index = build_candidate_coverage_index(&covered, candidates);
     let mut selected = Vec::new();
     let mut selected_sites = BTreeSet::new();
     if search_exact_cover(
@@ -2273,6 +2274,7 @@ fn solve_exact_cover(
         &mut covered,
         &mut selected,
         &mut selected_sites,
+        &coverage_index,
         &mut SearchStats::default(),
     ) {
         selected.sort_by(|left, right| compare_candidates(&candidates[*left], &candidates[*right]));
@@ -2299,6 +2301,7 @@ fn search_exact_cover(
     covered: &mut [Vec<Vec<bool>>],
     selected: &mut Vec<usize>,
     selected_sites: &mut BTreeSet<PlacementSite>,
+    coverage_index: &CandidateCoverageIndex,
     stats: &mut SearchStats,
 ) -> bool {
     stats.calls += 1;
@@ -2335,7 +2338,6 @@ fn search_exact_cover(
 
     let before = Instant::now();
 
-    let coverage_index = build_candidate_coverage_index(&covered, candidates);
     let mut fit_cache = vec![None; candidates.len()];
     let choice = most_shared_uncovered(
         paths,
@@ -2366,7 +2368,15 @@ fn search_exact_cover(
         apply_candidate(candidate, covered);
         selected.push(candidate_index);
         selected_sites.insert(candidate.site.clone());
-        if search_exact_cover(paths, candidates, covered, selected, selected_sites, stats) {
+        if search_exact_cover(
+            paths,
+            candidates,
+            covered,
+            selected,
+            selected_sites,
+            coverage_index,
+            stats,
+        ) {
             return true;
         }
         selected_sites.remove(&candidate.site);
@@ -3295,12 +3305,14 @@ mod tests {
             ),
             Some((0, 0, 0))
         );
+        let coverage_index = build_candidate_coverage_index(&covered, &[]);
         assert!(!search_exact_cover(
             &[],
             &[],
             &mut covered,
             &mut selected,
             &mut selected_sites,
+            &coverage_index,
             &mut SearchStats::default(),
         ));
     }
