@@ -9,6 +9,7 @@
 use std::cmp::Ordering;
 use std::collections::{BTreeMap, BTreeSet};
 use std::fmt;
+use std::time::{Duration, Instant};
 
 use crate::diagnostic::Span;
 use crate::ir::{Cell, CellItem, DelayTuple, Expr, TimingExpr, TimingOperator};
@@ -1666,6 +1667,8 @@ struct PathEnumeration<'a, 'b> {
     output: &'b mut Vec<FunctionalPath>,
 }
 
+type CandidateCoverageIndex = Vec<Vec<Vec<Vec<usize>>>>;
+
 fn enumerate_path_dfs(
     context: &mut PathEnumeration<'_, '_>,
     current: TimingNodeId,
@@ -2225,6 +2228,22 @@ fn contribution_positions(contribution: &AdditiveDelayTupleContribution) -> Vec<
         .collect()
 }
 
+#[derive(Default, Debug)]
+struct SearchStats {
+    calls: u64,
+    backtracks: u64,
+    max_depth: usize,
+
+    candidate_checks: u64,
+    candidate_fits_calls: u64,
+
+    most_shared_calls: u64,
+    most_shared_time: Duration,
+
+    start: Option<Instant>,
+    last_report: Option<Instant>,
+}
+
 fn solve_exact_cover(
     graph: &TimingGraph,
     paths: &[FunctionalPath],
@@ -2241,6 +2260,11 @@ fn solve_exact_cover(
                 .collect::<Vec<_>>()
         })
         .collect::<Vec<_>>();
+    println!(
+        "searching through {} candidates for {} paths",
+        candidates.len(),
+        paths.len(),
+    );
     let mut selected = Vec::new();
     let mut selected_sites = BTreeSet::new();
     if search_exact_cover(
@@ -2249,6 +2273,7 @@ fn solve_exact_cover(
         &mut covered,
         &mut selected,
         &mut selected_sites,
+        &mut SearchStats::default(),
     ) {
         selected.sort_by(|left, right| compare_candidates(&candidates[*left], &candidates[*right]));
         return Ok(selected);
@@ -2274,12 +2299,60 @@ fn search_exact_cover(
     covered: &mut [Vec<Vec<bool>>],
     selected: &mut Vec<usize>,
     selected_sites: &mut BTreeSet<PlacementSite>,
+    stats: &mut SearchStats,
 ) -> bool {
-    let Some((path_index, component, term_position)) =
-        most_shared_uncovered(paths, candidates, covered, selected, selected_sites)
-    else {
+    stats.calls += 1;
+
+    if selected.len() > stats.max_depth {
+        stats.max_depth = selected.len();
+
+        eprintln!(
+            "NEW DEPTH: {} (calls={}, elapsed={:.1}s)",
+            stats.max_depth,
+            stats.calls,
+            stats.start.unwrap().elapsed().as_secs_f64(),
+        );
+    }
+
+    if stats.start.is_none() {
+        stats.start = Some(Instant::now());
+        stats.last_report = stats.start;
+    }
+
+    if stats.calls % 1000 == 0 {
+        let elapsed = stats.start.unwrap().elapsed();
+
+        eprintln!(
+            "search: elapsed={:5.1}s calls={:>8} depth={:>5} backtracks={:>8} cand_checks={:>8} cad_fits={:>8}",
+            elapsed.as_secs_f64(),
+            stats.calls,
+            selected.len(),
+            stats.backtracks,
+            stats.candidate_checks,
+            stats.candidate_fits_calls,
+        );
+    }
+
+    let before = Instant::now();
+
+    let coverage_index = build_candidate_coverage_index(&covered, candidates);
+    let choice = most_shared_uncovered(
+        paths,
+        candidates,
+        covered,
+        selected,
+        selected_sites,
+        &coverage_index,
+        stats,
+    );
+
+    stats.most_shared_calls += 1;
+    stats.most_shared_time += before.elapsed();
+
+    let Some((path_index, component, term_position)) = choice else {
         return true;
     };
+
     for (candidate_index, candidate) in candidates.iter().enumerate() {
         if selected_sites.contains(&candidate.site)
             || !candidate_covers(candidate, path_index, component, term_position)
@@ -2291,14 +2364,43 @@ fn search_exact_cover(
         apply_candidate(candidate, covered);
         selected.push(candidate_index);
         selected_sites.insert(candidate.site.clone());
-        if search_exact_cover(paths, candidates, covered, selected, selected_sites) {
+        if search_exact_cover(paths, candidates, covered, selected, selected_sites, stats) {
             return true;
         }
         selected_sites.remove(&candidate.site);
         selected.pop();
         covered.clone_from_slice(&previous);
+
+        stats.backtracks += 1;
     }
     false
+}
+
+fn build_candidate_coverage_index(
+    covered: &[Vec<Vec<bool>>],
+    candidates: &[Candidate],
+) -> CandidateCoverageIndex {
+    let mut index: CandidateCoverageIndex = covered
+        .iter()
+        .map(|components| {
+            components
+                .iter()
+                .map(|terms| vec![Vec::<usize>::new(); terms.len()])
+                .collect()
+        })
+        .collect::<Vec<_>>();
+
+    for (candidate_index, candidate) in candidates.iter().enumerate() {
+        for effect in &candidate.effects {
+            for (component, contribution) in effect.contribution.components().enumerate() {
+                for &position in contribution.positions() {
+                    index[effect.path_index][component][position].push(candidate_index);
+                }
+            }
+        }
+    }
+
+    index
 }
 
 /// Chooses the next uncovered term by the greatest number of functional paths
@@ -2311,25 +2413,39 @@ fn most_shared_uncovered(
     covered: &[Vec<Vec<bool>>],
     selected: &[usize],
     selected_sites: &BTreeSet<PlacementSite>,
+    coverage_index: &CandidateCoverageIndex,
+    stats: &mut SearchStats,
 ) -> Option<(usize, usize, usize)> {
     let mut best = None;
     let mut best_breadth = 0;
+
     for (path_index, components) in covered.iter().enumerate() {
         for (component, terms) in components.iter().enumerate() {
             for (term_position, is_covered) in terms.iter().enumerate() {
                 if *is_covered {
                     continue;
                 }
-                let breadth = candidates
+
+                let breadth = coverage_index[path_index][component][term_position]
                     .iter()
-                    .filter(|candidate| {
-                        !selected_sites.contains(&candidate.site)
-                            && candidate_covers(candidate, path_index, component, term_position)
-                            && candidate_fits(candidate, paths, candidates, covered, selected)
+                    .filter_map(|&candidate_index| {
+                        let candidate = &candidates[candidate_index];
+
+                        stats.candidate_checks += 1;
+                        if selected_sites.contains(&candidate.site) {
+                            return None;
+                        }
+
+                        stats.candidate_fits_calls += 1;
+                        if !candidate_fits(candidate, paths, candidates, covered, selected) {
+                            return None;
+                        }
+
+                        Some(candidate.effects.len())
                     })
-                    .map(|candidate| candidate.effects.len())
                     .max()
                     .unwrap_or(0);
+
                 if best.is_none() || breadth > best_breadth {
                     best_breadth = breadth;
                     best = Some((path_index, component, term_position));
@@ -2337,6 +2453,7 @@ fn most_shared_uncovered(
             }
         }
     }
+
     best
 }
 
@@ -2375,12 +2492,13 @@ fn candidate_fits(
     covered: &[Vec<Vec<bool>>],
     selected: &[usize],
 ) -> bool {
+    // First check that this candidate doesn't overlap anything already covered.
     for effect in &candidate.effects {
         for (component, contribution) in effect.contribution.components().enumerate() {
             if contribution
                 .positions()
                 .iter()
-                .any(|position| covered[effect.path_index][component][*position])
+                .any(|&position| covered[effect.path_index][component][position])
             {
                 return false;
             }
@@ -2388,53 +2506,94 @@ fn candidate_fits(
     }
 
     for effect in &candidate.effects {
-        let path = &paths[effect.path_index];
+        let path_index = effect.path_index;
+        let path = &paths[path_index];
+        let candidate_order = path
+            .sites
+            .iter()
+            .position(|site| site.site == candidate.site)
+            .expect("candidate effect implies that its site is on the path");
+
         for component in 0..effect.contribution.len() {
-            let current_path_index = effect.path_index;
-            let mut ordered = selected
-                .iter()
-                .filter_map(|index| {
-                    let selected_candidate = &candidates[*index];
-                    let selected_effect = selected_candidate
-                        .effects
-                        .iter()
-                        .find(|effect| effect.path_index == current_path_index)?;
-                    let site_order = path
-                        .sites
-                        .iter()
-                        .position(|site| site.site == selected_candidate.site)?;
-                    Some((
-                        site_order,
-                        selected_effect
-                            .contribution
-                            .component(component)?
-                            .positions(),
-                    ))
-                })
-                .collect::<Vec<_>>();
-            let candidate_order = path
-                .sites
-                .iter()
-                .position(|site| site.site == candidate.site)
-                .expect("candidate effect implies that its site is on the path");
-            ordered.push((
-                candidate_order,
-                effect
-                    .contribution
-                    .component(component)
-                    .expect("component is bounded by contribution arity")
-                    .positions(),
-            ));
-            ordered.sort_by_key(|(site_order, _)| *site_order);
-            let positions = ordered
-                .iter()
-                .flat_map(|(_, positions)| positions.iter().copied())
-                .collect::<Vec<_>>();
-            if positions.windows(2).any(|window| window[0] >= window[1]) {
+            let candidate_positions = effect
+                .contribution
+                .component(component)
+                .expect("component is bounded by contribution arity")
+                .positions();
+
+            // Empty contributions don't participate in the ordering.
+            if candidate_positions.is_empty() {
+                continue;
+            }
+
+            // The candidate's own contribution must be strictly ordered.
+            if candidate_positions
+                .windows(2)
+                .any(|window| window[0] >= window[1])
+            {
                 return false;
+            }
+
+            let mut previous: Option<&[usize]> = None;
+            let mut next: Option<&[usize]> = None;
+
+            let mut previous_order = 0;
+            let mut next_order = usize::MAX;
+
+            for &selected_index in selected {
+                let selected_candidate = &candidates[selected_index];
+
+                let Some(selected_effect) = selected_candidate
+                    .effects
+                    .iter()
+                    .find(|effect| effect.path_index == path_index)
+                else {
+                    continue;
+                };
+
+                let Some(selected_contribution) = selected_effect.contribution.component(component)
+                else {
+                    continue;
+                };
+
+                let selected_positions = selected_contribution.positions();
+
+                // Empty contributions don't affect the concatenated sequence.
+                if selected_positions.is_empty() {
+                    continue;
+                }
+
+                let selected_order = path
+                    .sites
+                    .iter()
+                    .position(|site| site.site == selected_candidate.site)
+                    .expect("selected candidate site must be on the path");
+
+                if selected_order < candidate_order && selected_order > previous_order {
+                    previous_order = selected_order;
+                    previous = Some(selected_positions);
+                }
+
+                if selected_order > candidate_order && selected_order < next_order {
+                    next_order = selected_order;
+                    next = Some(selected_positions);
+                }
+            }
+
+            if let Some(previous) = previous {
+                if previous.last().unwrap() >= candidate_positions.first().unwrap() {
+                    return false;
+                }
+            }
+
+            if let Some(next) = next {
+                if candidate_positions.last().unwrap() >= next.first().unwrap() {
+                    return false;
+                }
             }
         }
     }
+
     true
 }
 
@@ -3106,7 +3265,15 @@ mod tests {
         let mut selected = Vec::new();
         let mut selected_sites = BTreeSet::new();
         assert_eq!(
-            most_shared_uncovered(&[], &[], &covered, &selected, &selected_sites),
+            most_shared_uncovered(
+                &[],
+                &[],
+                &covered,
+                &selected,
+                &selected_sites,
+                &build_candidate_coverage_index(&covered, &[]),
+                &mut SearchStats::default()
+            ),
             Some((0, 0, 0))
         );
         assert!(!search_exact_cover(
@@ -3115,6 +3282,7 @@ mod tests {
             &mut covered,
             &mut selected,
             &mut selected_sites,
+            &mut SearchStats::default(),
         ));
     }
 
