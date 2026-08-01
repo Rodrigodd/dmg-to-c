@@ -103,10 +103,6 @@ pub enum TimingSignalRole {
     /// A deterministic `dN` signal introduced only to carry an exact timing
     /// placement or a raw/public split.
     TimingTemporary,
-    /// A signal introduced by a resolved physical topology overlay.
-    ///
-    /// This is neither a logical temporary nor a timing identity signal.
-    TopologyTemporary,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -263,7 +259,6 @@ pub enum AssignmentOrigin {
     Source(SourceAssignmentOrigin),
     GeneratedTemporary { parent: SourceAssignmentOrigin },
     GeneratedTimingIdentity { parent: SourceAssignmentOrigin },
-    GeneratedTopology { parent: SourceAssignmentOrigin },
 }
 
 impl AssignmentOrigin {
@@ -271,8 +266,7 @@ impl AssignmentOrigin {
         match self {
             Self::Source(source)
             | Self::GeneratedTemporary { parent: source }
-            | Self::GeneratedTimingIdentity { parent: source }
-            | Self::GeneratedTopology { parent: source } => source,
+            | Self::GeneratedTimingIdentity { parent: source } => source,
         }
     }
 
@@ -282,10 +276,6 @@ impl AssignmentOrigin {
 
     pub const fn is_timing_identity(self) -> bool {
         matches!(self, Self::GeneratedTimingIdentity { .. })
-    }
-
-    pub const fn is_topology_generated(self) -> bool {
-        matches!(self, Self::GeneratedTopology { .. })
     }
 
     pub const fn is_stateful_source(self) -> bool {
@@ -306,7 +296,6 @@ pub enum AssignmentDelayOrigin {
     PrimitiveSourceDelay,
     LegacySelectedSpecifyFallback,
     DecompositionPlacement,
-    TopologyPlacement,
 }
 
 impl AssignmentDelayOrigin {
@@ -386,7 +375,6 @@ impl AssignmentProvenance {
             AssignmentOrigin::GeneratedTimingIdentity { .. } => {
                 AssignmentDelayOrigin::DecompositionPlacement
             }
-            AssignmentOrigin::GeneratedTopology { .. } => AssignmentDelayOrigin::TopologyPlacement,
             AssignmentOrigin::Source(SourceAssignmentOrigin::Keeper) => {
                 AssignmentDelayOrigin::KeeperZero
             }
@@ -2512,7 +2500,6 @@ const fn timing_signal_role_name(role: TimingSignalRole) -> &'static str {
         TimingSignalRole::Internal => "internal",
         TimingSignalRole::Temporary => "temporary",
         TimingSignalRole::TimingTemporary => "timing-temporary",
-        TimingSignalRole::TopologyTemporary => "topology-temporary",
     }
 }
 
@@ -3847,25 +3834,5 @@ mod tests {
         let direct = functional_cell("y", Expr::atom("a"), false);
         let error = build_functional_timing_graph(&direct, &metadata, &[]).unwrap_err();
         assert!(error.message.contains("provenance length mismatch"));
-    }
-
-    #[test]
-    fn topology_generated_origin_and_role_are_distinct_and_typed() {
-        let origin = AssignmentOrigin::GeneratedTopology {
-            parent: SourceAssignmentOrigin::ProceduralStateful,
-        };
-        assert_eq!(origin.source(), SourceAssignmentOrigin::ProceduralStateful);
-        assert!(origin.is_topology_generated());
-        assert!(!origin.is_temporary());
-        assert!(!origin.is_timing_identity());
-        let provenance = AssignmentProvenance::new(0, 3, span(1), origin, Vec::new()).unwrap();
-        assert_eq!(
-            provenance.delay_origin(),
-            AssignmentDelayOrigin::TopologyPlacement
-        );
-        assert_eq!(
-            timing_signal_role_name(TimingSignalRole::TopologyTemporary),
-            "topology-temporary"
-        );
     }
 }

@@ -1,0 +1,26 @@
+timing decomposition corpus shard
+mode: delayful
+shard: 00/16
+rule: sorted-index-modulo-16
+split-residue: 0/1
+split-rule: within-shard-rank-modulo-1
+cases: 12
+success path=sv-cells/dmg_cpu_b/cells/and2.sv assignments=1 registers=0 constraints=1 components=4 dN=0
+success path=sv-cells/dmg_cpu_b/cells/half_add.sv assignments=2 registers=0 constraints=2 components=8 dN=0
+failure unclassified path=sv-cells/dmg_cpu_b/cells/nor_latch.sv span=sv-cells/dmg_cpu_b/cells/nor_latch.sv:24:4 message="sv-cells/dmg_cpu_b/cells/nor_latch.sv:24:4: timing decomposition error: constraint p0 control c0 path f0 component 0 has transition-ambiguous placement DependencyEdge { dependency_order: 0, source: TimingNodeId(1), target: TimingNodeId(8) }"
+success path=sv-cells/dmg_cpu_b/cells/pad_in.sv assignments=1 registers=0 constraints=0 components=0 dN=0
+success path=sv-cells/sm83/cells/and2_alu.sv assignments=1 registers=0 constraints=1 components=4 dN=0
+success path=sv-cells/sm83/cells/decoder3.sv assignments=293 registers=0 constraints=0 components=0 dN=0
+failure unclassified path=sv-cells/sm83/cells/mux_idu_l.sv span=sv-cells/sm83/cells/mux_idu_l.sv:22:4 message="sv-cells/sm83/cells/mux_idu_l.sv:22:4: timing decomposition error: constraint p0 control c0 path f0 component 0 has transition-ambiguous placement DependencyEdge { dependency_order: 2, source: TimingNodeId(0), target: TimingNodeId(4) }"
+success path=sv-cells/sm83/cells/nor2_e.sv assignments=1 registers=0 constraints=1 components=4 dN=0
+success path=sv-cells/sm83/cells/not_c.sv assignments=1 registers=0 constraints=1 components=2 dN=0
+success path=sv-cells/sm83/cells/not_pch_x1_alu.sv assignments=2 registers=0 constraints=1 components=2 dN=0
+success path=sv-cells/sm83/cells/oa211_in1_n_in3_n.sv assignments=6 registers=0 constraints=3 components=8 dN=2
+success path=sv-cells/sm83/cells/reg_bus_pch_a_bit6.sv assignments=9 registers=0 constraints=2 components=4 dN=0
+successes: 10
+failures: 2
+assignments: 317
+registers: 0
+constraints: 12
+components: 36
+dN: 2

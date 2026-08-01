@@ -1,0 +1,26 @@
+timing decomposition corpus shard
+mode: delayful
+shard: 05/16
+rule: sorted-index-modulo-16
+split-residue: 0/1
+split-rule: within-shard-rank-modulo-1
+cases: 12
+success path=sv-cells/dmg_cpu_b/cells/ao222.sv assignments=4 registers=0 constraints=1 components=12 dN=0
+success path=sv-cells/dmg_cpu_b/cells/nand4.sv assignments=1 registers=0 constraints=1 components=8 dN=0
+success path=sv-cells/dmg_cpu_b/cells/not_x3.sv assignments=1 registers=0 constraints=1 components=2 dN=0
+success path=sv-cells/dmg_cpu_b/cells/pad_pass_tg.sv assignments=1 registers=0 constraints=0 components=0 dN=0
+success path=sv-cells/sm83/cells/and3.sv assignments=1 registers=0 constraints=1 components=6 dN=0
+success path=sv-cells/sm83/cells/idu_bit7.sv assignments=16 registers=0 constraints=0 components=0 dN=0
+success path=sv-cells/sm83/cells/nand2_in1_n_a.sv assignments=2 registers=0 constraints=2 components=4 dN=0
+success path=sv-cells/sm83/cells/nor3.sv assignments=1 registers=0 constraints=1 components=6 dN=0
+success path=sv-cells/sm83/cells/not_e.sv assignments=1 registers=0 constraints=1 components=2 dN=0
+success path=sv-cells/sm83/cells/not_reg_h_e_we.sv assignments=1 registers=0 constraints=1 components=2 dN=0
+success path=sv-cells/sm83/cells/or2_tap_nor_tap_in1_n_reg.sv assignments=5 registers=0 constraints=5 components=10 dN=2
+success path=sv-cells/sm83/cells/reg_pc_out_bit012.sv assignments=22 registers=0 constraints=0 components=0 dN=0
+successes: 12
+failures: 0
+assignments: 56
+registers: 0
+constraints: 14
+components: 52
+dN: 2

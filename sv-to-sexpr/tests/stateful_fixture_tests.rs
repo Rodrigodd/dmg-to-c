@@ -32,12 +32,12 @@ const CASES: &[FixtureCase] = &[
         initials: &[("q", 13, 2)],
     },
     FixtureCase {
-        name: "dff_cc_q",
-        source: "sv-cells/sm83/cells/dff_cc_q.sv",
-        registers: &["ff", "q"],
-        state_target_order: &["ff", "q"],
-        temporary_indices: &[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11],
-        initials: &[("ff", 14, 2), ("q", 15, 2)],
+        name: "initialized_latch",
+        source: "sv-cells/sm83/cells/dlatch_ee_irq.sv",
+        registers: &["q_n"],
+        state_target_order: &["q_n"],
+        temporary_indices: &[0, 1, 2, 3, 4, 5, 6, 7],
+        initials: &[("q_n", 17, 10)],
     },
     FixtureCase {
         name: "set_reset_latch",
@@ -130,7 +130,10 @@ fn stateful_goldens_are_flat_deterministic_and_contract_complete() {
 #[test]
 fn fixture_sources_prove_blocking_and_nonblocking_normalize_identically() {
     for (path, nonblocking) in [
-        ("sv-cells/sm83/cells/dff_cc_q.sv", "ff <= !d;"),
+        (
+            "sv-cells/dmg_cpu_b/cells/tffnl.sv",
+            "q   <= l_buf ? d : ff;",
+        ),
         (
             "sv-to-sexpr/tests/fixtures/stateful/nested_priority.sv",
             "q <= 1;",
@@ -182,7 +185,7 @@ fn assert_flat_values(assignments: &[&Assignment], source: &str) {
             .unwrap();
         if let Some((operator, operands)) = value_operation(&assignment.expr) {
             assert!(
-                !operands.is_empty(),
+                !operands.is_empty() || operator == ValueOperator::Keeper,
                 "{} contains an empty value operation",
                 assignment.target
             );
@@ -416,7 +419,7 @@ fn assert_case_semantics(case: &FixtureCase, assignments: &[&Assignment]) {
                 vec![("y".into(), "(and a b)".into(), "(delay 0)".into())]
             )
         }
-        "dff_cc_q" | "block_latch" => {}
+        "initialized_latch" | "block_latch" => {}
         other => panic!("unreviewed stateful fixture case {other}"),
     }
 }

@@ -24,8 +24,8 @@ const LOWER_FAILURES: &[&str] = &[];
 #[test]
 fn configured_hierarchy_corpus_is_exact_resolved_and_fully_lowered() {
     let corpus = corpus();
-    assert_eq!(corpus.designs.len(), 206);
-    let mut output = String::from("hierarchy corpus audit\nfiles=206\n");
+    assert_eq!(corpus.designs.len(), 191);
+    let mut output = String::from("hierarchy corpus audit\nfiles=191\n");
 
     for mode in [GenerateMode::Delayful, GenerateMode::Nodelay] {
         let mut ordinary_files = BTreeSet::new();
@@ -141,13 +141,13 @@ fn configured_hierarchy_corpus_is_exact_resolved_and_fully_lowered() {
         assert_eq!(connections, 21);
         assert_eq!(input_connections, 14);
         assert_eq!(output_connections, 7);
-        assert_eq!((supported, deferred), (3, 203));
-        assert_eq!(lower_succeeded, 206);
+        assert_eq!((supported, deferred), (3, 188));
+        assert_eq!(lower_succeeded, 191);
         assert_eq!(warnings, 0);
         assert_eq!(
             ignores,
             match mode {
-                GenerateMode::Delayful | GenerateMode::Nodelay => 49,
+                GenerateMode::Delayful | GenerateMode::Nodelay => 45,
             }
         );
         assert_eq!(lower_failures, LOWER_FAILURES);
@@ -181,7 +181,9 @@ fn configured_hierarchy_corpus_is_exact_resolved_and_fully_lowered() {
 
     let fixture = PathBuf::from(env!("CARGO_MANIFEST_DIR"))
         .join("tests/fixtures/hierarchy/corpus_summary.hierarchy");
-    if std::env::var_os("UPDATE_HIERARCHY_CORPUS_GOLDEN").is_some() {
+    if std::env::var_os("UPDATE_HIERARCHY_CORPUS_GOLDEN").is_some()
+        || std::env::var_os("UPDATE_FIXTURES").is_some()
+    {
         fs::write(&fixture, &output).unwrap();
     }
     let expected = fs::read_to_string(&fixture)

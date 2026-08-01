@@ -1,0 +1,26 @@
+timing decomposition corpus shard
+mode: delayful
+shard: 14/16
+rule: sorted-index-modulo-16
+split-residue: 0/1
+split-rule: within-shard-rank-modulo-1
+cases: 12
+success path=sv-cells/dmg_cpu_b/cells/full_add.sv assignments=5 registers=0 constraints=5 components=20 dN=0
+success path=sv-cells/dmg_cpu_b/cells/nor6.sv assignments=1 registers=0 constraints=1 components=12 dN=0
+success path=sv-cells/dmg_cpu_b/cells/pad_bidir_pu.sv assignments=4 registers=0 constraints=0 components=0 dN=0
+success path=sv-cells/sm83/cells/alu_shifter.sv assignments=51 registers=0 constraints=0 components=0 dN=0
+success path=sv-cells/sm83/cells/decoder1.sv assignments=250 registers=0 constraints=0 components=0 dN=0
+success path=sv-cells/sm83/cells/irq_prio_bit7.sv assignments=21 registers=0 constraints=0 components=0 dN=0
+success path=sv-cells/sm83/cells/nor2_c.sv assignments=1 registers=0 constraints=1 components=4 dN=0
+success path=sv-cells/sm83/cells/not_alu_b.sv assignments=1 registers=0 constraints=1 components=2 dN=0
+success path=sv-cells/sm83/cells/not_pch_dec3_b.sv assignments=2 registers=0 constraints=1 components=2 dN=0
+success path=sv-cells/sm83/cells/not_x3_p2.sv assignments=1 registers=0 constraints=1 components=2 dN=0
+success path=sv-cells/sm83/cells/reg_bus_pch_a_bit4.sv assignments=9 registers=0 constraints=2 components=4 dN=0
+success path=sv-cells/sm83/cells/xor_idu_l.sv assignments=1 registers=0 constraints=1 components=4 dN=0
+successes: 12
+failures: 0
+assignments: 347
+registers: 0
+constraints: 13
+components: 50
+dN: 0

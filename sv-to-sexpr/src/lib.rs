@@ -16,8 +16,5 @@ pub mod timing_apply;
 pub mod timing_decompose;
 pub mod timing_graph;
 pub mod timing_terms;
-pub mod topology_apply;
-pub mod topology_hint;
-pub mod topology_verify;
 
 pub use cli::run;

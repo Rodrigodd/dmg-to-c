@@ -23,10 +23,6 @@ use sv_to_sexpr::serialize::render_cell;
 use sv_to_sexpr::survey::collect_sv_files;
 
 const STATEFUL_PATHS: &[&str] = &[
-    "sv-cells/dmg_cpu_b/cells/dffr.sv",
-    "sv-cells/dmg_cpu_b/cells/dffr_cc.sv",
-    "sv-cells/dmg_cpu_b/cells/dffr_cc_q.sv",
-    "sv-cells/dmg_cpu_b/cells/dffsr.sv",
     "sv-cells/dmg_cpu_b/cells/dlatch.sv",
     "sv-cells/dmg_cpu_b/cells/dlatch_ee.sv",
     "sv-cells/dmg_cpu_b/cells/dlatch_ee_q.sv",
@@ -35,17 +31,6 @@ const STATEFUL_PATHS: &[&str] = &[
     "sv-cells/dmg_cpu_b/cells/nor_latch.sv",
     "sv-cells/dmg_cpu_b/cells/pad_bidir_pu_latch.sv",
     "sv-cells/dmg_cpu_b/cells/tffnl.sv",
-    "sv-cells/sm83/cells/dff_cc_ee_pch_d_reg_sp_bit.sv",
-    "sv-cells/sm83/cells/dff_cc_ee_q_n_reg_wz_bit.sv",
-    "sv-cells/sm83/cells/dff_cc_ee_q_x1_reg_bit.sv",
-    "sv-cells/sm83/cells/dff_cc_ee_q_x2_reg_bit.sv",
-    "sv-cells/sm83/cells/dff_cc_q.sv",
-    "sv-cells/sm83/cells/dff_cc_q_alt.sv",
-    "sv-cells/sm83/cells/dffn_ee_pch_d_alu_flag.sv",
-    "sv-cells/sm83/cells/dffn_ee_q_alu_sign.sv",
-    "sv-cells/sm83/cells/dffr_cc_ee_reg_ie_bit.sv",
-    "sv-cells/sm83/cells/dffre_cc_q.sv",
-    "sv-cells/sm83/cells/dffs_cc_ee_pch_d_reg_pc_bit.sv",
     "sv-cells/sm83/cells/dlatch_ee_irq.sv",
     "sv-cells/sm83/cells/dlatch_ee_q_n.sv",
     "sv-cells/sm83/cells/srlatch_r_n.sv",
@@ -53,10 +38,6 @@ const STATEFUL_PATHS: &[&str] = &[
 ];
 
 const SUCCESSFUL_STATEFUL_PATHS: &[&str] = &[
-    "sv-cells/dmg_cpu_b/cells/dffr.sv",
-    "sv-cells/dmg_cpu_b/cells/dffr_cc.sv",
-    "sv-cells/dmg_cpu_b/cells/dffr_cc_q.sv",
-    "sv-cells/dmg_cpu_b/cells/dffsr.sv",
     "sv-cells/dmg_cpu_b/cells/dlatch.sv",
     "sv-cells/dmg_cpu_b/cells/dlatch_ee.sv",
     "sv-cells/dmg_cpu_b/cells/dlatch_ee_q.sv",
@@ -65,42 +46,16 @@ const SUCCESSFUL_STATEFUL_PATHS: &[&str] = &[
     "sv-cells/dmg_cpu_b/cells/nor_latch.sv",
     "sv-cells/dmg_cpu_b/cells/pad_bidir_pu_latch.sv",
     "sv-cells/dmg_cpu_b/cells/tffnl.sv",
-    "sv-cells/sm83/cells/dff_cc_ee_pch_d_reg_sp_bit.sv",
-    "sv-cells/sm83/cells/dff_cc_ee_q_n_reg_wz_bit.sv",
-    "sv-cells/sm83/cells/dff_cc_ee_q_x1_reg_bit.sv",
-    "sv-cells/sm83/cells/dff_cc_ee_q_x2_reg_bit.sv",
-    "sv-cells/sm83/cells/dff_cc_q.sv",
-    "sv-cells/sm83/cells/dff_cc_q_alt.sv",
-    "sv-cells/sm83/cells/dffn_ee_pch_d_alu_flag.sv",
-    "sv-cells/sm83/cells/dffn_ee_q_alu_sign.sv",
-    "sv-cells/sm83/cells/dffr_cc_ee_reg_ie_bit.sv",
-    "sv-cells/sm83/cells/dffre_cc_q.sv",
-    "sv-cells/sm83/cells/dffs_cc_ee_pch_d_reg_pc_bit.sv",
     "sv-cells/sm83/cells/dlatch_ee_irq.sv",
     "sv-cells/sm83/cells/dlatch_ee_q_n.sv",
     "sv-cells/sm83/cells/srlatch_r_n.sv",
     "sv-cells/sm83/cells/srlatch_r_n_alt.sv",
 ];
 
-const SUCCESSFUL_FLAT_DFF_DLATCH_PATHS: &[&str] = &[
-    "sv-cells/dmg_cpu_b/cells/dffr.sv",
-    "sv-cells/dmg_cpu_b/cells/dffr_cc.sv",
-    "sv-cells/dmg_cpu_b/cells/dffr_cc_q.sv",
-    "sv-cells/dmg_cpu_b/cells/dffsr.sv",
+const SUCCESSFUL_FLAT_LATCH_PATHS: &[&str] = &[
     "sv-cells/dmg_cpu_b/cells/dlatch.sv",
     "sv-cells/dmg_cpu_b/cells/dlatch_ee.sv",
     "sv-cells/dmg_cpu_b/cells/dlatch_ee_q.sv",
-    "sv-cells/sm83/cells/dff_cc_ee_pch_d_reg_sp_bit.sv",
-    "sv-cells/sm83/cells/dff_cc_ee_q_n_reg_wz_bit.sv",
-    "sv-cells/sm83/cells/dff_cc_ee_q_x1_reg_bit.sv",
-    "sv-cells/sm83/cells/dff_cc_ee_q_x2_reg_bit.sv",
-    "sv-cells/sm83/cells/dff_cc_q.sv",
-    "sv-cells/sm83/cells/dff_cc_q_alt.sv",
-    "sv-cells/sm83/cells/dffn_ee_pch_d_alu_flag.sv",
-    "sv-cells/sm83/cells/dffn_ee_q_alu_sign.sv",
-    "sv-cells/sm83/cells/dffr_cc_ee_reg_ie_bit.sv",
-    "sv-cells/sm83/cells/dffre_cc_q.sv",
-    "sv-cells/sm83/cells/dffs_cc_ee_pch_d_reg_pc_bit.sv",
     "sv-cells/sm83/cells/dlatch_ee_irq.sv",
     "sv-cells/sm83/cells/dlatch_ee_q_n.sv",
 ];
@@ -115,30 +70,6 @@ struct ExpectedSuccess {
 }
 
 const EXPECTED_SUCCESSES: &[ExpectedSuccess] = &[
-    ExpectedSuccess {
-        path: "sv-cells/dmg_cpu_b/cells/dffr.sv",
-        registers: &["q"],
-        state_targets: &["q"],
-        initial: LogicValue::Zero,
-    },
-    ExpectedSuccess {
-        path: "sv-cells/dmg_cpu_b/cells/dffr_cc.sv",
-        registers: &["mux1", "mux2"],
-        state_targets: &["mux1", "mux2"],
-        initial: LogicValue::Zero,
-    },
-    ExpectedSuccess {
-        path: "sv-cells/dmg_cpu_b/cells/dffr_cc_q.sv",
-        registers: &["mux1", "mux2"],
-        state_targets: &["mux1", "mux2"],
-        initial: LogicValue::Zero,
-    },
-    ExpectedSuccess {
-        path: "sv-cells/dmg_cpu_b/cells/dffsr.sv",
-        registers: &["ff", "q"],
-        state_targets: &["ff", "q"],
-        initial: LogicValue::Zero,
-    },
     ExpectedSuccess {
         path: "sv-cells/dmg_cpu_b/cells/dlatch.sv",
         registers: &["q"],
@@ -185,72 +116,6 @@ const EXPECTED_SUCCESSES: &[ExpectedSuccess] = &[
         path: "sv-cells/dmg_cpu_b/cells/tffnl.sv",
         registers: &["ff", "q"],
         state_targets: &["q", "ff"],
-        initial: LogicValue::Zero,
-    },
-    ExpectedSuccess {
-        path: "sv-cells/sm83/cells/dff_cc_ee_pch_d_reg_sp_bit.sv",
-        registers: &["ff1", "ff2", "q_n"],
-        state_targets: &["ff1", "ff2", "q_n"],
-        initial: LogicValue::Zero,
-    },
-    ExpectedSuccess {
-        path: "sv-cells/sm83/cells/dff_cc_ee_q_n_reg_wz_bit.sv",
-        registers: &["ff", "q_n"],
-        state_targets: &["ff", "q_n"],
-        initial: LogicValue::Zero,
-    },
-    ExpectedSuccess {
-        path: "sv-cells/sm83/cells/dff_cc_ee_q_x1_reg_bit.sv",
-        registers: &["ff", "q"],
-        state_targets: &["ff", "q"],
-        initial: LogicValue::Zero,
-    },
-    ExpectedSuccess {
-        path: "sv-cells/sm83/cells/dff_cc_ee_q_x2_reg_bit.sv",
-        registers: &["ff", "q"],
-        state_targets: &["ff", "q"],
-        initial: LogicValue::Zero,
-    },
-    ExpectedSuccess {
-        path: "sv-cells/sm83/cells/dff_cc_q.sv",
-        registers: &["ff", "q"],
-        state_targets: &["ff", "q"],
-        initial: LogicValue::Zero,
-    },
-    ExpectedSuccess {
-        path: "sv-cells/sm83/cells/dff_cc_q_alt.sv",
-        registers: &["ff", "q"],
-        state_targets: &["ff", "q"],
-        initial: LogicValue::Zero,
-    },
-    ExpectedSuccess {
-        path: "sv-cells/sm83/cells/dffn_ee_pch_d_alu_flag.sv",
-        registers: &["ff1", "ff2", "q_n"],
-        state_targets: &["ff1", "ff2", "q_n"],
-        initial: LogicValue::Zero,
-    },
-    ExpectedSuccess {
-        path: "sv-cells/sm83/cells/dffn_ee_q_alu_sign.sv",
-        registers: &["ff", "q"],
-        state_targets: &["ff", "q"],
-        initial: LogicValue::Zero,
-    },
-    ExpectedSuccess {
-        path: "sv-cells/sm83/cells/dffr_cc_ee_reg_ie_bit.sv",
-        registers: &["ff1", "ff2", "q_n"],
-        state_targets: &["ff1", "ff2", "q_n"],
-        initial: LogicValue::Zero,
-    },
-    ExpectedSuccess {
-        path: "sv-cells/sm83/cells/dffre_cc_q.sv",
-        registers: &["ff", "q"],
-        state_targets: &["ff", "q"],
-        initial: LogicValue::Zero,
-    },
-    ExpectedSuccess {
-        path: "sv-cells/sm83/cells/dffs_cc_ee_pch_d_reg_pc_bit.sv",
-        registers: &["ff1", "ff2", "q_n"],
-        state_targets: &["ff1", "ff2", "q_n"],
         initial: LogicValue::Zero,
     },
     ExpectedSuccess {
@@ -375,7 +240,7 @@ struct DeferralRecord {
 fn complete_stateful_corpus_is_flat_or_explicitly_deferred() {
     assert_sorted_unique(STATEFUL_PATHS);
     assert_sorted_unique(SUCCESSFUL_STATEFUL_PATHS);
-    assert_sorted_unique(SUCCESSFUL_FLAT_DFF_DLATCH_PATHS);
+    assert_sorted_unique(SUCCESSFUL_FLAT_LATCH_PATHS);
 
     let root = repository_root();
     let absolute_root = root.to_string_lossy().to_string();
@@ -384,7 +249,7 @@ fn complete_stateful_corpus_is_flat_or_explicitly_deferred() {
         .into_iter()
         .map(|path| logical_path(&root, &path))
         .collect::<Vec<_>>();
-    assert_eq!(paths.len(), 206);
+    assert_eq!(paths.len(), 191);
     assert!(paths.windows(2).all(|pair| pair[0] < pair[1]));
 
     let mut totals = AuditTotals {
@@ -1008,11 +873,11 @@ fn assert_exact_filename_families(
                 .file_name()
                 .unwrap()
                 .to_string_lossy();
-            name.starts_with("dff") || name.starts_with("dlatch")
+            name.starts_with("dlatch")
         })
         .map(|record| record.path.as_str())
         .collect::<Vec<_>>();
-    assert_eq!(flat_successes, SUCCESSFUL_FLAT_DFF_DLATCH_PATHS);
+    assert_eq!(flat_successes, SUCCESSFUL_FLAT_LATCH_PATHS);
 
     let later_driver = deferrals
         .iter()
@@ -1021,20 +886,20 @@ fn assert_exact_filename_families(
         .collect::<Vec<_>>();
     assert_eq!(later_driver, LATER_DRIVER_DEFERRALS);
 
-    let all_dff_dlatch = all_paths
+    let all_latches = all_paths
         .iter()
         .filter(|path| {
             let name = Path::new(path).file_name().unwrap().to_string_lossy();
-            name.starts_with("dff") || name.starts_with("dlatch")
+            name.starts_with("dlatch")
         })
         .map(String::as_str)
         .collect::<BTreeSet<_>>();
-    let accounted = SUCCESSFUL_FLAT_DFF_DLATCH_PATHS
+    let accounted = SUCCESSFUL_FLAT_LATCH_PATHS
         .iter()
         .chain(LATER_DRIVER_DEFERRALS)
         .copied()
         .collect::<BTreeSet<_>>();
-    assert_eq!(all_dff_dlatch, accounted);
+    assert_eq!(all_latches, accounted);
 }
 
 fn assert_success_records(records: &[SuccessRecord]) {
@@ -1062,26 +927,26 @@ fn assert_success_records(records: &[SuccessRecord]) {
 }
 
 fn assert_zero_invariant_failures(totals: &AuditTotals) {
-    assert_eq!(totals.corpus_files, 206);
-    assert_eq!(totals.stateful_files, 27);
-    assert_eq!(totals.succeeded, 27);
+    assert_eq!(totals.corpus_files, 191);
+    assert_eq!(totals.stateful_files, 12);
+    assert_eq!(totals.succeeded, 12);
     assert_eq!(totals.deferred, 0);
-    assert_eq!(totals.recursive_modeled_registers, 48);
-    assert_eq!(totals.recursive_state_assignments, 48);
-    assert_eq!(totals.blocking_state_assignments, 17);
-    assert_eq!(totals.nonblocking_state_assignments, 31);
-    assert_eq!(totals.successful_modeled_registers, 48);
-    assert_eq!(totals.successful_state_assignments, 48);
-    assert_eq!(totals.retained_muxes, 47);
-    assert_eq!(totals.direct_state_assignments, 1);
-    assert_eq!(totals.successful_explicit_initializers, 42);
-    assert_eq!(totals.initial_zero, 42);
+    assert_eq!(totals.recursive_modeled_registers, 15);
+    assert_eq!(totals.recursive_state_assignments, 15);
+    assert_eq!(totals.blocking_state_assignments, 13);
+    assert_eq!(totals.nonblocking_state_assignments, 2);
+    assert_eq!(totals.successful_modeled_registers, 15);
+    assert_eq!(totals.successful_state_assignments, 15);
+    assert_eq!(totals.retained_muxes, 15);
+    assert_eq!(totals.direct_state_assignments, 0);
+    assert_eq!(totals.successful_explicit_initializers, 9);
+    assert_eq!(totals.initial_zero, 9);
     assert_eq!(totals.initial_one, 0);
     assert_eq!(totals.initial_x, 6);
     assert_eq!(totals.initial_z, 0);
     assert_eq!(totals.successful_delay_tuple_omissions, 0);
-    assert_eq!(totals.successful_specify_ignores, 15);
-    assert_eq!(totals.nonzero_state_delays, 26);
+    assert_eq!(totals.successful_specify_ignores, 11);
+    assert_eq!(totals.nonzero_state_delays, 13);
     assert_eq!(totals.combinational_procedural_nonregisters, 0);
     for (name, value) in invariant_failures(totals) {
         assert_eq!(value, 0, "stateful invariant failed: {name}");
@@ -1204,8 +1069,8 @@ fn render_summary(
         )
         .unwrap();
     }
-    writeln!(&mut output, "successful-flat-dff-dlatch-files:").unwrap();
-    for path in SUCCESSFUL_FLAT_DFF_DLATCH_PATHS {
+    writeln!(&mut output, "successful-flat-latch-files:").unwrap();
+    for path in SUCCESSFUL_FLAT_LATCH_PATHS {
         writeln!(&mut output, "  {path}").unwrap();
     }
     writeln!(&mut output, "whole-file-deferrals:").unwrap();

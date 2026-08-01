@@ -95,8 +95,8 @@ fn reviewed_timing_goldens_cover_specify_selection_precedence_state_and_diagnost
 }
 
 #[test]
-fn reference_cell_has_exact_first_applicable_q_q_n_and_d_assignments() {
-    let source = "sv-cells/sm83/cells/dffs_cc_ee_pch_d_reg_pc_bit.sv";
+fn reference_cell_has_exact_first_applicable_state_and_overlapping_path_assignments() {
+    let source = "sv-cells/sm83/cells/dlatch_ee_irq.sv";
     let first = lower_repository_file(source).unwrap();
     let second = lower_repository_file(source).unwrap();
     assert_eq!(first, second);
@@ -116,22 +116,22 @@ fn reference_cell_has_exact_first_applicable_q_q_n_and_d_assignments() {
     assert_eq!(
         exact("q_n"),
         (
-            "(mux t19 ff2 q_n)".to_string(),
-            "(delay (+ (+ (elmore (wire 55) (* (pmos 3) 2)) (elmore (wire 25) (* (nmos 3) 2))) (elmore (wire L_q_n) (pmos 13))) (+ (+ (elmore (wire 55) (* (nmos 3) 2)) (elmore (wire 25) (* (pmos 3) 2))) (elmore (wire L_q_n) (nmos 6))))".to_string(),
+            "(mux t4 t5 q_n)".to_string(),
+            "(delay (+ (+ (elmore (wire 34) (* (pmos 3) 2)) (elmore (wire 34) (nmos 3))) (elmore (wire L_q_n) (pmos 13))) (+ (+ (elmore (wire 34) (* (nmos 3) 2)) (elmore (wire 34) (pmos 3))) (elmore (wire L_q_n) (nmos 6))))".to_string(),
         )
     );
     assert_eq!(
         exact("q"),
         (
             "(not q_n)".to_string(),
-            "(delay (+ (+ (+ (elmore (wire 55) (* (nmos 3) 2)) (elmore (wire 25) (* (pmos 3) 2))) (elmore (wire L_q_n) (nmos 6))) (elmore (wire L_q) (pmos 13))) (+ (+ (+ (elmore (wire 55) (* (pmos 3) 2)) (elmore (wire 25) (* (nmos 3) 2))) (elmore (wire L_q_n) (pmos 13))) (elmore (wire L_q) (nmos 6))))".to_string(),
+            "(delay (+ (+ (+ (elmore (wire 34) (* (nmos 3) 2)) (elmore (wire 34) (pmos 3))) (elmore (wire L_q_n) (nmos 6))) (elmore (wire L_q) (pmos 6))) (+ (+ (+ (elmore (wire 34) (* (pmos 3) 2)) (elmore (wire 34) (nmos 3))) (elmore (wire L_q_n) (pmos 13))) (elmore (wire L_q) (nmos 6))))".to_string(),
         )
     );
     assert_eq!(
-        exact("d"),
+        exact("gated_q_n"),
         (
-            "(bufif0-strength 1 pch_n strong1 highz0)".to_string(),
-            "(delay (elmore (wire L_d) (pmos 5)) (elmore (wire L_d) (pmos 5)) (elmore (wire L_d) (pmos 5)))".to_string(),
+            "(not gated_q)".to_string(),
+            "(delay (+ (elmore (wire 19) (nmos 6)) (elmore (wire L_gated_q_n) (pmos 6))) (+ (elmore (wire 19) (pmos 6)) (elmore (wire L_gated_q_n) (nmos 6))))".to_string(),
         )
     );
     assert_eq!(
@@ -148,7 +148,7 @@ fn reference_cell_has_exact_first_applicable_q_q_n_and_d_assignments() {
             .iter()
             .filter(|diagnostic| diagnostic.kind == DiagnosticKind::IntentionalIgnore)
             .count(),
-        0
+        1
     );
     assert_or_update_fixture("reference", "cell", &render_cell(&first.cell));
     assert_or_update_fixture(
@@ -304,7 +304,9 @@ fn assert_or_update_fixture(name: &str, extension: &str, actual: &str) {
     let fixture = PathBuf::from(env!("CARGO_MANIFEST_DIR"))
         .join("tests/fixtures/timing")
         .join(format!("{name}.{extension}"));
-    if std::env::var_os("UPDATE_TIMING_GOLDENS").is_some() {
+    if std::env::var_os("UPDATE_TIMING_GOLDENS").is_some()
+        || std::env::var_os("UPDATE_FIXTURES").is_some()
+    {
         fs::write(&fixture, actual).unwrap();
     }
     let expected = fs::read_to_string(&fixture)

@@ -8,7 +8,7 @@ use sv_to_sexpr::convert::{ConvertDisposition, ConvertOptions, convert};
 
 static NEXT_TEMP_TREE: AtomicU64 = AtomicU64::new(0);
 
-const REFERENCE_RELATIVE: &str = "sm83/cells/dffs_cc_ee_pch_d_reg_pc_bit.cell";
+const REFERENCE_RELATIVE: &str = "sm83/cells/dlatch_ee_irq.cell";
 
 struct TempTree {
     root: PathBuf,
@@ -44,7 +44,7 @@ fn strict_release_conversion_is_complete_canonical_and_byte_deterministic() {
     let input = repository.join("sv-cells");
     let output = tree.root.join("sexpr-cells");
     let expected_paths = expected_output_paths(&input);
-    assert_eq!(expected_paths.len(), 206);
+    assert_eq!(expected_paths.len(), 191);
 
     let mut options = ConvertOptions::new(&input, &output);
     options.strict = true;
@@ -62,7 +62,7 @@ fn strict_release_conversion_is_complete_canonical_and_byte_deterministic() {
     );
 
     let first_manifest = canonical_output_manifest(&output);
-    assert_eq!(first_manifest.len(), 206);
+    assert_eq!(first_manifest.len(), 191);
     assert_eq!(
         first_manifest.keys().cloned().collect::<BTreeSet<_>>(),
         expected_paths
@@ -81,11 +81,11 @@ fn strict_release_conversion_is_complete_canonical_and_byte_deterministic() {
     options.dry_run = true;
     let skipped = convert(&options);
     assert!(skipped.succeeded());
-    assert_eq!(skipped.processed, 206);
-    assert_eq!(skipped.selected, 206);
-    assert_eq!(skipped.skipped, 206);
+    assert_eq!(skipped.processed, 191);
+    assert_eq!(skipped.selected, 191);
+    assert_eq!(skipped.skipped, 191);
     assert_eq!(skipped.warned, 0);
-    assert_eq!(skipped.intentional_ignored, 49);
+    assert_eq!(skipped.intentional_ignored, 45);
     assert_eq!(skipped.written, 0);
     assert_eq!(skipped.would_write, 0);
     assert_eq!(skipped.failed, 0);
@@ -103,12 +103,12 @@ fn assert_release_write_report(report: &sv_to_sexpr::convert::ConvertReport) {
         "release conversion diagnostics: {:#?}",
         report.diagnostics().collect::<Vec<_>>()
     );
-    assert_eq!(report.processed, 206);
-    assert_eq!(report.selected, 206);
+    assert_eq!(report.processed, 191);
+    assert_eq!(report.selected, 191);
     assert_eq!(report.skipped, 0);
     assert_eq!(report.warned, 0);
-    assert_eq!(report.intentional_ignored, 49);
-    assert_eq!(report.written, 206);
+    assert_eq!(report.intentional_ignored, 45);
+    assert_eq!(report.written, 191);
     assert_eq!(report.would_write, 0);
     assert_eq!(report.failed, 0);
     assert!(

@@ -142,6 +142,9 @@ fn render_tokens(tokens: &[Token]) -> String {
 
 fn assert_snapshot(name: &str, tokens: &[Token]) {
     let snapshot = fixture_file(&format!("{name}.tokens"));
+    if std::env::var_os("UPDATE_FIXTURES").is_some() {
+        fs::write(&snapshot, render_tokens(tokens)).unwrap();
+    }
     let expected = fs::read_to_string(&snapshot)
         .unwrap_or_else(|error| panic!("failed to read {}: {error}", snapshot.display()));
     assert_eq!(render_tokens(tokens), expected, "snapshot {name}");
@@ -149,15 +152,15 @@ fn assert_snapshot(name: &str, tokens: &[Token]) {
 
 #[test]
 fn snapshots_reference_cell() {
-    let path = repository_file("sv-cells/sm83/cells/dffs_cc_ee_pch_d_reg_pc_bit.sv");
+    let path = repository_file("sv-cells/sm83/cells/dlatch_ee_irq.sv");
     assert_snapshot("reference_cell", &lex_path(&path));
 }
 
 #[test]
-fn snapshots_generate_syntax_from_curated_dff() {
-    let path = repository_file("sv-cells/dmg_cpu_b/cells/dffr.sv");
-    let tokens = tokens_on_lines(lex_path(&path), 19, 28);
-    assert_snapshot("generate_dffr", &tokens);
+fn snapshots_generate_syntax_from_curated_tff() {
+    let path = repository_file("sv-cells/dmg_cpu_b/cells/tffnl.sv");
+    let tokens = tokens_on_lines(lex_path(&path), 20, 28);
+    assert_snapshot("generate_tffnl", &tokens);
 }
 
 #[test]

@@ -31,7 +31,9 @@ pub fn assert_or_update_fixture(name: &str, extension: &str, actual: &str) {
     let fixture = PathBuf::from(env!("CARGO_MANIFEST_DIR"))
         .join("tests/fixtures/drivers")
         .join(format!("{name}.{extension}"));
-    if std::env::var_os("UPDATE_DRIVER_GOLDENS").is_some() {
+    if std::env::var_os("UPDATE_DRIVER_GOLDENS").is_some()
+        || std::env::var_os("UPDATE_FIXTURES").is_some()
+    {
         fs::create_dir_all(fixture.parent().unwrap()).unwrap();
         fs::write(&fixture, actual).unwrap();
     }

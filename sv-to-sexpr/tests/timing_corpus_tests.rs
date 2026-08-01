@@ -18,7 +18,7 @@ use sv_to_sexpr::serialize::{render_cell, render_delay_tuple, render_timing_expr
 use sv_to_sexpr::survey::collect_sv_files;
 
 const SPECIFY_IGNORE_PREFIX: &str = "additional control-dependent specify path for target `";
-const REFERENCE: &str = "sv-cells/sm83/cells/dffs_cc_ee_pch_d_reg_pc_bit.sv";
+const REFERENCE: &str = "sv-cells/sm83/cells/dlatch_ee_irq.sv";
 
 #[derive(Default)]
 struct TupleInventory {
@@ -169,7 +169,7 @@ struct ExpectedDiagnostic {
 fn complete_timing_corpus_is_structurally_accounted_and_deterministic() {
     let root = repository_root();
     let paths = corpus_paths(&root);
-    assert_eq!(paths.len(), 206);
+    assert_eq!(paths.len(), 191);
     assert!(paths.windows(2).all(|pair| pair[0] < pair[1]));
 
     let mut source = SourceInventory::default();
@@ -524,7 +524,7 @@ fn finalize_source_inventory(paths: &[String], inventory: &mut SourceInventory) 
     assert!(!inventory.witnesses.first_t_z.is_empty());
     assert!(!inventory.witnesses.multi_tpd_z.is_empty());
     assert!(!inventory.witnesses.outer_mul_2.is_empty());
-    assert!(!inventory.witnesses.outer_mul_1_5.is_empty());
+    assert!(inventory.witnesses.outer_mul_1_5.is_empty());
     assert!(!inventory.witnesses.resistance_sum.is_empty());
     assert!(inventory.forms.real_device_values.contains("13.5"));
     assert!(inventory.forms.real_device_values.contains("10.8"));
@@ -1109,41 +1109,41 @@ fn is_resistance_call(expr: &SvExpr) -> bool {
 }
 
 fn assert_exact_contract(source: &SourceInventory, lower: &LowerAudit) {
-    assert_eq!(source.files, 206);
-    assert_eq!(lower.succeeded, 206);
+    assert_eq!(source.files, 191);
+    assert_eq!(lower.succeeded, 191);
     assert_eq!(lower.failed, 0);
-    assert_eq!(lower.assignments, 1_958);
-    assert_eq!(lower.temporaries, 1_168);
-    assert_eq!(lower.source_assignments, 790);
+    assert_eq!(lower.assignments, 1_705);
+    assert_eq!(lower.temporaries, 972);
+    assert_eq!(lower.source_assignments, 733);
     assert_eq!(lower.temp_nonzero_delays, 0);
     assert_eq!(
         lower.explicit_delays + lower.specify_delays + lower.zero_delays,
-        790
+        733
     );
-    assert_eq!(lower.explicit_delays, 525);
-    assert_eq!(lower.explicit_nonzero_delays, 525);
-    assert_eq!(lower.specify_delays, 210);
-    assert_eq!(lower.specify_nonzero_delays, 210);
-    assert_eq!(lower.zero_delays, 55);
+    assert_eq!(lower.explicit_delays, 512);
+    assert_eq!(lower.explicit_nonzero_delays, 512);
+    assert_eq!(lower.specify_delays, 191);
+    assert_eq!(lower.specify_nonzero_delays, 191);
+    assert_eq!(lower.zero_delays, 30);
     assert_eq!(
         lower.explicit_nonzero_delays + lower.specify_nonzero_delays,
-        735
+        703
     );
-    assert_eq!(lower.emitted_nonzero_delays, 735);
-    assert_eq!(lower.emitted_zero_delays, 1_223);
-    assert_eq!(lower.emitted_nested_delays, 735);
-    assert_eq!(lower.emitted_tuple_arities, [0, 1_223, 276, 459]);
+    assert_eq!(lower.emitted_nonzero_delays, 703);
+    assert_eq!(lower.emitted_zero_delays, 1_002);
+    assert_eq!(lower.emitted_nested_delays, 703);
+    assert_eq!(lower.emitted_tuple_arities, [0, 1_002, 247, 456]);
     assert_eq!(
         lower.emitted_tuple_arities[1..].iter().sum::<usize>(),
         lower.assignments
     );
     assert_eq!(lower.noncanonical_one_entry_delays, 0);
-    assert_eq!(lower.first_projection_comparisons, 1_958);
-    assert_eq!(lower.first_projection_explicit, 525);
-    assert_eq!(lower.first_projection_specify, 210);
+    assert_eq!(lower.first_projection_comparisons, 1_705);
+    assert_eq!(lower.first_projection_explicit, 512);
+    assert_eq!(lower.first_projection_specify, 191);
     assert_eq!(lower.first_projection_forced_zero, 6);
-    assert_eq!(lower.first_projection_missing_zero, 49);
-    assert_eq!(lower.first_projection_generated_zero, 1_168);
+    assert_eq!(lower.first_projection_missing_zero, 24);
+    assert_eq!(lower.first_projection_generated_zero, 972);
     assert_eq!(lower.first_projection_mismatches, 0);
     assert_eq!(
         lower.first_projection_forced_zero
@@ -1156,7 +1156,7 @@ fn assert_exact_contract(source: &SourceInventory, lower: &LowerAudit) {
         lower.emitted_tuple_arities[2] + lower.emitted_tuple_arities[3]
     );
     assert_eq!(lower.warnings, 0);
-    assert_eq!(lower.specify_ignores, 49);
+    assert_eq!(lower.specify_ignores, 45);
     assert_eq!(lower.later_ignores, 0);
     assert_eq!(lower.specify_ignore_contract_failures, 0);
     assert_eq!(lower.diagnostic_mismatches, 0);
@@ -1171,30 +1171,30 @@ fn assert_exact_contract(source: &SourceInventory, lower: &LowerAudit) {
         lower.all_components.outer_resistance_multiplications,
         lower.expected_outer_resistance_multiplications
     );
-    assert_eq!(lower.expected_outer_resistance_multiplications, 1_198);
+    assert_eq!(lower.expected_outer_resistance_multiplications, 1_140);
     assert_eq!(
         lower.all_components.operator_counts,
         BTreeMap::from([
-            ("+".to_string(), 675),
-            ("*".to_string(), 1_228),
-            ("elmore".to_string(), 2_293),
+            ("+".to_string(), 569),
+            ("*".to_string(), 1_170),
+            ("elmore".to_string(), 2_120),
             ("gt".to_string(), 14),
             ("mux".to_string(), 14),
-            ("wire".to_string(), 2_293),
-            ("pmos".to_string(), 833),
-            ("nmos".to_string(), 1_771),
+            ("wire".to_string(), 2_120),
+            ("pmos".to_string(), 744),
+            ("nmos".to_string(), 1_687),
         ])
     );
-    assert_eq!(lower.first_components.outer_resistance_multiplications, 421);
+    assert_eq!(lower.first_components.outer_resistance_multiplications, 391);
     assert_eq!(
         lower.first_components.operator_counts,
         BTreeMap::from([
-            ("+".to_string(), 258),
-            ("*".to_string(), 423),
-            ("elmore".to_string(), 896),
-            ("wire".to_string(), 896),
-            ("pmos".to_string(), 468),
-            ("nmos".to_string(), 511),
+            ("+".to_string(), 205),
+            ("*".to_string(), 393),
+            ("elmore".to_string(), 811),
+            ("wire".to_string(), 811),
+            ("pmos".to_string(), 417),
+            ("nmos".to_string(), 477),
         ])
     );
 }
@@ -1488,7 +1488,9 @@ fn witness_list(values: &BTreeSet<String>) -> String {
 fn assert_or_update_fixture(actual: &str) {
     let fixture = PathBuf::from(env!("CARGO_MANIFEST_DIR"))
         .join("tests/fixtures/timing/corpus_summary.timing");
-    if std::env::var_os("UPDATE_TIMING_CORPUS_GOLDEN").is_some() {
+    if std::env::var_os("UPDATE_TIMING_CORPUS_GOLDEN").is_some()
+        || std::env::var_os("UPDATE_FIXTURES").is_some()
+    {
         fs::write(&fixture, actual).unwrap();
     }
     let expected = fs::read_to_string(&fixture)

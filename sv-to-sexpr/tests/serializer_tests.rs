@@ -29,8 +29,8 @@ const REPRESENTATIVE_CASES: &[(&str, &str, &str)] = &[
     ),
     (
         "generate",
-        "sv-cells/dmg_cpu_b/cells/dffr_cc.sv",
-        "tests/fixtures/generate/dffr_cc_delayful.cell",
+        "sv-cells/dmg_cpu_b/cells/tffnl.sv",
+        "tests/fixtures/generate/tffnl_delayful.cell",
     ),
     (
         "hierarchy",
@@ -44,7 +44,7 @@ const REPRESENTATIVE_CASES: &[(&str, &str, &str)] = &[
     ),
     (
         "timing",
-        "sv-cells/sm83/cells/dffs_cc_ee_pch_d_reg_pc_bit.sv",
+        "sv-cells/sm83/cells/dlatch_ee_irq.sv",
         "tests/fixtures/timing/reference.cell",
     ),
     (
@@ -60,7 +60,7 @@ fn every_cell_fixture_is_parseable_canonical_and_idempotent() {
     let mut paths = Vec::new();
     collect_cell_files(&fixture_root, &mut paths);
     paths.sort();
-    assert_eq!(paths.len(), 40);
+    assert_eq!(paths.len(), 39);
 
     for path in paths {
         let source = fs::read_to_string(&path).unwrap();
@@ -104,10 +104,9 @@ fn representative_lowered_families_match_canonical_goldens_and_preserve_ir() {
         }
     }
 
-    let checked_reference = fs::read_to_string(
-        repository_root().join("sexpr-cells/sm83/cells/dffs_cc_ee_pch_d_reg_pc_bit.cell"),
-    )
-    .unwrap();
+    let checked_reference =
+        fs::read_to_string(repository_root().join("sexpr-cells/sm83/cells/dlatch_ee_irq.cell"))
+            .unwrap();
     assert_eq!(rendered_reference.unwrap(), checked_reference);
 }
 
@@ -118,7 +117,7 @@ fn sibling_formatter_cli_check_agrees_with_api_on_representative_files() {
         "sv-to-sexpr/tests/fixtures/drivers/signal_high_z.cell",
         "sv-to-sexpr/tests/fixtures/lower/alu_cgen.cell",
         "sv-to-sexpr/tests/fixtures/stateful/simple_latch.cell",
-        "sexpr-cells/sm83/cells/dffs_cc_ee_pch_d_reg_pc_bit.cell",
+        "sexpr-cells/sm83/cells/dlatch_ee_irq.cell",
     ] {
         let path = root.join(relative);
         let source = fs::read_to_string(&path).unwrap();

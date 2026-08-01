@@ -19,7 +19,7 @@ use sv_to_sexpr::timing_graph::{
     Transition, TransitionEffect,
 };
 
-const DFFSR: &str = "sv-cells/dmg_cpu_b/cells/dffsr.sv";
+const TFFNL: &str = "sv-cells/dmg_cpu_b/cells/tffnl.sv";
 const AO21: &str = "sv-cells/dmg_cpu_b/cells/ao21.sv";
 const HALF_ADD: &str = "sv-cells/dmg_cpu_b/cells/half_add.sv";
 const B2B_WAND: &str = "sv-cells/sm83/cells/b2b_wand_inj_a.sv";
@@ -82,7 +82,7 @@ struct ModeAudit {
 fn complete_timing_graph_corpus_is_exact_owned_deterministic_and_compatible() {
     let root = repository_root();
     let entries = parse_sorted_corpus(&root);
-    assert_eq!(entries.len(), 206);
+    assert_eq!(entries.len(), 191);
     assert!(entries.windows(2).all(|pair| pair[0].0 < pair[1].0));
 
     let sorted_designs = entries
@@ -145,7 +145,7 @@ fn complete_timing_graph_corpus_is_exact_owned_deterministic_and_compatible() {
     assert_or_update_fixture("corpus_summary.timing-graph", &summary);
 
     for (path, fixture) in [
-        (DFFSR, "dffsr.delayful.timing-graph"),
+        (TFFNL, "tffnl.delayful.timing-graph"),
         (AO21, "ao21.delayful.timing-graph"),
         (HALF_ADD, "half_add.delayful.timing-graph"),
     ] {
@@ -475,12 +475,12 @@ fn aggregate_report(path: &str, report: &TimingAnalysisReport, audit: &mut ModeA
 }
 
 fn assert_exact_mode_contract(mode: GenerateMode, audit: &ModeAudit) {
-    assert_eq!(audit.files, 206, "{}", mode.label());
-    assert_eq!(audit.source_constraints, 266, "{}", mode.label());
-    assert_eq!(audit.source_controls, 480, "{}", mode.label());
-    assert_eq!(audit.source_target_groups, 203, "{}", mode.label());
-    assert_eq!(audit.source_multiple_target_groups, 49, "{}", mode.label());
-    assert_eq!(audit.source_tuple_arities, [0, 0, 263, 3]);
+    assert_eq!(audit.files, 191, "{}", mode.label());
+    assert_eq!(audit.source_constraints, 241, "{}", mode.label());
+    assert_eq!(audit.source_controls, 443, "{}", mode.label());
+    assert_eq!(audit.source_target_groups, 184, "{}", mode.label());
+    assert_eq!(audit.source_multiple_target_groups, 45, "{}", mode.label());
+    assert_eq!(audit.source_tuple_arities, [0, 0, 238, 3]);
     assert_eq!(
         audit.source_tuple_arities.iter().sum::<usize>(),
         audit.source_constraints
@@ -488,11 +488,11 @@ fn assert_exact_mode_contract(mode: GenerateMode, audit: &ModeAudit) {
     assert_eq!(audit.constraints, audit.elaborated_constraints);
     assert_eq!(audit.controls, audit.elaborated_controls);
     assert_eq!(audit.target_groups, audit.elaborated_target_groups);
-    assert_eq!(audit.elaborated_constraints, 273);
+    assert_eq!(audit.elaborated_constraints, 248);
     assert_eq!(audit.foreign_constraints, 7);
-    assert_eq!(audit.elaborated_controls, 494);
-    assert_eq!(audit.elaborated_target_groups, 210);
-    assert_eq!(audit.elaborated_tuple_arities, [0, 0, 270, 3]);
+    assert_eq!(audit.elaborated_controls, 457);
+    assert_eq!(audit.elaborated_target_groups, 191);
+    assert_eq!(audit.elaborated_tuple_arities, [0, 0, 245, 3]);
     assert_eq!(
         (
             audit.nodes,
@@ -500,80 +500,50 @@ fn assert_exact_mode_contract(mode: GenerateMode, audit: &ModeAudit) {
             audit.assignments,
             audit.dependencies
         ),
-        match mode {
-            GenerateMode::Delayful => (4_867, 2_909, 1_958, 6_958),
-            GenerateMode::Nodelay => (4_861, 2_906, 1_955, 6_948),
-        }
+        (4_295, 2_590, 1_705, 6_251)
     );
     assert_eq!(
         audit.dependency_kinds,
-        match mode {
-            GenerateMode::Delayful => counts([
-                ("drive", 1_775),
-                ("operand", 4_998),
-                ("resolved-net-boundary", 135),
-                ("state-boundary", 48),
-                ("state-control", 2),
-            ]),
-            GenerateMode::Nodelay => counts([
-                ("drive", 1_772),
-                ("operand", 4_991),
-                ("resolved-net-boundary", 135),
-                ("state-boundary", 48),
-                ("state-control", 2),
-            ]),
-        }
+        counts([
+            ("drive", 1_555),
+            ("operand", 4_546),
+            ("resolved-net-boundary", 135),
+            ("state-boundary", 15),
+        ])
     );
     assert_eq!(
         audit.dependency_senses,
-        match mode {
-            GenerateMode::Delayful => counts([
-                ("conditional", 597),
-                ("negative", 419),
-                ("non-unate", 114),
-                ("positive", 5_826),
-                ("state-control", 2),
-            ]),
-            GenerateMode::Nodelay => counts([
-                ("conditional", 597),
-                ("negative", 417),
-                ("non-unate", 114),
-                ("positive", 5_818),
-                ("state-control", 2),
-            ]),
-        }
+        counts([
+            ("conditional", 530),
+            ("negative", 317),
+            ("non-unate", 82),
+            ("positive", 5_322),
+        ])
     );
-    assert_eq!(audit.state_boundaries, 48);
+    assert_eq!(audit.state_boundaries, 15);
     assert_eq!(audit.resolved_net_boundaries, 135);
-    assert_eq!(
-        audit.state_control_transitions,
-        counts([("fall", 1), ("rise", 1)])
-    );
-    assert_eq!((audit.control_groups, audit.target_groups), (416, 210));
+    assert_eq!(audit.state_control_transitions, BTreeMap::new());
+    assert_eq!((audit.control_groups, audit.target_groups), (391, 191));
     assert_eq!(
         audit.control_group_kinds,
-        counts([("multiple-targets", 55), ("single-target", 361)])
+        counts([("multiple-targets", 43), ("single-target", 348)])
     );
     assert_eq!(
         audit.target_group_kinds,
-        counts([("multiple-paths", 49), ("single-path", 161)])
+        counts([("multiple-paths", 45), ("single-path", 146)])
     );
     assert_eq!(
         audit.path_senses,
         counts([
-            ("conditional", 63),
-            ("negative", 210),
-            ("non-unate", 137),
-            ("positive", 133),
-            ("state-fall-fall", 1),
-            ("state-fall-rise", 1),
-            ("state-rise-fall", 1),
-            ("state-rise-rise", 1),
+            ("conditional", 59),
+            ("negative", 209),
+            ("non-unate", 104),
+            ("positive", 132),
         ])
     );
     assert_eq!(
         audit.public_splits,
-        counts([("candidate", 32), ("not-public", 3), ("not-required", 175)])
+        counts([("candidate", 19), ("not-public", 3), ("not-required", 169)])
     );
     assert_eq!(
         (
@@ -584,9 +554,9 @@ fn assert_exact_mode_contract(mode: GenerateMode, audit: &ModeAudit) {
             audit.nonempty_reconvergent_groups,
             audit.reconvergent_nodes,
         ),
-        (392, 640, 210, 237, 142, 403)
+        (367, 605, 191, 206, 123, 265)
     );
-    assert_eq!(audit.multiple_witnesses.len(), 49);
+    assert_eq!(audit.multiple_witnesses.len(), 45);
     assert_eq!(audit.combinational_cycle_errors, 0);
     assert_eq!(audit.unreachable_control_errors, 0);
     assert_eq!(audit.additive_rebuild_failures, 0);
@@ -710,20 +680,20 @@ fn render_mode_summary(output: &mut String, mode: GenerateMode, audit: &ModeAudi
 
 fn assert_representative_architecture(snapshots: &BTreeMap<(String, String), FileSnapshot>) {
     let delayful = GenerateMode::Delayful.label().to_string();
-    let dffsr = &snapshots[&(delayful.clone(), DFFSR.to_string())].report;
-    assert_eq!(dffsr.constraints().len(), 6);
+    let tffnl = &snapshots[&(delayful.clone(), TFFNL.to_string())].report;
+    assert_eq!(tffnl.constraints().len(), 6);
     assert!(
-        dffsr
+        tffnl
             .control_groups()
             .iter()
-            .filter(|group| matches!(group.control_signal(), "clk" | "s_n" | "r_n"))
+            .filter(|group| matches!(group.control_signal(), "tclk_n" | "d" | "l"))
             .all(|group| {
                 group.kind() == ControlGroupKind::MultipleTargets
                     && !group.common_prefix().is_empty()
             })
     );
     for target in ["q", "q_n"] {
-        let group = dffsr
+        let group = tffnl
             .target_groups()
             .iter()
             .find(|group| group.group().target() == target)
@@ -732,7 +702,7 @@ fn assert_representative_architecture(snapshots: &BTreeMap<(String, String), Fil
         assert_eq!(group.group().kind(), TargetGroupKind::MultiplePaths);
     }
     assert_eq!(
-        dffsr
+        tffnl
             .target_groups()
             .iter()
             .find(|group| group.group().target() == "q")
@@ -741,7 +711,7 @@ fn assert_representative_architecture(snapshots: &BTreeMap<(String, String), Fil
         PublicOutputSplit::Candidate
     );
     assert_eq!(
-        dffsr
+        tffnl
             .target_groups()
             .iter()
             .find(|group| group.group().target() == "q_n")
@@ -750,7 +720,7 @@ fn assert_representative_architecture(snapshots: &BTreeMap<(String, String), Fil
         PublicOutputSplit::NotRequired
     );
     assert!(
-        dffsr
+        tffnl
             .excluded_state_boundaries()
             .iter()
             .any(|dependency| dependency.edge().kind() == DependencyKind::StateBoundary)

@@ -1,0 +1,20 @@
+timing decomposition corpus shard
+mode: nodelay
+shard: 12b/16
+rule: sorted-index-modulo-16
+split-residue: 1/2
+split-rule: within-shard-rank-modulo-2
+cases: 6
+success path=sv-cells/dmg_cpu_b/cells/nor4.sv assignments=1 registers=0 constraints=1 components=8 dN=0
+success path=sv-cells/sm83/cells/alu_decoder.sv assignments=132 registers=0 constraints=0 components=0 dN=0
+success path=sv-cells/sm83/cells/irq_prio_bit5.sv assignments=23 registers=0 constraints=1 components=2 dN=0
+success path=sv-cells/sm83/cells/not_a.sv assignments=1 registers=0 constraints=1 components=2 dN=0
+success path=sv-cells/sm83/cells/not_x1_pch_dec2.sv assignments=2 registers=0 constraints=1 components=2 dN=0
+success path=sv-cells/sm83/cells/tie.sv assignments=2 registers=0 constraints=0 components=0 dN=0
+successes: 6
+failures: 0
+assignments: 161
+registers: 0
+constraints: 4
+components: 14
+dN: 0

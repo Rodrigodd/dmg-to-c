@@ -12,18 +12,15 @@ use sv_to_sexpr::analyze::{
 fn representative_analysis_goldens_are_deterministic_and_semantically_complete() {
     let corpus = corpus();
     let fixtures = [
-        (
-            "reference.analysis",
-            "sv-cells/sm83/cells/dffs_cc_ee_pch_d_reg_pc_bit.sv",
-        ),
+        ("reference.analysis", "sv-cells/sm83/cells/dlatch_ee_irq.sv"),
         (
             "combinational_internal.analysis",
             "sv-cells/sm83/cells/alu_cgen.sv",
         ),
         ("primitive_tri.analysis", "sv-cells/dmg_cpu_b/cells/muxi.sv"),
         (
-            "generated_dff.analysis",
-            "sv-cells/dmg_cpu_b/cells/dffr_cc.sv",
+            "generated_tff.analysis",
+            "sv-cells/dmg_cpu_b/cells/tffnl.sv",
         ),
         (
             "hierarchical_adder.analysis",
@@ -31,7 +28,7 @@ fn representative_analysis_goldens_are_deterministic_and_semantically_complete()
         ),
     ];
     for (fixture, source) in fixtures {
-        let report = if fixture == "generated_dff.analysis" {
+        let report = if fixture == "generated_tff.analysis" {
             corpus.analyze_structural(source)
         } else {
             corpus.analyze(source)
@@ -43,20 +40,20 @@ fn representative_analysis_goldens_are_deterministic_and_semantically_complete()
         assert_or_update_fixture(fixture, &rendered);
     }
 
-    let reference = corpus.analyze("sv-cells/sm83/cells/dffs_cc_ee_pch_d_reg_pc_bit.sv");
+    let reference = corpus.analyze("sv-cells/sm83/cells/dlatch_ee_irq.sv");
     let module = &reference.modules[0];
-    assert_eq!(
-        module.inputs,
-        vec!["clk", "clk_n", "ena", "ena_n", "s_n", "pch_n", "d"]
-    );
-    assert_eq!(module.outputs, vec!["q", "q_n", "d"]);
-    assert_eq!(module.registers, vec!["ff1", "ff2", "q_n"]);
+    assert_eq!(module.inputs, vec!["d", "ena", "ena_n", "pch_n", "ena_q_n"]);
+    assert_eq!(module.outputs, vec!["q", "q_n", "gated_q_n"]);
+    assert_eq!(module.registers, vec!["q_n"]);
     assert_eq!(module.symbols["d"].category, SymbolCategory::Port);
-    assert_eq!(module.symbols["ff1"].category, SymbolCategory::Declaration);
-    assert_eq!(module.specify_paths.len(), 2);
-    assert_eq!(module.timing_aliases.len(), 10);
+    assert_eq!(
+        module.symbols["gated_q"].category,
+        SymbolCategory::Declaration
+    );
+    assert_eq!(module.specify_paths.len(), 4);
+    assert_eq!(module.timing_aliases.len(), 12);
     assert!(module.drivers.iter().any(|driver| {
-        driver.target == "d"
+        driver.target == "gated_q"
             && matches!(
                 &driver.source,
                 DriverSource::Primitive { name } if name == "bufif0"
@@ -112,26 +109,33 @@ fn representative_analysis_goldens_are_deterministic_and_semantically_complete()
         4
     );
 
-    let generated = corpus.analyze_structural("sv-cells/dmg_cpu_b/cells/dffr_cc.sv");
+    let generated = corpus.analyze_structural("sv-cells/dmg_cpu_b/cells/tffnl.sv");
     let module = &generated.modules[0];
-    assert!(module.registers.is_empty());
-    assert!(module.drivers.is_empty());
+    assert_eq!(module.registers, vec!["ff", "q"]);
+    assert_eq!(module.drivers.len(), 5);
     assert_eq!(module.generate_alternatives.len(), 1);
     let alternative = &module.generate_alternatives[0];
     assert_eq!(alternative.condition.text, "nodelay");
-    assert_eq!(alternative.then_branch.registers, vec!["ff", "q"]);
-    assert_eq!(
-        alternative.else_branch.as_ref().unwrap().registers,
-        vec!["mux1", "mux2"]
-    );
-    assert!(alternative.then_branch.symbols.contains_key("ff"));
+    assert!(alternative.then_branch.registers.is_empty());
     assert!(
         alternative
             .else_branch
             .as_ref()
             .unwrap()
-            .symbols
-            .contains_key("mux1")
+            .registers
+            .is_empty()
+    );
+    assert!(alternative.then_branch.symbols.is_empty());
+    assert!(alternative.else_branch.as_ref().unwrap().symbols.is_empty());
+    assert_eq!(alternative.then_branch.procedural_assignments.len(), 2);
+    assert_eq!(
+        alternative
+            .else_branch
+            .as_ref()
+            .unwrap()
+            .continuous_assignments
+            .len(),
+        2
     );
 
     let hierarchy = corpus.analyze("sv-cells/dmg_cpu_b/cells/full_add.sv");
@@ -176,7 +180,7 @@ fn corpus_analysis_summary_is_stable_by_disposition_milestone_and_capability() {
                 .insert(path.clone());
         }
     }
-    assert_eq!(corpus.designs.len(), 206);
+    assert_eq!(corpus.designs.len(), 191);
     assert_eq!(
         disposition_counts
             .get(&AnalysisDisposition::Supported)
@@ -189,7 +193,7 @@ fn corpus_analysis_summary_is_stable_by_disposition_milestone_and_capability() {
             .get(&AnalysisDisposition::Deferred)
             .copied()
             .unwrap_or_default(),
-        203
+        188
     );
     assert_eq!(
         disposition_counts
@@ -202,7 +206,7 @@ fn corpus_analysis_summary_is_stable_by_disposition_milestone_and_capability() {
     let mut rendered = String::new();
     rendered.push_str("analysis corpus summary\n");
     rendered.push_str(&format!(
-        "processed=206 supported={} deferred={} warned={} failed={}\n",
+        "processed=191 supported={} deferred={} warned={} failed={}\n",
         disposition_counts
             .get(&AnalysisDisposition::Supported)
             .copied()

@@ -1,0 +1,3 @@
+diagnostics:
+  intentional-ignore | sv-cells/dmg_cpu_b/cells/tffnl.sv:54:3 | additional control-dependent specify path for target `q` is intentionally ignored because delay-tuple lowering temporarily selects the first source-ordered path for the target
+  intentional-ignore | sv-cells/dmg_cpu_b/cells/tffnl.sv:58:3 | additional control-dependent specify path for target `q_n` is intentionally ignored because delay-tuple lowering temporarily selects the first source-ordered path for the target

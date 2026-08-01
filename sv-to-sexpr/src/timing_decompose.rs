@@ -1092,7 +1092,7 @@ pub fn verify_decomposition(
 /// assignment delay tuples.
 ///
 /// The symbolic placement values and coverage records are not consulted.
-/// `mapping` is used only to project transformed topology back to durable
+/// `mapping` is used only to project the transformed graph back to durable
 /// baseline assignment identities and to preserve the IR-only distinction
 /// between an absent tuple contribution and a literal timing term `0`.
 pub fn verify_applied_model(

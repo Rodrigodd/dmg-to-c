@@ -70,7 +70,9 @@ pub fn assert_or_update_fixture(name: &str, actual: &str) {
     let fixture = PathBuf::from(env!("CARGO_MANIFEST_DIR"))
         .join("tests/fixtures/analysis")
         .join(name);
-    if std::env::var_os("UPDATE_ANALYSIS_GOLDENS").is_some() {
+    if std::env::var_os("UPDATE_ANALYSIS_GOLDENS").is_some()
+        || std::env::var_os("UPDATE_FIXTURES").is_some()
+    {
         fs::create_dir_all(fixture.parent().unwrap()).unwrap();
         fs::write(&fixture, actual).unwrap();
     }

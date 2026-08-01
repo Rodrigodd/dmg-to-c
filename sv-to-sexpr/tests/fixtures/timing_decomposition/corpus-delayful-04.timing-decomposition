@@ -1,0 +1,26 @@
+timing decomposition corpus shard
+mode: delayful
+shard: 04/16
+rule: sorted-index-modulo-16
+split-residue: 0/1
+split-rule: within-shard-rank-modulo-1
+cases: 12
+success path=sv-cells/dmg_cpu_b/cells/ao22.sv assignments=3 registers=0 constraints=1 components=8 dN=0
+success path=sv-cells/dmg_cpu_b/cells/nand3.sv assignments=1 registers=0 constraints=1 components=6 dN=0
+success path=sv-cells/dmg_cpu_b/cells/not_x2.sv assignments=1 registers=0 constraints=1 components=2 dN=0
+success path=sv-cells/dmg_cpu_b/cells/pad_pass.sv assignments=1 registers=0 constraints=0 components=0 dN=0
+success path=sv-cells/sm83/cells/and2_reg.sv assignments=1 registers=0 constraints=1 components=4 dN=0
+success path=sv-cells/sm83/cells/idu_bit123456.sv assignments=22 registers=0 constraints=0 components=0 dN=0
+success path=sv-cells/sm83/cells/nand2_d.sv assignments=1 registers=0 constraints=1 components=4 dN=0
+success path=sv-cells/sm83/cells/nor2_spare.sv assignments=1 registers=0 constraints=1 components=4 dN=0
+success path=sv-cells/sm83/cells/not_dec3.sv assignments=1 registers=0 constraints=1 components=2 dN=0
+success path=sv-cells/sm83/cells/not_reg_b_we.sv assignments=1 registers=0 constraints=1 components=2 dN=0
+success path=sv-cells/sm83/cells/or2_b.sv assignments=1 registers=0 constraints=1 components=4 dN=0
+success path=sv-cells/sm83/cells/reg_hl_out.sv assignments=12 registers=0 constraints=0 components=0 dN=0
+successes: 12
+failures: 0
+assignments: 46
+registers: 0
+constraints: 9
+components: 36
+dN: 0

@@ -1,33 +1,23 @@
-use std::collections::BTreeSet;
 use std::fs;
 use std::path::{Path, PathBuf};
 
 use sv_to_sexpr::elaborate::GenerateMode;
-use sv_to_sexpr::ir::{CellItem, DelayTuple, Expr, LogicValue, TimingExpr, TimingOperator};
+use sv_to_sexpr::ir::{CellItem, DelayTuple, TimingExpr, TimingOperator};
 use sv_to_sexpr::lower::{
-    DecomposedTimingStrategy, LoweredDecomposedTimingModel,
-    lower_design_with_decomposed_timing_and_generate_mode,
+    LoweredDecomposedTimingModel, lower_design_with_decomposed_timing_and_generate_mode,
 };
 use sv_to_sexpr::parser::parse_file;
 use sv_to_sexpr::serialize::render_cell;
-use sv_to_sexpr::timing_graph::{AssignmentDelayOrigin, AssignmentOrigin, Transition};
-use sv_to_sexpr::topology_hint::ResolvedPathStepKind;
 
 struct Case {
     name: &'static str,
     source: &'static str,
 }
 
-const CASES: &[Case] = &[
-    Case {
-        name: "ao21.delayful",
-        source: "sv-cells/dmg_cpu_b/cells/ao21.sv",
-    },
-    Case {
-        name: "dffsr.delayful",
-        source: "sv-cells/dmg_cpu_b/cells/dffsr.sv",
-    },
-];
+const CASES: &[Case] = &[Case {
+    name: "ao21.delayful",
+    source: "sv-cells/dmg_cpu_b/cells/ao21.sv",
+}];
 
 #[test]
 fn reviewed_decomposed_timing_goldens_are_deterministic_and_structural() {
@@ -47,146 +37,16 @@ fn reviewed_decomposed_timing_goldens_are_deterministic_and_structural() {
             "nondeterministic cell for {}",
             case.name
         );
-        assert_eq!(
-            first.strategy(),
-            second.strategy(),
-            "nondeterministic strategy for {}",
-            case.name
-        );
+        assert_eq!(first.decomposition(), second.decomposition());
+        assert_eq!(first.applied_facts(), second.applied_facts());
+        assert_eq!(first.actual_verification(), second.actual_verification());
         assert_or_update_golden(case.name, &first_rendered);
 
         match case.name {
-            "ao21.delayful" => {
-                assert!(matches!(
-                    first.strategy(),
-                    DecomposedTimingStrategy::ExactCover { .. }
-                ));
-                assert!(!first.is_physical_topology());
-                assert_ao21_distributes_its_shared_output_suffix(&first);
-            }
-            "dffsr.delayful" => assert_dffsr_physical_topology(&first_rendered, &first),
+            "ao21.delayful" => assert_ao21_distributes_its_shared_output_suffix(&first),
             _ => unreachable!(),
         }
     }
-}
-
-fn assert_dffsr_physical_topology(rendered: &str, model: &LoweredDecomposedTimingModel) {
-    let DecomposedTimingStrategy::PhysicalTopology {
-        module,
-        applied_facts,
-        actual_verification,
-    } = model.strategy()
-    else {
-        panic!("dffsr must select the checked-in physical topology");
-    };
-    assert_eq!(module, "dmg_dffsr");
-    assert_eq!(actual_verification.paths().len(), 12);
-
-    let components = actual_verification
-        .paths()
-        .iter()
-        .map(|path| {
-            (
-                path.constraint().ordinal(),
-                path.control().ordinal(),
-                path.target_transition(),
-            )
-        })
-        .collect::<BTreeSet<_>>();
-    assert_eq!(components.len(), 12);
-    assert_eq!(
-        components,
-        (0..6)
-            .flat_map(|path| {
-                [Transition::Rise, Transition::Fall]
-                    .into_iter()
-                    .map(move |transition| (path, path, transition))
-            })
-            .collect()
-    );
-
-    for path in actual_verification
-        .paths()
-        .iter()
-        .filter(|path| path.recipe().contains("q_n"))
-    {
-        assert!(!path.steps().iter().any(|step| matches!(
-            step.kind(),
-            ResolvedPathStepKind::Generated(id)
-                if id.as_str() == "physical_q" || id.as_str() == "q_replacement"
-        )));
-        assert!(!path.steps().iter().any(|step| matches!(
-            step.kind(),
-            ResolvedPathStepKind::Rewrite(id) if id.as_str() == "q_state"
-        )));
-    }
-
-    let zero = DelayTuple::One(sv_to_sexpr::ir::TimingExpr::atom("0").unwrap());
-    for target in ["q", "q_n"] {
-        let assignment = assignments(model)
-            .into_iter()
-            .find(|assignment| assignment.target == target)
-            .unwrap_or_else(|| panic!("missing public terminal assignment {target}"));
-        assert_eq!(assignment.delay, zero, "{target} must remain zero-delay");
-    }
-    assert_eq!(
-        model
-            .lowered()
-            .cell
-            .registers
-            .iter()
-            .map(|register| (register.name.as_str(), register.initial))
-            .collect::<Vec<_>>(),
-        vec![("ff", LogicValue::Zero), ("q", LogicValue::Zero)]
-    );
-
-    let physical_delay_assignments = applied_facts
-        .assignments
-        .values()
-        .filter(|fact| fact.assignment.delay != zero)
-        .collect::<Vec<_>>();
-    assert_eq!(physical_delay_assignments.len(), 12);
-    assert!(
-        physical_delay_assignments
-            .iter()
-            .all(|fact| matches!(fact.assignment.delay, DelayTuple::Two { .. }))
-    );
-    assert_eq!(
-        model
-            .assignment_provenance()
-            .iter()
-            .filter(|provenance| provenance.origin().is_topology_generated())
-            .count(),
-        applied_facts.assignments.len()
-    );
-    assert!(model.assignment_provenance().iter().all(|provenance| {
-        !matches!(
-            provenance.origin(),
-            AssignmentOrigin::GeneratedTimingIdentity { .. }
-        ) && !matches!(
-            provenance.delay_origin(),
-            AssignmentDelayOrigin::DecompositionPlacement
-                | AssignmentDelayOrigin::LegacySelectedSpecifyFallback
-        )
-    }));
-
-    assert!(
-        model
-            .lowered()
-            .cell
-            .items
-            .iter()
-            .all(|item| matches!(item, CellItem::Assignment(_)))
-    );
-    assert!(!rendered.contains("(timing"));
-    assert!(!rendered.contains("(arc"));
-    assert!(!rendered.contains("(table"));
-    assert!(
-        !assignments(model)
-            .iter()
-            .flat_map(|assignment| assignment.delay.components())
-            .any(|component| contains_subtract(component.as_expr()))
-    );
 }
 
 fn assert_ao21_distributes_its_shared_output_suffix(model: &LoweredDecomposedTimingModel) {
@@ -266,16 +126,6 @@ fn assignments(model: &LoweredDecomposedTimingModel) -> Vec<&sv_to_sexpr::ir::As
             CellItem::Blank | CellItem::Comment(_) => None,
         })
         .collect()
-}
-
-fn contains_subtract(expr: &Expr) -> bool {
-    match expr {
-        Expr::Atom(_) => false,
-        Expr::List(items) => {
-            matches!(items.first(), Some(Expr::Atom(operator)) if operator == TimingOperator::Subtract.as_str())
-                || items.iter().any(contains_subtract)
-        }
-    }
 }
 
 fn parse_repository_source(logical_path: &str) -> sv_to_sexpr::ast::Design {

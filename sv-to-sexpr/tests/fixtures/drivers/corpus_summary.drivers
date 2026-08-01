@@ -1,24 +1,24 @@
 driver corpus audit
-corpus-files=206 relevant-files=67 relevant-successes=67 relevant-later-deferrals=0
-global-lowering: succeeded=206 failed=0
+corpus-files=191 relevant-files=64 relevant-successes=64 relevant-later-deferrals=0
+global-lowering: succeeded=191 failed=0
 keeper-drivers: source=6 emitted=6 deferred=0
 source-forms:
   high-z-bufif0=2
   high-z-bufif1=61
-  direct-bufif0=104
+  direct-bufif0=101
   direct-bufif1=293
   continuous-strength=56
-  primitive-strength=397
+  primitive-strength=394
 source-strength-pairs:
   highz1/strong0=338
   pull1/highz0=3
-  strong1/highz0=108
+  strong1/highz0=105
   supply1/supply0=4
 emitted-success-forms:
   bufif0=2
   bufif1=10
   drive-strength=5
-  bufif0-strength=104
+  bufif0-strength=101
   bufif1-strength=344
 repeated-drivers:
   paths=26
@@ -62,9 +62,6 @@ relevant-successes:
   sv-cells/sm83/cells/decoder1.sv source[hiz0=0,hiz1=0,bufif0=0,bufif1=107,continuous-strength=0,primitive-strength=107,repeated-targets=0] emitted[bufif0=0,bufif1=0,drive-strength=0,bufif0-strength=0,bufif1-strength=107]
   sv-cells/sm83/cells/decoder2.sv source[hiz0=0,hiz1=0,bufif0=25,bufif1=30,continuous-strength=0,primitive-strength=55,repeated-targets=25] emitted[bufif0=0,bufif1=0,drive-strength=0,bufif0-strength=25,bufif1-strength=30]
   sv-cells/sm83/cells/decoder3.sv source[hiz0=0,hiz1=0,bufif0=0,bufif1=69,continuous-strength=0,primitive-strength=69,repeated-targets=0] emitted[bufif0=0,bufif1=0,drive-strength=0,bufif0-strength=0,bufif1-strength=69]
-  sv-cells/sm83/cells/dff_cc_ee_pch_d_reg_sp_bit.sv source[hiz0=0,hiz1=0,bufif0=1,bufif1=0,continuous-strength=0,primitive-strength=1,repeated-targets=0] emitted[bufif0=0,bufif1=0,drive-strength=0,bufif0-strength=1,bufif1-strength=0]
-  sv-cells/sm83/cells/dffn_ee_pch_d_alu_flag.sv source[hiz0=0,hiz1=0,bufif0=1,bufif1=0,continuous-strength=0,primitive-strength=1,repeated-targets=0] emitted[bufif0=0,bufif1=0,drive-strength=0,bufif0-strength=1,bufif1-strength=0]
-  sv-cells/sm83/cells/dffs_cc_ee_pch_d_reg_pc_bit.sv source[hiz0=0,hiz1=0,bufif0=1,bufif1=0,continuous-strength=0,primitive-strength=1,repeated-targets=0] emitted[bufif0=0,bufif1=0,drive-strength=0,bufif0-strength=1,bufif1-strength=0]
   sv-cells/sm83/cells/dlatch_ee_irq.sv source[hiz0=0,hiz1=0,bufif0=1,bufif1=0,continuous-strength=0,primitive-strength=1,repeated-targets=1] emitted[bufif0=0,bufif1=0,drive-strength=0,bufif0-strength=1,bufif1-strength=0]
   sv-cells/sm83/cells/idu_bit0.sv source[hiz0=0,hiz1=0,bufif0=1,bufif1=7,continuous-strength=0,primitive-strength=8,repeated-targets=3] emitted[bufif0=0,bufif1=0,drive-strength=0,bufif0-strength=1,bufif1-strength=7]
   sv-cells/sm83/cells/idu_bit123456.sv source[hiz0=0,hiz1=0,bufif0=2,bufif1=4,continuous-strength=0,primitive-strength=6,repeated-targets=2] emitted[bufif0=0,bufif1=0,drive-strength=0,bufif0-strength=2,bufif1-strength=4]

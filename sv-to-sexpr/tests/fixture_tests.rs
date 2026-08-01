@@ -38,7 +38,7 @@ fn corpus_family_ast_goldens_are_stable() {
     for (name, source) in [
         ("simple_gate", "sv-cells/dmg_cpu_b/cells/and2.sv"),
         ("latch", "sv-cells/dmg_cpu_b/cells/dlatch.sv"),
-        ("generated_dff", "sv-cells/dmg_cpu_b/cells/dffr_cc.sv"),
+        ("generated_tff", "sv-cells/dmg_cpu_b/cells/tffnl.sv"),
         (
             "tri_state_strength",
             "sv-cells/dmg_cpu_b/cells/pad_bidir_pu.sv",
@@ -76,7 +76,7 @@ fn corpus_family_ast_goldens_are_stable() {
 fn full_corpus_ast_coverage_is_exhaustive_and_stable() {
     let corpus_root = repository_root().join("sv-cells");
     let files = collect_sv_files(&corpus_root).unwrap();
-    assert_eq!(files.len(), 206);
+    assert_eq!(files.len(), 191);
 
     let mut coverage = AstCoverage::default();
     let mut source_directives = 0;
@@ -112,10 +112,10 @@ fn full_corpus_ast_coverage_is_exhaustive_and_stable() {
         coverage.visit_design(&design, &relative);
     }
 
-    assert_eq!(coverage.count("design"), 206);
-    assert_eq!(source_directives, 410);
+    assert_eq!(coverage.count("design"), 191);
+    assert_eq!(source_directives, 380);
     assert_eq!(coverage.count("design-item.directive"), source_directives);
-    assert_eq!(source_modules, 206);
+    assert_eq!(source_modules, 191);
     assert_eq!(source_endmodules, source_modules);
     assert_eq!(coverage.count("design-item.module"), source_modules);
     assert_eq!(coverage.count("module"), source_modules);

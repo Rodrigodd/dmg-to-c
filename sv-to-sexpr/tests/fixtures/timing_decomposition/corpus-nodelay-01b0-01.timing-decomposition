@@ -1,0 +1,15 @@
+timing decomposition corpus shard
+mode: nodelay
+shard: 01b0-01/16
+rule: sorted-index-modulo-16
+split-residue: 1/12
+split-rule: within-shard-rank-modulo-12
+cases: 1
+success path=sv-cells/dmg_cpu_b/cells/mux.sv assignments=8 registers=0 constraints=0 components=0 dN=0
+successes: 1
+failures: 0
+assignments: 8
+registers: 0
+constraints: 0
+components: 0
+dN: 0

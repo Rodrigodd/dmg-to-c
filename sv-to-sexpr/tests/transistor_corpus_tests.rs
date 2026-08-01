@@ -45,7 +45,7 @@ struct ModeTotals {
 #[test]
 fn dual_mode_transistor_corpus_is_exact_direct_flat_and_fully_lowered() {
     let corpus = corpus();
-    assert_eq!(corpus.designs.len(), 206);
+    assert_eq!(corpus.designs.len(), 191);
 
     let delayful = audit_mode(corpus, GenerateMode::Delayful);
     let nodelay = audit_mode(corpus, GenerateMode::Nodelay);
@@ -55,7 +55,7 @@ fn dual_mode_transistor_corpus_is_exact_direct_flat_and_fully_lowered() {
     assert_exact_mode(&delayful, GenerateMode::Delayful);
     assert_exact_mode(&nodelay, GenerateMode::Nodelay);
 
-    let mut summary = String::from("transistor corpus audit\nfiles=206\n");
+    let mut summary = String::from("transistor corpus audit\nfiles=191\n");
     writeln!(
         &mut summary,
         "source files={} calls={} nmos={} pmos={} rnmos={}",
@@ -334,7 +334,7 @@ fn is_zero_delay(delay: &DelayTuple) -> bool {
 }
 
 fn assert_exact_mode(totals: &ModeTotals, mode: GenerateMode) {
-    assert_eq!(totals.succeeded, 206);
+    assert_eq!(totals.succeeded, 191);
     assert_eq!(
         totals
             .transistor_files
@@ -355,19 +355,18 @@ fn assert_exact_mode(totals: &ModeTotals, mode: GenerateMode) {
     assert_eq!(
         totals.ignores,
         match mode {
-            GenerateMode::Delayful | GenerateMode::Nodelay => 49,
+            GenerateMode::Delayful | GenerateMode::Nodelay => 45,
         }
     );
     assert_eq!(
         totals.assignments,
         match mode {
-            GenerateMode::Delayful => 1958,
-            GenerateMode::Nodelay => 1955,
+            GenerateMode::Delayful | GenerateMode::Nodelay => 1705,
         }
     );
-    assert_eq!(totals.temporaries, 1168);
-    assert_eq!(totals.register_cells, 27);
-    assert_eq!(totals.registers, 48);
+    assert_eq!(totals.temporaries, 972);
+    assert_eq!(totals.register_cells, 12);
+    assert_eq!(totals.registers, 15);
     assert_eq!(totals.rows.len(), 25);
 }
 
@@ -500,7 +499,9 @@ fn scalar_symbol(expr: &SvExpr) -> Option<String> {
 fn assert_or_update_fixture(actual: &str) {
     let path = PathBuf::from(env!("CARGO_MANIFEST_DIR"))
         .join("tests/fixtures/transistor/corpus_summary.transistor");
-    if std::env::var_os("UPDATE_TRANSISTOR_CORPUS_GOLDEN").is_some() {
+    if std::env::var_os("UPDATE_TRANSISTOR_CORPUS_GOLDEN").is_some()
+        || std::env::var_os("UPDATE_FIXTURES").is_some()
+    {
         fs::write(&path, actual).unwrap();
     }
     let expected = fs::read_to_string(&path)

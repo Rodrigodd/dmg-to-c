@@ -145,17 +145,6 @@ pub struct ErasedTimingModel {
 }
 
 impl ErasedTimingModel {
-    pub(crate) fn from_parts(
-        lowered: LoweredModule,
-        assignment_provenance: Vec<AssignmentProvenance>,
-        signal_metadata: Vec<TimingSignalMetadata>,
-    ) -> Self {
-        Self {
-            lowered,
-            assignment_provenance,
-            signal_metadata,
-        }
-    }
     pub fn lowered(&self) -> &LoweredModule {
         &self.lowered
     }

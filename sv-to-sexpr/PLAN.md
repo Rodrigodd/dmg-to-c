@@ -9,10 +9,12 @@ Primary paths:
 
 - Input cells: `sv-cells/**/*.sv`
 - Output cells: `sexpr-cells/**/*.cell`
-- Current curated corpus: 206 files
+- Current curated corpus: 191 files. The 15 former `dff*.sv` cells are
+  intentionally out of scope as of Milestone 17 and will be translated
+  manually in separate work.
 - Reference pair:
-  - `sv-cells/sm83/cells/dffs_cc_ee_pch_d_reg_pc_bit.sv`
-  - `sexpr-cells/sm83/cells/dffs_cc_ee_pch_d_reg_pc_bit.cell`
+  - `sv-cells/sm83/cells/dlatch_ee_irq.sv`
+  - `sexpr-cells/sm83/cells/dlatch_ee_irq.cell`
 
 The converter is complete only when its output preserves the modeled logic,
 state, drivers, and timing according to reviewed fixtures. Parsing a file or
@@ -22,7 +24,8 @@ serializing a syntactically valid S-expression is not sufficient by itself.
 
 ### In Scope
 
-- The SystemVerilog constructs that occur in the 206-file curated corpus.
+- The SystemVerilog constructs that occur in the retained 191-file curated
+  corpus.
 - Scalar combinational and stateful logic.
 - Continuous, procedural, primitive, and selected hierarchical drivers.
 - Tri-state, precharge, keeper, and repeated-driver behavior used by the corpus.
@@ -919,6 +922,11 @@ rise/fall recipes independently reconstruct the six source constraints without
 routing `q_n` through `q`'s public output delay. Timing arcs remain an internal
 verification oracle and are never serialized.
 
+The `dmg_dffsr` physical-topology overlay was part of the verified Milestone 16
+baseline. Milestone 17 supersedes that scope decision: all `dff*.sv` cells are
+retired from the converter corpus, and the now-unused overlay implementation is
+removed rather than retained as a dormant extension point.
+
 Expected to be working after this milestone:
 
 - Shared path suffixes are placed on shared assignments, while source-specific
@@ -987,42 +995,104 @@ Acceptance conditions:
 
 ### Milestone 17: Full-Corpus Timing Closure
 
-Status: next after the completed Milestone 16. Close every former
-multiple-specify-path approximation across the 206-cell corpus and make exact
-per-assignment timing a release gate.
+Status: in progress after the completed Milestone 16. Retire the 15 DFF-family
+cells that will be translated manually, remove their one-off physical-topology
+machinery, close every former multiple-specify-path approximation in the
+retained 191-cell corpus, and make exact per-assignment timing a bounded release
+gate.
 
 Implementation plan:
 
-- Run decomposition and independent reconstruction across both delayful and
-  nodelay modes. Classify every failure as a conflicting constraint,
-  reconvergent/non-unate analysis gap, or hidden physical topology absent from
-  the functional RTL.
-- Improve the generic graph/decomposition implementation before introducing
-  cell-specific knowledge. If exact hidden topology cannot be recovered, stop
-  for a reviewed contract decision. A permitted fallback must be a typed,
-  checked-in topology hint with validated module/signal/term references, never
-  a name-string heuristic or arbitrary output override.
-- Only if reviewed hints are required, add a schema and `serde` with derive plus
-  the compatible `toml` crate. Only if exact coefficient splitting is proven
-  necessary, add `num-rational`, `num-bigint`, and `num-traits`; floating-point
-  solving remains prohibited.
-- Regenerate and manually review affected fixtures and checked cells, then run
-  the full release gate and update documentation/status.
+1. Retire the DFF-family corpus and its special topology implementation.
+   Delete every source whose basename matches `dff*.sv`: the four
+   `sv-cells/dmg_cpu_b/cells/dff*.sv` files and eleven
+   `sv-cells/sm83/cells/dff*.sv` files. Delete their mirrored generated
+   `sexpr-cells/**/*.cell` outputs; TFF and latch cells remain in scope. The
+   separately versioned `dmg-sim` submodule and its upstream source manifest
+   are not modified by this converter milestone. Delete
+   `topology-hints/dmg_dffsr.toml`, `src/topology_hint.rs`,
+   `src/topology_apply.rs`, and `src/topology_verify.rs`. In `src/lower.rs`,
+   collapse `LoweredDecomposedTimingModel`, `DecomposedTimingStrategy`, and
+   `DecomposedTimingErasure` to the single generic exact-cover path and expose
+   its `Decomposition`, `AppliedTimingFacts`,
+   `ActualDecompositionVerification`, and `TimingErasure` directly. Remove the
+   topology modules from `src/lib.rs`; remove `TopologyTemporary`,
+   `GeneratedTopology`, `TopologyPlacement`, and their topology-only helpers
+   from `src/timing_graph.rs`. Remove the direct `serde` and `toml`
+   dependencies from `Cargo.toml`; remove the TOML packages and direct root
+   dependency edges from `Cargo.lock`. Cargo may retain inactive optional
+   `serde` package metadata declared by `petgraph`, but `cargo tree -i serde`
+   must show no active dependency. Keep `petgraph` for the functional graph and
+   `proptest` for exact symbolic decomposition properties; add no solver or
+   numeric crate.
+
+2. Rebase tests and fixtures on the retained corpus without weakening generic
+   language coverage. Replace corpus references to removed DFF files in
+   `src/analyze.rs`, `src/lower.rs`, `sexpr-fmt/src/format.rs`, and the
+   integration suites under `tests/` with retained latch, TFF, generate,
+   driver, and timing cells where the tested construct still exists. Remove
+   DFF-only fixtures under `tests/fixtures/{analysis,ast,generate,stateful,
+   timing_decomposition,timing_graph}` and regenerate all aggregate corpus
+   snapshots for exactly 191 sorted paths. Switch the repository reference
+   fixture to `sm83/cells/dlatch_ee_irq`. Do not keep a copied DFF as a hidden
+   corpus fixture merely to preserve a historical golden; focused inline unit
+   syntax may remain only when it tests a generic parser or analyzer invariant.
+
+3. Replace the monolithic timing-closure audit with bounded independent test
+   cases in `tests/timing_decomposition_corpus_tests.rs`. Partition the sorted
+   191-file corpus deterministically into fixed shards for both delayful and
+   nodelay modes. Each retained file is lowered twice, compared byte-for-byte,
+   checked for canonical assignment-only output, and independently verified
+   against every retained full-tuple timing constraint. A cheap inventory test
+   proves that the shards cover each of the 191 files exactly once per mode.
+   Run these and all other converter tests through `cargo nextest run`; the
+   checked-in `.config/nextest.toml` slow timeout terminates a test after three
+   15-second periods (45 seconds total). No test-only timeout, ignored case, or
+   silent skip may mask an expensive or failing cell.
+
+4. Use the bounded audit to classify each retained failure by exact source path
+   and mode as a conflicting constraint, reconvergent/non-unate analysis gap,
+   or generic exact-cover search defect. Improve `src/timing_graph.rs`,
+   `src/timing_decompose.rs`, `src/timing_apply.rs`, and
+   `src/timing_terms.rs` generically, one reviewed failure class at a time.
+   Hidden physical topology has no permitted hint fallback in the retained
+   design: if a retained cell cannot be represented exactly as assignment
+   delays, stop for a new scope or source-structure decision. Floating-point
+   solving, negative coefficients, arbitrary subtraction, name heuristics, and
+   first-path selection remain prohibited.
+
+5. Make exact decomposition the ordinary lowering path used by CLI checks,
+   `convert-file`, and corpus conversion; remove the legacy first-path warning
+   and intentional-ignore path. Regenerate all 191 checked `sexpr-cells`
+   outputs, manually compare every changed timing placement with its retained
+   SystemVerilog source and the independent reconstruction evidence, then run
+   the complete release gate and update `CONTRACT.md`, `STATUS.md`, and this
+   plan.
 
 Acceptance conditions:
 
-- All 49 former additional-path intentional ignores are gone in delayful and
-  nodelay modes; all 206 files lower with zero warnings, zero intentional
-  ignores, and zero failures.
+- Exactly 15 `sv-cells/**/dff*.sv` files and their 15 generated
+  `sexpr-cells/**/dff*.cell` outputs are removed; no in-scope converter test or
+  fixture retains a dead reference to them. Exactly 191 source/output pairs
+  remain, while TFF and latch cells remain covered. The external `dmg-sim`
+  submodule remains clean and pinned to its existing revision.
+- The physical-topology hint files, public variants, provenance roles, tests,
+  direct `serde`/`toml` dependencies, and TOML lock packages are absent, and
+  the decomposed lowering API has one generic exact-cover strategy.
+- Every former additional-path intentional ignore belonging to a retained cell
+  is gone in delayful and nodelay modes; all 191 files lower in both modes with
+  zero warnings, zero intentional ignores, and zero failures. Removed DFF cases
+  are reported as explicit scope removals, never counted as successful lowers.
 - Every emitted delay placement passes independent full-tuple path
   reconstruction against all retained source constraints.
 - All output remains assignment-only, formatter-canonical, idempotent, and
   byte-identical across repeated strict conversion.
-- Full converter tests, formatter tests, formatting, clippy, staged corpus
-  checks, and CI pass; every changed golden is manually compared with its
-  SystemVerilog source and this contract.
-- `PLAN.md` and `STATUS.md` record completion only after the preceding checks
-  and the chosen treatment of any hidden-topology case are reviewed.
+- `cargo nextest run --manifest-path sv-to-sexpr/Cargo.toml` completes with no
+  test exceeding the configured 45-second limit. Formatter tests, formatting,
+  clippy, staged corpus checks, and CI also pass; every changed golden is
+  manually compared with its retained SystemVerilog source and this contract.
+- `PLAN.md` and `STATUS.md` record completion only after all preceding checks
+  and the DFF/topology retirement are reviewed.
 
 ## Required Test Layout
 
@@ -1048,8 +1118,8 @@ sv-to-sexpr/tests/
 The original full-corpus release baseline was accepted at Milestone 13. The
 revised timing work is done only when Milestone 17 is accepted. In particular:
 
-- All 206 files produce deterministic, structurally valid, manually reviewed
-  fixture output for every supported construct family.
+- All 191 retained files produce deterministic, structurally valid, manually
+  reviewed fixture output for every supported construct family.
 - Register lists contain state only and preserve exact four-state initial
   metadata, using `x` when no selected initializer exists.
 - Generate branches are not combined accidentally.

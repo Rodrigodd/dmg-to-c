@@ -218,7 +218,7 @@ mod tests {
     #[test]
     fn fixture_round_trips() {
         let path = PathBuf::from(env!("CARGO_MANIFEST_DIR"))
-            .join("../sexpr-cells/sm83/cells/dffs_cc_ee_pch_d_reg_pc_bit.cell");
+            .join("../sexpr-cells/sm83/cells/dlatch_ee_irq.cell");
         let source = fs::read_to_string(path).unwrap();
         let doc = parse_document(&source).unwrap();
         let formatted = format_document(&doc, FormatOptions::default());

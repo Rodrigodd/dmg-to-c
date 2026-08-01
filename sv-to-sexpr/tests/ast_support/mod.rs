@@ -487,7 +487,9 @@ impl AstCoverage {
 }
 
 pub fn assert_or_update_fixture(path: &Path, actual: &str) {
-    if std::env::var_os("UPDATE_AST_GOLDENS").is_some() {
+    if std::env::var_os("UPDATE_AST_GOLDENS").is_some()
+        || std::env::var_os("UPDATE_FIXTURES").is_some()
+    {
         fs::create_dir_all(path.parent().expect("fixture path has a parent")).unwrap();
         fs::write(path, actual).unwrap();
     }

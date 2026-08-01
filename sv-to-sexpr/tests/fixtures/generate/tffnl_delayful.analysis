@@ -1,0 +1,99 @@
+analyze summary: modules=1 disposition=deferred requirements=5
+module dmg_tffnl @sv-cells/dmg_cpu_b/cells/tffnl.sv:3:1
+  inputs: d l tclk_n
+  outputs: q q_n
+  registers: ff q
+  symbols:
+    L_q category=parameter @sv-cells/dmg_cpu_b/cells/tffnl.sv:4:3
+    L_q_n category=parameter @sv-cells/dmg_cpu_b/cells/tffnl.sv:5:3
+    L_tclk_n_out category=parameter @sv-cells/dmg_cpu_b/cells/tffnl.sv:7:3
+    L_tclk_out category=parameter @sv-cells/dmg_cpu_b/cells/tffnl.sv:6:3
+    T_fall_aoi category=specparam @sv-cells/dmg_cpu_b/cells/tffnl.sv:42:3
+    T_fall_mux category=specparam @sv-cells/dmg_cpu_b/cells/tffnl.sv:44:3
+    T_fall_nor category=specparam @sv-cells/dmg_cpu_b/cells/tffnl.sv:40:3
+    T_fall_not1 category=specparam @sv-cells/dmg_cpu_b/cells/tffnl.sv:36:3
+    T_fall_not2 category=specparam @sv-cells/dmg_cpu_b/cells/tffnl.sv:38:3
+    T_fall_not3 category=specparam @sv-cells/dmg_cpu_b/cells/tffnl.sv:46:3
+    T_fall_q category=specparam @sv-cells/dmg_cpu_b/cells/tffnl.sv:48:3
+    T_fall_q_n category=specparam @sv-cells/dmg_cpu_b/cells/tffnl.sv:50:3
+    T_rise_aoi category=specparam @sv-cells/dmg_cpu_b/cells/tffnl.sv:41:3
+    T_rise_mux category=specparam @sv-cells/dmg_cpu_b/cells/tffnl.sv:43:3
+    T_rise_nor category=specparam @sv-cells/dmg_cpu_b/cells/tffnl.sv:39:3
+    T_rise_not1 category=specparam @sv-cells/dmg_cpu_b/cells/tffnl.sv:35:3
+    T_rise_not2 category=specparam @sv-cells/dmg_cpu_b/cells/tffnl.sv:37:3
+    T_rise_not3 category=specparam @sv-cells/dmg_cpu_b/cells/tffnl.sv:45:3
+    T_rise_q category=specparam @sv-cells/dmg_cpu_b/cells/tffnl.sv:47:3
+    T_rise_q_n category=specparam @sv-cells/dmg_cpu_b/cells/tffnl.sv:49:3
+    d category=port @sv-cells/dmg_cpu_b/cells/tffnl.sv:9:3
+    ff category=declaration @sv-cells/dmg_cpu_b/cells/tffnl.sv:15:2
+    l category=port @sv-cells/dmg_cpu_b/cells/tffnl.sv:9:3
+    l_buf category=declaration @sv-cells/dmg_cpu_b/cells/tffnl.sv:15:2
+    q category=port @sv-cells/dmg_cpu_b/cells/tffnl.sv:10:3
+    q_n category=port @sv-cells/dmg_cpu_b/cells/tffnl.sv:10:3
+    tclk_n category=port @sv-cells/dmg_cpu_b/cells/tffnl.sv:9:3
+    tclk_n_buf category=declaration @sv-cells/dmg_cpu_b/cells/tffnl.sv:15:2
+  ports:
+    d direction=input use=input modifiers=[logic] @sv-cells/dmg_cpu_b/cells/tffnl.sv:9:3
+    l direction=input use=input modifiers=[logic] @sv-cells/dmg_cpu_b/cells/tffnl.sv:9:3
+    q direction=output use=output modifiers=[logic] @sv-cells/dmg_cpu_b/cells/tffnl.sv:10:3
+    q_n direction=output use=output modifiers=[logic] @sv-cells/dmg_cpu_b/cells/tffnl.sv:10:3
+    tclk_n direction=input use=input modifiers=[logic] @sv-cells/dmg_cpu_b/cells/tffnl.sv:9:3
+  declarations:
+    ff kind=Logic type=<implicit> value=<none> @sv-cells/dmg_cpu_b/cells/tffnl.sv:15:2
+    l_buf kind=Logic type=<implicit> value=<none> @sv-cells/dmg_cpu_b/cells/tffnl.sv:15:2
+    tclk_n_buf kind=Logic type=<implicit> value=<none> @sv-cells/dmg_cpu_b/cells/tffnl.sv:15:2
+  signal_roles:
+    ff roles=[ModeledState] declared=sv-cells/dmg_cpu_b/cells/tffnl.sv:15:2
+    l_buf roles=[ContinuousDriven] declared=sv-cells/dmg_cpu_b/cells/tffnl.sv:15:2
+    q roles=[ModeledState] declared=sv-cells/dmg_cpu_b/cells/tffnl.sv:10:3
+    q_n roles=[ContinuousDriven] declared=sv-cells/dmg_cpu_b/cells/tffnl.sv:10:3
+    tclk_n_buf roles=[ContinuousDriven] declared=sv-cells/dmg_cpu_b/cells/tffnl.sv:15:2
+  assignments:
+    #2 (l_buf continuous l) @sv-cells/dmg_cpu_b/cells/tffnl.sv:25:4 strength=<none> syntax=Continuous
+    #3 (tclk_n_buf continuous tclk_n) @sv-cells/dmg_cpu_b/cells/tffnl.sv:26:4 strength=<none> syntax=Continuous
+    #6 (q_n continuous (not q)) @sv-cells/dmg_cpu_b/cells/tffnl.sv:32:2 strength=<none> syntax=Continuous
+    #0 (ff initial 0) @sv-cells/dmg_cpu_b/cells/tffnl.sv:17:10 strength=<none> syntax=Initial
+    #1 (q initial 0) @sv-cells/dmg_cpu_b/cells/tffnl.sv:18:10 strength=<none> syntax=Initial
+    #4 (q state (?: l_buf d ff)) @sv-cells/dmg_cpu_b/cells/tffnl.sv:30:41 strength=<none> syntax=Procedural { state: true, source: AlwaysLatch }
+    #5 (ff state (?: l_buf d (not q))) @sv-cells/dmg_cpu_b/cells/tffnl.sv:31:41 strength=<none> syntax=Procedural { state: true, source: AlwaysLatch }
+  drivers:
+    #0 target=ff source=initial @sv-cells/dmg_cpu_b/cells/tffnl.sv:17:10
+    #1 target=q source=initial @sv-cells/dmg_cpu_b/cells/tffnl.sv:18:10
+    #2 target=l_buf source=continuous @sv-cells/dmg_cpu_b/cells/tffnl.sv:25:4
+    #3 target=tclk_n_buf source=continuous @sv-cells/dmg_cpu_b/cells/tffnl.sv:26:4
+    #4 target=q source=procedural(state=true,source=AlwaysLatch) @sv-cells/dmg_cpu_b/cells/tffnl.sv:30:41
+    #5 target=ff source=procedural(state=true,source=AlwaysLatch) @sv-cells/dmg_cpu_b/cells/tffnl.sv:31:41
+    #6 target=q_n source=continuous @sv-cells/dmg_cpu_b/cells/tffnl.sv:32:2
+  primitives:
+  instantiations:
+  timing_aliases:
+    T_fall_aoi kind=Specparam value=(call tpd_elmore 143 (mul (call R_nmos_ohm (mul 8 L_unit)) 2)) @sv-cells/dmg_cpu_b/cells/tffnl.sv:42:3
+    T_fall_mux kind=Specparam value=(call tpd_elmore 78 (call R_nmos_ohm (mul 8 L_unit))) @sv-cells/dmg_cpu_b/cells/tffnl.sv:44:3
+    T_fall_nor kind=Specparam value=(call tpd_elmore 36 (call R_nmos_ohm (mul 8 L_unit))) @sv-cells/dmg_cpu_b/cells/tffnl.sv:40:3
+    T_fall_not1 kind=Specparam value=(call tpd_elmore L_tclk_out (call R_nmos_ohm (mul 35 L_unit))) @sv-cells/dmg_cpu_b/cells/tffnl.sv:36:3
+    T_fall_not2 kind=Specparam value=(call tpd_elmore L_tclk_n_out (call R_nmos_ohm (mul 35 L_unit))) @sv-cells/dmg_cpu_b/cells/tffnl.sv:38:3
+    T_fall_not3 kind=Specparam value=(call tpd_elmore 110 (call R_nmos_ohm (mul 8 L_unit))) @sv-cells/dmg_cpu_b/cells/tffnl.sv:46:3
+    T_fall_q kind=Specparam value=(call tpd_elmore L_q (call R_nmos_ohm (mul 35 L_unit))) @sv-cells/dmg_cpu_b/cells/tffnl.sv:48:3
+    T_fall_q_n kind=Specparam value=(call tpd_elmore L_q_n (call R_nmos_ohm (mul 35 L_unit))) @sv-cells/dmg_cpu_b/cells/tffnl.sv:50:3
+    T_rise_aoi kind=Specparam value=(call tpd_elmore 143 (mul (call R_pmos_ohm (mul 8 L_unit)) 2)) @sv-cells/dmg_cpu_b/cells/tffnl.sv:41:3
+    T_rise_mux kind=Specparam value=(call tpd_elmore 78 (call R_pmos_ohm (mul 8 L_unit))) @sv-cells/dmg_cpu_b/cells/tffnl.sv:43:3
+    T_rise_nor kind=Specparam value=(call tpd_elmore 36 (mul (call R_pmos_ohm (mul 8 L_unit)) 2)) @sv-cells/dmg_cpu_b/cells/tffnl.sv:39:3
+    T_rise_not1 kind=Specparam value=(call tpd_elmore L_tclk_out (call R_pmos_ohm (mul 35 L_unit))) @sv-cells/dmg_cpu_b/cells/tffnl.sv:35:3
+    T_rise_not2 kind=Specparam value=(call tpd_elmore L_tclk_n_out (call R_pmos_ohm (mul 35 L_unit))) @sv-cells/dmg_cpu_b/cells/tffnl.sv:37:3
+    T_rise_not3 kind=Specparam value=(call tpd_elmore 110 (call R_pmos_ohm (mul 8 L_unit))) @sv-cells/dmg_cpu_b/cells/tffnl.sv:45:3
+    T_rise_q kind=Specparam value=(call tpd_elmore L_q (call R_pmos_ohm (mul 35 L_unit))) @sv-cells/dmg_cpu_b/cells/tffnl.sv:47:3
+    T_rise_q_n kind=Specparam value=(call tpd_elmore L_q_n (call R_pmos_ohm (mul 35 L_unit))) @sv-cells/dmg_cpu_b/cells/tffnl.sv:49:3
+  specify_paths:
+    controls=[tclk_n] target=q delays=[(add (add (add (add T_rise_not1 T_fall_mux) T_rise_nor) T_fall_aoi) T_rise_q),(add (add (add (add (add T_rise_not1 T_fall_not2) T_rise_mux) T_fall_nor) T_rise_aoi) T_fall_q)] @sv-cells/dmg_cpu_b/cells/tffnl.sv:52:3
+    controls=[d] target=q delays=[(add T_fall_aoi T_rise_q),(add T_rise_aoi T_fall_q)] @sv-cells/dmg_cpu_b/cells/tffnl.sv:54:3
+    controls=[l] target=q delays=[(add (add T_rise_nor T_fall_aoi) T_rise_q),(add (add T_fall_nor T_rise_aoi) T_fall_q)] @sv-cells/dmg_cpu_b/cells/tffnl.sv:55:3
+    controls=[tclk_n] target=q_n delays=[(add (add (add T_fall_not1 T_rise_mux) T_fall_not3) T_rise_q_n),(add (add (add (add T_fall_not1 T_rise_not2) T_fall_mux) T_rise_not3) T_fall_q_n)] @sv-cells/dmg_cpu_b/cells/tffnl.sv:56:3
+    controls=[d] target=q_n delays=[(add (add (add T_rise_aoi T_rise_mux) T_fall_not3) T_rise_q_n),(add (add (add T_fall_aoi T_fall_mux) T_rise_not3) T_fall_q_n)] @sv-cells/dmg_cpu_b/cells/tffnl.sv:58:3
+    controls=[l] target=q_n delays=[(add (add (add (add T_fall_nor T_rise_aoi) T_rise_mux) T_fall_not3) T_rise_q_n),(add (add (add (add T_rise_nor T_fall_aoi) T_fall_mux) T_rise_not3) T_fall_q_n)] @sv-cells/dmg_cpu_b/cells/tffnl.sv:60:3
+  generate_alternatives:
+requirements:
+  driver.repeated | M6 | sv-cells/dmg_cpu_b/cells/tffnl.sv:17:10 | repeated source drivers are scheduled for Milestone 6
+  state.procedural | M5 | sv-cells/dmg_cpu_b/cells/tffnl.sv:30:41 | stateful procedural lowering is scheduled for Milestone 5
+  timing.alias | M7 | sv-cells/dmg_cpu_b/cells/tffnl.sv:42:3 | timing aliases are scheduled for Milestone 7
+  timing.specify-path | M7 | sv-cells/dmg_cpu_b/cells/tffnl.sv:52:3 | specify paths are scheduled for Milestone 7
+  value.combinational | M4 | sv-cells/dmg_cpu_b/cells/tffnl.sv:25:4 | combinational value lowering is scheduled for Milestone 4

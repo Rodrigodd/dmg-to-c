@@ -1,0 +1,48 @@
+source: sv-cells/sm83/cells/dlatch_ee_irq.sv
+cell: sm83_dlatch_ee_irq
+inputs: [d, ena, ena_n, pch_n, ena_q_n]
+outputs: [q, q_n, gated_q_n]
+registers: [q_n=0]
+assignments:
+  0: t0
+    value: op(and; atom(d), atom(ena))
+    delay: tuple(atom(0))
+  1: t1
+    value: op(not; atom(d))
+    delay: tuple(atom(0))
+  2: t2
+    value: op(not; atom(ena_n))
+    delay: tuple(atom(0))
+  3: t3
+    value: op(and; atom(t1), atom(t2))
+    delay: tuple(atom(0))
+  4: t4
+    value: op(or; atom(t0), atom(t3))
+    delay: tuple(atom(0))
+  5: t5
+    value: op(not; atom(d))
+    delay: tuple(atom(0))
+  6: q_n
+    value: op(mux; atom(t4), atom(t5), atom(q_n))
+    delay: tuple(op(+; op(+; op(elmore; op(wire; atom(34)), op(*; op(pmos; atom(3)), atom(2))), op(elmore; op(wire; atom(34)), op(nmos; atom(3)))), op(elmore; op(wire; atom(L_q_n)), op(pmos; atom(13)))), op(+; op(+; op(elmore; op(wire; atom(34)), op(*; op(nmos; atom(3)), atom(2))), op(elmore; op(wire; atom(34)), op(pmos; atom(3)))), op(elmore; op(wire; atom(L_q_n)), op(nmos; atom(6)))))
+  7: q
+    value: op(not; atom(q_n))
+    delay: tuple(op(+; op(+; op(+; op(elmore; op(wire; atom(34)), op(*; op(nmos; atom(3)), atom(2))), op(elmore; op(wire; atom(34)), op(pmos; atom(3)))), op(elmore; op(wire; atom(L_q_n)), op(nmos; atom(6)))), op(elmore; op(wire; atom(L_q)), op(pmos; atom(6)))), op(+; op(+; op(+; op(elmore; op(wire; atom(34)), op(*; op(pmos; atom(3)), atom(2))), op(elmore; op(wire; atom(34)), op(nmos; atom(3)))), op(elmore; op(wire; atom(L_q_n)), op(pmos; atom(13)))), op(elmore; op(wire; atom(L_q)), op(nmos; atom(6)))))
+  8: gated_q
+    value: op(bufif0-strength; atom(1), atom(pch_n), atom(strong1), atom(highz0))
+    delay: tuple(atom(0))
+  9: t6
+    value: op(caseneq; atom(ena_q_n), atom(1))
+    delay: tuple(atom(0))
+  10: t7
+    value: op(and; atom(q_n), atom(t6))
+    delay: tuple(atom(0))
+  11: gated_q
+    value: op(rnmos; atom(ena_q_n), atom(t7))
+    delay: tuple(atom(0))
+  12: gated_q
+    value: op(keeper; )
+    delay: tuple(atom(0))
+  13: gated_q_n
+    value: op(not; atom(gated_q))
+    delay: tuple(op(+; op(elmore; op(wire; atom(19)), op(nmos; atom(6))), op(elmore; op(wire; atom(L_gated_q_n)), op(pmos; atom(6)))), op(+; op(elmore; op(wire; atom(19)), op(pmos; atom(6))), op(elmore; op(wire; atom(L_gated_q_n)), op(nmos; atom(6)))))

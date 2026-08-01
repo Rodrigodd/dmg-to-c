@@ -3252,37 +3252,33 @@ mod tests {
 
     #[test]
     fn analyzes_reference_cell() {
-        let report = analyze_path("../sv-cells/sm83/cells/dffs_cc_ee_pch_d_reg_pc_bit.sv");
+        let report = analyze_path("../sv-cells/sm83/cells/dlatch_ee_irq.sv");
         assert_eq!(report.modules.len(), 1);
         let module = &report.modules[0];
-        assert_eq!(
-            module.inputs,
-            vec!["clk", "clk_n", "ena", "ena_n", "s_n", "pch_n", "d"]
-        );
-        assert_eq!(module.outputs, vec!["q", "q_n", "d"]);
-        assert_eq!(module.registers, vec!["ff1", "ff2", "q_n"]);
-        assert_eq!(module.procedural_assignments.len(), 3);
-        assert_eq!(module.continuous_assignments.len(), 1);
+        assert_eq!(module.inputs, vec!["d", "ena", "ena_n", "pch_n", "ena_q_n"]);
+        assert_eq!(module.outputs, vec!["q", "q_n", "gated_q_n"]);
+        assert_eq!(module.registers, vec!["q_n"]);
+        assert_eq!(module.procedural_assignments.len(), 1);
+        assert_eq!(module.continuous_assignments.len(), 2);
         assert_eq!(
             module
                 .primitive_calls
                 .iter()
                 .map(|call| call.name.as_str())
                 .collect::<Vec<_>>(),
-            vec!["bufif0"]
+            vec!["bufif0", "rnmos"]
         );
         assert_eq!(module.symbols["d"].category, SymbolCategory::Port);
-        assert_eq!(module.symbols["L_d"].category, SymbolCategory::Parameter);
-        assert_eq!(module.symbols["ff1"].category, SymbolCategory::Declaration);
+        assert_eq!(module.symbols["L_q"].category, SymbolCategory::Parameter);
         assert_eq!(
-            module.symbols["T_rise_d"].category,
-            SymbolCategory::Localparam
+            module.symbols["gated_q"].category,
+            SymbolCategory::Declaration
         );
         assert_eq!(
-            module.symbols["T_rise_buf1"].category,
+            module.symbols["T_rise_buf"].category,
             SymbolCategory::Specparam
         );
-        assert_eq!(module.specify_paths.len(), 2);
+        assert_eq!(module.specify_paths.len(), 4);
         assert!(module.specify_paths.iter().all(|path| path.span.line > 0));
     }
 
@@ -3327,31 +3323,24 @@ mod tests {
     }
 
     #[test]
-    fn generated_dff_branches_remain_distinct() {
-        let report = analyze_path("../sv-cells/dmg_cpu_b/cells/dffr_cc.sv");
+    fn generated_tff_branches_remain_distinct() {
+        let report = analyze_path("../sv-cells/dmg_cpu_b/cells/tffnl.sv");
         let module = &report.modules[0];
         assert_eq!(module.generate_alternatives.len(), 1);
-        assert!(module.registers.is_empty());
-        assert!(module.drivers.is_empty());
-        assert!(module.continuous_assignments.is_empty());
-        assert!(module.procedural_assignments.is_empty());
+        assert_eq!(module.registers, vec!["ff", "q"]);
 
         let alternative = &module.generate_alternatives[0];
         assert_eq!(alternative.condition.text, "nodelay");
-        assert_eq!(alternative.then_branch.registers, vec!["ff", "q"]);
-        assert_eq!(alternative.then_branch.continuous_assignments.len(), 1);
-        assert_eq!(alternative.then_branch.procedural_assignments.len(), 5);
-        assert_eq!(alternative.then_branch.drivers.len(), 8);
+        assert!(alternative.then_branch.registers.is_empty());
+        assert!(alternative.then_branch.continuous_assignments.is_empty());
+        assert_eq!(alternative.then_branch.procedural_assignments.len(), 2);
+        assert_eq!(alternative.then_branch.drivers.len(), 2);
 
         let else_branch = alternative.else_branch.as_ref().unwrap();
-        assert_eq!(else_branch.registers, vec!["mux1", "mux2"]);
-        assert_eq!(else_branch.continuous_assignments.len(), 6);
-        assert_eq!(else_branch.procedural_assignments.len(), 2);
-        assert_eq!(else_branch.drivers.len(), 10);
-        assert!(alternative.then_branch.declarations.contains_key("ff"));
-        assert!(else_branch.declarations.contains_key("mux1"));
-        assert!(!alternative.then_branch.declarations.contains_key("mux1"));
-        assert!(!else_branch.declarations.contains_key("ff"));
+        assert!(else_branch.registers.is_empty());
+        assert_eq!(else_branch.continuous_assignments.len(), 2);
+        assert!(else_branch.procedural_assignments.is_empty());
+        assert_eq!(else_branch.drivers.len(), 2);
     }
 
     #[test]
@@ -3837,7 +3826,7 @@ endmodule
                 TargetMilestone::M4FlatCombinational,
             ),
             (
-                analyze_path("../sv-cells/sm83/cells/dffs_cc_ee_pch_d_reg_pc_bit.sv"),
+                analyze_path("../sv-cells/sm83/cells/dlatch_ee_irq.sv"),
                 TargetMilestone::M5StatefulProcedural,
             ),
             (
@@ -3849,7 +3838,7 @@ endmodule
                 TargetMilestone::M7SymbolicTiming,
             ),
             (
-                analyze_path("../sv-cells/dmg_cpu_b/cells/dffr_cc.sv"),
+                analyze_path("../sv-cells/dmg_cpu_b/cells/tffnl.sv"),
                 TargetMilestone::M8GenerateSelection,
             ),
             (keeper_structural, TargetMilestone::M10Keeper),

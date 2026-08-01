@@ -1,0 +1,20 @@
+timing decomposition corpus shard
+mode: delayful
+shard: 09b/16
+rule: sorted-index-modulo-16
+split-residue: 1/2
+split-rule: within-shard-rank-modulo-2
+cases: 6
+failure unclassified path=sv-cells/dmg_cpu_b/cells/nand_latch.sv span=sv-cells/dmg_cpu_b/cells/nand_latch.sv:24:4 message="sv-cells/dmg_cpu_b/cells/nand_latch.sv:24:4: timing decomposition error: constraint p0 control c0 path f0 component 0 has transition-ambiguous placement DependencyEdge { dependency_order: 0, source: TimingNodeId(1), target: TimingNodeId(12) }"
+success path=sv-cells/dmg_cpu_b/cells/xnor.sv assignments=1 registers=0 constraints=1 components=4 dN=0
+success path=sv-cells/sm83/cells/irq_prio_bit2.sv assignments=19 registers=0 constraints=0 components=0 dN=0
+success path=sv-cells/sm83/cells/not2_pch_dec1.sv assignments=4 registers=0 constraints=2 components=4 dN=0
+success path=sv-cells/sm83/cells/not_reg_we.sv assignments=1 registers=0 constraints=1 components=2 dN=0
+success path=sv-cells/sm83/cells/reg_wz_out.sv assignments=34 registers=0 constraints=2 components=16 dN=0
+successes: 5
+failures: 1
+assignments: 59
+registers: 0
+constraints: 6
+components: 26
+dN: 0

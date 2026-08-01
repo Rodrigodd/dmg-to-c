@@ -17,13 +17,7 @@ use sv_to_sexpr::parser::parse_file;
 use sv_to_sexpr::serialize::render_cell;
 use sv_to_sexpr::survey::collect_sv_files;
 
-const GENERATE_PATHS: &[&str] = &[
-    "sv-cells/dmg_cpu_b/cells/dffr.sv",
-    "sv-cells/dmg_cpu_b/cells/dffr_cc.sv",
-    "sv-cells/dmg_cpu_b/cells/dffr_cc_q.sv",
-    "sv-cells/dmg_cpu_b/cells/dffsr.sv",
-    "sv-cells/dmg_cpu_b/cells/tffnl.sv",
-];
+const GENERATE_PATHS: &[&str] = &["sv-cells/dmg_cpu_b/cells/tffnl.sv"];
 struct Corpus {
     designs: BTreeMap<String, Design>,
     catalog: ModuleCatalog,
@@ -45,7 +39,7 @@ struct ModeTotals {
 #[test]
 fn dual_mode_generate_corpus_is_exact_selected_and_deterministic() {
     let corpus = load_corpus();
-    assert_eq!(corpus.designs.len(), 206);
+    assert_eq!(corpus.designs.len(), 191);
     let structural_generate = corpus
         .designs
         .iter()
@@ -54,7 +48,7 @@ fn dual_mode_generate_corpus_is_exact_selected_and_deterministic() {
     assert_eq!(structural_generate, GENERATE_PATHS);
 
     let mut output =
-        String::from("generate corpus audit\nfiles=206 generate-files=5 non-generate-files=201\n");
+        String::from("generate corpus audit\nfiles=191 generate-files=1 non-generate-files=190\n");
     output.push_str("structural-generate-forms:\n");
     for path in GENERATE_PATHS {
         render_structural_generate(path, &corpus.designs[*path], &mut output);
@@ -111,21 +105,15 @@ fn dual_mode_generate_corpus_is_exact_selected_and_deterministic() {
         );
         identical_non_generate += 1;
     }
-    assert_eq!(identical_non_generate, 201);
+    assert_eq!(identical_non_generate, 190);
     assert_eq!(
         identical_generate_cells,
-        [
-            "sv-cells/dmg_cpu_b/cells/dffr.sv",
-            "sv-cells/dmg_cpu_b/cells/dffsr.sv",
-            "sv-cells/dmg_cpu_b/cells/tffnl.sv",
-        ]
+        ["sv-cells/dmg_cpu_b/cells/tffnl.sv"]
     );
     writeln!(
         &mut output,
-        "mode-comparison: non-generate-identical=201 generate-cell-identical=[{}] generate-cell-distinct=[{},{}]",
+        "mode-comparison: non-generate-identical=190 generate-cell-identical=[{}] generate-cell-distinct=[]",
         identical_generate_cells.join(","),
-        GENERATE_PATHS[1],
-        GENERATE_PATHS[2]
     )
     .unwrap();
 
@@ -146,16 +134,16 @@ fn staged_cli_checks_report_exact_dual_mode_results() {
         let analyze = run_cli(&analyze_args);
         assert!(analyze.status.success());
         assert!(String::from_utf8(analyze.stdout).unwrap().starts_with(
-            "analyze check summary: processed=206 supported=3 deferred=203 warned=0 failed=0\n"
+            "analyze check summary: processed=191 supported=3 deferred=188 warned=0 failed=0\n"
         ));
         assert!(analyze.stderr.is_empty());
 
         lower_args.push("--strict");
         let lower = run_cli(&lower_args);
         assert!(lower.status.success());
-        let expected_ignores = 49;
+        let expected_ignores = 45;
         assert!(String::from_utf8(lower.stdout).unwrap().starts_with(&format!(
-            "lower check summary: processed=206 warned=0 intentional-ignored={expected_ignores} failed=0\n"
+            "lower check summary: processed=191 warned=0 intentional-ignored={expected_ignores} failed=0\n"
         )));
         assert!(lower.stderr.is_empty());
     }
@@ -243,7 +231,7 @@ fn audit_mode(
         totals.analysis_warned,
         totals.analysis_failed,
         totals.lower_succeeded,
-        206 - totals.lower_succeeded,
+        191 - totals.lower_succeeded,
         totals.warnings,
         totals.intentional_ignores
     )
@@ -265,13 +253,13 @@ fn audit_mode(
 
 fn assert_mode_totals(totals: &ModeTotals) {
     assert_eq!(totals.analysis_supported, 3);
-    assert_eq!(totals.analysis_deferred, 203);
+    assert_eq!(totals.analysis_deferred, 188);
     assert_eq!(totals.analysis_warned, 0);
     assert_eq!(totals.analysis_failed, 0);
     assert!(!totals.requirements.contains_key("generate.alternative"));
-    assert_eq!(totals.lower_succeeded, 206);
+    assert_eq!(totals.lower_succeeded, 191);
     assert_eq!(totals.warnings, 0);
-    assert_eq!(totals.intentional_ignores, 49);
+    assert_eq!(totals.intentional_ignores, 45);
     assert!(totals.failures.is_empty());
 }
 
@@ -491,7 +479,9 @@ fn repository_root() -> PathBuf {
 fn assert_or_update_fixture(actual: &str) {
     let fixture = PathBuf::from(env!("CARGO_MANIFEST_DIR"))
         .join("tests/fixtures/generate/corpus_summary.generate");
-    if std::env::var_os("UPDATE_GENERATE_CORPUS_GOLDEN").is_some() {
+    if std::env::var_os("UPDATE_GENERATE_CORPUS_GOLDEN").is_some()
+        || std::env::var_os("UPDATE_FIXTURES").is_some()
+    {
         fs::write(&fixture, actual).unwrap();
     }
     let expected = fs::read_to_string(&fixture)

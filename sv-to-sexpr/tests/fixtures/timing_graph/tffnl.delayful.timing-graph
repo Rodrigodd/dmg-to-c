@@ -1,0 +1,126 @@
+timing-analysis
+node n0 signal d roles=input @sv-cells/dmg_cpu_b/cells/tffnl.sv:9:3
+node n1 signal l roles=input @sv-cells/dmg_cpu_b/cells/tffnl.sv:9:3
+node n2 signal tclk_n roles=input @sv-cells/dmg_cpu_b/cells/tffnl.sv:9:3
+node n3 signal q roles=output,register @sv-cells/dmg_cpu_b/cells/tffnl.sv:10:3
+node n4 signal q_n roles=output @sv-cells/dmg_cpu_b/cells/tffnl.sv:10:3
+node n5 signal ff roles=register,internal @sv-cells/dmg_cpu_b/cells/tffnl.sv:15:2
+node n6 signal l_buf roles=internal @sv-cells/dmg_cpu_b/cells/tffnl.sv:15:2
+node n7 signal tclk_n_buf roles=internal @sv-cells/dmg_cpu_b/cells/tffnl.sv:15:2
+node n8 signal t0 roles=internal,temporary @sv-cells/dmg_cpu_b/cells/tffnl.sv:30:48
+node n9 signal t1 roles=internal,temporary @sv-cells/dmg_cpu_b/cells/tffnl.sv:30:48
+node n10 signal t2 roles=internal,temporary @sv-cells/dmg_cpu_b/cells/tffnl.sv:30:48
+node n11 signal t3 roles=internal,temporary @sv-cells/dmg_cpu_b/cells/tffnl.sv:31:48
+node n12 signal t4 roles=internal,temporary @sv-cells/dmg_cpu_b/cells/tffnl.sv:31:48
+node n13 signal t5 roles=internal,temporary @sv-cells/dmg_cpu_b/cells/tffnl.sv:31:48
+node n14 assignment order=0 target=l_buf function=direct @sv-cells/dmg_cpu_b/cells/tffnl.sv:25:4
+node n15 assignment order=1 target=tclk_n_buf function=direct @sv-cells/dmg_cpu_b/cells/tffnl.sv:26:4
+node n16 assignment order=2 target=t0 function=not @sv-cells/dmg_cpu_b/cells/tffnl.sv:30:48
+node n17 assignment order=3 target=t1 function=or @sv-cells/dmg_cpu_b/cells/tffnl.sv:30:48
+node n18 assignment order=4 target=t2 function=mux @sv-cells/dmg_cpu_b/cells/tffnl.sv:30:48
+node n19 assignment order=5 target=q function=mux @sv-cells/dmg_cpu_b/cells/tffnl.sv:30:41
+node n20 assignment order=6 target=t3 function=or @sv-cells/dmg_cpu_b/cells/tffnl.sv:31:48
+node n21 assignment order=7 target=t4 function=not @sv-cells/dmg_cpu_b/cells/tffnl.sv:31:48
+node n22 assignment order=8 target=t5 function=mux @sv-cells/dmg_cpu_b/cells/tffnl.sv:31:48
+node n23 assignment order=9 target=ff function=mux @sv-cells/dmg_cpu_b/cells/tffnl.sv:31:41
+node n24 assignment order=10 target=q_n function=not @sv-cells/dmg_cpu_b/cells/tffnl.sv:32:2
+dependency n1 -> n14 kind=operand operand=0 sense=positive event=- @sv-cells/dmg_cpu_b/cells/tffnl.sv:25:4
+dependency n14 -> n6 kind=drive operand=- sense=positive event=- @sv-cells/dmg_cpu_b/cells/tffnl.sv:25:4
+dependency n2 -> n15 kind=operand operand=0 sense=positive event=- @sv-cells/dmg_cpu_b/cells/tffnl.sv:26:4
+dependency n15 -> n7 kind=drive operand=- sense=positive event=- @sv-cells/dmg_cpu_b/cells/tffnl.sv:26:4
+dependency n7 -> n16 kind=operand operand=0 sense=negative event=- @sv-cells/dmg_cpu_b/cells/tffnl.sv:30:48
+dependency n16 -> n8 kind=drive operand=- sense=positive event=- @sv-cells/dmg_cpu_b/cells/tffnl.sv:30:48
+dependency n8 -> n17 kind=operand operand=0 sense=positive event=- @sv-cells/dmg_cpu_b/cells/tffnl.sv:30:48
+dependency n6 -> n17 kind=operand operand=1 sense=positive event=- @sv-cells/dmg_cpu_b/cells/tffnl.sv:30:48
+dependency n17 -> n9 kind=drive operand=- sense=positive event=- @sv-cells/dmg_cpu_b/cells/tffnl.sv:30:48
+dependency n6 -> n18 kind=operand operand=0 sense=non-unate event=- @sv-cells/dmg_cpu_b/cells/tffnl.sv:30:48
+dependency n0 -> n18 kind=operand operand=1 sense=conditional event=- @sv-cells/dmg_cpu_b/cells/tffnl.sv:30:48
+dependency n5 -> n18 kind=operand operand=2 sense=conditional event=- @sv-cells/dmg_cpu_b/cells/tffnl.sv:30:48
+dependency n18 -> n10 kind=drive operand=- sense=positive event=- @sv-cells/dmg_cpu_b/cells/tffnl.sv:30:48
+dependency n9 -> n19 kind=operand operand=0 sense=non-unate event=- @sv-cells/dmg_cpu_b/cells/tffnl.sv:30:41
+dependency n10 -> n19 kind=operand operand=1 sense=conditional event=- @sv-cells/dmg_cpu_b/cells/tffnl.sv:30:41
+dependency n3 -> n19 kind=operand operand=2 sense=conditional event=- @sv-cells/dmg_cpu_b/cells/tffnl.sv:30:41
+dependency n19 -> n3 kind=state-boundary operand=- sense=positive event=- @sv-cells/dmg_cpu_b/cells/tffnl.sv:30:41
+dependency n7 -> n20 kind=operand operand=0 sense=positive event=- @sv-cells/dmg_cpu_b/cells/tffnl.sv:31:48
+dependency n6 -> n20 kind=operand operand=1 sense=positive event=- @sv-cells/dmg_cpu_b/cells/tffnl.sv:31:48
+dependency n20 -> n11 kind=drive operand=- sense=positive event=- @sv-cells/dmg_cpu_b/cells/tffnl.sv:31:48
+dependency n3 -> n21 kind=operand operand=0 sense=negative event=- @sv-cells/dmg_cpu_b/cells/tffnl.sv:31:48
+dependency n21 -> n12 kind=drive operand=- sense=positive event=- @sv-cells/dmg_cpu_b/cells/tffnl.sv:31:48
+dependency n6 -> n22 kind=operand operand=0 sense=non-unate event=- @sv-cells/dmg_cpu_b/cells/tffnl.sv:31:48
+dependency n0 -> n22 kind=operand operand=1 sense=conditional event=- @sv-cells/dmg_cpu_b/cells/tffnl.sv:31:48
+dependency n12 -> n22 kind=operand operand=2 sense=conditional event=- @sv-cells/dmg_cpu_b/cells/tffnl.sv:31:48
+dependency n22 -> n13 kind=drive operand=- sense=positive event=- @sv-cells/dmg_cpu_b/cells/tffnl.sv:31:48
+dependency n11 -> n23 kind=operand operand=0 sense=non-unate event=- @sv-cells/dmg_cpu_b/cells/tffnl.sv:31:41
+dependency n13 -> n23 kind=operand operand=1 sense=conditional event=- @sv-cells/dmg_cpu_b/cells/tffnl.sv:31:41
+dependency n5 -> n23 kind=operand operand=2 sense=conditional event=- @sv-cells/dmg_cpu_b/cells/tffnl.sv:31:41
+dependency n23 -> n5 kind=state-boundary operand=- sense=positive event=- @sv-cells/dmg_cpu_b/cells/tffnl.sv:31:41
+dependency n3 -> n24 kind=operand operand=0 sense=negative event=- @sv-cells/dmg_cpu_b/cells/tffnl.sv:32:2
+dependency n24 -> n4 kind=drive operand=- sense=positive event=- @sv-cells/dmg_cpu_b/cells/tffnl.sv:32:2
+cut-order n5,n3,n24,n4,n21,n12,n2,n15,n7,n16,n8,n1,n14,n6,n20,n11,n17,n9,n0,n22,n13,n23,n18,n10,n19
+cut-dependency n1 -> n14 kind=operand
+cut-dependency n14 -> n6 kind=drive
+cut-dependency n2 -> n15 kind=operand
+cut-dependency n15 -> n7 kind=drive
+cut-dependency n7 -> n16 kind=operand
+cut-dependency n16 -> n8 kind=drive
+cut-dependency n8 -> n17 kind=operand
+cut-dependency n6 -> n17 kind=operand
+cut-dependency n17 -> n9 kind=drive
+cut-dependency n6 -> n18 kind=operand
+cut-dependency n0 -> n18 kind=operand
+cut-dependency n5 -> n18 kind=operand
+cut-dependency n18 -> n10 kind=drive
+cut-dependency n9 -> n19 kind=operand
+cut-dependency n10 -> n19 kind=operand
+cut-dependency n3 -> n19 kind=operand
+cut-dependency n7 -> n20 kind=operand
+cut-dependency n6 -> n20 kind=operand
+cut-dependency n20 -> n11 kind=drive
+cut-dependency n3 -> n21 kind=operand
+cut-dependency n21 -> n12 kind=drive
+cut-dependency n6 -> n22 kind=operand
+cut-dependency n0 -> n22 kind=operand
+cut-dependency n12 -> n22 kind=operand
+cut-dependency n22 -> n13 kind=drive
+cut-dependency n11 -> n23 kind=operand
+cut-dependency n13 -> n23 kind=operand
+cut-dependency n5 -> n23 kind=operand
+cut-dependency n3 -> n24 kind=operand
+cut-dependency n24 -> n4 kind=drive
+cut-excluded n19 -> n3 kind=state-boundary
+cut-excluded n23 -> n5 kind=state-boundary
+constraint p0 order=0 target=q target@sv-cells/dmg_cpu_b/cells/tffnl.sv:52:14 path@sv-cells/dmg_cpu_b/cells/tffnl.sv:52:3 delay=(delay (+ (+ (+ (+ (elmore (wire L_tclk_out) (pmos 35)) (elmore (wire 78) (nmos 8))) (elmore (wire 36) (* (pmos 8) 2))) (elmore (wire 143) (* (nmos 8) 2))) (elmore (wire L_q) (pmos 35))) (+ (+ (+ (+ (+ (elmore (wire L_tclk_out) (pmos 35)) (elmore (wire L_tclk_n_out) (nmos 35))) (elmore (wire 78) (pmos 8))) (elmore (wire 36) (nmos 8))) (elmore (wire 143) (* (pmos 8) 2))) (elmore (wire L_q) (nmos 35))))
+  terms[0]=(elmore (wire L_tclk_out) (pmos 35)) + (elmore (wire 78) (nmos 8)) + (elmore (wire 36) (* (pmos 8) 2)) + (elmore (wire 143) (* (nmos 8) 2)) + (elmore (wire L_q) (pmos 35))
+  terms[1]=(elmore (wire L_tclk_out) (pmos 35)) + (elmore (wire L_tclk_n_out) (nmos 35)) + (elmore (wire 78) (pmos 8)) + (elmore (wire 36) (nmos 8)) + (elmore (wire 143) (* (pmos 8) 2)) + (elmore (wire L_q) (nmos 35))
+  control c0 order=0 signal=tclk_n event=- @sv-cells/dmg_cpu_b/cells/tffnl.sv:52:4
+constraint p1 order=1 target=q target@sv-cells/dmg_cpu_b/cells/tffnl.sv:54:14 path@sv-cells/dmg_cpu_b/cells/tffnl.sv:54:3 delay=(delay (+ (elmore (wire 143) (* (nmos 8) 2)) (elmore (wire L_q) (pmos 35))) (+ (elmore (wire 143) (* (pmos 8) 2)) (elmore (wire L_q) (nmos 35))))
+  terms[0]=(elmore (wire 143) (* (nmos 8) 2)) + (elmore (wire L_q) (pmos 35))
+  terms[1]=(elmore (wire 143) (* (pmos 8) 2)) + (elmore (wire L_q) (nmos 35))
+  control c1 order=0 signal=d event=- @sv-cells/dmg_cpu_b/cells/tffnl.sv:54:4
+constraint p2 order=2 target=q target@sv-cells/dmg_cpu_b/cells/tffnl.sv:55:14 path@sv-cells/dmg_cpu_b/cells/tffnl.sv:55:3 delay=(delay (+ (+ (elmore (wire 36) (* (pmos 8) 2)) (elmore (wire 143) (* (nmos 8) 2))) (elmore (wire L_q) (pmos 35))) (+ (+ (elmore (wire 36) (nmos 8)) (elmore (wire 143) (* (pmos 8) 2))) (elmore (wire L_q) (nmos 35))))
+  terms[0]=(elmore (wire 36) (* (pmos 8) 2)) + (elmore (wire 143) (* (nmos 8) 2)) + (elmore (wire L_q) (pmos 35))
+  terms[1]=(elmore (wire 36) (nmos 8)) + (elmore (wire 143) (* (pmos 8) 2)) + (elmore (wire L_q) (nmos 35))
+  control c2 order=0 signal=l event=- @sv-cells/dmg_cpu_b/cells/tffnl.sv:55:4
+constraint p3 order=3 target=q_n target@sv-cells/dmg_cpu_b/cells/tffnl.sv:56:14 path@sv-cells/dmg_cpu_b/cells/tffnl.sv:56:3 delay=(delay (+ (+ (+ (elmore (wire L_tclk_out) (nmos 35)) (elmore (wire 78) (pmos 8))) (elmore (wire 110) (nmos 8))) (elmore (wire L_q_n) (pmos 35))) (+ (+ (+ (+ (elmore (wire L_tclk_out) (nmos 35)) (elmore (wire L_tclk_n_out) (pmos 35))) (elmore (wire 78) (nmos 8))) (elmore (wire 110) (pmos 8))) (elmore (wire L_q_n) (nmos 35))))
+  terms[0]=(elmore (wire L_tclk_out) (nmos 35)) + (elmore (wire 78) (pmos 8)) + (elmore (wire 110) (nmos 8)) + (elmore (wire L_q_n) (pmos 35))
+  terms[1]=(elmore (wire L_tclk_out) (nmos 35)) + (elmore (wire L_tclk_n_out) (pmos 35)) + (elmore (wire 78) (nmos 8)) + (elmore (wire 110) (pmos 8)) + (elmore (wire L_q_n) (nmos 35))
+  control c3 order=0 signal=tclk_n event=- @sv-cells/dmg_cpu_b/cells/tffnl.sv:56:4
+constraint p4 order=4 target=q_n target@sv-cells/dmg_cpu_b/cells/tffnl.sv:58:14 path@sv-cells/dmg_cpu_b/cells/tffnl.sv:58:3 delay=(delay (+ (+ (+ (elmore (wire 143) (* (pmos 8) 2)) (elmore (wire 78) (pmos 8))) (elmore (wire 110) (nmos 8))) (elmore (wire L_q_n) (pmos 35))) (+ (+ (+ (elmore (wire 143) (* (nmos 8) 2)) (elmore (wire 78) (nmos 8))) (elmore (wire 110) (pmos 8))) (elmore (wire L_q_n) (nmos 35))))
+  terms[0]=(elmore (wire 143) (* (pmos 8) 2)) + (elmore (wire 78) (pmos 8)) + (elmore (wire 110) (nmos 8)) + (elmore (wire L_q_n) (pmos 35))
+  terms[1]=(elmore (wire 143) (* (nmos 8) 2)) + (elmore (wire 78) (nmos 8)) + (elmore (wire 110) (pmos 8)) + (elmore (wire L_q_n) (nmos 35))
+  control c4 order=0 signal=d event=- @sv-cells/dmg_cpu_b/cells/tffnl.sv:58:4
+constraint p5 order=5 target=q_n target@sv-cells/dmg_cpu_b/cells/tffnl.sv:60:14 path@sv-cells/dmg_cpu_b/cells/tffnl.sv:60:3 delay=(delay (+ (+ (+ (+ (elmore (wire 36) (nmos 8)) (elmore (wire 143) (* (pmos 8) 2))) (elmore (wire 78) (pmos 8))) (elmore (wire 110) (nmos 8))) (elmore (wire L_q_n) (pmos 35))) (+ (+ (+ (+ (elmore (wire 36) (* (pmos 8) 2)) (elmore (wire 143) (* (nmos 8) 2))) (elmore (wire 78) (nmos 8))) (elmore (wire 110) (pmos 8))) (elmore (wire L_q_n) (nmos 35))))
+  terms[0]=(elmore (wire 36) (nmos 8)) + (elmore (wire 143) (* (pmos 8) 2)) + (elmore (wire 78) (pmos 8)) + (elmore (wire 110) (nmos 8)) + (elmore (wire L_q_n) (pmos 35))
+  terms[1]=(elmore (wire 36) (* (pmos 8) 2)) + (elmore (wire 143) (* (nmos 8) 2)) + (elmore (wire 78) (nmos 8)) + (elmore (wire 110) (pmos 8)) + (elmore (wire L_q_n) (nmos 35))
+  control c5 order=0 signal=l event=- @sv-cells/dmg_cpu_b/cells/tffnl.sv:60:4
+control-group signal=d source=n0 kind=multiple-targets constraints=p1,p4 controls=c1,c4 targets=n3,n4 prefix=n10,n18,n19
+control-group signal=l source=n1 kind=multiple-targets constraints=p2,p5 controls=c2,c5 targets=n3,n4 prefix=n6,n14,n19
+control-group signal=tclk_n source=n2 kind=multiple-targets constraints=p0,p3 controls=c0,c3 targets=n3,n4 prefix=n7,n15,n19
+group target=q kind=multiple constraints=p0,p1,p2 controls=c0,c1,c2 suffix=n19 reconvergent=n17,n18,n19,n20,n22,n23 split=candidate
+  control-report c0 constraint=p0 source=n2 target=n3 slice=n2,n3,n5,n7,n8,n9,n10,n11,n12,n13,n15,n16,n17,n18,n19,n20,n21,n22,n23 dominators=n2,n3,n7,n15,n19 post-dominators=n2,n3,n7,n15,n19 senses=non-unate
+  control-report c1 constraint=p1 source=n0 target=n3 slice=n0,n3,n5,n10,n12,n13,n18,n19,n21,n22,n23 dominators=n0,n3,n10,n18,n19 post-dominators=n0,n3,n10,n18,n19 senses=conditional
+  control-report c2 constraint=p2 source=n1 target=n3 slice=n1,n3,n5,n6,n9,n10,n11,n12,n13,n14,n17,n18,n19,n20,n21,n22,n23 dominators=n1,n3,n6,n14,n19 post-dominators=n1,n3,n6,n14,n19 senses=non-unate
+group target=q_n kind=multiple constraints=p3,p4,p5 controls=c3,c4,c5 suffix=n3,n19,n24 reconvergent=n17,n18,n19,n20,n22,n23 split=not-required
+  control-report c3 constraint=p3 source=n2 target=n4 slice=n2,n3,n4,n5,n7,n8,n9,n10,n11,n12,n13,n15,n16,n17,n18,n19,n20,n21,n22,n23,n24 dominators=n2,n3,n4,n7,n15,n19,n24 post-dominators=n2,n3,n4,n7,n15,n19,n24 senses=non-unate
+  control-report c4 constraint=p4 source=n0 target=n4 slice=n0,n3,n4,n5,n10,n12,n13,n18,n19,n21,n22,n23,n24 dominators=n0,n3,n4,n10,n18,n19,n24 post-dominators=n0,n3,n4,n10,n18,n19,n24 senses=conditional
+  control-report c5 constraint=p5 source=n1 target=n4 slice=n1,n3,n4,n5,n6,n9,n10,n11,n12,n13,n14,n17,n18,n19,n20,n21,n22,n23,n24 dominators=n1,n3,n4,n6,n14,n19,n24 post-dominators=n1,n3,n4,n6,n14,n19,n24 senses=non-unate
