@@ -2322,13 +2322,14 @@ fn search_exact_cover(
         stats.last_report = stats.start;
     }
 
-    if stats.calls % 1000 == 0 {
+    if stats.calls % 10_000 == 0 {
         let elapsed = stats.start.unwrap().elapsed();
 
         eprintln!(
-            "search: elapsed={:5.1}s calls={:>8} depth={:>5} backtracks={:>8} cand_checks={:>8} cad_fits={:>8}",
+            "search: elapsed={:5.1}s calls={:>8} most_shared: {:5.1}s depth={:>3} backtracks={:>8} cand_checks={:>10} cad_fits={:>8}",
             elapsed.as_secs_f64(),
             stats.calls,
+            stats.most_shared_time.as_secs_f64(),
             selected.len(),
             stats.backtracks,
             stats.candidate_checks,
