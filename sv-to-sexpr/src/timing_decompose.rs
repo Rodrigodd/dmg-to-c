@@ -2336,6 +2336,7 @@ fn search_exact_cover(
     let before = Instant::now();
 
     let coverage_index = build_candidate_coverage_index(&covered, candidates);
+    let mut fit_cache = vec![None; candidates.len()];
     let choice = most_shared_uncovered(
         paths,
         candidates,
@@ -2343,6 +2344,7 @@ fn search_exact_cover(
         selected,
         selected_sites,
         &coverage_index,
+        &mut fit_cache,
         stats,
     );
 
@@ -2414,6 +2416,7 @@ fn most_shared_uncovered(
     selected: &[usize],
     selected_sites: &BTreeSet<PlacementSite>,
     coverage_index: &CandidateCoverageIndex,
+    fit_cache: &mut [Option<bool>],
     stats: &mut SearchStats,
 ) -> Option<(usize, usize, usize)> {
     let mut best = None;
@@ -2436,8 +2439,23 @@ fn most_shared_uncovered(
                             return None;
                         }
 
-                        stats.candidate_fits_calls += 1;
-                        if !candidate_fits(candidate, paths, candidates, covered, selected) {
+                        let fits = match fit_cache[candidate_index] {
+                            Some(value) => value,
+                            None => {
+                                stats.candidate_fits_calls += 1;
+                                let value = candidate_fits(
+                                    &candidates[candidate_index],
+                                    paths,
+                                    candidates,
+                                    covered,
+                                    selected,
+                                );
+
+                                fit_cache[candidate_index] = Some(value);
+                                value
+                            }
+                        };
+                        if !fits {
                             return None;
                         }
 
@@ -3272,6 +3290,7 @@ mod tests {
                 &selected,
                 &selected_sites,
                 &build_candidate_coverage_index(&covered, &[]),
+                &mut vec![],
                 &mut SearchStats::default()
             ),
             Some((0, 0, 0))
