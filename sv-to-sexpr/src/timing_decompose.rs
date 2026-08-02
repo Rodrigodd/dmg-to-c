@@ -2235,6 +2235,8 @@ struct SearchStats {
     max_depth: usize,
 
     candidate_checks: u64,
+    rejected_selected_site: u64,
+    rejected_not_fitting: u64,
     candidate_fits_calls: u64,
 
     most_shared_calls: u64,
@@ -2326,13 +2328,15 @@ fn search_exact_cover(
         let elapsed = stats.start.unwrap().elapsed();
 
         eprintln!(
-            "search: elapsed={:5.1}s calls={:>8} most_shared: {:5.1}s depth={:>3} backtracks={:>8} cand_checks={:>10} cad_fits={:>8}",
+            "search: elapsed={:5.1}s calls={:>7} most_shared: {:5.1}s depth={:>2} backtracks={:>7} cand_checks={:>10} rej_sel={:>10} rej_fit={:>8} cand_fits={:>8}",
             elapsed.as_secs_f64(),
             stats.calls,
             stats.most_shared_time.as_secs_f64(),
             selected.len(),
             stats.backtracks,
             stats.candidate_checks,
+            stats.rejected_selected_site,
+            stats.rejected_not_fitting,
             stats.candidate_fits_calls,
         );
     }
@@ -2447,6 +2451,7 @@ fn most_shared_uncovered(
 
                         stats.candidate_checks += 1;
                         if selected_sites.contains(&candidate.site) {
+                            stats.rejected_selected_site += 1;
                             return None;
                         }
 
@@ -2467,6 +2472,7 @@ fn most_shared_uncovered(
                             }
                         };
                         if !fits {
+                            stats.rejected_not_fitting += 1;
                             return None;
                         }
 
