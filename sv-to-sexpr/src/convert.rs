@@ -207,7 +207,6 @@ pub fn convert(options: &ConvertOptions) -> ConvertReport {
         if !report.files[index].selected {
             continue;
         }
-
         let lowered = if options.decompose_timing {
             match lower_design_with_decomposed_timing_and_catalog_and_generate_mode(
                 design,

@@ -1,4 +1,4 @@
-use crate::ir::{Assignment, Cell, CellItem, DelayTuple, Expr, Register, TimingExpr};
+use crate::ir::{Assignment, Cell, CellItem, DelayTuple, Expr, Parameter, Register, TimingExpr};
 use std::fmt::Write as _;
 
 pub fn render_cell(cell: &Cell) -> String {
@@ -16,6 +16,8 @@ fn render_cell_source(cell: &Cell) -> String {
     render_inline_section(&mut out, "outputs", &cell.outputs);
     out.push('\n');
     render_register_section(&mut out, &cell.registers);
+    out.push('\n');
+    render_parameter_section(&mut out, &cell.parameters);
     out.push('\n');
     writeln!(&mut out, "  (assignments").unwrap();
     writeln!(&mut out).unwrap();
@@ -58,6 +60,19 @@ fn render_register_section(out: &mut String, registers: &[Register]) {
         .collect::<Vec<_>>()
         .join(" ");
     writeln!(out, "  (registers {entries})").unwrap();
+}
+
+fn render_parameter_section(out: &mut String, parameters: &[Parameter]) {
+    if parameters.is_empty() {
+        writeln!(out, "  (parameters)").unwrap();
+        return;
+    }
+    let entries = parameters
+        .iter()
+        .map(|register| format!("({} {})", register.name, register.value))
+        .collect::<Vec<_>>()
+        .join(" ");
+    writeln!(out, "  (parameters {entries})").unwrap();
 }
 
 fn render_assignment(out: &mut String, assignment: &Assignment) {
@@ -115,6 +130,7 @@ mod tests {
             inputs: vec!["a".into(), "b".into()],
             outputs: vec!["y".into()],
             registers: Vec::new(),
+            parameters: Vec::new(),
             items: vec![CellItem::Assignment(Assignment {
                 target: "y".into(),
                 expr: Expr::value(ValueOperator::And, vec![Expr::atom("a"), Expr::atom("b")]),
@@ -202,6 +218,7 @@ mod tests {
                     initial: LogicValue::Z,
                 },
             ],
+            parameters: Vec::new(),
             items: Vec::new(),
         };
 
@@ -219,6 +236,7 @@ mod tests {
             name: "pair".into(),
             inputs: Vec::new(),
             outputs: Vec::new(),
+            parameters: Vec::new(),
             registers: vec![
                 Register {
                     name: "ff".into(),
@@ -241,6 +259,7 @@ mod tests {
             inputs: Vec::new(),
             outputs: Vec::new(),
             registers: Vec::new(),
+            parameters: Vec::new(),
             items: Vec::new(),
         };
 

@@ -12,6 +12,8 @@
 
   (registers)
 
+  (parameters (L_a_y 40) (L_b_y 34))
+
   (assignments
 
     (a_y

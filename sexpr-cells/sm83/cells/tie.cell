@@ -6,6 +6,8 @@
 
   (registers)
 
+  (parameters (L_gnd 0) (L_vdd 0))
+
   (assignments
 
     (gnd (drive-strength 0 supply1 supply0) (delay 0))

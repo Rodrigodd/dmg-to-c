@@ -13,6 +13,8 @@
 
   (registers)
 
+  (parameters (L_y 29))
+
   (assignments
 
     (d1 in1 (delay 0 (elmore (wire L_y) (* (pmos 3) 3))))

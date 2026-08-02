@@ -12,6 +12,8 @@
 
   (registers)
 
+  (parameters (L_c_y1 81) (L_b_y1 48) (L_y2 83))
+
   (assignments
 
     (t0 (and ena1 b_in) (delay 0))

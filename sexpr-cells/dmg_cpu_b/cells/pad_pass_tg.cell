@@ -6,6 +6,8 @@
 
   (registers)
 
+  (parameters (L_a 0))
+
   (assignments
 
     (a pad (delay 0))

@@ -21,6 +21,13 @@
 
   (registers)
 
+  (parameters
+    (L_cout0 15)
+    (L_cout1 13)
+    (L_cout2 20)
+    (L_cout3 24)
+  )
+
   (assignments
 
     (t0 (or cin g0) (delay 0))

@@ -19,6 +19,13 @@
 
   (registers)
 
+  (parameters
+    (L_h_y1 42)
+    (L_l_y1 90)
+    (L_y2 85)
+    (L_y3 90)
+  )
+
   (assignments
 
     (t0 (and ena1 h_in) (delay 0))

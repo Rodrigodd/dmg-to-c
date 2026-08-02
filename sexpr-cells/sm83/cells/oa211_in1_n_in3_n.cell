@@ -11,6 +11,8 @@
 
   (registers)
 
+  (parameters (L_y 33))
+
   (assignments
 
     (t0

@@ -6,7 +6,7 @@ use crate::ast::*;
 use crate::diagnostic::{Diagnostic, DiagnosticKind, Span};
 use crate::elaborate::{GenerateMode, elaborate_design};
 use crate::ir::{
-    Assignment, Cell, CellItem, DelayTuple, Expr, LogicValue, LoweredModule, Register,
+    Assignment, Cell, CellItem, DelayTuple, Expr, LogicValue, LoweredModule, Parameter, Register,
     StrengthPair, TimingExpr, TimingOperator, ValueOperator,
 };
 use crate::timing_apply::{
@@ -570,6 +570,7 @@ impl<'a> Lowerer<'a> {
                         initial: LogicValue::X,
                     })
                     .collect(),
+                parameters: Vec::new(),
                 items: Vec::new(),
             },
             timing_alias_sources: BTreeMap::new(),
@@ -594,6 +595,9 @@ impl<'a> Lowerer<'a> {
     fn lower_module(&mut self) -> LowerResult<LoweringArtifacts> {
         self.collect_timing_aliases()?;
         self.collect_specify_delays()?;
+        for param in &self.module.parameters {
+            self.lower_param(param)?;
+        }
         for item in &self.module.items {
             self.lower_item(item)?;
         }
@@ -838,6 +842,29 @@ impl<'a> Lowerer<'a> {
             tuple: first,
             origin: AssignmentDelayOrigin::LegacySelectedSpecifyFallback,
         }
+    }
+
+    fn lower_param(&mut self, item: &ParamDecl) -> LowerResult<()> {
+        self.cell.parameters.push(Parameter {
+            name: item.name.clone(),
+            value: match &item.value.kind {
+                ExprKind::Integer(value) | ExprKind::Real(value) => {
+                    value.parse::<f64>().map_err(|_| {
+                        Diagnostic::new(
+                            item.value.span.clone(),
+                            "Real or Integer value is not valid float",
+                        )
+                    })?
+                }
+                _ => {
+                    return Err(Diagnostic::new(
+                        item.value.span.clone(),
+                        "Default parameter value is not Real or Integer",
+                    ));
+                }
+            },
+        });
+        Ok(())
     }
 
     fn lower_item(&mut self, item: &Item) -> LowerResult<()> {

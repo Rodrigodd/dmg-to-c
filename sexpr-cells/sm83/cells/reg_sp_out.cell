@@ -35,6 +35,16 @@
 
   (registers)
 
+  (parameters
+    (L_y1 231)
+    (L_y2 183)
+    (L_y3 162)
+    (L_y4 103)
+    (L_y5 114)
+    (L_y6 35)
+    (L_y7 45)
+  )
+
   (assignments
 
     (t0 (and in1 in2) (delay 0))

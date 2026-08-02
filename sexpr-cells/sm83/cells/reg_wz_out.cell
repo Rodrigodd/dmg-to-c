@@ -33,6 +33,16 @@
 
   (registers)
 
+  (parameters
+    (L_aoi_a_y_n 107)
+    (L_aoi_b_y 33)
+    (L_muxi_a_y 98)
+    (L_muxi_b_y 134)
+    (L_nand_y 206)
+    (L_oai21_y 182)
+    (L_oai31_y 200)
+  )
+
   (assignments
 
     (t0 (not muxi_a_sel_n) (delay 0))

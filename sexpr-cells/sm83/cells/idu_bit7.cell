@@ -21,6 +21,15 @@
 
   (registers)
 
+  (parameters
+    (L_buf_a_y 30)
+    (L_buf_b_y 30)
+    (L_not_a_in 68)
+    (L_not_a_y 83)
+    (L_not_b_in 68)
+    (L_not_b_y 40)
+  )
+
   (assignments
 
     (not_a_in

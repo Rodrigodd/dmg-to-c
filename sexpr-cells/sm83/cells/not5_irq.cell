@@ -18,6 +18,14 @@
 
   (registers)
 
+  (parameters
+    (L_a_y 59)
+    (L_b_y 58)
+    (L_c_y 17)
+    (L_d_y 34)
+    (L_e_y 12)
+  )
+
   (assignments
 
     (a_y (not a_in) (delay (elmore (wire L_a_y) (pmos 5)) (elmore (wire L_a_y) (nmos 5))))

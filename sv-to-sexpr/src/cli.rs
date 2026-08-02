@@ -554,7 +554,7 @@ fn usage_error(message: &str) -> Diagnostic {
     Diagnostic::new(
         crate::diagnostic::Span::new("<cli>", 1, 1),
         format!(
-            "{}; supported commands: lex, parse, analyze [--nodelay], lower [--nodelay], convert <input-dir> <output-dir> [--dry-run] [--strict] [--overwrite] [--filter <relative-path-substring>] [--nodelay], convert-file <input.sv> <output.cell> [--dry-run] [--strict] [--overwrite] [--nodelay], survey, check --stage lex|parse|analyze|lower [--nodelay for analyze/lower]; diagnostic-capable commands accept --strict",
+            "{}; supported commands: lex, parse, analyze [--nodelay], lower [--nodelay], convert <input-dir> <output-dir> [--dry-run] [--strict] [--overwrite] [--decompose-timing] [--filter <relative-path-substring>] [--nodelay], convert-file <input.sv> <output.cell> [--dry-run] [--strict] [--overwrite] [--decompose-timing] [--nodelay], survey, check --stage lex|parse|analyze|lower [--nodelay for analyze/lower]; diagnostic-capable commands accept --strict",
             message
         ),
     )

@@ -21,6 +21,15 @@
 
   (registers)
 
+  (parameters
+    (L_ao221_in5_n 74)
+    (L_tap_xor 54)
+    (L_tap_nand 84)
+    (L_tap_and 58)
+    (L_tap_or 83)
+    (L_y 23)
+  )
+
   (assignments
 
     (tap_xor

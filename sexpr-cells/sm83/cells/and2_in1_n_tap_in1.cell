@@ -6,6 +6,8 @@
 
   (registers)
 
+  (parameters (L_y 10) (L_tap_in1 32))
+
   (assignments
 
     (tap_in1

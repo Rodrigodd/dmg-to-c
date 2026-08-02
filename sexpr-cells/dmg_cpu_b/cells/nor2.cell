@@ -6,6 +6,8 @@
 
   (registers)
 
+  (parameters (L_y 54))
+
   (assignments
 
     (y (nor in1 in2) (delay (elmore (wire L_y) (* (pmos 35) 2)) (elmore (wire L_y) (nmos 35))))

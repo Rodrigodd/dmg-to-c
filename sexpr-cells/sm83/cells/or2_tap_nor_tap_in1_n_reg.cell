@@ -6,6 +6,8 @@
 
   (registers)
 
+  (parameters (L_y 44) (L_tap_nor 49) (L_tap_in1_n 28))
+
   (assignments
 
     (d0 in1 (delay (elmore (wire L_tap_nor) (nmos 9)) 0))

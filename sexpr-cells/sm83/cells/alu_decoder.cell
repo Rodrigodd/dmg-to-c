@@ -91,6 +91,23 @@
 
   (registers)
 
+  (parameters
+    (L_y1 0)
+    (L_y2 0)
+    (L_y3 0)
+    (L_y4 0)
+    (L_y5 0)
+    (L_y6 0)
+    (L_y7 0)
+    (L_y8 0)
+    (L_y9 0)
+    (L_y10 0)
+    (L_y11 0)
+    (L_y12 0)
+    (L_y13 0)
+    (L_y14 0)
+  )
+
   (assignments
 
     (t0

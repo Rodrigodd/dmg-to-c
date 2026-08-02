@@ -30,6 +30,19 @@
 
   (registers)
 
+  (parameters
+    (L_and_y 75)
+    (L_nand_a_y 85)
+    (L_nand_b_y 0)
+    (L_nand_c_y 43)
+    (L_dist_nand_a_y_n 0)
+    (L_dist_nand_a_y_p 74)
+    (L_dist_nand_b_y_n 56)
+    (L_dist_nand_b_y_p 74)
+    (L_dist_nor_y_n 74)
+    (L_dist_nor_y_p 31)
+  )
+
   (assignments
 
     (and_y

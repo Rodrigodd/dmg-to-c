@@ -6,6 +6,8 @@
 
   (registers)
 
+  (parameters (L_i_n 160) (L_pad 0))
+
   (assignments
 
     (pad (drive-strength 1 pull1 highz0) (delay 0))

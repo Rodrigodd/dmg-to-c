@@ -37,6 +37,21 @@
 
   (registers)
 
+  (parameters
+    (L_and_a_y 73)
+    (L_and_b_y 88)
+    (L_nand_a_y 119)
+    (L_nand_b_y 0)
+    (L_nand_c_y 77)
+    (L_nand_d_y 77)
+    (L_dist_nand_a_y_n 0)
+    (L_dist_nand_a_y_p 77)
+    (L_dist_nand_b_y_n 55)
+    (L_dist_nand_b_y_p 77)
+    (L_dist_nor_y_n 77)
+    (L_dist_nor_y_p 31)
+  )
+
   (assignments
 
     (t0 (not nand_a_y) (delay (elmore (wire 30) (pmos 3)) (elmore (wire 30) (nmos 3))))

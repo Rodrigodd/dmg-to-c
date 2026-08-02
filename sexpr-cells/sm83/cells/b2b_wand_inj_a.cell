@@ -13,6 +13,8 @@
 
   (registers)
 
+  (parameters (L_a 49) (L_b 80))
+
   (assignments
 
     (inj_d_n (not inj_d) (delay (elmore (wire 17) (pmos 5)) (elmore (wire 17) (nmos 5))))

@@ -9,6 +9,7 @@ pub struct Cell {
     pub inputs: Vec<String>,
     pub outputs: Vec<String>,
     pub registers: Vec<Register>,
+    pub parameters: Vec<Parameter>,
     pub items: Vec<CellItem>,
 }
 
@@ -38,6 +39,13 @@ pub struct Register {
     pub name: String,
     pub initial: LogicValue,
 }
+
+#[derive(Debug, Clone, PartialEq)]
+pub struct Parameter {
+    pub name: String,
+    pub value: f64,
+}
+impl Eq for Parameter {}
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum CellItem {
@@ -1066,6 +1074,7 @@ mod tests {
             inputs: vec!["a".to_string(), "b".to_string()],
             outputs: vec!["y".to_string()],
             registers: Vec::new(),
+            parameters: Vec::new(),
             items: vec![CellItem::Assignment(assignment(
                 Expr::value(ValueOperator::And, vec![Expr::atom("a"), Expr::atom("b")]),
                 nested_delay,
@@ -1126,6 +1135,7 @@ mod tests {
             inputs: vec![String::new()],
             outputs: vec!["y".to_string()],
             registers: Vec::new(),
+            parameters: Vec::new(),
             items: Vec::new(),
         };
         assert_eq!(cell.validate().unwrap_err().context, "inputs");
@@ -1162,6 +1172,7 @@ mod tests {
                     initial: LogicValue::X,
                 },
             ],
+            parameters: Vec::new(),
             items: Vec::new(),
         };
         cell.validate().unwrap();

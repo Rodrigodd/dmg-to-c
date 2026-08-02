@@ -6,6 +6,8 @@
 
   (registers)
 
+  (parameters (L_y 54) (W_y_p 35))
+
   (assignments
 
     (t0 (not in) (delay 0))
