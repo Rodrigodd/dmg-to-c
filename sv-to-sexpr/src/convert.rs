@@ -7,7 +7,10 @@ use crate::analyze::ModuleCatalog;
 use crate::ast::Design;
 use crate::diagnostic::{Diagnostic, DiagnosticKind, DiagnosticPolicy, Span};
 use crate::elaborate::GenerateMode;
-use crate::lower::lower_design_with_decomposed_timing_and_catalog_and_generate_mode;
+use crate::lower::{
+    lower_design_with_catalog_and_generate_mode,
+    lower_design_with_decomposed_timing_and_catalog_and_generate_mode,
+};
 use crate::parser::parse_file;
 use crate::serialize::render_cell;
 
@@ -20,6 +23,7 @@ pub struct ConvertOptions {
     pub overwrite: bool,
     pub filter: Option<String>,
     pub generate_mode: GenerateMode,
+    pub decompose_timing: bool,
 }
 
 impl ConvertOptions {
@@ -32,6 +36,7 @@ impl ConvertOptions {
             overwrite: false,
             filter: None,
             generate_mode: GenerateMode::default(),
+            decompose_timing: false,
         }
     }
 
@@ -202,15 +207,30 @@ pub fn convert(options: &ConvertOptions) -> ConvertReport {
         if !report.files[index].selected {
             continue;
         }
-        let lowered = match lower_design_with_decomposed_timing_and_catalog_and_generate_mode(
-            design,
-            &catalog,
-            options.generate_mode,
-        ) {
-            Ok(lowered) => lowered.into_lowered(),
-            Err(diagnostic) => {
-                report.fail_file(index, diagnostic);
-                continue;
+
+        let lowered = if options.decompose_timing {
+            match lower_design_with_decomposed_timing_and_catalog_and_generate_mode(
+                design,
+                &catalog,
+                options.generate_mode,
+            ) {
+                Ok(lowered) => lowered.into_lowered(),
+                Err(diagnostic) => {
+                    report.fail_file(index, diagnostic);
+                    continue;
+                }
+            }
+        } else {
+            match lower_design_with_catalog_and_generate_mode(
+                design,
+                &catalog,
+                options.generate_mode,
+            ) {
+                Ok(lowered) => lowered,
+                Err(diagnostic) => {
+                    report.fail_file(index, diagnostic);
+                    continue;
+                }
             }
         };
 

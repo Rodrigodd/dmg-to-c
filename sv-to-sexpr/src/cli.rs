@@ -313,6 +313,7 @@ struct ConvertFileArgs {
     output: String,
     dry_run: bool,
     overwrite: bool,
+    decompose_timing: bool,
     policy: DiagnosticPolicy,
     generate_mode: GenerateMode,
 }
@@ -325,6 +326,7 @@ fn parse_convert_file_args(
     let mut strict = false;
     let mut nodelay = false;
     let mut overwrite = false;
+    let mut decompose_timing = false;
     for arg in args {
         match arg.as_str() {
             "--dry-run" if !dry_run => dry_run = true,
@@ -335,6 +337,10 @@ fn parse_convert_file_args(
             "--nodelay" => return Err(usage_error("--nodelay may be specified only once")),
             "--overwrite" if !overwrite => overwrite = true,
             "--overwrite" => return Err(usage_error("--overwrite may be specified only once")),
+            "--decompose-timing" if !decompose_timing => decompose_timing = true,
+            "--decompose-timing" => {
+                return Err(usage_error("--decompose-timing may be specified only once"));
+            }
             _ if arg.starts_with('-') => {
                 return Err(usage_error(&format!("unknown option `{arg}`")));
             }
@@ -356,6 +362,7 @@ fn parse_convert_file_args(
         output: positionals.remove(0),
         dry_run,
         overwrite,
+        decompose_timing,
         policy: DiagnosticPolicy::new(strict),
         generate_mode: if nodelay {
             GenerateMode::Nodelay
@@ -374,6 +381,7 @@ fn parse_convert_args(args: impl Iterator<Item = String>) -> Result<ConvertOptio
     let mut nodelay = false;
     let mut filter = None;
     let mut filter_seen = false;
+    let mut decompose_timing = false;
     while let Some(arg) = args.next() {
         match arg.as_str() {
             "--dry-run" if !dry_run => dry_run = true,
@@ -384,6 +392,10 @@ fn parse_convert_args(args: impl Iterator<Item = String>) -> Result<ConvertOptio
             "--overwrite" => return Err(usage_error("--overwrite may be specified only once")),
             "--nodelay" if !nodelay => nodelay = true,
             "--nodelay" => return Err(usage_error("--nodelay may be specified only once")),
+            "--decompose-timing" if !decompose_timing => decompose_timing = true,
+            "--decompose-timing" => {
+                return Err(usage_error("--decompose-timing may be specified only once"));
+            }
             "--filter" if filter_seen => {
                 return Err(usage_error("--filter may be specified only once"));
             }
@@ -414,6 +426,7 @@ fn parse_convert_args(args: impl Iterator<Item = String>) -> Result<ConvertOptio
         strict,
         overwrite,
         filter,
+        decompose_timing,
         generate_mode: if nodelay {
             GenerateMode::Nodelay
         } else {
