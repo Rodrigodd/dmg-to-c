@@ -19,6 +19,11 @@
     (mem_write_dummy 0)
   )
 
+  (parameters
+    (L_dout0 0) (L_dout1 0) (L_dout2 0) (L_dout3 0)
+    (L_dout4 0) (L_dout5 0) (L_dout6 0) (L_dout7 0)
+  )
+
   (assignments
 
     ;; The SIMPLIFIED_WAVERAM branch instantiates a 16-byte simplified SRAM.

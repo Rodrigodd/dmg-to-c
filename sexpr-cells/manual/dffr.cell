@@ -6,6 +6,8 @@
 
   (registers (q 0))
 
+  (parameters (L_q 54) (L_q_n 54) (L_clk_out 180) (L_clk_n_out 200))
+
   (assignments
 
     (clk_buf clk (delay 0))

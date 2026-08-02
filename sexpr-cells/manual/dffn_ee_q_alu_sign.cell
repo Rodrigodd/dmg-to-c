@@ -11,6 +11,8 @@
 
   (registers (ff 0) (q 0))
 
+  (parameters (L_q 84))
+
   (assignments
 
     (t0 (and d clk_n ena) (delay 0))

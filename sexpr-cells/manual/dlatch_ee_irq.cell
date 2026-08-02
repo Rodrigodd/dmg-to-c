@@ -12,6 +12,8 @@
 
   (registers (q_n 0))
 
+  (parameters (L_q 26) (L_q_n 25) (L_gated_q_n 37))
+
   (assignments
 
     (t0 (and d ena) (delay 0))

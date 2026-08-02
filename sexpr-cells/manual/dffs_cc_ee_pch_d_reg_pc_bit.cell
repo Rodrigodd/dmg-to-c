@@ -14,6 +14,8 @@
 
   (registers (ff1 0) (ff2 0) (q_n 0))
 
+  (parameters (L_d 50) (L_q 50) (L_q_n 68))
+
   (assignments
 
     (t0 (and d clk_n ena) (delay 0))

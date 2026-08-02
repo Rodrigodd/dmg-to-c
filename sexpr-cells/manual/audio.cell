@@ -44,6 +44,8 @@
 
   (registers)
 
+  (parameters (L_rout 0) (L_lout 0))
+
   (assignments
 
     ;; ------------------------------------------------------------

@@ -11,6 +11,8 @@
 
   (registers (mux1 0) (mux2 0))
 
+  (parameters (L_q 54))
+
   (assignments
 
     (t0 (not clk) (delay 0))
