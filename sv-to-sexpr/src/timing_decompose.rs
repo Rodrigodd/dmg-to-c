@@ -2322,7 +2322,7 @@ fn search_exact_cover(
         stats.last_report = stats.start;
     }
 
-    if stats.print && stats.calls % 10_000 == 0 {
+    if stats.print && stats.calls.is_multiple_of(10_000) {
         let elapsed = stats.start.unwrap().elapsed();
 
         eprintln!(
@@ -2348,7 +2348,7 @@ fn search_exact_cover(
         covered,
         selected,
         selected_sites,
-        &coverage_index,
+        coverage_index,
         &mut fit_cache,
         stats,
     );
@@ -2422,6 +2422,7 @@ fn build_candidate_coverage_index(
 /// one currently compatible candidate can cover. This lets an overlapping
 /// suffix reserve its shared site before source-specific prefixes consume the
 /// same terms. Equal breadth retains source/path/component order.
+#[allow(clippy::too_many_arguments)]
 fn most_shared_uncovered(
     paths: &[FunctionalPath],
     candidates: &[Candidate],
@@ -2613,16 +2614,16 @@ fn candidate_fits(
                 }
             }
 
-            if let Some(previous) = previous {
-                if previous.last().unwrap() >= candidate_positions.first().unwrap() {
-                    return false;
-                }
+            if let Some(previous) = previous
+                && previous.last().unwrap() >= candidate_positions.first().unwrap()
+            {
+                return false;
             }
 
-            if let Some(next) = next {
-                if candidate_positions.last().unwrap() >= next.first().unwrap() {
-                    return false;
-                }
+            if let Some(next) = next
+                && candidate_positions.last().unwrap() >= next.first().unwrap()
+            {
+                return false;
             }
         }
     }
@@ -3305,7 +3306,7 @@ mod tests {
                 &selected,
                 &selected_sites,
                 &build_candidate_coverage_index(&covered, &[]),
-                &mut vec![],
+                &mut [],
                 &mut SearchStats::default()
             ),
             Some((0, 0, 0))
