@@ -4,7 +4,7 @@
 
   (outputs q q_n)
 
-  (registers (q 0))
+  (registers (d0 0))
 
   (assignments
 
@@ -13,36 +13,19 @@
     (t2 (not ena_n) (delay 0))
     (t3 (and d t2) (delay 0))
     (t4 (or t1 t3) (delay 0))
-    (q
-      (mux t4 d q)
+    (d0
+      (mux t4 d d0)
       (delay
-        (+
-          (+ (elmore (wire 61) (pmos 10)) (elmore (wire 101) (nmos 10)))
-          (elmore (wire L_q) (pmos 35))
-        )
-        (+
-          (+ (elmore (wire 61) (nmos 10)) (elmore (wire 101) (pmos 10)))
-          (elmore (wire L_q) (nmos 35))
-        )
+        (+ (elmore (wire 61) (pmos 10)) (elmore (wire 101) (nmos 10)))
+        (+ (elmore (wire 61) (nmos 10)) (elmore (wire 101) (pmos 10)))
       )
     )
+    (q d0 (delay (elmore (wire L_q) (pmos 35)) (elmore (wire L_q) (nmos 35))))
     (q_n
-      (not q)
+      (not d0)
       (delay
-        (+
-          (+
-            (+ (elmore (wire 61) (nmos 10)) (elmore (wire 101) (pmos 10)))
-            (elmore (wire 120) (nmos 10))
-          )
-          (elmore (wire L_q_n) (pmos 35))
-        )
-        (+
-          (+
-            (+ (elmore (wire 61) (pmos 10)) (elmore (wire 101) (nmos 10)))
-            (elmore (wire 120) (pmos 10))
-          )
-          (elmore (wire L_q_n) (nmos 35))
-        )
+        (+ (elmore (wire 120) (nmos 10)) (elmore (wire L_q_n) (pmos 35)))
+        (+ (elmore (wire 120) (pmos 10)) (elmore (wire L_q_n) (nmos 35)))
       )
     )
   )

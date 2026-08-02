@@ -2230,6 +2230,7 @@ fn contribution_positions(contribution: &AdditiveDelayTupleContribution) -> Vec<
 
 #[derive(Default, Debug)]
 struct SearchStats {
+    print: bool,
     calls: u64,
     backtracks: u64,
     max_depth: usize,
@@ -2262,11 +2263,6 @@ fn solve_exact_cover(
                 .collect::<Vec<_>>()
         })
         .collect::<Vec<_>>();
-    println!(
-        "searching through {} candidates for {} paths",
-        candidates.len(),
-        paths.len(),
-    );
     let coverage_index = build_candidate_coverage_index(&covered, candidates);
     let mut selected = Vec::new();
     let mut selected_sites = BTreeSet::new();
@@ -2311,12 +2307,14 @@ fn search_exact_cover(
     if selected.len() > stats.max_depth {
         stats.max_depth = selected.len();
 
-        eprintln!(
-            "NEW DEPTH: {} (calls={}, elapsed={:.1}s)",
-            stats.max_depth,
-            stats.calls,
-            stats.start.unwrap().elapsed().as_secs_f64(),
-        );
+        if stats.print {
+            eprintln!(
+                "NEW DEPTH: {} (calls={}, elapsed={:.1}s)",
+                stats.max_depth,
+                stats.calls,
+                stats.start.unwrap().elapsed().as_secs_f64(),
+            );
+        }
     }
 
     if stats.start.is_none() {
@@ -2324,7 +2322,7 @@ fn search_exact_cover(
         stats.last_report = stats.start;
     }
 
-    if stats.calls % 10_000 == 0 {
+    if stats.print && stats.calls % 10_000 == 0 {
         let elapsed = stats.start.unwrap().elapsed();
 
         eprintln!(

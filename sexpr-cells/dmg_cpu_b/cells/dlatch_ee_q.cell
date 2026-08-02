@@ -16,14 +16,8 @@
     (q
       (mux t4 d q)
       (delay
-        (+
-          (+ (elmore (wire 61) (pmos 10)) (elmore (wire 101) (nmos 10)))
-          (elmore (wire L_q) (pmos 35))
-        )
-        (+
-          (+ (elmore (wire 61) (nmos 10)) (elmore (wire 101) (pmos 10)))
-          (elmore (wire L_q) (nmos 35))
-        )
+        (+ (elmore (wire 61) (pmos 10)) (elmore (wire 101) (nmos 10)) (elmore (wire L_q) (pmos 35)))
+        (+ (elmore (wire 61) (nmos 10)) (elmore (wire 101) (pmos 10)) (elmore (wire L_q) (nmos 35)))
       )
     )
   )

@@ -7,7 +7,7 @@ use crate::analyze::ModuleCatalog;
 use crate::ast::Design;
 use crate::diagnostic::{Diagnostic, DiagnosticKind, DiagnosticPolicy, Span};
 use crate::elaborate::GenerateMode;
-use crate::lower::lower_design_with_catalog_and_generate_mode;
+use crate::lower::lower_design_with_decomposed_timing_and_catalog_and_generate_mode;
 use crate::parser::parse_file;
 use crate::serialize::render_cell;
 
@@ -202,12 +202,12 @@ pub fn convert(options: &ConvertOptions) -> ConvertReport {
         if !report.files[index].selected {
             continue;
         }
-        let lowered = match lower_design_with_catalog_and_generate_mode(
+        let lowered = match lower_design_with_decomposed_timing_and_catalog_and_generate_mode(
             design,
             &catalog,
             options.generate_mode,
         ) {
-            Ok(lowered) => lowered,
+            Ok(lowered) => lowered.into_lowered(),
             Err(diagnostic) => {
                 report.fail_file(index, diagnostic);
                 continue;
@@ -319,9 +319,9 @@ fn execute_prepared(
     report: &mut ConvertReport,
     prepared: Vec<PreparedOutput>,
 ) {
-    if !report.succeeded() {
-        return;
-    }
+    // if !report.succeeded() {
+    //     return;
+    // }
     if options.dry_run {
         report.would_write = prepared.len();
         for output in prepared {

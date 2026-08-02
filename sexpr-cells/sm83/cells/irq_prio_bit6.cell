@@ -39,7 +39,7 @@
 
   (assignments
 
-    (t0 (not nand_a_y) (delay 0))
+    (t0 (not nand_a_y) (delay (elmore (wire 30) (pmos 3)) (elmore (wire 30) (nmos 3))))
     (and_b_y
       (and and_in1 t0)
       (delay
