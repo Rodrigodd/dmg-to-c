@@ -1,0 +1,70 @@
+(cell
+  dmg_dffr
+  (inputs d clk r_n)
+
+  (outputs q q_n)
+
+  (registers (q 0))
+
+  (assignments
+
+    (clk_buf clk (delay 0))
+    (r_n_buf r_n (delay 0))
+    (t0 (and d r_n_buf) (delay 0))
+    (q
+      (dff-posedge-reset
+        clk_buf
+        t0
+        r_n_buf
+        0
+      )
+      (delay
+        (+
+          (+
+            (+ (elmore (wire L_clk_n_out) (nmos 35)) (elmore (wire 59) (pmos 8)))
+            (elmore (wire 122) (* (nmos 8) 2))
+          )
+          (elmore (wire L_q) (pmos 35))
+        )
+        (+
+          (+
+            (+
+              (+ (elmore (wire L_clk_n_out) (nmos 35)) (elmore (wire L_clk_out) (pmos 35)))
+              (elmore (wire 59) (nmos 8))
+            )
+            (elmore (wire 122) (pmos 8))
+          )
+          (elmore (wire L_q) (nmos 35))
+        )
+      )
+    )
+    (q_n
+      (not q)
+      (delay
+        (+
+          (+
+            (+
+              (+
+                (+ (elmore (wire L_clk_n_out) (nmos 35)) (elmore (wire L_clk_out) (pmos 35)))
+                (elmore (wire 59) (nmos 8))
+              )
+              (elmore (wire 122) (pmos 8))
+            )
+            (elmore (wire 130) (nmos 8))
+          )
+          (elmore (wire L_q_n) (pmos 35))
+        )
+        (+
+          (+
+            (+
+              (+ (elmore (wire L_clk_n_out) (nmos 35)) (elmore (wire 59) (pmos 8)))
+              (elmore (wire 122) (* (nmos 8) 2))
+            )
+            (elmore (wire 130) (pmos 8))
+          )
+          (elmore (wire L_q_n) (nmos 35))
+        )
+      )
+    )
+  )
+)
