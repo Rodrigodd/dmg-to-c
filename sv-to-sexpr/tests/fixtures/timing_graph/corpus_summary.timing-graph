@@ -1,11 +1,11 @@
 functional timing graph corpus audit
 mode=delayful
-  source-owned files=191 constraints=241 controls=443 target-groups=184 target-groups-single=139 target-groups-multiple=45 tuples=one:0,two:238,three:3
-  elaborated constraints=248 foreign-constraints=7 controls=457 target-groups=191 tuples=one:0,two:245,three:3 expanded-only-roots=[sv-cells/dmg_cpu_b/cells/full_add.sv,sv-cells/dmg_cpu_b/cells/half_add.sv]
-  graph nodes=4295 signals=2590 assignments=1705 dependencies=6251 dependency-kinds=drive:1555,operand:4546,resolved-net-boundary:135,state-boundary:15 dependency-senses=conditional:530,negative:317,non-unate:82,positive:5322
-  boundaries state=15 resolved-net=135 state-controls=0 transitions=
-  groups constraints=248 controls=457 control-groups=391 control-kinds=multiple-targets:43,single-target:348 target-groups=191 target-kinds=multiple-paths:45,single-path:146
-  classifications path-senses=conditional:59,negative:209,non-unate:104,positive:132 public-splits=candidate:19,not-public:3,not-required:169 prefixes=groups:367,nodes:605 suffixes=groups:191,nodes:206 reconvergence=groups:123,nodes:265
+  source-owned files=190 constraints=237 controls=432 target-groups=181 target-groups-single=137 target-groups-multiple=44 tuples=one:0,two:234,three:3
+  elaborated constraints=244 foreign-constraints=7 controls=446 target-groups=188 tuples=one:0,two:241,three:3 expanded-only-roots=[sv-cells/dmg_cpu_b/cells/full_add.sv,sv-cells/dmg_cpu_b/cells/half_add.sv]
+  graph nodes=4264 signals=2573 assignments=1691 dependencies=6217 dependency-kinds=drive:1545,operand:4526,resolved-net-boundary:132,state-boundary:14 dependency-senses=conditional:526,negative:312,non-unate:80,positive:5299
+  boundaries state=14 resolved-net=132 state-controls=0 transitions=
+  groups constraints=244 controls=446 control-groups=386 control-kinds=multiple-targets:40,single-target:346 target-groups=188 target-kinds=multiple-paths:44,single-path:144
+  classifications path-senses=conditional:55,negative:208,non-unate:94,positive:132 public-splits=candidate:18,not-public:3,not-required:167 prefixes=groups:362,nodes:586 suffixes=groups:188,nodes:200 reconvergence=groups:120,nodes:250
   failures combinational-cycles=0 unreachable-controls=0 additive-rebuild=0 nondeterministic-reports=0 ordinary-compatibility=0 absolute-path-leaks=0
   source-owned-multiple-path-witnesses:
     sv-cells/dmg_cpu_b/cells/ao21.sv:y paths=2 controls=3 signals=[in1,in2,in3] target=multiple-paths suffix-nodes=1 reconvergent-nodes=2 split=not-required control-groups=[in1:single-target/prefix-nodes=3,in2:single-target/prefix-nodes=3,in3:single-target/prefix-nodes=1]
@@ -35,7 +35,6 @@ mode=delayful
     sv-cells/sm83/cells/aoi21_a.sv:y paths=2 controls=3 signals=[in1,in2,in3] target=multiple-paths suffix-nodes=1 reconvergent-nodes=2 split=not-required control-groups=[in1:single-target/prefix-nodes=3,in2:single-target/prefix-nodes=3,in3:single-target/prefix-nodes=1]
     sv-cells/sm83/cells/aoi21_b.sv:y paths=2 controls=3 signals=[in1,in2,in3] target=multiple-paths suffix-nodes=1 reconvergent-nodes=2 split=not-required control-groups=[in1:single-target/prefix-nodes=3,in2:single-target/prefix-nodes=3,in3:single-target/prefix-nodes=1]
     sv-cells/sm83/cells/aoi331_s3.sv:y paths=3 controls=6 signals=[in1,in2,in3,in4,in5,in6] target=multiple-paths suffix-nodes=1 reconvergent-nodes=3 split=not-required control-groups=[in1:single-target/prefix-nodes=3,in2:single-target/prefix-nodes=3,in3:single-target/prefix-nodes=1,in4:single-target/prefix-nodes=3,in5:single-target/prefix-nodes=3,in6:single-target/prefix-nodes=1]
-    sv-cells/sm83/cells/dlatch_ee_irq.sv:gated_q_n paths=2 controls=5 signals=[d,ena,ena_n,ena_q_n,pch_n] target=multiple-paths suffix-nodes=2 reconvergent-nodes=7 split=not-required control-groups=[d:multiple-targets/prefix-nodes=1,ena:multiple-targets/prefix-nodes=5,ena_n:multiple-targets/prefix-nodes=7,ena_q_n:single-target/prefix-nodes=3,pch_n:single-target/prefix-nodes=3]
     sv-cells/sm83/cells/idu_ctl.sv:y1 paths=3 controls=3 signals=[in2,in3,in4] target=multiple-paths suffix-nodes=1 reconvergent-nodes=3 split=not-required control-groups=[in2:multiple-targets/prefix-nodes=0,in3:multiple-targets/prefix-nodes=0,in4:multiple-targets/prefix-nodes=0]
     sv-cells/sm83/cells/idu_ctl.sv:y2 paths=3 controls=4 signals=[in1,in2,in3,in4] target=multiple-paths suffix-nodes=1 reconvergent-nodes=2 split=not-required control-groups=[in1:single-target/prefix-nodes=1,in2:multiple-targets/prefix-nodes=0,in3:multiple-targets/prefix-nodes=0,in4:multiple-targets/prefix-nodes=0]
     sv-cells/sm83/cells/idu_ctl.sv:y3 paths=3 controls=4 signals=[in2,in3,in4,in5] target=multiple-paths suffix-nodes=1 reconvergent-nodes=2 split=not-required control-groups=[in2:multiple-targets/prefix-nodes=0,in3:multiple-targets/prefix-nodes=0,in4:multiple-targets/prefix-nodes=0,in5:single-target/prefix-nodes=1]
@@ -54,12 +53,12 @@ mode=delayful
     sv-cells/sm83/cells/or2_tap_nor_tap_in1_n_reg.sv:tap_nor paths=2 controls=2 signals=[in1,in2] target=multiple-paths suffix-nodes=1 reconvergent-nodes=1 split=candidate control-groups=[in1:multiple-targets/prefix-nodes=0,in2:multiple-targets/prefix-nodes=1]
     sv-cells/sm83/cells/or2_tap_nor_tap_in1_n_reg.sv:y paths=2 controls=2 signals=[in1,in2] target=multiple-paths suffix-nodes=3 reconvergent-nodes=1 split=not-required control-groups=[in1:multiple-targets/prefix-nodes=0,in2:multiple-targets/prefix-nodes=1]
 mode=nodelay
-  source-owned files=191 constraints=241 controls=443 target-groups=184 target-groups-single=139 target-groups-multiple=45 tuples=one:0,two:238,three:3
-  elaborated constraints=248 foreign-constraints=7 controls=457 target-groups=191 tuples=one:0,two:245,three:3 expanded-only-roots=[sv-cells/dmg_cpu_b/cells/full_add.sv,sv-cells/dmg_cpu_b/cells/half_add.sv]
-  graph nodes=4295 signals=2590 assignments=1705 dependencies=6251 dependency-kinds=drive:1555,operand:4546,resolved-net-boundary:135,state-boundary:15 dependency-senses=conditional:530,negative:317,non-unate:82,positive:5322
-  boundaries state=15 resolved-net=135 state-controls=0 transitions=
-  groups constraints=248 controls=457 control-groups=391 control-kinds=multiple-targets:43,single-target:348 target-groups=191 target-kinds=multiple-paths:45,single-path:146
-  classifications path-senses=conditional:59,negative:209,non-unate:104,positive:132 public-splits=candidate:19,not-public:3,not-required:169 prefixes=groups:367,nodes:605 suffixes=groups:191,nodes:206 reconvergence=groups:123,nodes:265
+  source-owned files=190 constraints=237 controls=432 target-groups=181 target-groups-single=137 target-groups-multiple=44 tuples=one:0,two:234,three:3
+  elaborated constraints=244 foreign-constraints=7 controls=446 target-groups=188 tuples=one:0,two:241,three:3 expanded-only-roots=[sv-cells/dmg_cpu_b/cells/full_add.sv,sv-cells/dmg_cpu_b/cells/half_add.sv]
+  graph nodes=4264 signals=2573 assignments=1691 dependencies=6217 dependency-kinds=drive:1545,operand:4526,resolved-net-boundary:132,state-boundary:14 dependency-senses=conditional:526,negative:312,non-unate:80,positive:5299
+  boundaries state=14 resolved-net=132 state-controls=0 transitions=
+  groups constraints=244 controls=446 control-groups=386 control-kinds=multiple-targets:40,single-target:346 target-groups=188 target-kinds=multiple-paths:44,single-path:144
+  classifications path-senses=conditional:55,negative:208,non-unate:94,positive:132 public-splits=candidate:18,not-public:3,not-required:167 prefixes=groups:362,nodes:586 suffixes=groups:188,nodes:200 reconvergence=groups:120,nodes:250
   failures combinational-cycles=0 unreachable-controls=0 additive-rebuild=0 nondeterministic-reports=0 ordinary-compatibility=0 absolute-path-leaks=0
   source-owned-multiple-path-witnesses:
     sv-cells/dmg_cpu_b/cells/ao21.sv:y paths=2 controls=3 signals=[in1,in2,in3] target=multiple-paths suffix-nodes=1 reconvergent-nodes=2 split=not-required control-groups=[in1:single-target/prefix-nodes=3,in2:single-target/prefix-nodes=3,in3:single-target/prefix-nodes=1]
@@ -89,7 +88,6 @@ mode=nodelay
     sv-cells/sm83/cells/aoi21_a.sv:y paths=2 controls=3 signals=[in1,in2,in3] target=multiple-paths suffix-nodes=1 reconvergent-nodes=2 split=not-required control-groups=[in1:single-target/prefix-nodes=3,in2:single-target/prefix-nodes=3,in3:single-target/prefix-nodes=1]
     sv-cells/sm83/cells/aoi21_b.sv:y paths=2 controls=3 signals=[in1,in2,in3] target=multiple-paths suffix-nodes=1 reconvergent-nodes=2 split=not-required control-groups=[in1:single-target/prefix-nodes=3,in2:single-target/prefix-nodes=3,in3:single-target/prefix-nodes=1]
     sv-cells/sm83/cells/aoi331_s3.sv:y paths=3 controls=6 signals=[in1,in2,in3,in4,in5,in6] target=multiple-paths suffix-nodes=1 reconvergent-nodes=3 split=not-required control-groups=[in1:single-target/prefix-nodes=3,in2:single-target/prefix-nodes=3,in3:single-target/prefix-nodes=1,in4:single-target/prefix-nodes=3,in5:single-target/prefix-nodes=3,in6:single-target/prefix-nodes=1]
-    sv-cells/sm83/cells/dlatch_ee_irq.sv:gated_q_n paths=2 controls=5 signals=[d,ena,ena_n,ena_q_n,pch_n] target=multiple-paths suffix-nodes=2 reconvergent-nodes=7 split=not-required control-groups=[d:multiple-targets/prefix-nodes=1,ena:multiple-targets/prefix-nodes=5,ena_n:multiple-targets/prefix-nodes=7,ena_q_n:single-target/prefix-nodes=3,pch_n:single-target/prefix-nodes=3]
     sv-cells/sm83/cells/idu_ctl.sv:y1 paths=3 controls=3 signals=[in2,in3,in4] target=multiple-paths suffix-nodes=1 reconvergent-nodes=3 split=not-required control-groups=[in2:multiple-targets/prefix-nodes=0,in3:multiple-targets/prefix-nodes=0,in4:multiple-targets/prefix-nodes=0]
     sv-cells/sm83/cells/idu_ctl.sv:y2 paths=3 controls=4 signals=[in1,in2,in3,in4] target=multiple-paths suffix-nodes=1 reconvergent-nodes=2 split=not-required control-groups=[in1:single-target/prefix-nodes=1,in2:multiple-targets/prefix-nodes=0,in3:multiple-targets/prefix-nodes=0,in4:multiple-targets/prefix-nodes=0]
     sv-cells/sm83/cells/idu_ctl.sv:y3 paths=3 controls=4 signals=[in2,in3,in4,in5] target=multiple-paths suffix-nodes=1 reconvergent-nodes=2 split=not-required control-groups=[in2:multiple-targets/prefix-nodes=0,in3:multiple-targets/prefix-nodes=0,in4:multiple-targets/prefix-nodes=0,in5:single-target/prefix-nodes=1]

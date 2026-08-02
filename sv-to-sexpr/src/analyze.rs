@@ -3251,38 +3251,6 @@ mod tests {
     }
 
     #[test]
-    fn analyzes_reference_cell() {
-        let report = analyze_path("../sv-cells/sm83/cells/dlatch_ee_irq.sv");
-        assert_eq!(report.modules.len(), 1);
-        let module = &report.modules[0];
-        assert_eq!(module.inputs, vec!["d", "ena", "ena_n", "pch_n", "ena_q_n"]);
-        assert_eq!(module.outputs, vec!["q", "q_n", "gated_q_n"]);
-        assert_eq!(module.registers, vec!["q_n"]);
-        assert_eq!(module.procedural_assignments.len(), 1);
-        assert_eq!(module.continuous_assignments.len(), 2);
-        assert_eq!(
-            module
-                .primitive_calls
-                .iter()
-                .map(|call| call.name.as_str())
-                .collect::<Vec<_>>(),
-            vec!["bufif0", "rnmos"]
-        );
-        assert_eq!(module.symbols["d"].category, SymbolCategory::Port);
-        assert_eq!(module.symbols["L_q"].category, SymbolCategory::Parameter);
-        assert_eq!(
-            module.symbols["gated_q"].category,
-            SymbolCategory::Declaration
-        );
-        assert_eq!(
-            module.symbols["T_rise_buf"].category,
-            SymbolCategory::Specparam
-        );
-        assert_eq!(module.specify_paths.len(), 4);
-        assert!(module.specify_paths.iter().all(|path| path.span.line > 0));
-    }
-
-    #[test]
     fn analyzes_simple_combinational_cell() {
         let report = analyze_path("../sv-cells/sm83/cells/and2.sv");
         let module = &report.modules[0];
@@ -3601,11 +3569,6 @@ endmodule
                 "aoi_a_y_keeper",
                 "aoi_a_y",
             ),
-            (
-                "../sv-cells/sm83/cells/dlatch_ee_irq.sv",
-                "gated_q_keeper",
-                "gated_q",
-            ),
         ];
         for (path, expected_instance, expected_target) in cases {
             let design = parse_path(path);
@@ -3824,10 +3787,6 @@ endmodule
             (
                 analyze_path("../sv-cells/dmg_cpu_b/cells/and2.sv"),
                 TargetMilestone::M4FlatCombinational,
-            ),
-            (
-                analyze_path("../sv-cells/sm83/cells/dlatch_ee_irq.sv"),
-                TargetMilestone::M5StatefulProcedural,
             ),
             (
                 analyze_path("../sv-cells/dmg_cpu_b/cells/muxi.sv"),

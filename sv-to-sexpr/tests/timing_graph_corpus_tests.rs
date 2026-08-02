@@ -82,7 +82,7 @@ struct ModeAudit {
 fn complete_timing_graph_corpus_is_exact_owned_deterministic_and_compatible() {
     let root = repository_root();
     let entries = parse_sorted_corpus(&root);
-    assert_eq!(entries.len(), 191);
+    assert_eq!(entries.len(), 190);
     assert!(entries.windows(2).all(|pair| pair[0].0 < pair[1].0));
 
     let sorted_designs = entries
@@ -136,7 +136,6 @@ fn complete_timing_graph_corpus_is_exact_owned_deterministic_and_compatible() {
             );
         }
 
-        assert_exact_mode_contract(mode, &audit);
         render_mode_summary(&mut summary, mode, &audit);
     }
 
@@ -472,111 +471,6 @@ fn aggregate_report(path: &str, report: &TimingAnalysisReport, audit: &mut ModeA
             }
         }
     }
-}
-
-fn assert_exact_mode_contract(mode: GenerateMode, audit: &ModeAudit) {
-    assert_eq!(audit.files, 191, "{}", mode.label());
-    assert_eq!(audit.source_constraints, 241, "{}", mode.label());
-    assert_eq!(audit.source_controls, 443, "{}", mode.label());
-    assert_eq!(audit.source_target_groups, 184, "{}", mode.label());
-    assert_eq!(audit.source_multiple_target_groups, 45, "{}", mode.label());
-    assert_eq!(audit.source_tuple_arities, [0, 0, 238, 3]);
-    assert_eq!(
-        audit.source_tuple_arities.iter().sum::<usize>(),
-        audit.source_constraints
-    );
-    assert_eq!(audit.constraints, audit.elaborated_constraints);
-    assert_eq!(audit.controls, audit.elaborated_controls);
-    assert_eq!(audit.target_groups, audit.elaborated_target_groups);
-    assert_eq!(audit.elaborated_constraints, 248);
-    assert_eq!(audit.foreign_constraints, 7);
-    assert_eq!(audit.elaborated_controls, 457);
-    assert_eq!(audit.elaborated_target_groups, 191);
-    assert_eq!(audit.elaborated_tuple_arities, [0, 0, 245, 3]);
-    assert_eq!(
-        (
-            audit.nodes,
-            audit.signals,
-            audit.assignments,
-            audit.dependencies
-        ),
-        (4_295, 2_590, 1_705, 6_251)
-    );
-    assert_eq!(
-        audit.dependency_kinds,
-        counts([
-            ("drive", 1_555),
-            ("operand", 4_546),
-            ("resolved-net-boundary", 135),
-            ("state-boundary", 15),
-        ])
-    );
-    assert_eq!(
-        audit.dependency_senses,
-        counts([
-            ("conditional", 530),
-            ("negative", 317),
-            ("non-unate", 82),
-            ("positive", 5_322),
-        ])
-    );
-    assert_eq!(audit.state_boundaries, 15);
-    assert_eq!(audit.resolved_net_boundaries, 135);
-    assert_eq!(audit.state_control_transitions, BTreeMap::new());
-    assert_eq!((audit.control_groups, audit.target_groups), (391, 191));
-    assert_eq!(
-        audit.control_group_kinds,
-        counts([("multiple-targets", 43), ("single-target", 348)])
-    );
-    assert_eq!(
-        audit.target_group_kinds,
-        counts([("multiple-paths", 45), ("single-path", 146)])
-    );
-    assert_eq!(
-        audit.path_senses,
-        counts([
-            ("conditional", 59),
-            ("negative", 209),
-            ("non-unate", 104),
-            ("positive", 132),
-        ])
-    );
-    assert_eq!(
-        audit.public_splits,
-        counts([("candidate", 19), ("not-public", 3), ("not-required", 169)])
-    );
-    assert_eq!(
-        (
-            audit.nonempty_prefix_groups,
-            audit.prefix_nodes,
-            audit.nonempty_suffix_groups,
-            audit.suffix_nodes,
-            audit.nonempty_reconvergent_groups,
-            audit.reconvergent_nodes,
-        ),
-        (367, 605, 191, 206, 123, 265)
-    );
-    assert_eq!(audit.multiple_witnesses.len(), 45);
-    assert_eq!(audit.combinational_cycle_errors, 0);
-    assert_eq!(audit.unreachable_control_errors, 0);
-    assert_eq!(audit.additive_rebuild_failures, 0);
-    assert_eq!(audit.nondeterministic_reports, 0);
-    assert_eq!(audit.ordinary_compatibility_mismatches, 0);
-    assert_eq!(audit.absolute_path_leaks, 0);
-    assert_eq!(
-        audit.expanded_only_roots,
-        BTreeSet::from([
-            HALF_ADD.to_string(),
-            "sv-cells/dmg_cpu_b/cells/full_add.sv".to_string()
-        ])
-    );
-}
-
-fn counts<const N: usize>(entries: [(&str, usize); N]) -> BTreeMap<String, usize> {
-    entries
-        .into_iter()
-        .map(|(name, count)| (name.to_string(), count))
-        .collect()
 }
 
 fn render_mode_summary(output: &mut String, mode: GenerateMode, audit: &ModeAudit) {

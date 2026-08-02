@@ -43,7 +43,6 @@ const EXPECTED_RELEVANT_SUCCESSES: &[&str] = &[
     "sv-cells/sm83/cells/decoder1.sv",
     "sv-cells/sm83/cells/decoder2.sv",
     "sv-cells/sm83/cells/decoder3.sv",
-    "sv-cells/sm83/cells/dlatch_ee_irq.sv",
     "sv-cells/sm83/cells/idu_bit0.sv",
     "sv-cells/sm83/cells/idu_bit123456.sv",
     "sv-cells/sm83/cells/idu_bit7.sv",
@@ -142,12 +141,6 @@ const EXPECTED_REPEATED_TARGETS: &[(&str, &str, usize, Option<usize>)] = &[
     ("sv-cells/sm83/cells/decoder2.sv", "y7", 2, Some(2)),
     ("sv-cells/sm83/cells/decoder2.sv", "y8", 2, Some(2)),
     ("sv-cells/sm83/cells/decoder2.sv", "y9", 2, Some(2)),
-    (
-        "sv-cells/sm83/cells/dlatch_ee_irq.sv",
-        "gated_q",
-        3,
-        Some(3),
-    ),
     ("sv-cells/sm83/cells/idu_bit0.sv", "aoi_y", 4, Some(4)),
     ("sv-cells/sm83/cells/idu_bit0.sv", "buf_a_y", 2, Some(2)),
     ("sv-cells/sm83/cells/idu_bit0.sv", "buf_b_y", 2, Some(2)),
@@ -367,7 +360,7 @@ struct Audit {
 fn structural_m6_relevance_and_disposition_sets_are_exact() {
     let root = repository_root();
     let paths = corpus_paths(&root);
-    assert_eq!(paths.len(), 191);
+    assert_eq!(paths.len(), 190);
     assert!(paths.windows(2).all(|pair| pair[0] < pair[1]));
 
     let mut successes = Vec::new();
@@ -401,13 +394,13 @@ fn structural_m6_relevance_and_disposition_sets_are_exact() {
         }
     }
 
-    assert_eq!(global_successes, 188);
+    assert_eq!(global_successes, 187);
     assert_eq!(global_failures, 3);
     assert_eq!(successes, EXPECTED_RELEVANT_SUCCESSES);
     assert_eq!(failures, EXPECTED_RELEVANT_DEFERRALS);
-    assert_eq!(successes.len(), 64);
+    assert_eq!(successes.len(), 63);
     assert_eq!(failures.len(), 0);
-    assert_eq!(successes.len() + failures.len(), 64);
+    assert_eq!(successes.len() + failures.len(), 63);
 }
 
 #[test]
@@ -454,7 +447,7 @@ fn generate_alternatives_keep_repeated_driver_scopes_isolated() {
 fn complete_driver_corpus_is_accounted_flat_and_source_ordered() {
     let root = repository_root();
     let paths = corpus_paths(&root);
-    assert_eq!(paths.len(), 191);
+    assert_eq!(paths.len(), 190);
     assert!(paths.windows(2).all(|pair| pair[0] < pair[1]));
 
     let mut audit = Audit::default();
@@ -1417,13 +1410,13 @@ fn later_blocker(path: &str) -> (&'static str, &'static str) {
 }
 
 fn assert_exact_audit(audit: &Audit) {
-    assert_eq!(audit.processed, 191);
-    assert_eq!(audit.succeeded, 191);
+    assert_eq!(audit.processed, 190);
+    assert_eq!(audit.succeeded, 190);
     assert_eq!(audit.failed, 0);
-    assert_eq!(audit.relevant_successes.len(), 64);
+    assert_eq!(audit.relevant_successes.len(), 63);
     assert_eq!(audit.relevant_deferrals.len(), 0);
-    assert_eq!(audit.source_keepers, 6);
-    assert_eq!(audit.emitted_keepers, 6);
+    assert_eq!(audit.source_keepers, 5);
+    assert_eq!(audit.emitted_keepers, 5);
     assert_eq!(audit.deferred_keepers, 0);
     assert_eq!(
         audit
@@ -1474,7 +1467,7 @@ fn assert_exact_audit(audit: &Audit) {
             .iter()
             .map(|inventory| inventory.direct_bufif0)
             .sum::<usize>(),
-        101
+        100
     );
     assert_eq!(
         inventories
@@ -1495,24 +1488,24 @@ fn assert_exact_audit(audit: &Audit) {
             .iter()
             .map(|inventory| inventory.primitive_strength)
             .sum::<usize>(),
-        394
+        393
     );
     assert_eq!(
         audit.source_pair_counts,
         BTreeMap::from([
             ("highz1/strong0".to_string(), 338),
             ("pull1/highz0".to_string(), 3),
-            ("strong1/highz0".to_string(), 105),
+            ("strong1/highz0".to_string(), 104),
             ("supply1/supply0".to_string(), 4),
         ])
     );
     assert_eq!(audit.emitted_forms.bufif0, 2);
     assert_eq!(audit.emitted_forms.bufif1, 10);
     assert_eq!(audit.emitted_forms.drive_strength, 5);
-    assert_eq!(audit.emitted_forms.bufif0_strength, 101);
+    assert_eq!(audit.emitted_forms.bufif0_strength, 100);
     assert_eq!(audit.emitted_forms.bufif1_strength, 344);
 
-    assert_eq!(audit.repeated_entries.len(), 58);
+    assert_eq!(audit.repeated_entries.len(), 57);
     assert_eq!(
         audit
             .repeated_entries
@@ -1520,7 +1513,7 @@ fn assert_exact_audit(audit: &Audit) {
             .map(|entry| entry.path.as_str())
             .collect::<BTreeSet<_>>()
             .len(),
-        26
+        25
     );
     assert_eq!(
         audit
@@ -1528,7 +1521,7 @@ fn assert_exact_audit(audit: &Audit) {
             .iter()
             .map(|entry| entry.source_occurrences)
             .sum::<usize>(),
-        135
+        132
     );
     assert_eq!(
         audit
@@ -1536,7 +1529,7 @@ fn assert_exact_audit(audit: &Audit) {
             .iter()
             .filter_map(|entry| entry.emitted_occurrences)
             .sum::<usize>(),
-        135
+        132
     );
     assert_eq!(
         audit

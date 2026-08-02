@@ -4,15 +4,13 @@ use std::collections::{BTreeMap, BTreeSet};
 
 use analysis_support::{assert_or_update_fixture, corpus};
 use sv_to_sexpr::analyze::{
-    AnalysisDisposition, DriverSource, InstantiationResolution, SignalRole, SymbolCategory,
-    TargetMilestone,
+    AnalysisDisposition, DriverSource, InstantiationResolution, SignalRole, TargetMilestone,
 };
 
 #[test]
 fn representative_analysis_goldens_are_deterministic_and_semantically_complete() {
     let corpus = corpus();
     let fixtures = [
-        ("reference.analysis", "sv-cells/sm83/cells/dlatch_ee_irq.sv"),
         (
             "combinational_internal.analysis",
             "sv-cells/sm83/cells/alu_cgen.sv",
@@ -39,26 +37,6 @@ fn representative_analysis_goldens_are_deterministic_and_semantically_complete()
         assert!(!rendered.contains(&corpus.repository_root.to_string_lossy().to_string()));
         assert_or_update_fixture(fixture, &rendered);
     }
-
-    let reference = corpus.analyze("sv-cells/sm83/cells/dlatch_ee_irq.sv");
-    let module = &reference.modules[0];
-    assert_eq!(module.inputs, vec!["d", "ena", "ena_n", "pch_n", "ena_q_n"]);
-    assert_eq!(module.outputs, vec!["q", "q_n", "gated_q_n"]);
-    assert_eq!(module.registers, vec!["q_n"]);
-    assert_eq!(module.symbols["d"].category, SymbolCategory::Port);
-    assert_eq!(
-        module.symbols["gated_q"].category,
-        SymbolCategory::Declaration
-    );
-    assert_eq!(module.specify_paths.len(), 4);
-    assert_eq!(module.timing_aliases.len(), 12);
-    assert!(module.drivers.iter().any(|driver| {
-        driver.target == "gated_q"
-            && matches!(
-                &driver.source,
-                DriverSource::Primitive { name } if name == "bufif0"
-            )
-    }));
 
     let combinational = corpus.analyze("sv-cells/sm83/cells/alu_cgen.sv");
     let module = &combinational.modules[0];
@@ -180,7 +158,7 @@ fn corpus_analysis_summary_is_stable_by_disposition_milestone_and_capability() {
                 .insert(path.clone());
         }
     }
-    assert_eq!(corpus.designs.len(), 191);
+    assert_eq!(corpus.designs.len(), 190);
     assert_eq!(
         disposition_counts
             .get(&AnalysisDisposition::Supported)
@@ -193,7 +171,7 @@ fn corpus_analysis_summary_is_stable_by_disposition_milestone_and_capability() {
             .get(&AnalysisDisposition::Deferred)
             .copied()
             .unwrap_or_default(),
-        188
+        187
     );
     assert_eq!(
         disposition_counts
@@ -206,7 +184,7 @@ fn corpus_analysis_summary_is_stable_by_disposition_milestone_and_capability() {
     let mut rendered = String::new();
     rendered.push_str("analysis corpus summary\n");
     rendered.push_str(&format!(
-        "processed=191 supported={} deferred={} warned={} failed={}\n",
+        "processed=190 supported={} deferred={} warned={} failed={}\n",
         disposition_counts
             .get(&AnalysisDisposition::Supported)
             .copied()

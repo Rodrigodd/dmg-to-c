@@ -1,17 +1,17 @@
 generate corpus audit
-files=191 generate-files=1 non-generate-files=190
+files=190 generate-files=1 non-generate-files=190
 structural-generate-forms:
   sv-cells/dmg_cpu_b/cells/tffnl.sv @20:2 condition=nodelay then-items=[always,always] else-items=[assign,assign]
     then declarations=[] registers=[] aliases=[] initial=[] procedural=[l_buf,tclk_n_buf] continuous=[] drivers=[l_buf,tclk_n_buf]
     else declarations=[] registers=[] aliases=[] initial=[] procedural=[] continuous=[l_buf,tclk_n_buf] drivers=[l_buf,tclk_n_buf]
 configured-mode delayful:
   sv-cells/dmg_cpu_b/cells/tffnl.sv delayful declarations=[ff,l_buf,tclk_n_buf] registers=[ff,q] aliases=[T_fall_aoi,T_fall_mux,T_fall_nor,T_fall_not1,T_fall_not2,T_fall_not3,T_fall_q,T_fall_q_n,T_rise_aoi,T_rise_mux,T_rise_nor,T_rise_not1,T_rise_not2,T_rise_not3,T_rise_q,T_rise_q_n] initial=[ff,q] procedural=[q,ff] continuous=[l_buf,tclk_n_buf,q_n] drivers=[ff,q,l_buf,tclk_n_buf,q,ff,q_n] source-targets=[l_buf,tclk_n_buf,q,ff,q_n] diagnostics=warning:0 ignore:2
-  totals analysis-supported=3 analysis-deferred=188 analysis-warned=0 analysis-failed=0 lower-succeeded=191 lower-failed=0 warnings=0 intentional-ignores=45
-  requirements=driver.high-z:20,driver.primitive-tristate:47,driver.repeated:32,driver.strength:15,state.procedural:12,timing.alias:184,timing.assignment-delay:37,timing.primitive-delay:46,timing.specify-path:149,value.combinational:172
+  totals analysis-supported=3 analysis-deferred=187 analysis-warned=0 analysis-failed=0 lower-succeeded=190 lower-failed=0 warnings=0 intentional-ignores=44
+  requirements=driver.high-z:20,driver.primitive-tristate:46,driver.repeated:31,driver.strength:15,state.procedural:11,timing.alias:183,timing.assignment-delay:37,timing.primitive-delay:46,timing.specify-path:148,value.combinational:171
   lower-failures=[]
 configured-mode nodelay:
   sv-cells/dmg_cpu_b/cells/tffnl.sv nodelay declarations=[ff,l_buf,tclk_n_buf] registers=[ff,q] aliases=[T_fall_aoi,T_fall_mux,T_fall_nor,T_fall_not1,T_fall_not2,T_fall_not3,T_fall_q,T_fall_q_n,T_rise_aoi,T_rise_mux,T_rise_nor,T_rise_not1,T_rise_not2,T_rise_not3,T_rise_q,T_rise_q_n] initial=[ff,q] procedural=[l_buf,tclk_n_buf,q,ff] continuous=[q_n] drivers=[ff,q,l_buf,tclk_n_buf,q,ff,q_n] source-targets=[l_buf,tclk_n_buf,q,ff,q_n] diagnostics=warning:0 ignore:2
-  totals analysis-supported=3 analysis-deferred=188 analysis-warned=0 analysis-failed=0 lower-succeeded=191 lower-failed=0 warnings=0 intentional-ignores=45
-  requirements=driver.high-z:20,driver.primitive-tristate:47,driver.repeated:32,driver.strength:15,state.procedural:12,timing.alias:184,timing.assignment-delay:37,timing.primitive-delay:46,timing.specify-path:149,value.combinational:172,value.procedural-combinational:1
+  totals analysis-supported=3 analysis-deferred=187 analysis-warned=0 analysis-failed=0 lower-succeeded=190 lower-failed=0 warnings=0 intentional-ignores=44
+  requirements=driver.high-z:20,driver.primitive-tristate:46,driver.repeated:31,driver.strength:15,state.procedural:11,timing.alias:183,timing.assignment-delay:37,timing.primitive-delay:46,timing.specify-path:148,value.combinational:171,value.procedural-combinational:1
   lower-failures=[]
 mode-comparison: non-generate-identical=190 generate-cell-identical=[sv-cells/dmg_cpu_b/cells/tffnl.sv] generate-cell-distinct=[]

@@ -39,7 +39,7 @@ struct ModeTotals {
 #[test]
 fn dual_mode_generate_corpus_is_exact_selected_and_deterministic() {
     let corpus = load_corpus();
-    assert_eq!(corpus.designs.len(), 191);
+    assert_eq!(corpus.designs.len(), 190);
     let structural_generate = corpus
         .designs
         .iter()
@@ -48,7 +48,7 @@ fn dual_mode_generate_corpus_is_exact_selected_and_deterministic() {
     assert_eq!(structural_generate, GENERATE_PATHS);
 
     let mut output =
-        String::from("generate corpus audit\nfiles=191 generate-files=1 non-generate-files=190\n");
+        String::from("generate corpus audit\nfiles=190 generate-files=1 non-generate-files=190\n");
     output.push_str("structural-generate-forms:\n");
     for path in GENERATE_PATHS {
         render_structural_generate(path, &corpus.designs[*path], &mut output);
@@ -105,7 +105,7 @@ fn dual_mode_generate_corpus_is_exact_selected_and_deterministic() {
         );
         identical_non_generate += 1;
     }
-    assert_eq!(identical_non_generate, 190);
+    assert_eq!(identical_non_generate, 189);
     assert_eq!(
         identical_generate_cells,
         ["sv-cells/dmg_cpu_b/cells/tffnl.sv"]
@@ -134,17 +134,18 @@ fn staged_cli_checks_report_exact_dual_mode_results() {
         let analyze = run_cli(&analyze_args);
         assert!(analyze.status.success());
         assert!(String::from_utf8(analyze.stdout).unwrap().starts_with(
-            "analyze check summary: processed=191 supported=3 deferred=188 warned=0 failed=0\n"
+            "analyze check summary: processed=190 supported=3 deferred=187 warned=0 failed=0\n"
         ));
         assert!(analyze.stderr.is_empty());
 
         lower_args.push("--strict");
         let lower = run_cli(&lower_args);
         assert!(lower.status.success());
-        let expected_ignores = 45;
-        assert!(String::from_utf8(lower.stdout).unwrap().starts_with(&format!(
-            "lower check summary: processed=191 warned=0 intentional-ignored={expected_ignores} failed=0\n"
-        )));
+        let expected_ignores = 44;
+        let stdout = String::from_utf8(lower.stdout).unwrap();
+        assert!(stdout.starts_with(&format!(
+            "lower check summary: processed=190 warned=0 intentional-ignored={expected_ignores} failed=0\n"
+        )), "got {}", stdout);
         assert!(lower.stderr.is_empty());
     }
 }
@@ -231,7 +232,7 @@ fn audit_mode(
         totals.analysis_warned,
         totals.analysis_failed,
         totals.lower_succeeded,
-        191 - totals.lower_succeeded,
+        190 - totals.lower_succeeded,
         totals.warnings,
         totals.intentional_ignores
     )
@@ -253,13 +254,13 @@ fn audit_mode(
 
 fn assert_mode_totals(totals: &ModeTotals) {
     assert_eq!(totals.analysis_supported, 3);
-    assert_eq!(totals.analysis_deferred, 188);
+    assert_eq!(totals.analysis_deferred, 187);
     assert_eq!(totals.analysis_warned, 0);
     assert_eq!(totals.analysis_failed, 0);
     assert!(!totals.requirements.contains_key("generate.alternative"));
-    assert_eq!(totals.lower_succeeded, 191);
+    assert_eq!(totals.lower_succeeded, 190);
     assert_eq!(totals.warnings, 0);
-    assert_eq!(totals.intentional_ignores, 45);
+    assert_eq!(totals.intentional_ignores, 44);
     assert!(totals.failures.is_empty());
 }
 

@@ -1,0 +1,6 @@
+corpus_delayful_09a0_00 sv-cells/dmg_cpu_b/cells/dlatch.sv
+corpus_delayful_12a0_00 sv-cells/dmg_cpu_b/cells/drlatch_ee.sv
+corpus_delayful_13b1_03 sv-cells/sm83/cells/alu_pggen.sv
+corpus_nodelay_01b0_05 sv-cells/sm83/cells/dlatch_ee_irq.sv nodelay
+
+

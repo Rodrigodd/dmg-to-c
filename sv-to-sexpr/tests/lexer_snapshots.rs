@@ -151,12 +151,6 @@ fn assert_snapshot(name: &str, tokens: &[Token]) {
 }
 
 #[test]
-fn snapshots_reference_cell() {
-    let path = repository_file("sv-cells/sm83/cells/dlatch_ee_irq.sv");
-    assert_snapshot("reference_cell", &lex_path(&path));
-}
-
-#[test]
 fn snapshots_generate_syntax_from_curated_tff() {
     let path = repository_file("sv-cells/dmg_cpu_b/cells/tffnl.sv");
     let tokens = tokens_on_lines(lex_path(&path), 20, 28);
@@ -189,13 +183,6 @@ fn snapshots_direct_nmos_and_pmos_calls() {
     let path = repository_file("sv-cells/sm83/cells/irq_prio_bit0.sv");
     let tokens = tokens_on_lines(lex_path(&path), 42, 63);
     assert_snapshot("transistors_irq_prio_bit0", &tokens);
-}
-
-#[test]
-fn snapshots_direct_rnmos_call() {
-    let path = repository_file("sv-cells/sm83/cells/dlatch_ee_irq.sv");
-    let tokens = tokens_on_lines(lex_path(&path), 23, 23);
-    assert_snapshot("transistor_rnmos", &tokens);
 }
 
 #[test]

@@ -1,88 +1,88 @@
 ast coverage:
   always-kind.plain | count=2 | files=1 | examples=sv-cells/dmg_cpu_b/cells/tffnl.sv
-  assign-op.blocking | count=308 | files=178 | examples=sv-cells/dmg_cpu_b/cells/and2.sv,sv-cells/dmg_cpu_b/cells/and3.sv,sv-cells/dmg_cpu_b/cells/and4.sv
+  assign-op.blocking | count=304 | files=177 | examples=sv-cells/dmg_cpu_b/cells/and2.sv,sv-cells/dmg_cpu_b/cells/and3.sv,sv-cells/dmg_cpu_b/cells/and4.sv
   assign-op.nonblocking | count=4 | files=1 | examples=sv-cells/dmg_cpu_b/cells/tffnl.sv
-  binary-op.add | count=546 | files=77 | examples=sv-cells/dmg_cpu_b/cells/and2.sv,sv-cells/dmg_cpu_b/cells/and3.sv,sv-cells/dmg_cpu_b/cells/and4.sv
-  binary-op.bit-and | count=1837 | files=83 | examples=sv-cells/dmg_cpu_b/cells/and2.sv,sv-cells/dmg_cpu_b/cells/and3.sv,sv-cells/dmg_cpu_b/cells/and4.sv
+  binary-op.add | count=526 | files=76 | examples=sv-cells/dmg_cpu_b/cells/and2.sv,sv-cells/dmg_cpu_b/cells/and3.sv,sv-cells/dmg_cpu_b/cells/and4.sv
+  binary-op.bit-and | count=1836 | files=82 | examples=sv-cells/dmg_cpu_b/cells/and2.sv,sv-cells/dmg_cpu_b/cells/and3.sv,sv-cells/dmg_cpu_b/cells/and4.sv
   binary-op.bit-or | count=885 | files=69 | examples=sv-cells/dmg_cpu_b/cells/ao21.sv,sv-cells/dmg_cpu_b/cells/ao22.sv,sv-cells/dmg_cpu_b/cells/ao222.sv
   binary-op.bit-xnor | count=1 | files=1 | examples=sv-cells/dmg_cpu_b/cells/xnor.sv
   binary-op.bit-xor | count=5 | files=5 | examples=sv-cells/dmg_cpu_b/cells/xor.sv,sv-cells/sm83/cells/alu_pggen.sv,sv-cells/sm83/cells/ao221_xor_in4_s1.sv
   binary-op.case-eq | count=11 | files=8 | examples=sv-cells/sm83/cells/alu_cgen.sv,sv-cells/sm83/cells/irq_prio_bit0.sv,sv-cells/sm83/cells/irq_prio_bit1.sv
-  binary-op.case-neq | count=18 | files=10 | examples=sv-cells/sm83/cells/dlatch_ee_irq.sv,sv-cells/sm83/cells/idu_bit0.sv,sv-cells/sm83/cells/idu_bit123456.sv
+  binary-op.case-neq | count=17 | files=9 | examples=sv-cells/sm83/cells/idu_bit0.sv,sv-cells/sm83/cells/idu_bit123456.sv,sv-cells/sm83/cells/irq_prio_bit0.sv
   binary-op.eq | count=2 | files=1 | examples=sv-cells/sm83/cells/reg_wz_out.sv
   binary-op.greater | count=14 | files=1 | examples=sv-cells/sm83/cells/alu_decoder.sv
-  binary-op.logical-and | count=10 | files=5 | examples=sv-cells/dmg_cpu_b/cells/dlatch_ee.sv,sv-cells/dmg_cpu_b/cells/dlatch_ee_q.sv,sv-cells/dmg_cpu_b/cells/drlatch_ee.sv
-  binary-op.logical-or | count=13 | files=11 | examples=sv-cells/dmg_cpu_b/cells/dlatch_ee.sv,sv-cells/dmg_cpu_b/cells/dlatch_ee_q.sv,sv-cells/dmg_cpu_b/cells/drlatch_ee.sv
-  binary-op.mul | count=1787 | files=182 | examples=sv-cells/dmg_cpu_b/cells/and2.sv,sv-cells/dmg_cpu_b/cells/and3.sv,sv-cells/dmg_cpu_b/cells/and4.sv
-  call.arguments.arity-1 | count=1337 | files=184 | examples=sv-cells/dmg_cpu_b/cells/and2.sv,sv-cells/dmg_cpu_b/cells/and3.sv,sv-cells/dmg_cpu_b/cells/and4.sv
-  call.arguments.arity-2 | count=1497 | files=184 | examples=sv-cells/dmg_cpu_b/cells/and2.sv,sv-cells/dmg_cpu_b/cells/and3.sv,sv-cells/dmg_cpu_b/cells/and4.sv
+  binary-op.logical-and | count=8 | files=4 | examples=sv-cells/dmg_cpu_b/cells/dlatch_ee.sv,sv-cells/dmg_cpu_b/cells/dlatch_ee_q.sv,sv-cells/dmg_cpu_b/cells/drlatch_ee.sv
+  binary-op.logical-or | count=12 | files=10 | examples=sv-cells/dmg_cpu_b/cells/dlatch_ee.sv,sv-cells/dmg_cpu_b/cells/dlatch_ee_q.sv,sv-cells/dmg_cpu_b/cells/drlatch_ee.sv
+  binary-op.mul | count=1773 | files=181 | examples=sv-cells/dmg_cpu_b/cells/and2.sv,sv-cells/dmg_cpu_b/cells/and3.sv,sv-cells/dmg_cpu_b/cells/and4.sv
+  call.arguments.arity-1 | count=1325 | files=183 | examples=sv-cells/dmg_cpu_b/cells/and2.sv,sv-cells/dmg_cpu_b/cells/and3.sv,sv-cells/dmg_cpu_b/cells/and4.sv
+  call.arguments.arity-2 | count=1485 | files=183 | examples=sv-cells/dmg_cpu_b/cells/and2.sv,sv-cells/dmg_cpu_b/cells/and3.sv,sv-cells/dmg_cpu_b/cells/and4.sv
   call.arguments.omitted-0 | count=285 | files=26 | examples=sv-cells/sm83/cells/alu_shifter.sv,sv-cells/sm83/cells/decoder1.sv,sv-cells/sm83/cells/decoder2.sv
   connection-kind.named | count=21 | files=2 | examples=sv-cells/dmg_cpu_b/cells/full_add.sv,sv-cells/dmg_cpu_b/cells/half_add.sv
-  connection-kind.positional | count=6 | files=6 | examples=sv-cells/dmg_cpu_b/cells/mux.sv,sv-cells/dmg_cpu_b/cells/muxi.sv,sv-cells/dmg_cpu_b/cells/pad_xtal.sv
-  const-kind.one | count=103 | files=42 | examples=sv-cells/dmg_cpu_b/cells/pad_bidir.sv,sv-cells/dmg_cpu_b/cells/pad_bidir_pu.sv,sv-cells/dmg_cpu_b/cells/pad_bidir_pu_latch.sv
+  connection-kind.positional | count=5 | files=5 | examples=sv-cells/dmg_cpu_b/cells/mux.sv,sv-cells/dmg_cpu_b/cells/muxi.sv,sv-cells/dmg_cpu_b/cells/pad_xtal.sv
+  const-kind.one | count=102 | files=41 | examples=sv-cells/dmg_cpu_b/cells/pad_bidir.sv,sv-cells/dmg_cpu_b/cells/pad_bidir_pu.sv,sv-cells/dmg_cpu_b/cells/pad_bidir_pu_latch.sv
   const-kind.x | count=6 | files=2 | examples=sv-cells/sm83/cells/alu_cgen.sv,sv-cells/sm83/cells/reg_wz_out.sv
   const-kind.z | count=63 | files=20 | examples=sv-cells/dmg_cpu_b/cells/buf_if0.sv,sv-cells/dmg_cpu_b/cells/not_if0.sv,sv-cells/dmg_cpu_b/cells/not_if1.sv
   const-kind.zero | count=282 | files=21 | examples=sv-cells/dmg_cpu_b/cells/pad_bidir.sv,sv-cells/dmg_cpu_b/cells/pad_bidir_pu.sv,sv-cells/dmg_cpu_b/cells/pad_bidir_pu_latch.sv
   decl-kind.localparam | count=978 | files=60 | examples=sv-cells/dmg_cpu_b/cells/mux.sv,sv-cells/dmg_cpu_b/cells/muxi.sv,sv-cells/dmg_cpu_b/cells/pad_bidir.sv
   decl-kind.logic | count=14 | files=10 | examples=sv-cells/dmg_cpu_b/cells/full_add.sv,sv-cells/dmg_cpu_b/cells/mux.sv,sv-cells/dmg_cpu_b/cells/muxi.sv
-  decl-kind.tri | count=6 | files=6 | examples=sv-cells/dmg_cpu_b/cells/mux.sv,sv-cells/dmg_cpu_b/cells/muxi.sv,sv-cells/dmg_cpu_b/cells/pad_xtal.sv
-  decl-type.logic | count=6 | files=6 | examples=sv-cells/dmg_cpu_b/cells/mux.sv,sv-cells/dmg_cpu_b/cells/muxi.sv,sv-cells/dmg_cpu_b/cells/pad_xtal.sv
+  decl-kind.tri | count=5 | files=5 | examples=sv-cells/dmg_cpu_b/cells/mux.sv,sv-cells/dmg_cpu_b/cells/muxi.sv,sv-cells/dmg_cpu_b/cells/pad_xtal.sv
+  decl-type.logic | count=5 | files=5 | examples=sv-cells/dmg_cpu_b/cells/mux.sv,sv-cells/dmg_cpu_b/cells/muxi.sv,sv-cells/dmg_cpu_b/cells/pad_xtal.sv
   decl-type.realtime | count=978 | files=60 | examples=sv-cells/dmg_cpu_b/cells/mux.sv,sv-cells/dmg_cpu_b/cells/muxi.sv,sv-cells/dmg_cpu_b/cells/pad_bidir.sv
-  decl.names.arity-1 | count=988 | files=61 | examples=sv-cells/dmg_cpu_b/cells/mux.sv,sv-cells/dmg_cpu_b/cells/muxi.sv,sv-cells/dmg_cpu_b/cells/pad_bidir.sv
+  decl.names.arity-1 | count=987 | files=60 | examples=sv-cells/dmg_cpu_b/cells/mux.sv,sv-cells/dmg_cpu_b/cells/muxi.sv,sv-cells/dmg_cpu_b/cells/pad_bidir.sv
   decl.names.arity-2 | count=7 | files=3 | examples=sv-cells/sm83/cells/alu_cgen.sv,sv-cells/sm83/cells/b2b_wand_inj_a.sv,sv-cells/sm83/cells/reg_wz_out.sv
   decl.names.arity-3 | count=2 | files=2 | examples=sv-cells/dmg_cpu_b/cells/full_add.sv,sv-cells/dmg_cpu_b/cells/tffnl.sv
   decl.names.arity-4 | count=1 | files=1 | examples=sv-cells/dmg_cpu_b/cells/pad_bidir_pu_latch.sv
   delay.shape.arity-2 | count=56 | files=22 | examples=sv-cells/dmg_cpu_b/cells/mux.sv,sv-cells/dmg_cpu_b/cells/muxi.sv,sv-cells/dmg_cpu_b/cells/pad_bidir.sv
   delay.shape.arity-3 | count=456 | files=50 | examples=sv-cells/sm83/cells/alu_decoder.sv,sv-cells/sm83/cells/alu_pggen.sv,sv-cells/sm83/cells/alu_shifter.sv
-  design | count=191 | files=191 | examples=sv-cells/dmg_cpu_b/cells/and2.sv,sv-cells/dmg_cpu_b/cells/and3.sv,sv-cells/dmg_cpu_b/cells/and4.sv
-  design-item.directive | count=380 | files=190 | examples=sv-cells/dmg_cpu_b/cells/and2.sv,sv-cells/dmg_cpu_b/cells/and3.sv,sv-cells/dmg_cpu_b/cells/and4.sv
-  design-item.module | count=191 | files=191 | examples=sv-cells/dmg_cpu_b/cells/and2.sv,sv-cells/dmg_cpu_b/cells/and3.sv,sv-cells/dmg_cpu_b/cells/and4.sv
-  direction.inout | count=29 | files=29 | examples=sv-cells/dmg_cpu_b/cells/pad_bidir.sv,sv-cells/dmg_cpu_b/cells/pad_bidir_pu.sv,sv-cells/dmg_cpu_b/cells/pad_bidir_pu_latch.sv
-  direction.input | count=219 | files=187 | examples=sv-cells/dmg_cpu_b/cells/and2.sv,sv-cells/dmg_cpu_b/cells/and3.sv,sv-cells/dmg_cpu_b/cells/and4.sv
-  direction.output | count=219 | files=189 | examples=sv-cells/dmg_cpu_b/cells/and2.sv,sv-cells/dmg_cpu_b/cells/and3.sv,sv-cells/dmg_cpu_b/cells/and4.sv
-  directive.arguments.none | count=190 | files=190 | examples=sv-cells/dmg_cpu_b/cells/and2.sv,sv-cells/dmg_cpu_b/cells/and3.sv,sv-cells/dmg_cpu_b/cells/and4.sv
-  directive.arguments.wire | count=190 | files=190 | examples=sv-cells/dmg_cpu_b/cells/and2.sv,sv-cells/dmg_cpu_b/cells/and3.sv,sv-cells/dmg_cpu_b/cells/and4.sv
-  directive.name.default_nettype | count=380 | files=190 | examples=sv-cells/dmg_cpu_b/cells/and2.sv,sv-cells/dmg_cpu_b/cells/and3.sv,sv-cells/dmg_cpu_b/cells/and4.sv
-  expr-kind.binary | count=5129 | files=182 | examples=sv-cells/dmg_cpu_b/cells/and2.sv,sv-cells/dmg_cpu_b/cells/and3.sv,sv-cells/dmg_cpu_b/cells/and4.sv
-  expr-kind.call | count=2834 | files=184 | examples=sv-cells/dmg_cpu_b/cells/and2.sv,sv-cells/dmg_cpu_b/cells/and3.sv,sv-cells/dmg_cpu_b/cells/and4.sv
-  expr-kind.constant | count=454 | files=61 | examples=sv-cells/dmg_cpu_b/cells/buf_if0.sv,sv-cells/dmg_cpu_b/cells/not_if0.sv,sv-cells/dmg_cpu_b/cells/not_if1.sv
-  expr-kind.group | count=663 | files=93 | examples=sv-cells/dmg_cpu_b/cells/ao21.sv,sv-cells/dmg_cpu_b/cells/ao22.sv,sv-cells/dmg_cpu_b/cells/ao222.sv
-  expr-kind.integer | count=2736 | files=190 | examples=sv-cells/dmg_cpu_b/cells/and2.sv,sv-cells/dmg_cpu_b/cells/and3.sv,sv-cells/dmg_cpu_b/cells/and4.sv
-  expr-kind.path | count=12857 | files=190 | examples=sv-cells/dmg_cpu_b/cells/and2.sv,sv-cells/dmg_cpu_b/cells/and3.sv,sv-cells/dmg_cpu_b/cells/and4.sv
+  design | count=190 | files=190 | examples=sv-cells/dmg_cpu_b/cells/and2.sv,sv-cells/dmg_cpu_b/cells/and3.sv,sv-cells/dmg_cpu_b/cells/and4.sv
+  design-item.directive | count=378 | files=189 | examples=sv-cells/dmg_cpu_b/cells/and2.sv,sv-cells/dmg_cpu_b/cells/and3.sv,sv-cells/dmg_cpu_b/cells/and4.sv
+  design-item.module | count=190 | files=190 | examples=sv-cells/dmg_cpu_b/cells/and2.sv,sv-cells/dmg_cpu_b/cells/and3.sv,sv-cells/dmg_cpu_b/cells/and4.sv
+  direction.inout | count=28 | files=28 | examples=sv-cells/dmg_cpu_b/cells/pad_bidir.sv,sv-cells/dmg_cpu_b/cells/pad_bidir_pu.sv,sv-cells/dmg_cpu_b/cells/pad_bidir_pu_latch.sv
+  direction.input | count=218 | files=186 | examples=sv-cells/dmg_cpu_b/cells/and2.sv,sv-cells/dmg_cpu_b/cells/and3.sv,sv-cells/dmg_cpu_b/cells/and4.sv
+  direction.output | count=218 | files=188 | examples=sv-cells/dmg_cpu_b/cells/and2.sv,sv-cells/dmg_cpu_b/cells/and3.sv,sv-cells/dmg_cpu_b/cells/and4.sv
+  directive.arguments.none | count=189 | files=189 | examples=sv-cells/dmg_cpu_b/cells/and2.sv,sv-cells/dmg_cpu_b/cells/and3.sv,sv-cells/dmg_cpu_b/cells/and4.sv
+  directive.arguments.wire | count=189 | files=189 | examples=sv-cells/dmg_cpu_b/cells/and2.sv,sv-cells/dmg_cpu_b/cells/and3.sv,sv-cells/dmg_cpu_b/cells/and4.sv
+  directive.name.default_nettype | count=378 | files=189 | examples=sv-cells/dmg_cpu_b/cells/and2.sv,sv-cells/dmg_cpu_b/cells/and3.sv,sv-cells/dmg_cpu_b/cells/and4.sv
+  expr-kind.binary | count=5090 | files=181 | examples=sv-cells/dmg_cpu_b/cells/and2.sv,sv-cells/dmg_cpu_b/cells/and3.sv,sv-cells/dmg_cpu_b/cells/and4.sv
+  expr-kind.call | count=2810 | files=183 | examples=sv-cells/dmg_cpu_b/cells/and2.sv,sv-cells/dmg_cpu_b/cells/and3.sv,sv-cells/dmg_cpu_b/cells/and4.sv
+  expr-kind.constant | count=453 | files=60 | examples=sv-cells/dmg_cpu_b/cells/buf_if0.sv,sv-cells/dmg_cpu_b/cells/not_if0.sv,sv-cells/dmg_cpu_b/cells/not_if1.sv
+  expr-kind.group | count=660 | files=92 | examples=sv-cells/dmg_cpu_b/cells/ao21.sv,sv-cells/dmg_cpu_b/cells/ao22.sv,sv-cells/dmg_cpu_b/cells/ao222.sv
+  expr-kind.integer | count=2711 | files=189 | examples=sv-cells/dmg_cpu_b/cells/and2.sv,sv-cells/dmg_cpu_b/cells/and3.sv,sv-cells/dmg_cpu_b/cells/and4.sv
+  expr-kind.path | count=12754 | files=189 | examples=sv-cells/dmg_cpu_b/cells/and2.sv,sv-cells/dmg_cpu_b/cells/and3.sv,sv-cells/dmg_cpu_b/cells/and4.sv
   expr-kind.real | count=77 | files=14 | examples=sv-cells/dmg_cpu_b/cells/pad_xtal.sv,sv-cells/sm83/cells/alu_decoder.sv,sv-cells/sm83/cells/irq_prio_bit0.sv
   expr-kind.ternary | count=89 | files=25 | examples=sv-cells/dmg_cpu_b/cells/buf_if0.sv,sv-cells/dmg_cpu_b/cells/not_if0.sv,sv-cells/dmg_cpu_b/cells/not_if1.sv
-  expr-kind.unary | count=217 | files=129 | examples=sv-cells/dmg_cpu_b/cells/buf_if0.sv,sv-cells/dmg_cpu_b/cells/dlatch.sv,sv-cells/dmg_cpu_b/cells/dlatch_ee.sv
-  expr.path.segments-1 | count=12857 | files=190 | examples=sv-cells/dmg_cpu_b/cells/and2.sv,sv-cells/dmg_cpu_b/cells/and3.sv,sv-cells/dmg_cpu_b/cells/and4.sv
+  expr-kind.unary | count=212 | files=128 | examples=sv-cells/dmg_cpu_b/cells/buf_if0.sv,sv-cells/dmg_cpu_b/cells/dlatch.sv,sv-cells/dmg_cpu_b/cells/dlatch_ee.sv
+  expr.path.segments-1 | count=12754 | files=189 | examples=sv-cells/dmg_cpu_b/cells/and2.sv,sv-cells/dmg_cpu_b/cells/and3.sv,sv-cells/dmg_cpu_b/cells/and4.sv
   if.else-present | count=1 | files=1 | examples=sv-cells/dmg_cpu_b/cells/tffnl.sv
   import.dmg_timing::* | count=53 | files=53 | examples=sv-cells/dmg_cpu_b/cells/and2.sv,sv-cells/dmg_cpu_b/cells/and3.sv,sv-cells/dmg_cpu_b/cells/and4.sv
-  import.sm83_timing::* | count=131 | files=131 | examples=sv-cells/sm83/cells/alu_cgen.sv,sv-cells/sm83/cells/alu_decoder.sv,sv-cells/sm83/cells/alu_pggen.sv
+  import.sm83_timing::* | count=130 | files=130 | examples=sv-cells/sm83/cells/alu_cgen.sv,sv-cells/sm83/cells/alu_decoder.sv,sv-cells/sm83/cells/alu_pggen.sv
   instantiation.module.dmg_and2 | count=1 | files=1 | examples=sv-cells/dmg_cpu_b/cells/half_add.sv
   instantiation.module.dmg_nand2 | count=3 | files=1 | examples=sv-cells/dmg_cpu_b/cells/full_add.sv
   instantiation.module.dmg_xor | count=3 | files=2 | examples=sv-cells/dmg_cpu_b/cells/full_add.sv,sv-cells/dmg_cpu_b/cells/half_add.sv
-  instantiation.module.keeper | count=6 | files=6 | examples=sv-cells/dmg_cpu_b/cells/mux.sv,sv-cells/dmg_cpu_b/cells/muxi.sv,sv-cells/dmg_cpu_b/cells/pad_xtal.sv
+  instantiation.module.keeper | count=5 | files=5 | examples=sv-cells/dmg_cpu_b/cells/mux.sv,sv-cells/dmg_cpu_b/cells/muxi.sv,sv-cells/dmg_cpu_b/cells/pad_xtal.sv
   item-kind.always | count=2 | files=1 | examples=sv-cells/dmg_cpu_b/cells/tffnl.sv
-  item-kind.always-latch | count=13 | files=12 | examples=sv-cells/dmg_cpu_b/cells/dlatch.sv,sv-cells/dmg_cpu_b/cells/dlatch_ee.sv,sv-cells/dmg_cpu_b/cells/dlatch_ee_q.sv
-  item-kind.assign | count=286 | files=172 | examples=sv-cells/dmg_cpu_b/cells/and2.sv,sv-cells/dmg_cpu_b/cells/and3.sv,sv-cells/dmg_cpu_b/cells/and4.sv
+  item-kind.always-latch | count=12 | files=11 | examples=sv-cells/dmg_cpu_b/cells/dlatch.sv,sv-cells/dmg_cpu_b/cells/dlatch_ee.sv,sv-cells/dmg_cpu_b/cells/dlatch_ee_q.sv
+  item-kind.assign | count=284 | files=171 | examples=sv-cells/dmg_cpu_b/cells/and2.sv,sv-cells/dmg_cpu_b/cells/and3.sv,sv-cells/dmg_cpu_b/cells/and4.sv
   item-kind.block | count=4 | files=3 | examples=sv-cells/dmg_cpu_b/cells/nand_latch.sv,sv-cells/dmg_cpu_b/cells/nor_latch.sv,sv-cells/dmg_cpu_b/cells/tffnl.sv
-  item-kind.decl | count=998 | files=64 | examples=sv-cells/dmg_cpu_b/cells/full_add.sv,sv-cells/dmg_cpu_b/cells/mux.sv,sv-cells/dmg_cpu_b/cells/muxi.sv
+  item-kind.decl | count=997 | files=63 | examples=sv-cells/dmg_cpu_b/cells/full_add.sv,sv-cells/dmg_cpu_b/cells/mux.sv,sv-cells/dmg_cpu_b/cells/muxi.sv
   item-kind.generate | count=1 | files=1 | examples=sv-cells/dmg_cpu_b/cells/tffnl.sv
   item-kind.if | count=1 | files=1 | examples=sv-cells/dmg_cpu_b/cells/tffnl.sv
-  item-kind.import | count=184 | files=184 | examples=sv-cells/dmg_cpu_b/cells/and2.sv,sv-cells/dmg_cpu_b/cells/and3.sv,sv-cells/dmg_cpu_b/cells/and4.sv
-  item-kind.initial | count=9 | files=8 | examples=sv-cells/dmg_cpu_b/cells/dlatch.sv,sv-cells/dmg_cpu_b/cells/dlatch_ee.sv,sv-cells/dmg_cpu_b/cells/dlatch_ee_q.sv
-  item-kind.instantiation | count=13 | files=8 | examples=sv-cells/dmg_cpu_b/cells/full_add.sv,sv-cells/dmg_cpu_b/cells/half_add.sv,sv-cells/dmg_cpu_b/cells/mux.sv
-  item-kind.primitive | count=419 | files=47 | examples=sv-cells/dmg_cpu_b/cells/mux.sv,sv-cells/dmg_cpu_b/cells/muxi.sv,sv-cells/dmg_cpu_b/cells/pad_bidir.sv
-  item-kind.proc-assign | count=17 | files=12 | examples=sv-cells/dmg_cpu_b/cells/dlatch.sv,sv-cells/dmg_cpu_b/cells/dlatch_ee.sv,sv-cells/dmg_cpu_b/cells/dlatch_ee_q.sv
-  item-kind.specify | count=149 | files=149 | examples=sv-cells/dmg_cpu_b/cells/and2.sv,sv-cells/dmg_cpu_b/cells/and3.sv,sv-cells/dmg_cpu_b/cells/and4.sv
-  item.total | count=2096 | files=190 | examples=sv-cells/dmg_cpu_b/cells/and2.sv,sv-cells/dmg_cpu_b/cells/and3.sv,sv-cells/dmg_cpu_b/cells/and4.sv
-  module | count=191 | files=191 | examples=sv-cells/dmg_cpu_b/cells/and2.sv,sv-cells/dmg_cpu_b/cells/and3.sv,sv-cells/dmg_cpu_b/cells/and4.sv
-  parameter-kind.parameter | count=627 | files=190 | examples=sv-cells/dmg_cpu_b/cells/and2.sv,sv-cells/dmg_cpu_b/cells/and3.sv,sv-cells/dmg_cpu_b/cells/and4.sv
-  parameter-kind.specparam | count=588 | files=149 | examples=sv-cells/dmg_cpu_b/cells/and2.sv,sv-cells/dmg_cpu_b/cells/and3.sv,sv-cells/dmg_cpu_b/cells/and4.sv
+  item-kind.import | count=183 | files=183 | examples=sv-cells/dmg_cpu_b/cells/and2.sv,sv-cells/dmg_cpu_b/cells/and3.sv,sv-cells/dmg_cpu_b/cells/and4.sv
+  item-kind.initial | count=8 | files=7 | examples=sv-cells/dmg_cpu_b/cells/dlatch.sv,sv-cells/dmg_cpu_b/cells/dlatch_ee.sv,sv-cells/dmg_cpu_b/cells/dlatch_ee_q.sv
+  item-kind.instantiation | count=12 | files=7 | examples=sv-cells/dmg_cpu_b/cells/full_add.sv,sv-cells/dmg_cpu_b/cells/half_add.sv,sv-cells/dmg_cpu_b/cells/mux.sv
+  item-kind.primitive | count=417 | files=46 | examples=sv-cells/dmg_cpu_b/cells/mux.sv,sv-cells/dmg_cpu_b/cells/muxi.sv,sv-cells/dmg_cpu_b/cells/pad_bidir.sv
+  item-kind.proc-assign | count=16 | files=11 | examples=sv-cells/dmg_cpu_b/cells/dlatch.sv,sv-cells/dmg_cpu_b/cells/dlatch_ee.sv,sv-cells/dmg_cpu_b/cells/dlatch_ee_q.sv
+  item-kind.specify | count=148 | files=148 | examples=sv-cells/dmg_cpu_b/cells/and2.sv,sv-cells/dmg_cpu_b/cells/and3.sv,sv-cells/dmg_cpu_b/cells/and4.sv
+  item.total | count=2085 | files=189 | examples=sv-cells/dmg_cpu_b/cells/and2.sv,sv-cells/dmg_cpu_b/cells/and3.sv,sv-cells/dmg_cpu_b/cells/and4.sv
+  module | count=190 | files=190 | examples=sv-cells/dmg_cpu_b/cells/and2.sv,sv-cells/dmg_cpu_b/cells/and3.sv,sv-cells/dmg_cpu_b/cells/and4.sv
+  parameter-kind.parameter | count=624 | files=189 | examples=sv-cells/dmg_cpu_b/cells/and2.sv,sv-cells/dmg_cpu_b/cells/and3.sv,sv-cells/dmg_cpu_b/cells/and4.sv
+  parameter-kind.specparam | count=576 | files=148 | examples=sv-cells/dmg_cpu_b/cells/and2.sv,sv-cells/dmg_cpu_b/cells/and3.sv,sv-cells/dmg_cpu_b/cells/and4.sv
   parameter-override-kind.named | count=7 | files=2 | examples=sv-cells/dmg_cpu_b/cells/full_add.sv,sv-cells/dmg_cpu_b/cells/half_add.sv
-  parameter-type.real | count=627 | files=190 | examples=sv-cells/dmg_cpu_b/cells/and2.sv,sv-cells/dmg_cpu_b/cells/and3.sv,sv-cells/dmg_cpu_b/cells/and4.sv
-  port.modifier.logic | count=463 | files=188 | examples=sv-cells/dmg_cpu_b/cells/and2.sv,sv-cells/dmg_cpu_b/cells/and3.sv,sv-cells/dmg_cpu_b/cells/and4.sv
+  parameter-type.real | count=624 | files=189 | examples=sv-cells/dmg_cpu_b/cells/and2.sv,sv-cells/dmg_cpu_b/cells/and3.sv,sv-cells/dmg_cpu_b/cells/and4.sv
+  port.modifier.logic | count=460 | files=187 | examples=sv-cells/dmg_cpu_b/cells/and2.sv,sv-cells/dmg_cpu_b/cells/and3.sv,sv-cells/dmg_cpu_b/cells/and4.sv
   port.modifier.real | count=4 | files=2 | examples=sv-cells/dmg_cpu_b/cells/pad_pass.sv,sv-cells/dmg_cpu_b/cells/pad_pass_tg.sv
-  port.modifier.tri | count=88 | files=58 | examples=sv-cells/dmg_cpu_b/cells/pad_bidir.sv,sv-cells/dmg_cpu_b/cells/pad_bidir_pu.sv,sv-cells/dmg_cpu_b/cells/pad_bidir_pu_latch.sv
-  port.names.arity-1 | count=214 | files=151 | examples=sv-cells/dmg_cpu_b/cells/and2.sv,sv-cells/dmg_cpu_b/cells/and3.sv,sv-cells/dmg_cpu_b/cells/and4.sv
+  port.modifier.tri | count=87 | files=57 | examples=sv-cells/dmg_cpu_b/cells/pad_bidir.sv,sv-cells/dmg_cpu_b/cells/pad_bidir_pu.sv,sv-cells/dmg_cpu_b/cells/pad_bidir_pu_latch.sv
+  port.names.arity-1 | count=213 | files=150 | examples=sv-cells/dmg_cpu_b/cells/and2.sv,sv-cells/dmg_cpu_b/cells/and3.sv,sv-cells/dmg_cpu_b/cells/and4.sv
   port.names.arity-10 | count=26 | files=5 | examples=sv-cells/sm83/cells/alu_decoder.sv,sv-cells/sm83/cells/decoder1.sv,sv-cells/sm83/cells/decoder2.sv
   port.names.arity-11 | count=4 | files=4 | examples=sv-cells/sm83/cells/decoder2.sv,sv-cells/sm83/cells/idu_bit0.sv,sv-cells/sm83/cells/irq_prio_bit4.sv
   port.names.arity-12 | count=2 | files=2 | examples=sv-cells/dmg_cpu_b/cells/ao222222.sv,sv-cells/sm83/cells/irq_prio_bit5.sv
@@ -93,50 +93,49 @@ ast coverage:
   port.names.arity-18 | count=3 | files=3 | examples=sv-cells/sm83/cells/alu_shifter.sv,sv-cells/sm83/cells/reg_pc_out_bit67.sv,sv-cells/sm83/cells/reg_wz_out.sv
   port.names.arity-2 | count=92 | files=74 | examples=sv-cells/dmg_cpu_b/cells/and2.sv,sv-cells/dmg_cpu_b/cells/buf_if0.sv,sv-cells/dmg_cpu_b/cells/dlatch.sv
   port.names.arity-20 | count=2 | files=2 | examples=sv-cells/sm83/cells/reg_pc_out_bit345.sv,sv-cells/sm83/cells/reg_sp_out.sv
-  port.names.arity-3 | count=43 | files=43 | examples=sv-cells/dmg_cpu_b/cells/and3.sv,sv-cells/dmg_cpu_b/cells/ao21.sv,sv-cells/dmg_cpu_b/cells/dlatch_ee.sv
-  port.names.arity-4 | count=20 | files=20 | examples=sv-cells/dmg_cpu_b/cells/and4.sv,sv-cells/dmg_cpu_b/cells/ao22.sv,sv-cells/dmg_cpu_b/cells/drlatch_ee.sv
+  port.names.arity-3 | count=42 | files=42 | examples=sv-cells/dmg_cpu_b/cells/and3.sv,sv-cells/dmg_cpu_b/cells/ao21.sv,sv-cells/dmg_cpu_b/cells/dlatch_ee.sv
+  port.names.arity-4 | count=19 | files=19 | examples=sv-cells/dmg_cpu_b/cells/and4.sv,sv-cells/dmg_cpu_b/cells/ao22.sv,sv-cells/dmg_cpu_b/cells/drlatch_ee.sv
   port.names.arity-5 | count=12 | files=11 | examples=sv-cells/dmg_cpu_b/cells/nand5.sv,sv-cells/dmg_cpu_b/cells/nor5.sv,sv-cells/sm83/cells/alu_pggen.sv
   port.names.arity-6 | count=8 | files=8 | examples=sv-cells/dmg_cpu_b/cells/ao222.sv,sv-cells/dmg_cpu_b/cells/nand6.sv,sv-cells/dmg_cpu_b/cells/nor6.sv
   port.names.arity-7 | count=7 | files=7 | examples=sv-cells/dmg_cpu_b/cells/nand7.sv,sv-cells/sm83/cells/decoder1.sv,sv-cells/sm83/cells/decoder2.sv
   port.names.arity-8 | count=7 | files=6 | examples=sv-cells/dmg_cpu_b/cells/ao2222.sv,sv-cells/dmg_cpu_b/cells/nor8.sv,sv-cells/sm83/cells/alu_shifter.sv
   port.names.arity-9 | count=10 | files=9 | examples=sv-cells/sm83/cells/alu_cgen.sv,sv-cells/sm83/cells/alu_decoder.sv,sv-cells/sm83/cells/decoder3.sv
-  primitive.arguments.arity-3 | count=419 | files=47 | examples=sv-cells/dmg_cpu_b/cells/mux.sv,sv-cells/dmg_cpu_b/cells/muxi.sv,sv-cells/dmg_cpu_b/cells/pad_bidir.sv
-  primitive.name.bufif0 | count=101 | files=43 | examples=sv-cells/dmg_cpu_b/cells/mux.sv,sv-cells/dmg_cpu_b/cells/muxi.sv,sv-cells/dmg_cpu_b/cells/pad_bidir.sv
+  primitive.arguments.arity-3 | count=417 | files=46 | examples=sv-cells/dmg_cpu_b/cells/mux.sv,sv-cells/dmg_cpu_b/cells/muxi.sv,sv-cells/dmg_cpu_b/cells/pad_bidir.sv
+  primitive.name.bufif0 | count=100 | files=42 | examples=sv-cells/dmg_cpu_b/cells/mux.sv,sv-cells/dmg_cpu_b/cells/muxi.sv,sv-cells/dmg_cpu_b/cells/pad_bidir.sv
   primitive.name.bufif1 | count=293 | files=24 | examples=sv-cells/dmg_cpu_b/cells/mux.sv,sv-cells/dmg_cpu_b/cells/muxi.sv,sv-cells/dmg_cpu_b/cells/pad_bidir.sv
   primitive.name.nmos | count=17 | files=9 | examples=sv-cells/sm83/cells/idu_bit0.sv,sv-cells/sm83/cells/idu_bit123456.sv,sv-cells/sm83/cells/irq_prio_bit0.sv
   primitive.name.pmos | count=7 | files=7 | examples=sv-cells/sm83/cells/irq_prio_bit0.sv,sv-cells/sm83/cells/irq_prio_bit1.sv,sv-cells/sm83/cells/irq_prio_bit2.sv
-  primitive.name.rnmos | count=1 | files=1 | examples=sv-cells/sm83/cells/dlatch_ee_irq.sv
   sensitivity-kind.any | count=2 | files=1 | examples=sv-cells/dmg_cpu_b/cells/tffnl.sv
   span.always | count=2 | files=1 | examples=sv-cells/dmg_cpu_b/cells/tffnl.sv
-  span.always-latch | count=13 | files=12 | examples=sv-cells/dmg_cpu_b/cells/dlatch.sv,sv-cells/dmg_cpu_b/cells/dlatch_ee.sv,sv-cells/dmg_cpu_b/cells/dlatch_ee_q.sv
-  span.assign-decl | count=286 | files=172 | examples=sv-cells/dmg_cpu_b/cells/and2.sv,sv-cells/dmg_cpu_b/cells/and3.sv,sv-cells/dmg_cpu_b/cells/and4.sv
-  span.assign-stmt | count=26 | files=12 | examples=sv-cells/dmg_cpu_b/cells/dlatch.sv,sv-cells/dmg_cpu_b/cells/dlatch_ee.sv,sv-cells/dmg_cpu_b/cells/dlatch_ee_q.sv
+  span.always-latch | count=12 | files=11 | examples=sv-cells/dmg_cpu_b/cells/dlatch.sv,sv-cells/dmg_cpu_b/cells/dlatch_ee.sv,sv-cells/dmg_cpu_b/cells/dlatch_ee_q.sv
+  span.assign-decl | count=284 | files=171 | examples=sv-cells/dmg_cpu_b/cells/and2.sv,sv-cells/dmg_cpu_b/cells/and3.sv,sv-cells/dmg_cpu_b/cells/and4.sv
+  span.assign-stmt | count=24 | files=11 | examples=sv-cells/dmg_cpu_b/cells/dlatch.sv,sv-cells/dmg_cpu_b/cells/dlatch_ee.sv,sv-cells/dmg_cpu_b/cells/dlatch_ee_q.sv
   span.block | count=5 | files=3 | examples=sv-cells/dmg_cpu_b/cells/nand_latch.sv,sv-cells/dmg_cpu_b/cells/nor_latch.sv,sv-cells/dmg_cpu_b/cells/tffnl.sv
-  span.connection | count=27 | files=8 | examples=sv-cells/dmg_cpu_b/cells/full_add.sv,sv-cells/dmg_cpu_b/cells/half_add.sv,sv-cells/dmg_cpu_b/cells/mux.sv
-  span.decl | count=998 | files=64 | examples=sv-cells/dmg_cpu_b/cells/full_add.sv,sv-cells/dmg_cpu_b/cells/mux.sv,sv-cells/dmg_cpu_b/cells/muxi.sv
+  span.connection | count=26 | files=7 | examples=sv-cells/dmg_cpu_b/cells/full_add.sv,sv-cells/dmg_cpu_b/cells/half_add.sv,sv-cells/dmg_cpu_b/cells/mux.sv
+  span.decl | count=997 | files=63 | examples=sv-cells/dmg_cpu_b/cells/full_add.sv,sv-cells/dmg_cpu_b/cells/mux.sv,sv-cells/dmg_cpu_b/cells/muxi.sv
   span.delay | count=512 | files=60 | examples=sv-cells/dmg_cpu_b/cells/mux.sv,sv-cells/dmg_cpu_b/cells/muxi.sv,sv-cells/dmg_cpu_b/cells/pad_bidir.sv
-  span.directive | count=380 | files=190 | examples=sv-cells/dmg_cpu_b/cells/and2.sv,sv-cells/dmg_cpu_b/cells/and3.sv,sv-cells/dmg_cpu_b/cells/and4.sv
-  span.expr | count=25056 | files=190 | examples=sv-cells/dmg_cpu_b/cells/and2.sv,sv-cells/dmg_cpu_b/cells/and3.sv,sv-cells/dmg_cpu_b/cells/and4.sv
+  span.directive | count=378 | files=189 | examples=sv-cells/dmg_cpu_b/cells/and2.sv,sv-cells/dmg_cpu_b/cells/and3.sv,sv-cells/dmg_cpu_b/cells/and4.sv
+  span.expr | count=24856 | files=189 | examples=sv-cells/dmg_cpu_b/cells/and2.sv,sv-cells/dmg_cpu_b/cells/and3.sv,sv-cells/dmg_cpu_b/cells/and4.sv
   span.if | count=1 | files=1 | examples=sv-cells/dmg_cpu_b/cells/tffnl.sv
-  span.import | count=184 | files=184 | examples=sv-cells/dmg_cpu_b/cells/and2.sv,sv-cells/dmg_cpu_b/cells/and3.sv,sv-cells/dmg_cpu_b/cells/and4.sv
-  span.instantiation | count=13 | files=8 | examples=sv-cells/dmg_cpu_b/cells/full_add.sv,sv-cells/dmg_cpu_b/cells/half_add.sv,sv-cells/dmg_cpu_b/cells/mux.sv
-  span.item | count=2096 | files=190 | examples=sv-cells/dmg_cpu_b/cells/and2.sv,sv-cells/dmg_cpu_b/cells/and3.sv,sv-cells/dmg_cpu_b/cells/and4.sv
-  span.module | count=191 | files=191 | examples=sv-cells/dmg_cpu_b/cells/and2.sv,sv-cells/dmg_cpu_b/cells/and3.sv,sv-cells/dmg_cpu_b/cells/and4.sv
-  span.parameter | count=1215 | files=190 | examples=sv-cells/dmg_cpu_b/cells/and2.sv,sv-cells/dmg_cpu_b/cells/and3.sv,sv-cells/dmg_cpu_b/cells/and4.sv
+  span.import | count=183 | files=183 | examples=sv-cells/dmg_cpu_b/cells/and2.sv,sv-cells/dmg_cpu_b/cells/and3.sv,sv-cells/dmg_cpu_b/cells/and4.sv
+  span.instantiation | count=12 | files=7 | examples=sv-cells/dmg_cpu_b/cells/full_add.sv,sv-cells/dmg_cpu_b/cells/half_add.sv,sv-cells/dmg_cpu_b/cells/mux.sv
+  span.item | count=2085 | files=189 | examples=sv-cells/dmg_cpu_b/cells/and2.sv,sv-cells/dmg_cpu_b/cells/and3.sv,sv-cells/dmg_cpu_b/cells/and4.sv
+  span.module | count=190 | files=190 | examples=sv-cells/dmg_cpu_b/cells/and2.sv,sv-cells/dmg_cpu_b/cells/and3.sv,sv-cells/dmg_cpu_b/cells/and4.sv
+  span.parameter | count=1200 | files=189 | examples=sv-cells/dmg_cpu_b/cells/and2.sv,sv-cells/dmg_cpu_b/cells/and3.sv,sv-cells/dmg_cpu_b/cells/and4.sv
   span.parameter-override | count=7 | files=2 | examples=sv-cells/dmg_cpu_b/cells/full_add.sv,sv-cells/dmg_cpu_b/cells/half_add.sv
-  span.port | count=467 | files=190 | examples=sv-cells/dmg_cpu_b/cells/and2.sv,sv-cells/dmg_cpu_b/cells/and3.sv,sv-cells/dmg_cpu_b/cells/and4.sv
-  span.primitive | count=419 | files=47 | examples=sv-cells/dmg_cpu_b/cells/mux.sv,sv-cells/dmg_cpu_b/cells/muxi.sv,sv-cells/dmg_cpu_b/cells/pad_bidir.sv
+  span.port | count=464 | files=189 | examples=sv-cells/dmg_cpu_b/cells/and2.sv,sv-cells/dmg_cpu_b/cells/and3.sv,sv-cells/dmg_cpu_b/cells/and4.sv
+  span.primitive | count=417 | files=46 | examples=sv-cells/dmg_cpu_b/cells/mux.sv,sv-cells/dmg_cpu_b/cells/muxi.sv,sv-cells/dmg_cpu_b/cells/pad_bidir.sv
   span.sensitivity | count=2 | files=1 | examples=sv-cells/dmg_cpu_b/cells/tffnl.sv
-  span.specify | count=149 | files=149 | examples=sv-cells/dmg_cpu_b/cells/and2.sv,sv-cells/dmg_cpu_b/cells/and3.sv,sv-cells/dmg_cpu_b/cells/and4.sv
-  span.specify-path | count=241 | files=149 | examples=sv-cells/dmg_cpu_b/cells/and2.sv,sv-cells/dmg_cpu_b/cells/and3.sv,sv-cells/dmg_cpu_b/cells/and4.sv
-  span.strength | count=450 | files=61 | examples=sv-cells/dmg_cpu_b/cells/mux.sv,sv-cells/dmg_cpu_b/cells/muxi.sv,sv-cells/dmg_cpu_b/cells/pad_bidir.sv
-  specify-item.path | count=241 | files=149 | examples=sv-cells/dmg_cpu_b/cells/and2.sv,sv-cells/dmg_cpu_b/cells/and3.sv,sv-cells/dmg_cpu_b/cells/and4.sv
-  specify-item.specparam | count=588 | files=149 | examples=sv-cells/dmg_cpu_b/cells/and2.sv,sv-cells/dmg_cpu_b/cells/and3.sv,sv-cells/dmg_cpu_b/cells/and4.sv
-  specify-path.delays.arity-2 | count=238 | files=149 | examples=sv-cells/dmg_cpu_b/cells/and2.sv,sv-cells/dmg_cpu_b/cells/and3.sv,sv-cells/dmg_cpu_b/cells/and4.sv
+  span.specify | count=148 | files=148 | examples=sv-cells/dmg_cpu_b/cells/and2.sv,sv-cells/dmg_cpu_b/cells/and3.sv,sv-cells/dmg_cpu_b/cells/and4.sv
+  span.specify-path | count=237 | files=148 | examples=sv-cells/dmg_cpu_b/cells/and2.sv,sv-cells/dmg_cpu_b/cells/and3.sv,sv-cells/dmg_cpu_b/cells/and4.sv
+  span.strength | count=449 | files=60 | examples=sv-cells/dmg_cpu_b/cells/mux.sv,sv-cells/dmg_cpu_b/cells/muxi.sv,sv-cells/dmg_cpu_b/cells/pad_bidir.sv
+  specify-item.path | count=237 | files=148 | examples=sv-cells/dmg_cpu_b/cells/and2.sv,sv-cells/dmg_cpu_b/cells/and3.sv,sv-cells/dmg_cpu_b/cells/and4.sv
+  specify-item.specparam | count=576 | files=148 | examples=sv-cells/dmg_cpu_b/cells/and2.sv,sv-cells/dmg_cpu_b/cells/and3.sv,sv-cells/dmg_cpu_b/cells/and4.sv
+  specify-path.delays.arity-2 | count=234 | files=148 | examples=sv-cells/dmg_cpu_b/cells/and2.sv,sv-cells/dmg_cpu_b/cells/and3.sv,sv-cells/dmg_cpu_b/cells/and4.sv
   specify-path.delays.arity-3 | count=3 | files=3 | examples=sv-cells/dmg_cpu_b/cells/buf_if0.sv,sv-cells/dmg_cpu_b/cells/not_if0.sv,sv-cells/dmg_cpu_b/cells/not_if1.sv
-  strength.shape.arity-2 | count=450 | files=61 | examples=sv-cells/dmg_cpu_b/cells/mux.sv,sv-cells/dmg_cpu_b/cells/muxi.sv,sv-cells/dmg_cpu_b/cells/pad_bidir.sv
+  strength.shape.arity-2 | count=449 | files=60 | examples=sv-cells/dmg_cpu_b/cells/mux.sv,sv-cells/dmg_cpu_b/cells/muxi.sv,sv-cells/dmg_cpu_b/cells/pad_bidir.sv
   strength.values.highz1-strong0 | count=338 | files=36 | examples=sv-cells/dmg_cpu_b/cells/mux.sv,sv-cells/dmg_cpu_b/cells/muxi.sv,sv-cells/dmg_cpu_b/cells/pad_bidir.sv
   strength.values.pull1-highz0 | count=3 | files=3 | examples=sv-cells/dmg_cpu_b/cells/pad_bidir_pu.sv,sv-cells/dmg_cpu_b/cells/pad_bidir_pu_latch.sv,sv-cells/dmg_cpu_b/cells/pad_in_pu.sv
-  strength.values.strong1-highz0 | count=105 | files=43 | examples=sv-cells/dmg_cpu_b/cells/mux.sv,sv-cells/dmg_cpu_b/cells/muxi.sv,sv-cells/dmg_cpu_b/cells/pad_bidir.sv
+  strength.values.strong1-highz0 | count=104 | files=42 | examples=sv-cells/dmg_cpu_b/cells/mux.sv,sv-cells/dmg_cpu_b/cells/muxi.sv,sv-cells/dmg_cpu_b/cells/pad_bidir.sv
   strength.values.supply1-supply0 | count=4 | files=2 | examples=sv-cells/dmg_cpu_b/cells/tie.sv,sv-cells/sm83/cells/tie.sv
-  unary-op.not | count=217 | files=129 | examples=sv-cells/dmg_cpu_b/cells/buf_if0.sv,sv-cells/dmg_cpu_b/cells/dlatch.sv,sv-cells/dmg_cpu_b/cells/dlatch_ee.sv
+  unary-op.not | count=212 | files=128 | examples=sv-cells/dmg_cpu_b/cells/buf_if0.sv,sv-cells/dmg_cpu_b/cells/dlatch.sv,sv-cells/dmg_cpu_b/cells/dlatch_ee.sv

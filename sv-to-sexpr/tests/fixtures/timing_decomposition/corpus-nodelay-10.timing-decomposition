@@ -10,17 +10,17 @@ success path=sv-cells/dmg_cpu_b/cells/nor2.sv assignments=1 registers=0 constrai
 success path=sv-cells/dmg_cpu_b/cells/or2.sv assignments=1 registers=0 constraints=1 components=4 dN=0
 success path=sv-cells/dmg_cpu_b/cells/xor.sv assignments=1 registers=0 constraints=1 components=4 dN=0
 success path=sv-cells/sm83/cells/aoi21_b.sv assignments=3 registers=0 constraints=2 components=6 dN=1
-success path=sv-cells/sm83/cells/irq_prio_bit3.sv assignments=23 registers=0 constraints=1 components=2 dN=0
-success path=sv-cells/sm83/cells/nand2_od_b_dbus.sv assignments=2 registers=0 constraints=0 components=0 dN=0
-success path=sv-cells/sm83/cells/not2_reg_pc_we.sv assignments=2 registers=0 constraints=2 components=4 dN=0
-success path=sv-cells/sm83/cells/not_p2_pch_dec3.sv assignments=2 registers=0 constraints=1 components=2 dN=0
-success path=sv-cells/sm83/cells/not_x1_dec2.sv assignments=1 registers=0 constraints=1 components=2 dN=0
-success path=sv-cells/sm83/cells/pch_dec2_c.sv assignments=1 registers=0 constraints=0 components=0 dN=0
-success path=sv-cells/sm83/cells/srlatch_r_n.sv assignments=4 registers=1 constraints=1 components=4 dN=0
+success path=sv-cells/sm83/cells/irq_prio_bit4.sv assignments=21 registers=0 constraints=1 components=2 dN=0
+success path=sv-cells/sm83/cells/nand2_spare.sv assignments=1 registers=0 constraints=1 components=4 dN=0
+success path=sv-cells/sm83/cells/not5_irq.sv assignments=5 registers=0 constraints=5 components=10 dN=0
+success path=sv-cells/sm83/cells/not_pch_dec1.sv assignments=2 registers=0 constraints=1 components=2 dN=0
+success path=sv-cells/sm83/cells/not_x1_p2_dec2.sv assignments=1 registers=0 constraints=1 components=2 dN=0
+success path=sv-cells/sm83/cells/reg_a_out.sv assignments=4 registers=0 constraints=0 components=0 dN=0
+success path=sv-cells/sm83/cells/srlatch_r_n_alt.sv assignments=4 registers=1 constraints=1 components=4 dN=0
 successes: 12
 failures: 0
-assignments: 49
+assignments: 52
 registers: 2
-constraints: 13
-components: 44
+constraints: 17
+components: 54
 dN: 2

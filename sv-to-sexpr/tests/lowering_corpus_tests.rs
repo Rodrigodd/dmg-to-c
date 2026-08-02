@@ -78,7 +78,7 @@ fn full_corpus_lowering_baseline_is_deterministic_flat_and_explicit() {
         })
         .collect::<Vec<_>>();
     paths.sort();
-    assert_eq!(paths.len(), 191);
+    assert_eq!(paths.len(), 190);
     assert!(paths.windows(2).all(|pair| pair[0] < pair[1]));
 
     let mut totals = AuditTotals::default();
@@ -163,7 +163,7 @@ fn full_corpus_lowering_baseline_is_deterministic_flat_and_explicit() {
     assert_exact_baseline(&totals, &failures);
     let summary = render_summary(&totals, &failures);
     assert!(!summary.contains(&absolute_root));
-    assert!(summary.contains("processed=191 succeeded=191 failed=0"));
+    assert!(summary.contains("processed=190 succeeded=190 failed=0"));
     assert!(summary.contains("invalid_successful_cells=0"));
     assert!(summary.contains("nested_value_expressions=0"));
     assert!(summary.contains("timing_validation_failures=0"));
@@ -303,8 +303,8 @@ fn classify_failure(path: &str, diagnostic: &Diagnostic) -> FailureCategory {
 }
 
 fn assert_exact_baseline(totals: &AuditTotals, failures: &[FailedFile]) {
-    assert_eq!(totals.processed, 191);
-    assert_eq!(totals.succeeded, 191);
+    assert_eq!(totals.processed, 190);
+    assert_eq!(totals.succeeded, 190);
     assert_eq!(totals.failed, 0);
     assert_eq!(failures.len(), 0);
     assert_eq!(totals.invalid_successful_cells, 0);
@@ -314,35 +314,34 @@ fn assert_exact_baseline(totals: &AuditTotals, failures: &[FailedFile]) {
     assert_eq!(totals.nondeterministic_results, 0);
     assert_eq!(totals.absolute_path_leaks, 0);
     assert_eq!(totals.dependency_order_failures, 0);
-    assert_eq!(totals.assignments, 1705);
+    assert_eq!(totals.assignments, 1691);
     assert_eq!(totals.atom_value_assignments, 7);
-    assert_eq!(totals.temporary_assignments, 972);
-    assert_eq!(totals.repeated_target_assignments, 77);
-    assert_eq!(totals.delayed_assignments, 703);
-    assert_eq!(totals.nested_timing_delay_assignments, 703);
-    assert_eq!(totals.cells_with_registers, 12);
-    assert_eq!(totals.registers, 15);
+    assert_eq!(totals.temporary_assignments, 964);
+    assert_eq!(totals.repeated_target_assignments, 75);
+    assert_eq!(totals.delayed_assignments, 700);
+    assert_eq!(totals.nested_timing_delay_assignments, 700);
+    assert_eq!(totals.cells_with_registers, 11);
+    assert_eq!(totals.registers, 14);
     assert_eq!(
         totals.operator_counts,
         BTreeMap::from([
-            ("and".to_string(), 646),
+            ("and".to_string(), 643),
             ("bufif0".to_string(), 2),
-            ("bufif0-strength".to_string(), 101),
+            ("bufif0-strength".to_string(), 100),
             ("bufif1".to_string(), 10),
             ("bufif1-strength".to_string(), 344),
             ("caseeq".to_string(), 11),
-            ("caseneq".to_string(), 18),
+            ("caseneq".to_string(), 17),
             ("drive-strength".to_string(), 5),
             ("eq".to_string(), 2),
-            ("keeper".to_string(), 6),
-            ("mux".to_string(), 27),
+            ("keeper".to_string(), 5),
+            ("mux".to_string(), 26),
             ("nand".to_string(), 26),
             ("nmos".to_string(), 17),
             ("nor".to_string(), 28),
-            ("not".to_string(), 168),
-            ("or".to_string(), 270),
+            ("not".to_string(), 163),
+            ("or".to_string(), 269),
             ("pmos".to_string(), 7),
-            ("rnmos".to_string(), 1),
             ("xnor".to_string(), 1),
             ("xor".to_string(), 8),
         ])

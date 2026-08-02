@@ -28,7 +28,7 @@ fn full_corpus_inventory_is_complete_normalized_and_deterministic() {
     let first = survey_dir(&root).unwrap();
     let second = survey_dir(&root).unwrap();
 
-    assert_eq!(first.files, 191);
+    assert_eq!(first.files, 190);
     assert_eq!(first.failed_files, 0);
     assert!(first.failures.is_empty());
     assert!(first.inventory.all_classified());
@@ -61,11 +61,6 @@ fn full_corpus_inventory_is_complete_normalized_and_deterministic() {
             "hierarchy.instantiation.connection.named",
             "dmg_cpu_b/cells/full_add.sv",
         ),
-        (
-            "hierarchy.instantiation.keeper.keeper",
-            "sm83/cells/dlatch_ee_irq.sv",
-        ),
-        ("strength.strong1-highz0", "sm83/cells/dlatch_ee_irq.sv"),
         ("strength.highz1-strong0", "dmg_cpu_b/cells/pad_bidir_pu.sv"),
         ("strength.pull1-highz0", "dmg_cpu_b/cells/pad_bidir_pu.sv"),
         ("strength.supply1-supply0", "dmg_cpu_b/cells/tie.sv"),
@@ -73,20 +68,11 @@ fn full_corpus_inventory_is_complete_normalized_and_deterministic() {
             "timing.delay.primitive.arity-3",
             "sm83/cells/reg_bus_pch_b.sv",
         ),
-        (
-            "statement.item.module.specify-path",
-            "sm83/cells/dlatch_ee_irq.sv",
-        ),
         ("primitive.nmos", "sm83/cells/irq_prio_bit0.sv"),
         ("primitive.pmos", "sm83/cells/irq_prio_bit0.sv"),
-        ("primitive.rnmos", "sm83/cells/dlatch_ee_irq.sv"),
         (
             "expression.value.constant-zero",
             "dmg_cpu_b/cells/pad_bidir_pu.sv",
-        ),
-        (
-            "expression.value.constant-one",
-            "sm83/cells/dlatch_ee_irq.sv",
         ),
         ("expression.value.constant-x", "sm83/cells/alu_cgen.sv"),
         ("expression.value.constant-z", "sm83/cells/reg_a_out.sv"),

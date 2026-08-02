@@ -9,3 +9,6 @@ sexpr-fmt = { path = "../sexpr-fmt" }
 
 [dev-dependencies]
 proptest = "1"
+
+[profile.bench]
+debug = true

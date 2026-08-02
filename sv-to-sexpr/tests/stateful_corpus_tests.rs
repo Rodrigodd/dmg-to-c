@@ -31,7 +31,6 @@ const STATEFUL_PATHS: &[&str] = &[
     "sv-cells/dmg_cpu_b/cells/nor_latch.sv",
     "sv-cells/dmg_cpu_b/cells/pad_bidir_pu_latch.sv",
     "sv-cells/dmg_cpu_b/cells/tffnl.sv",
-    "sv-cells/sm83/cells/dlatch_ee_irq.sv",
     "sv-cells/sm83/cells/dlatch_ee_q_n.sv",
     "sv-cells/sm83/cells/srlatch_r_n.sv",
     "sv-cells/sm83/cells/srlatch_r_n_alt.sv",
@@ -46,7 +45,6 @@ const SUCCESSFUL_STATEFUL_PATHS: &[&str] = &[
     "sv-cells/dmg_cpu_b/cells/nor_latch.sv",
     "sv-cells/dmg_cpu_b/cells/pad_bidir_pu_latch.sv",
     "sv-cells/dmg_cpu_b/cells/tffnl.sv",
-    "sv-cells/sm83/cells/dlatch_ee_irq.sv",
     "sv-cells/sm83/cells/dlatch_ee_q_n.sv",
     "sv-cells/sm83/cells/srlatch_r_n.sv",
     "sv-cells/sm83/cells/srlatch_r_n_alt.sv",
@@ -56,7 +54,6 @@ const SUCCESSFUL_FLAT_LATCH_PATHS: &[&str] = &[
     "sv-cells/dmg_cpu_b/cells/dlatch.sv",
     "sv-cells/dmg_cpu_b/cells/dlatch_ee.sv",
     "sv-cells/dmg_cpu_b/cells/dlatch_ee_q.sv",
-    "sv-cells/sm83/cells/dlatch_ee_irq.sv",
     "sv-cells/sm83/cells/dlatch_ee_q_n.sv",
 ];
 
@@ -116,12 +113,6 @@ const EXPECTED_SUCCESSES: &[ExpectedSuccess] = &[
         path: "sv-cells/dmg_cpu_b/cells/tffnl.sv",
         registers: &["ff", "q"],
         state_targets: &["q", "ff"],
-        initial: LogicValue::Zero,
-    },
-    ExpectedSuccess {
-        path: "sv-cells/sm83/cells/dlatch_ee_irq.sv",
-        registers: &["q_n"],
-        state_targets: &["q_n"],
         initial: LogicValue::Zero,
     },
     ExpectedSuccess {
@@ -249,7 +240,7 @@ fn complete_stateful_corpus_is_flat_or_explicitly_deferred() {
         .into_iter()
         .map(|path| logical_path(&root, &path))
         .collect::<Vec<_>>();
-    assert_eq!(paths.len(), 191);
+    assert_eq!(paths.len(), 190);
     assert!(paths.windows(2).all(|pair| pair[0] < pair[1]));
 
     let mut totals = AuditTotals {
@@ -927,26 +918,26 @@ fn assert_success_records(records: &[SuccessRecord]) {
 }
 
 fn assert_zero_invariant_failures(totals: &AuditTotals) {
-    assert_eq!(totals.corpus_files, 191);
-    assert_eq!(totals.stateful_files, 12);
-    assert_eq!(totals.succeeded, 12);
+    assert_eq!(totals.corpus_files, 190);
+    assert_eq!(totals.stateful_files, 11);
+    assert_eq!(totals.succeeded, 11);
     assert_eq!(totals.deferred, 0);
-    assert_eq!(totals.recursive_modeled_registers, 15);
-    assert_eq!(totals.recursive_state_assignments, 15);
-    assert_eq!(totals.blocking_state_assignments, 13);
+    assert_eq!(totals.recursive_modeled_registers, 14);
+    assert_eq!(totals.recursive_state_assignments, 14);
+    assert_eq!(totals.blocking_state_assignments, 12);
     assert_eq!(totals.nonblocking_state_assignments, 2);
-    assert_eq!(totals.successful_modeled_registers, 15);
-    assert_eq!(totals.successful_state_assignments, 15);
-    assert_eq!(totals.retained_muxes, 15);
+    assert_eq!(totals.successful_modeled_registers, 14);
+    assert_eq!(totals.successful_state_assignments, 14);
+    assert_eq!(totals.retained_muxes, 14);
     assert_eq!(totals.direct_state_assignments, 0);
-    assert_eq!(totals.successful_explicit_initializers, 9);
-    assert_eq!(totals.initial_zero, 9);
+    assert_eq!(totals.successful_explicit_initializers, 8);
+    assert_eq!(totals.initial_zero, 8);
     assert_eq!(totals.initial_one, 0);
     assert_eq!(totals.initial_x, 6);
     assert_eq!(totals.initial_z, 0);
     assert_eq!(totals.successful_delay_tuple_omissions, 0);
-    assert_eq!(totals.successful_specify_ignores, 11);
-    assert_eq!(totals.nonzero_state_delays, 13);
+    assert_eq!(totals.successful_specify_ignores, 10);
+    assert_eq!(totals.nonzero_state_delays, 12);
     assert_eq!(totals.combinational_procedural_nonregisters, 0);
     for (name, value) in invariant_failures(totals) {
         assert_eq!(value, 0, "stateful invariant failed: {name}");

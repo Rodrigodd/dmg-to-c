@@ -8,12 +8,12 @@ cases: 6
 success path=sv-cells/dmg_cpu_b/cells/eco_nand2.sv assignments=1 registers=0 constraints=1 components=4 dN=0
 success path=sv-cells/dmg_cpu_b/cells/pad_bidir.sv assignments=3 registers=0 constraints=0 components=0 dN=0
 success path=sv-cells/sm83/cells/buf_dec2.sv assignments=1 registers=0 constraints=1 components=2 dN=0
-success path=sv-cells/sm83/cells/nor2_b.sv assignments=1 registers=0 constraints=1 components=4 dN=0
-success path=sv-cells/sm83/cells/not_pch_dec3_a2.sv assignments=2 registers=0 constraints=1 components=2 dN=0
-success path=sv-cells/sm83/cells/reg_bus_pch_a_bit0123.sv assignments=7 registers=0 constraints=2 components=4 dN=0
+success path=sv-cells/sm83/cells/nor2_c.sv assignments=1 registers=0 constraints=1 components=4 dN=0
+success path=sv-cells/sm83/cells/not_pch_dec3_b.sv assignments=2 registers=0 constraints=1 components=2 dN=0
+success path=sv-cells/sm83/cells/reg_bus_pch_a_bit4.sv assignments=9 registers=0 constraints=2 components=4 dN=0
 successes: 6
 failures: 0
-assignments: 15
+assignments: 17
 registers: 0
 constraints: 6
 components: 16

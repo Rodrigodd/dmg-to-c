@@ -18,7 +18,6 @@ use sv_to_sexpr::serialize::{render_cell, render_delay_tuple, render_timing_expr
 use sv_to_sexpr::survey::collect_sv_files;
 
 const SPECIFY_IGNORE_PREFIX: &str = "additional control-dependent specify path for target `";
-const REFERENCE: &str = "sv-cells/sm83/cells/dlatch_ee_irq.sv";
 
 #[derive(Default)]
 struct TupleInventory {
@@ -169,7 +168,7 @@ struct ExpectedDiagnostic {
 fn complete_timing_corpus_is_structurally_accounted_and_deterministic() {
     let root = repository_root();
     let paths = corpus_paths(&root);
-    assert_eq!(paths.len(), 191);
+    assert_eq!(paths.len(), 190);
     assert!(paths.windows(2).all(|pair| pair[0] < pair[1]));
 
     let mut source = SourceInventory::default();
@@ -1109,41 +1108,41 @@ fn is_resistance_call(expr: &SvExpr) -> bool {
 }
 
 fn assert_exact_contract(source: &SourceInventory, lower: &LowerAudit) {
-    assert_eq!(source.files, 191);
-    assert_eq!(lower.succeeded, 191);
+    assert_eq!(source.files, 190);
+    assert_eq!(lower.succeeded, 190);
     assert_eq!(lower.failed, 0);
-    assert_eq!(lower.assignments, 1_705);
-    assert_eq!(lower.temporaries, 972);
-    assert_eq!(lower.source_assignments, 733);
+    assert_eq!(lower.assignments, 1_691);
+    assert_eq!(lower.temporaries, 964);
+    assert_eq!(lower.source_assignments, 727);
     assert_eq!(lower.temp_nonzero_delays, 0);
     assert_eq!(
         lower.explicit_delays + lower.specify_delays + lower.zero_delays,
-        733
+        727
     );
     assert_eq!(lower.explicit_delays, 512);
     assert_eq!(lower.explicit_nonzero_delays, 512);
-    assert_eq!(lower.specify_delays, 191);
-    assert_eq!(lower.specify_nonzero_delays, 191);
-    assert_eq!(lower.zero_delays, 30);
+    assert_eq!(lower.specify_delays, 188);
+    assert_eq!(lower.specify_nonzero_delays, 188);
+    assert_eq!(lower.zero_delays, 27);
     assert_eq!(
         lower.explicit_nonzero_delays + lower.specify_nonzero_delays,
-        703
+        700
     );
-    assert_eq!(lower.emitted_nonzero_delays, 703);
-    assert_eq!(lower.emitted_zero_delays, 1_002);
-    assert_eq!(lower.emitted_nested_delays, 703);
-    assert_eq!(lower.emitted_tuple_arities, [0, 1_002, 247, 456]);
+    assert_eq!(lower.emitted_nonzero_delays, 700);
+    assert_eq!(lower.emitted_zero_delays, 991);
+    assert_eq!(lower.emitted_nested_delays, 700);
+    assert_eq!(lower.emitted_tuple_arities, [0, 991, 244, 456]);
     assert_eq!(
         lower.emitted_tuple_arities[1..].iter().sum::<usize>(),
         lower.assignments
     );
     assert_eq!(lower.noncanonical_one_entry_delays, 0);
-    assert_eq!(lower.first_projection_comparisons, 1_705);
+    assert_eq!(lower.first_projection_comparisons, 1691);
     assert_eq!(lower.first_projection_explicit, 512);
-    assert_eq!(lower.first_projection_specify, 191);
-    assert_eq!(lower.first_projection_forced_zero, 6);
-    assert_eq!(lower.first_projection_missing_zero, 24);
-    assert_eq!(lower.first_projection_generated_zero, 972);
+    assert_eq!(lower.first_projection_specify, 188);
+    assert_eq!(lower.first_projection_forced_zero, 5);
+    assert_eq!(lower.first_projection_missing_zero, 22);
+    assert_eq!(lower.first_projection_generated_zero, 964);
     assert_eq!(lower.first_projection_mismatches, 0);
     assert_eq!(
         lower.first_projection_forced_zero
@@ -1156,7 +1155,7 @@ fn assert_exact_contract(source: &SourceInventory, lower: &LowerAudit) {
         lower.emitted_tuple_arities[2] + lower.emitted_tuple_arities[3]
     );
     assert_eq!(lower.warnings, 0);
-    assert_eq!(lower.specify_ignores, 45);
+    assert_eq!(lower.specify_ignores, 44);
     assert_eq!(lower.later_ignores, 0);
     assert_eq!(lower.specify_ignore_contract_failures, 0);
     assert_eq!(lower.diagnostic_mismatches, 0);
@@ -1171,30 +1170,30 @@ fn assert_exact_contract(source: &SourceInventory, lower: &LowerAudit) {
         lower.all_components.outer_resistance_multiplications,
         lower.expected_outer_resistance_multiplications
     );
-    assert_eq!(lower.expected_outer_resistance_multiplications, 1_140);
+    assert_eq!(lower.expected_outer_resistance_multiplications, 1_136);
     assert_eq!(
         lower.all_components.operator_counts,
         BTreeMap::from([
-            ("+".to_string(), 569),
-            ("*".to_string(), 1_170),
-            ("elmore".to_string(), 2_120),
+            ("+".to_string(), 557),
+            ("*".to_string(), 1_166),
+            ("elmore".to_string(), 2_102),
             ("gt".to_string(), 14),
             ("mux".to_string(), 14),
-            ("wire".to_string(), 2_120),
-            ("pmos".to_string(), 744),
-            ("nmos".to_string(), 1_687),
+            ("wire".to_string(), 2_102),
+            ("pmos".to_string(), 735),
+            ("nmos".to_string(), 1_678),
         ])
     );
-    assert_eq!(lower.first_components.outer_resistance_multiplications, 391);
+    assert_eq!(lower.first_components.outer_resistance_multiplications, 389);
     assert_eq!(
         lower.first_components.operator_counts,
         BTreeMap::from([
-            ("+".to_string(), 205),
-            ("*".to_string(), 393),
-            ("elmore".to_string(), 811),
-            ("wire".to_string(), 811),
-            ("pmos".to_string(), 417),
-            ("nmos".to_string(), 477),
+            ("+".to_string(), 199),
+            ("*".to_string(), 391),
+            ("elmore".to_string(), 802),
+            ("wire".to_string(), 802),
+            ("pmos".to_string(), 412),
+            ("nmos".to_string(), 473),
         ])
     );
 }
@@ -1446,7 +1445,6 @@ fn render_summary(source: &SourceInventory, lower: &LowerAudit) -> String {
     ] {
         writeln!(&mut output, "  {name}=[{}]", witness_list(values)).unwrap();
     }
-    writeln!(&mut output, "  reference={REFERENCE}").unwrap();
     writeln!(
         &mut output,
         "  explicit-precedence=sv-to-sexpr/tests/fixtures/timing/explicit_precedence.sv"

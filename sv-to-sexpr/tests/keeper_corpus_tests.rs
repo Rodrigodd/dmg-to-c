@@ -56,22 +56,22 @@ fn configured_keeper_corpus_is_exact_distinct_and_fully_emitted() {
     assert_eq!(delayful.keepers, nodelay.keepers);
     assert_eq!(delayful.emitted, nodelay.emitted);
     assert_eq!(delayful.failures, nodelay.failures);
-    assert_eq!(delayful.successes, 191);
-    assert_eq!(nodelay.successes, 191);
+    assert_eq!(delayful.successes, 190);
+    assert_eq!(nodelay.successes, 190);
     assert!(delayful.failures.is_empty());
     assert!(nodelay.failures.is_empty());
     assert_eq!(delayful.warnings, 0);
     assert_eq!(nodelay.warnings, 0);
-    assert_eq!(delayful.ignores, 45);
-    assert_eq!(nodelay.ignores, 45);
+    assert_eq!(delayful.ignores, 44);
+    assert_eq!(nodelay.ignores, 44);
     assert_eq!(delayful.supported, 3);
-    assert_eq!(delayful.deferred, 188);
+    assert_eq!(delayful.deferred, 187);
     assert_eq!(nodelay.supported, 3);
-    assert_eq!(nodelay.deferred, 188);
+    assert_eq!(nodelay.deferred, 187);
     assert!(delayful.keeper_deferrals.is_empty());
     assert!(nodelay.keeper_deferrals.is_empty());
-    assert_eq!(delayful.keepers.len(), 6);
-    assert_eq!(delayful.emitted.len(), 6);
+    assert_eq!(delayful.keepers.len(), 5);
+    assert_eq!(delayful.emitted.len(), 5);
 
     let summary = format!("{}{}", render_audit(&delayful), render_audit(&nodelay));
     assert_or_update_fixture(&summary);
@@ -79,7 +79,7 @@ fn configured_keeper_corpus_is_exact_distinct_and_fully_emitted() {
 
 fn audit_mode(mode: GenerateMode) -> ModeAudit {
     let corpus = corpus();
-    assert_eq!(corpus.designs.len(), 191);
+    assert_eq!(corpus.designs.len(), 190);
     let mut audit = ModeAudit {
         mode,
         supported: 0,
@@ -237,7 +237,7 @@ fn audit_mode(mode: GenerateMode) -> ModeAudit {
         .emitted
         .sort_by(|left, right| left.path.cmp(&right.path));
     audit.keeper_deferrals.sort();
-    assert_eq!(audit.successes + audit.failures.len(), 191);
+    assert_eq!(audit.successes + audit.failures.len(), 190);
     assert_eq!(
         audit
             .keepers
@@ -245,7 +245,7 @@ fn audit_mode(mode: GenerateMode) -> ModeAudit {
             .map(|row| row.path.as_str())
             .collect::<BTreeSet<_>>()
             .len(),
-        6
+        5
     );
     audit
 }

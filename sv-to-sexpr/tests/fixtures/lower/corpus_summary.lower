@@ -1,5 +1,5 @@
 lowering corpus audit
-processed=191 succeeded=191 failed=0
+processed=190 succeeded=190 failed=0
 invariants:
   invalid_successful_cells=0
   nested_value_expressions=0
@@ -9,33 +9,32 @@ invariants:
   absolute_path_leaks=0
   dependency_order_failures=0
 successful-cell-capabilities:
-  assignments=1705
+  assignments=1691
   atom_value_assignments=7
-  temporary_assignments=972
-  repeated_target_assignments=77
-  delayed_assignments=703
-  nested_timing_delay_assignments=703
-  cells_with_registers=12
-  registers=15
+  temporary_assignments=964
+  repeated_target_assignments=75
+  delayed_assignments=700
+  nested_timing_delay_assignments=700
+  cells_with_registers=11
+  registers=14
 value-operators:
-  and=646
+  and=643
   bufif0=2
-  bufif0-strength=101
+  bufif0-strength=100
   bufif1=10
   bufif1-strength=344
   caseeq=11
-  caseneq=18
+  caseneq=17
   drive-strength=5
   eq=2
-  keeper=6
-  mux=27
+  keeper=5
+  mux=26
   nand=26
   nmos=17
   nor=28
-  not=168
-  or=270
+  not=163
+  or=269
   pmos=7
-  rnmos=1
   xnor=1
   xor=8
 failure-categories:

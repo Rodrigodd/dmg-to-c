@@ -35,17 +35,6 @@ struct Case {
     transistors: &'static [ExpectedTransistor],
 }
 
-const DLATCH_TRANSISTORS: &[ExpectedTransistor] = &[ExpectedTransistor {
-    source_order: 4,
-    target: "gated_q",
-    operator: ValueOperator::Rnmos,
-    source: "ena_q_n",
-    source_gate_syntax: "(and q_n ((caseneq ena_q_n 1)))",
-    gate_atom: "t7",
-    delay: "0",
-    dependencies: &[("t6", "(caseneq ena_q_n 1)"), ("t7", "(and q_n t6)")],
-}];
-
 const IDU_BIT0_TRANSISTORS: &[ExpectedTransistor] = &[ExpectedTransistor {
     source_order: 5,
     target: "aoi_buf_y",
@@ -129,14 +118,6 @@ const IRQ_PRIO_BIT0_TRANSISTORS: &[ExpectedTransistor] = &[
 ];
 
 const CASES: &[Case] = &[
-    Case {
-        name: "dlatch_ee_irq",
-        path: "sv-cells/sm83/cells/dlatch_ee_irq.sv",
-        registers: &["q_n"],
-        warnings: 0,
-        intentional_ignores: 1,
-        transistors: DLATCH_TRANSISTORS,
-    },
     Case {
         name: "idu_bit0",
         path: "sv-cells/sm83/cells/idu_bit0.sv",

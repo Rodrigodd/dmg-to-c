@@ -9,12 +9,9 @@ Primary paths:
 
 - Input cells: `sv-cells/**/*.sv`
 - Output cells: `sexpr-cells/**/*.cell`
-- Current curated corpus: 191 files. The 15 former `dff*.sv` cells are
+- Current curated corpus: 190 files. The 15 former `dff*.sv` cells are
   intentionally out of scope as of Milestone 17 and will be translated
   manually in separate work.
-- Reference pair:
-  - `sv-cells/sm83/cells/dlatch_ee_irq.sv`
-  - `sexpr-cells/sm83/cells/dlatch_ee_irq.cell`
 
 The converter is complete only when its output preserves the modeled logic,
 state, drivers, and timing according to reviewed fixtures. Parsing a file or

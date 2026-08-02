@@ -32,14 +32,6 @@ const CASES: &[FixtureCase] = &[
         initials: &[("q", 13, 2)],
     },
     FixtureCase {
-        name: "initialized_latch",
-        source: "sv-cells/sm83/cells/dlatch_ee_irq.sv",
-        registers: &["q_n"],
-        state_target_order: &["q_n"],
-        temporary_indices: &[0, 1, 2, 3, 4, 5, 6, 7],
-        initials: &[("q_n", 17, 10)],
-    },
-    FixtureCase {
         name: "set_reset_latch",
         source: "sv-cells/sm83/cells/srlatch_r_n.sv",
         registers: &["q"],

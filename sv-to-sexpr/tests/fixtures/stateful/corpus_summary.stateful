@@ -1,27 +1,27 @@
 stateful corpus audit
-corpus-files=191
-stateful-files=12
-stateful-lowering: succeeded=12 deferred=0
+corpus-files=190
+stateful-files=11
+stateful-lowering: succeeded=11 deferred=0
 recursive-analysis:
-  modeled-registers=15
-  state-assignments=15
+  modeled-registers=14
+  state-assignments=14
   combinational-procedural-nonregisters=0
 source-state-syntax:
-  blocking=13
+  blocking=12
   nonblocking=2
 successful-topology:
-  modeled-registers=15
-  state-assignments=15
-  retained-muxes=15
+  modeled-registers=14
+  state-assignments=14
+  retained-muxes=14
   direct-state-assignments=0
-  explicit-register-initializers=9
-  initial-zero=9
+  explicit-register-initializers=8
+  initial-zero=8
   initial-one=0
   initial-x=6
   initial-z=0
   delay-tuple-intentional-ignores=0
-  specify-intentional-ignores=11
-  modeled-state-delays=13
+  specify-intentional-ignores=10
+  modeled-state-delays=12
 invariant-failures:
   invalid_cells=0
   nested_state_values=0
@@ -43,7 +43,6 @@ successful-stateful-files:
   sv-cells/dmg_cpu_b/cells/nor_latch.sv | registers=[q=x,q_n=x] | state-targets=[q,q_n]
   sv-cells/dmg_cpu_b/cells/pad_bidir_pu_latch.sv | registers=[ff=0] | state-targets=[ff]
   sv-cells/dmg_cpu_b/cells/tffnl.sv | registers=[ff=0,q=0] | state-targets=[q,ff]
-  sv-cells/sm83/cells/dlatch_ee_irq.sv | registers=[q_n=0] | state-targets=[q_n]
   sv-cells/sm83/cells/dlatch_ee_q_n.sv | registers=[q_n=0] | state-targets=[q_n]
   sv-cells/sm83/cells/srlatch_r_n.sv | registers=[q=x] | state-targets=[q]
   sv-cells/sm83/cells/srlatch_r_n_alt.sv | registers=[q=x] | state-targets=[q]
@@ -51,6 +50,5 @@ successful-flat-latch-files:
   sv-cells/dmg_cpu_b/cells/dlatch.sv
   sv-cells/dmg_cpu_b/cells/dlatch_ee.sv
   sv-cells/dmg_cpu_b/cells/dlatch_ee_q.sv
-  sv-cells/sm83/cells/dlatch_ee_irq.sv
   sv-cells/sm83/cells/dlatch_ee_q_n.sv
 whole-file-deferrals:

@@ -1,64 +1,64 @@
 timing corpus audit
-corpus-files=191
+corpus-files=190
 source-tuples:
   assignment arity0=0 arity1=0 arity2=35 arity3=60 other=0 omitted-first=0 omitted-later=0 later-entries=155
   primitive arity0=0 arity1=0 arity2=21 arity3=396 other=0 omitted-first=0 omitted-later=0 later-entries=813
-  specify arity0=0 arity1=0 arity2=238 arity3=3 other=0 omitted-first=0 omitted-later=0 later-entries=244
+  specify arity0=0 arity1=0 arity2=234 arity3=3 other=0 omitted-first=0 omitted-later=0 later-entries=240
 source-timing-forms:
-  aliases=1566
-  tpd-elmore-arities=2:1166
+  aliases=1554
+  tpd-elmore-arities=2:1154
   tpd-z-arities=1:58,2:331
   tpd-z-first-present=1:104,2:285
-  resistance-pmos=464
-  resistance-nmos=815
-  outer-resistance-integer-mul=494
+  resistance-pmos=458
+  resistance-nmos=809
+  outer-resistance-integer-mul=492
   outer-resistance-real-mul=0
   resistance-sums=47
   direct-real-resistance=2
   real-unit-factors=46
-  timing-adds=546
+  timing-adds=526
   timing-gt=14
   timing-mux=14
   real-device-values=[10.8,11.0,12.5,13.5,14.5,15.0,16.5,3.0,4.5,5.0,8.0,9.0]
 source-specify:
-  paths=241
-  scalar-controls=443
-  target-groups=184
-  target-multiplicity=1:139,2:34,3:10,4:1
-  first-source-paths=184 witnesses=[sv-cells/dmg_cpu_b/cells/and2.sv:20:3:y,sv-cells/dmg_cpu_b/cells/and3.sv:20:3:y,sv-cells/dmg_cpu_b/cells/and4.sv:20:3:y,sv-cells/dmg_cpu_b/cells/ao21.sv:21:3:y,sv-cells/dmg_cpu_b/cells/ao22.sv:20:3:y,sv-cells/dmg_cpu_b/cells/ao222.sv:20:3:y]
+  paths=237
+  scalar-controls=432
+  target-groups=181
+  target-multiplicity=1:137,2:33,3:10,4:1
+  first-source-paths=181 witnesses=[sv-cells/dmg_cpu_b/cells/and2.sv:20:3:y,sv-cells/dmg_cpu_b/cells/and3.sv:20:3:y,sv-cells/dmg_cpu_b/cells/and4.sv:20:3:y,sv-cells/dmg_cpu_b/cells/ao21.sv:21:3:y,sv-cells/dmg_cpu_b/cells/ao22.sv:20:3:y,sv-cells/dmg_cpu_b/cells/ao222.sv:20:3:y]
 lowering:
-  succeeded=191 failed=0
-  assignments=1705 temps=972 source-targets=733
-  source-dispositions explicit=512 explicit-nonzero=512 explicit-with-specify=0 specify=191 specify-nonzero=191 zero=30
-  emitted zero=1002 nonzero=703 nested=703
-  outer-resistance-multiplications expected=1140 emitted=1140
-  warnings=0 specify-ignores=45 later-ignores=0
+  succeeded=190 failed=0
+  assignments=1691 temps=964 source-targets=727
+  source-dispositions explicit=512 explicit-nonzero=512 explicit-with-specify=0 specify=188 specify-nonzero=188 zero=27
+  emitted zero=991 nonzero=700 nested=700
+  outer-resistance-multiplications expected=1136 emitted=1136
+  warnings=0 specify-ignores=44 later-ignores=0
 emitted-tuples:
-  arity1=1002 arity2=247 arity3=456 total=1705
+  arity1=991 arity2=244 arity3=456 total=1691
   noncanonical-one-entry=0
 first-component-compatibility:
-  comparisons=1705 explicit=512 specify=191 forced-zero=6 missing-zero=24 generated-zero=972 mismatches=0
-  outer-resistance-multiplications=391
+  comparisons=1691 explicit=512 specify=188 forced-zero=5 missing-zero=22 generated-zero=964 mismatches=0
+  outer-resistance-multiplications=389
 first-component-timing-operators:
-  +=205
+  +=199
   -=0
-  *=393
+  *=391
   /=0
-  elmore=811
-  wire=811
-  pmos=417
-  nmos=477
+  elmore=802
+  wire=802
+  pmos=412
+  nmos=473
   gt=0
   mux=0
 emitted-timing-operators:
-  +=569
+  +=557
   -=0
-  *=1170
+  *=1166
   /=0
-  elmore=2120
-  wire=2120
-  pmos=744
-  nmos=1687
+  elmore=2102
+  wire=2102
+  pmos=735
+  nmos=1678
   gt=14
   mux=14
 invariants:
@@ -84,7 +84,6 @@ acceptance-witnesses:
   outer-mul-1.5=[]
   resistance-sum=[sv-cells/sm83/cells/decoder2.sv,sv-cells/sm83/cells/decoder3.sv,sv-cells/sm83/cells/idu_bit0.sv,sv-cells/sm83/cells/idu_bit123456.sv,sv-cells/sm83/cells/idu_bit7.sv,sv-cells/sm83/cells/irq_prio_bit7.sv]
   real-device-factor=[sv-cells/dmg_cpu_b/cells/pad_xtal.sv,sv-cells/sm83/cells/irq_prio_bit0.sv,sv-cells/sm83/cells/irq_prio_bit1.sv,sv-cells/sm83/cells/irq_prio_bit2.sv,sv-cells/sm83/cells/irq_prio_bit3.sv,sv-cells/sm83/cells/irq_prio_bit4.sv]
-  reference=sv-cells/sm83/cells/dlatch_ee_irq.sv
   explicit-precedence=sv-to-sexpr/tests/fixtures/timing/explicit_precedence.sv
   pad-xtal=keeper-zero-delay:no-M7-failure
 lower-failures: []

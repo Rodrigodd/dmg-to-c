@@ -23,7 +23,7 @@ use sv_to_sexpr::survey::collect_sv_files;
 use sv_to_sexpr::timing_decompose::{DecompositionPathId, VerifiedDelayComponent};
 use sv_to_sexpr::timing_graph::AssignmentDelayOrigin;
 
-const CORPUS_SIZE: usize = 191;
+const CORPUS_SIZE: usize = 190;
 const SHARD_COUNT: usize = 16;
 
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -272,6 +272,7 @@ fn audit_case(
     catalog: &ModuleCatalog,
     mode: GenerateMode,
 ) -> CaseRecord {
+    println!("{} {}", path, mode.label());
     let first =
         lower_design_with_decomposed_timing_and_catalog_and_generate_mode(design, catalog, mode);
     let second =
