@@ -29,12 +29,13 @@
     ;; The SIMPLIFIED_WAVERAM branch instantiates a 16-byte simplified SRAM.
     ;; The source connects wldrv_pch_n to the SRAM's wldrv_ena port.
     (din (pack8 din7 din6 din5 din4 din3 din2 din1 din0) (delay 0))
-    (t0 (pack8 a3 a2) (delay 0))
-    (t1 (pack8 a3_n a2_n) (delay 0))
-    (t2 (inot t1) (delay 0))
-    (t3 (ieq t0 t2) (delay 0))
-    (t4 (pack8 a3 a2 0 0) (delay 0))
-    (wl_adr (imux t3 t4 -1) (delay 0))
+    (wl_a3_pair (eq a3 a3_n) (delay 0))
+    (wl_a3_valid (not wl_a3_pair) (delay 0))
+    (wl_a2_pair (eq a2 a2_n) (delay 0))
+    (wl_a2_valid (not wl_a2_pair) (delay 0))
+    (wl_bits_valid (and wl_a3_valid wl_a2_valid) (delay 0))
+    (wl_value (pack8 a3 a2 0 0) (delay 0))
+    (wl_adr (imux wl_bits_valid wl_value -1) (delay 0))
 
     (t5 (pack8 col3 col2 col1 col0) (delay 0))
     (t6 (ieq t5 1) (delay 0))

@@ -37,24 +37,26 @@
     ;; Word-line address
     ;; ------------------------------------------------------------
 
-    (t0 (pack8 a3 a2) (delay 0))
-    (t1 (pack8 a3_n a2_n) (delay 0))
-    (t2 (inot t1) (delay 0))
-    (t3 (ieq t0 t2) (delay 0))
-    (t4 (and t3 wl_adr_valid) (delay 0))
-    (t5 (pack8 a3 a2 0 0) (delay 0))
-    (wl_adr (imux t4 t5 -1) (delay 0))
+    (wl_a3_pair (eq a3 a3_n) (delay 0))
+    (wl_a3_valid (not wl_a3_pair) (delay 0))
+    (wl_a2_pair (eq a2 a2_n) (delay 0))
+    (wl_a2_valid (not wl_a2_pair) (delay 0))
+    (wl_bits_valid (and wl_a3_valid wl_a2_valid) (delay 0))
+    (wl_enabled (and wl_bits_valid wl_adr_valid) (delay 0))
+    (wl_value (pack8 a3 a2 0 0) (delay 0))
+    (wl_adr (imux wl_enabled wl_value -1) (delay 0))
 
     ;; ------------------------------------------------------------
     ;; Column-mux address
     ;; ------------------------------------------------------------
 
-    (t6 (pack8 a7 a6) (delay 0))
-    (t7 (pack8 a7_n a6_n) (delay 0))
-    (t8 (inot t7) (delay 0))
-    (t9 (ieq t6 t8) (delay 0))
-    (t10 (pack8 a7 a6 0 0 0 0 0 0) (delay 0))
-    (cm_adr (imux t9 t10 -1) (delay 0))
+    (cm_a7_pair (eq a7 a7_n) (delay 0))
+    (cm_a7_valid (not cm_a7_pair) (delay 0))
+    (cm_a6_pair (eq a6 a6_n) (delay 0))
+    (cm_a6_valid (not cm_a6_pair) (delay 0))
+    (cm_bits_valid (and cm_a7_valid cm_a6_valid) (delay 0))
+    (cm_value (pack8 a7 a6 0 0 0 0 0 0) (delay 0))
+    (cm_adr (imux cm_bits_valid cm_value -1) (delay 0))
 
     ;; ------------------------------------------------------------
     ;; Row decoder
