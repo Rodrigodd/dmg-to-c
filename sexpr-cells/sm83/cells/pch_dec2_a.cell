@@ -11,7 +11,7 @@
   (assignments
 
     (y
-      (bufif-zs 1 pch_n)
+      (bufif0-zs 1 pch_n)
       (delay (elmore (wire L_y) (pmos 7)) (elmore (wire L_y) (pmos 7)) (elmore (wire L_y) (pmos 7)))
     )
   )

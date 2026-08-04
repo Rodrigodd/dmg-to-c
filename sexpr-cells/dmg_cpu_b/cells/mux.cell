@@ -12,19 +12,19 @@
 
     (sel_n (not sel) (delay (elmore (wire 33) (pmos 6)) (elmore (wire 33) (nmos 6))))
     (mux
-      (bufif-zs d0 sel)
+      (bufif0-zs d0 sel)
       (delay (elmore (wire 93) (pmos 6)) (elmore (wire 93) (nmos 6)))
     )
     (mux
-      (bufif-sz d0 sel_n)
+      (bufif1-sz d0 sel_n)
       (delay (elmore (wire 93) (pmos 6)) (elmore (wire 93) (nmos 6)))
     )
     (mux
-      (bufif-zs d1 sel_n)
+      (bufif0-zs d1 sel_n)
       (delay (elmore (wire 93) (pmos 6)) (elmore (wire 93) (nmos 6)))
     )
     (mux
-      (bufif-sz d1 sel)
+      (bufif1-sz d1 sel)
       (delay (elmore (wire 93) (pmos 6)) (elmore (wire 93) (nmos 6)))
     )
     (mux (keeper) (delay 0))

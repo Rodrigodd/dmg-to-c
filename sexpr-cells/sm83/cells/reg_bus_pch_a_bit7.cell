@@ -32,7 +32,7 @@
     (b_y_n (not b_y) (delay (elmore (wire L_b_y_n) (pmos 15)) (elmore (wire L_b_y_n) (nmos 5))))
     (c_y_n (not c_y) (delay (elmore (wire L_c_y_n) (pmos 15)) (elmore (wire L_c_y_n) (nmos 8))))
     (a_y
-      (bufif-zs 1 pch_n)
+      (bufif0-zs 1 pch_n)
       (delay
         (elmore (wire L_a_y) (pmos 10))
         (elmore (wire L_a_y) (pmos 10))
@@ -40,7 +40,7 @@
       )
     )
     (b_y
-      (bufif-zs 1 pch_n)
+      (bufif0-zs 1 pch_n)
       (delay
         (elmore (wire L_b_y) (pmos 15))
         (elmore (wire L_b_y) (pmos 15))
@@ -48,7 +48,7 @@
       )
     )
     (c_y
-      (bufif-zs 1 pch_n)
+      (bufif0-zs 1 pch_n)
       (delay
         (elmore (wire L_c_y) (pmos 15))
         (elmore (wire L_c_y) (* (nmos 8) 3))

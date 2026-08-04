@@ -69,7 +69,7 @@
     (t2 (not ao221_in5_n) (delay 0))
     (y (or t0 t1 t2) (delay (elmore (wire L_y) (pmos 5)) (elmore (wire L_y) (* (nmos 5) 3))))
     (ao221_in5_n
-      (bufif-zs 1 pch_n)
+      (bufif0-zs 1 pch_n)
       (delay
         (elmore (wire L_ao221_in5_n) (pmos 5))
         (elmore (wire L_ao221_in5_n) (pmos 5))

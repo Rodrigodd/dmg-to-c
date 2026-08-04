@@ -69,7 +69,7 @@
     )
 
     (gated_q
-      (bufif-zs
+      (bufif0-zs
         1
         pch_n
       )

@@ -12,15 +12,15 @@
 
     (ena_n (not ena) (delay (elmore (wire 130) (pmos 7)) (elmore (wire 130) (nmos 7))))
     (clk
-      (bufif-zs 1 ena)
+      (bufif0-zs 1 ena)
       (delay (elmore (wire 130) (pmos 7)) (elmore (wire 130) (nmos 28)))
     )
     (clk
-      (bufif-zs in_pad ena_n)
+      (bufif0-zs in_pad ena_n)
       (delay (elmore (wire 130) (pmos 33)) (elmore (wire 130) (nmos 28)))
     )
     (clk
-      (bufif-sz in_pad ena)
+      (bufif1-sz in_pad ena)
       (delay (elmore (wire 130) (pmos 33)) (elmore (wire 130) (nmos 28)))
     )
     (clk (keeper) (delay 0))

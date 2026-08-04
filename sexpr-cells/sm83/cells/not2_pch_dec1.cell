@@ -23,7 +23,7 @@
     (a_y (not a_in) (delay (elmore (wire L_a_y) (pmos 17)) (elmore (wire L_a_y) (nmos 8))))
     (b_y (not b_in) (delay (elmore (wire L_b_y) (pmos 17)) (elmore (wire L_b_y) (nmos 8))))
     (a_in
-      (bufif-zs 1 pch_n)
+      (bufif0-zs 1 pch_n)
       (delay
         (elmore (wire L_a_in) (pmos 8))
         (elmore (wire L_a_in) (pmos 8))
@@ -31,7 +31,7 @@
       )
     )
     (b_in
-      (bufif-zs 1 pch_n)
+      (bufif0-zs 1 pch_n)
       (delay
         (elmore (wire L_b_in) (pmos 8))
         (elmore (wire L_b_in) (pmos 8))

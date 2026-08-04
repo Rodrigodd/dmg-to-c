@@ -16,15 +16,15 @@
   (assignments
 
     (pad
-      (bufif-sz 0 ndrv)
+      (bufif1-sz 0 ndrv)
       (delay (elmore (wire L_pad) (pmos 140)) (elmore (wire L_pad) (nmos 140)))
     )
     (pad
-      (bufif-zs 1 pdrv_n)
+      (bufif0-zs 1 pdrv_n)
       (delay (elmore (wire L_pad) (pmos 140)) (elmore (wire L_pad) (nmos 140)))
     )
     (pad
-      (bufif-zp 1 ena_n_pu)
+      (bufif0-zp 1 ena_n_pu)
       (delay (* (elmore (wire L_pad) (pmos 140)) 10) (elmore (wire L_pad) (nmos 140)))
     )
     (r_n pad (delay 0))

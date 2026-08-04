@@ -46,7 +46,7 @@
       )
     )
     (aoi_y
-      (bufif-zs 1 pch_n)
+      (bufif0-zs 1 pch_n)
       (delay
         (elmore (wire 118) (pmos 6))
         (elmore (wire 118) (+ (* (nmos 18) 2) (nmos 17)))
@@ -55,7 +55,7 @@
     )
     (t0 (and pch_n aoi_in1 aoi_in2) (delay 0))
     (aoi_y
-      (bufif-sz 0 t0)
+      (bufif1-sz 0 t0)
       (delay
         (elmore (wire 118) (pmos 6))
         (elmore (wire 118) (+ (* (nmos 18) 2) (nmos 17)))
@@ -64,7 +64,7 @@
     )
     (t1 (and pch_n aoi_in3) (delay 0))
     (aoi_y
-      (bufif-sz 0 t1)
+      (bufif1-sz 0 t1)
       (delay
         (elmore (wire 118) (pmos 6))
         (elmore (wire 118) (+ (nmos 18) (nmos 17)))
@@ -88,7 +88,7 @@
     )
     (t4 (and pch_n zero_ena) (delay 0))
     (zero_y
-      (bufif-sz 0 t4)
+      (bufif1-sz 0 t4)
       (delay
         (elmore (wire L_zero_y) (+ (nmos 18) (nmos 17)))
         (elmore (wire L_zero_y) (+ (nmos 18) (nmos 17)))
@@ -101,7 +101,7 @@
     )
     (t5 (and buf_ena buf_a_in) (delay 0))
     (buf_a_y
-      (bufif-zs 1 t5)
+      (bufif1-zs 1 t5)
       (delay
         (+ (elmore (wire 28) (+ (nmos 3) (nmos 9))) (elmore (wire L_buf_a_y) (pmos 28)))
         (+ (elmore (wire 21) (+ (pmos 3) (pmos 8))) (elmore (wire L_buf_a_y) (nmos 14)))
@@ -112,7 +112,7 @@
     (t7 (not buf_a_in) (delay 0))
     (t8 (and t6 t7) (delay 0))
     (buf_a_y
-      (bufif-sz 0 t8)
+      (bufif1-sz 0 t8)
       (delay
         (+ (elmore (wire 28) (+ (nmos 3) (nmos 9))) (elmore (wire L_buf_a_y) (pmos 28)))
         (+ (elmore (wire 21) (+ (pmos 3) (pmos 8))) (elmore (wire L_buf_a_y) (nmos 14)))
@@ -121,7 +121,7 @@
     )
     (t9 (and buf_ena buf_b_in) (delay 0))
     (buf_b_y
-      (bufif-zs 1 t9)
+      (bufif1-zs 1 t9)
       (delay
         (+ (elmore (wire 21) (+ (nmos 3) (nmos 9))) (elmore (wire L_buf_b_y) (pmos 28)))
         (+ (elmore (wire 37) (+ (pmos 3) (pmos 8))) (elmore (wire L_buf_b_y) (nmos 15)))
@@ -132,7 +132,7 @@
     (t11 (not buf_b_in) (delay 0))
     (t12 (and t10 t11) (delay 0))
     (buf_b_y
-      (bufif-sz 0 t12)
+      (bufif1-sz 0 t12)
       (delay
         (+ (elmore (wire 21) (+ (nmos 3) (nmos 9))) (elmore (wire L_buf_b_y) (pmos 28)))
         (+ (elmore (wire 37) (+ (pmos 3) (pmos 8))) (elmore (wire L_buf_b_y) (nmos 15)))

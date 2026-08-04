@@ -33,7 +33,7 @@
   (assignments
 
     (not_a_in
-      (bufif-zs 1 pch_n)
+      (bufif0-zs 1 pch_n)
       (delay
         (elmore (wire L_not_a_in) (pmos 6))
         (elmore (wire L_not_a_in) (pmos 6))
@@ -45,7 +45,7 @@
       (delay (elmore (wire L_not_a_y) (pmos 6)) (elmore (wire L_not_a_y) (nmos 7)))
     )
     (not_b_in
-      (bufif-zs 1 pch_n)
+      (bufif0-zs 1 pch_n)
       (delay
         (elmore (wire L_not_b_in) (pmos 6))
         (elmore (wire L_not_b_in) (pmos 6))
@@ -58,7 +58,7 @@
     )
     (t0 (and buf_ena buf_a_in) (delay 0))
     (buf_a_y
-      (bufif-zs 1 t0)
+      (bufif1-zs 1 t0)
       (delay
         (+ (elmore (wire 28) (+ (nmos 3) (nmos 9))) (elmore (wire L_buf_a_y) (pmos 28)))
         (+ (elmore (wire 21) (+ (pmos 3) (pmos 8))) (elmore (wire L_buf_a_y) (nmos 14)))
@@ -69,7 +69,7 @@
     (t2 (not buf_a_in) (delay 0))
     (t3 (and t1 t2) (delay 0))
     (buf_a_y
-      (bufif-sz 0 t3)
+      (bufif1-sz 0 t3)
       (delay
         (+ (elmore (wire 28) (+ (nmos 3) (nmos 9))) (elmore (wire L_buf_a_y) (pmos 28)))
         (+ (elmore (wire 21) (+ (pmos 3) (pmos 8))) (elmore (wire L_buf_a_y) (nmos 14)))
@@ -78,7 +78,7 @@
     )
     (t4 (and buf_ena buf_b_in) (delay 0))
     (buf_b_y
-      (bufif-zs 1 t4)
+      (bufif1-zs 1 t4)
       (delay
         (+ (elmore (wire 21) (+ (nmos 3) (nmos 9))) (elmore (wire L_buf_b_y) (pmos 28)))
         (+ (elmore (wire 37) (+ (pmos 3) (pmos 8))) (elmore (wire L_buf_b_y) (nmos 15)))
@@ -89,7 +89,7 @@
     (t6 (not buf_b_in) (delay 0))
     (t7 (and t5 t6) (delay 0))
     (buf_b_y
-      (bufif-sz 0 t7)
+      (bufif1-sz 0 t7)
       (delay
         (+ (elmore (wire 21) (+ (nmos 3) (nmos 9))) (elmore (wire L_buf_b_y) (pmos 28)))
         (+ (elmore (wire 37) (+ (pmos 3) (pmos 8))) (elmore (wire L_buf_b_y) (nmos 15)))

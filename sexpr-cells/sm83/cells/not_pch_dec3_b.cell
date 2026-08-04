@@ -12,7 +12,7 @@
 
     (y (not in) (delay (elmore (wire L_y) (pmos 15)) (elmore (wire L_y) (nmos 8))))
     (in
-      (bufif-zs 1 pch_n)
+      (bufif0-zs 1 pch_n)
       (delay
         (elmore (wire L_in) (pmos 8))
         (elmore (wire L_in) (pmos 8))
