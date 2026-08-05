@@ -58,17 +58,19 @@
     (adr (imux t13 t14 -1) (delay 0))
 
     ;; Preserve the simplified SRAM latch ordering: sample/write, then read.
-    (t15 (not bl_pch_n) (delay 0))
-    (t16 (and wr bl_pch_n) (delay 0))
-    (t17 (and bl_pch_n wldrv_ena) (delay 0))
+    (bl_precharge (not bl_pch_n) (delay 0))
+    (bl_write (and wr bl_pch_n) (delay 0))
+    (bl_read (and bl_pch_n wldrv_ena) (delay 0))
     (t18 (ineq adr -1) (delay 0))
     (t19 (and wr bl_pch_n t18 wldrv_ena) (delay 0))
     (mem_write_dummy (write_mem high_ram adr din t19) (delay 0))
-    (t23 (read_mem high_ram adr) (delay 0))
-    (t24 (imux t18 t23 x) (delay 0))
-    (t25 (imux t17 t24 last_bl_data) (delay 0))
-    (t26 (imux t16 din t25) (delay 0))
-    (last_bl_data (imux t15 x t26) (delay 0))
+    (bl_update (or bl_precharge bl_write bl_read) (delay 0))
+    (bl_mem_value (read_mem high_ram adr) (delay 0))
+    (bl_read_value (imux t18 bl_mem_value x) (delay 0))
+    (bl_read_or_idle (imux bl_read bl_read_value x) (delay 0))
+    (bl_write_or_read (imux bl_write din bl_read_or_idle) (delay 0))
+    (bl_next (imux bl_precharge x bl_write_or_read) (delay 0))
+    (last_bl_data (imux bl_update bl_next last_bl_data) (delay 0))
 
     ;; Both source bufif drivers are retained for every bidirectional pin.
     (t28 (ibit last_bl_data 0) (delay 0))

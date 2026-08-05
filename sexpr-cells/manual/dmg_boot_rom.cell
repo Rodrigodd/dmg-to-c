@@ -110,15 +110,16 @@
     (t33 (ineq last_wl_adr wl_adr) (delay 0))
     (t34 (or t32 t33) (delay 0))
 
-    (t51 (not wl_ena_n) (delay 0))
-    (t52 (imux t31 wl_adr last_wl_adr) (delay 0))
-    (t53 (imux t51 t52 last_wl_adr) (delay 0))
-    (last_wl_adr (imux wl_pch -1 t53) (delay 0))
+    (wl_enabled_n (not wl_ena_n) (delay 0))
+    (last_wl_capture (and wl_enabled_n t31) (delay 0))
+    (last_wl_update (or wl_pch last_wl_capture) (delay 0))
+    (last_wl_value (imux wl_pch -1 wl_adr) (delay 0))
+    (last_wl_adr (imux last_wl_update last_wl_value last_wl_adr) (delay 0))
 
-    (t48 (not wl_ena_n) (delay 0))
-    (t49 (mux t34 0 wl_adr_valid) (delay 0))
-    (t50 (mux t48 t49 wl_adr_valid) (delay 0))
-    (wl_adr_valid (mux wl_pch 1 t50) (delay 0))
+    (wl_invalidate (and wl_enabled_n t34) (delay 0))
+    (wl_valid_update (or wl_pch wl_invalidate) (delay 0))
+    (wl_valid_value (mux wl_pch 1 0) (delay 0))
+    (wl_adr_valid (mux wl_valid_update wl_valid_value wl_adr_valid) (delay 0))
 
     ;; ------------------------------------------------------------
     ;; Bitline data
