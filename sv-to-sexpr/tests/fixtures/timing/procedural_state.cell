@@ -6,6 +6,8 @@
 
   (registers (q 0))
 
+  (parameters)
+
   (assignments
 
     (t0 (and a b) (delay 0))

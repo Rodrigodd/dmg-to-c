@@ -2616,6 +2616,7 @@ mod tests {
                 })
                 .into_iter()
                 .collect(),
+            parameters: Vec::new(),
             items: vec![CellItem::Assignment(Assignment {
                 target: target.to_string(),
                 expr: expression,
@@ -2636,6 +2637,7 @@ mod tests {
                 })
                 .into_iter()
                 .collect(),
+            parameters: Vec::new(),
             items: expressions
                 .into_iter()
                 .map(|expr| {
@@ -3752,6 +3754,7 @@ mod tests {
             inputs: vec!["a".to_string(), "b".to_string()],
             outputs: vec!["y".to_string()],
             registers: Vec::new(),
+            parameters: Vec::new(),
             items: vec![CellItem::Assignment(Assignment {
                 target: "y".to_string(),
                 expr: Expr::value(ValueOperator::And, vec![Expr::atom("a"), Expr::atom("b")]),

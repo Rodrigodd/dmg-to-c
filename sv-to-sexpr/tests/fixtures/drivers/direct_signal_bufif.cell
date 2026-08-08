@@ -13,6 +13,8 @@
 
   (registers)
 
+  (parameters)
+
   (assignments
 
     (y0 (bufif0 in0 ena0) (delay 0))

@@ -26,6 +26,16 @@
 
   (registers)
 
+  (parameters
+    (L_aoi_buf_y 7)
+    (L_aoi_y_n 40)
+    (L_zero_y 59)
+    (L_or_y 51)
+    (L_buf_a_y 30)
+    (L_buf_b_y 30)
+    (L_buf_ena 90)
+  )
+
   (assignments
 
     (or_y

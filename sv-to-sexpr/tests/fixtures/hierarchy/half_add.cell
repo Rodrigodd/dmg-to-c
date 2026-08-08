@@ -6,6 +6,8 @@
 
   (registers)
 
+  (parameters (L_sum 54) (L_cout 54))
+
   (assignments
 
     (cout

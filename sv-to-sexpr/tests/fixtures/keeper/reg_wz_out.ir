@@ -31,6 +31,36 @@ Cell {
         "muxi_b_y",
     ],
     registers: [],
+    parameters: [
+        Parameter {
+            name: "L_aoi_a_y_n",
+            value: 107.0,
+        },
+        Parameter {
+            name: "L_aoi_b_y",
+            value: 33.0,
+        },
+        Parameter {
+            name: "L_muxi_a_y",
+            value: 98.0,
+        },
+        Parameter {
+            name: "L_muxi_b_y",
+            value: 134.0,
+        },
+        Parameter {
+            name: "L_nand_y",
+            value: 206.0,
+        },
+        Parameter {
+            name: "L_oai21_y",
+            value: 182.0,
+        },
+        Parameter {
+            name: "L_oai31_y",
+            value: 200.0,
+        },
+    ],
     items: [
         Assignment(
             Assignment {

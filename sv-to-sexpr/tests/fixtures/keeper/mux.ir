@@ -10,6 +10,12 @@ Cell {
         "y",
     ],
     registers: [],
+    parameters: [
+        Parameter {
+            name: "L_y",
+            value: 54.0,
+        },
+    ],
     items: [
         Assignment(
             Assignment {

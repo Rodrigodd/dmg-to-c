@@ -5,212 +5,240 @@ a milestone acceptance condition changes or is completed.
 
 ## Verified Baseline
 
-Last audited on 2026-07-26:
+Last audited on 2026-08-08. The corpus is 190 curated `.sv` sources mirrored to
+190 `.cell` outputs, plus one hand-written `sexpr-cells/manual/dlatch_ee_irq.cell`
+that the converter does not produce. The 15 `dff*.sv` cells were retired by
+Milestone 17; `sm83/cells/dlatch_ee_irq.sv` was retired afterwards because it
+does not decompose.
 
-- `cargo test` passes 260 unit tests and 72 integration/corpus tests; the sibling
-  formatter passes 7 unit and 4 integration tests.
-- Lexing succeeds for all 206 curated files.
-- Parsing succeeds for all 206 curated files.
-- `survey sv-cells` deterministically inventories 63,240 tokens and 138 typed
-  capabilities: 1 supported, 128 deferred, 9 intentional ignores, and zero
-  unsupported. Contracted scalar initial events are the supported Milestone 13
-  capability rather than an intentional ignore.
-- Configured catalog-aware semantic analysis succeeds for all 206 files in both
-  generate modes and reports 3 supported, 203 deferred, zero warned, and zero
-  failed. It selects exactly one `nodelay` branch before analysis, resolves
-  ordinary module interfaces while retaining their typed parameter and port
-  bindings, and limits registers to modeled state. Explicit structural APIs
-  retain both generate alternatives or unresolved hierarchy only for earlier
-  source-inventory fixtures.
-- Both configured modes lower all 206 files with zero failures. Every cell is
-  deterministic, structurally valid, and contains only flat contracted value
-  expressions. The default delayful corpus audit covers 1,958 assignments,
-  including 1,168 generated temporaries and 735 modeled nonzero delays; nodelay
-  contains 1,955 assignments and the same 1,168 temporaries. Exactly 27 cells
-  contain 48 modeled registers: 42 with explicit initial value `0` and 6 with
-  implicit initial value `x`.
-- Every assignment carries a tagged delay tuple. The delayful corpus emits
-  1,223 one-entry, 276 two-entry, and 459 three-entry tuples. The source audit
-  preserves exactly 45/60 assignment, 21/399 primitive, and 263/3 specify
-  two-/three-entry tuples. An independent compatibility oracle compares the
-  first component of all 1,958 assignments with the former selected-first
-  semantics and reports zero mismatches; the full-component audit reports no
-  discarded, filled, reordered, or uncontracted timing expression.
-- Timing-aware lowering retains all 266 source-owned specify paths, 480 scalar
-  controls, 203 target groups, and 49 multiple-path groups with full tuples and
-  source provenance in both generate modes. Hierarchy expansion produces 273
-  constraints, 494 controls, and 210 target groups. The typed functional graph
-  and its separately cut DAG classify combinational, state, and multiply-driven
-  resolved-net boundaries and deterministically report reachability, path
-  sense, shared prefixes and suffixes, reconvergence, and public-output splits.
-  Exact additive reconstruction succeeds for every retained constraint.
-- Opt-in decomposed timing lowering converts accepted constraints to ordinary
-  assignment delay tuples and independently verifies the rebuilt graph. Generic
-  exact-cover planning keeps single paths compact while maximizing compatible
-  shared topology; the reviewed `ao21` fixture places its distinct input
-  prefixes on `t0`/`d0` and its common tuple suffix once on `y`. Transformation
-  erasure exactly recovers the baseline value equations, source driver order,
-  register metadata, and signal metadata.
-- Delayful `dmg_dffsr` selects a checked-in typed physical-topology overlay with
-  38 generated assignments, 12 two-component delay-bearing regions, exact
-  four-state fallback guards, and 12 independently reconstructed rise/fall
-  recipes covering all six specify paths. Its `q_n` routes branch before the
-  public `q` output region, so they never accumulate `q`'s output delay; the
-  transformed cell remains assignment-only and preserves `ff=0` and `q=0`.
-- Delayful and nodelay lowering each report exactly 49 visible intentional
-  ignores, all for additional control-dependent specify paths after the
-  temporary selected first path for each used target. Later tuple entries are
-  preserved and produce no diagnostic. The remaining ignores stay non-failing
-  under `--strict`. Valid selected initializers are typed register metadata,
-  emit no assignment or diagnostic, and are no longer an ignore category. Both
-  configured modes report zero warnings and zero failures under strict policy.
-- No curated lowering failure remains. The exact transistor audit accounts for
-  10 files and 25 direct value drivers: 17 `nmos`, 7 `pmos`, and 1 `rnmos`.
-- All 206 checked generated cells are valid generic S-expressions, canonical
-  and idempotent under `sexpr-fmt`, and exact path mirrors of the 206 curated
-  sources. The checked reference byte-matches the reviewed timing fixture.
-- Flat SSA, combinational operators, register lists, supported stateful
-  behavior, driver/strength normalizations, and complete selected symbolic
-  delay tuples have completed fixture and corpus review.
-- The reference cell's `q_n`, `q`, and `d` assignments preserve the complete
-  selected source/specify tuples, including all resistance multipliers and
-  transition components; their first components still match the accepted
-  temporary first-applicable-path policy.
-- The current CLI has `lex`, `parse`, `analyze`, `lower`, transactional corpus
-  `convert`, `convert-file`, `survey`, and staged `check`. Configured analysis,
-  catalog-aware lowering, conversion, and analyze/lower checks accept
-  `--nodelay`; delayful selection is the default. Corpus conversion supports
-  documented strict, dry-run, overwrite, and normalized relative-path filter
-  policies, validates the complete catalog before selected lowering, refuses
-  preflight-detectable partial output, and reports deterministic processed,
-  selected, skipped, warned, intentional-ignore, written, would-write, and
-  failed totals.
+### Build and test state
+
+- `cargo test` and `cargo nextest run` pass: 367 tests, 231 library unit tests
+  and 136 integration tests across 28 suites, with no ignored or skipped cases
+  and no test exceeding the configured 45-second limit. `sexpr-fmt` passes its
+  7 unit and 4 integration tests.
+- `cargo fmt -- --check` and `cargo clippy --all-targets` are clean for both
+  crates.
+- The `dev` and `test` profiles build at `opt-level = 2`. The exact-cover search
+  in the decomposition audit is roughly twenty times slower unoptimized, which
+  by itself exceeded the nextest slow timeout on the `dlatch` and `alu_pggen`
+  shards. The whole suite now runs in about 27 seconds.
+- There is no CI workflow; it was removed in `9e6263b`. The gates above have to
+  be run by hand until one is reinstated.
+
+### Frontend and analysis
+
+- `survey sv-cells` deterministically inventories 57,917 tokens across 190 files
+  and 127 typed capabilities: 1 supported, 117 deferred, 9 intentional ignores,
+  and zero unsupported.
+- Lexing and parsing each report `processed=190 failed=0`.
+- Configured catalog-aware analysis reports `processed=190 supported=3
+  deferred=187 warned=0 failed=0` in both generate modes. It selects exactly one
+  `nodelay` branch before analysis, resolves ordinary module interfaces while
+  retaining typed parameter and port bindings, and limits registers to modeled
+  state.
+
+### Ordinary (non-decomposed) lowering
+
+This is still the default path for `check`, `convert`, and `convert-file`.
+
+- Both configured modes lower all 190 files with zero warnings and zero
+  failures, including under `--strict`. Every cell is deterministic,
+  structurally valid, and contains only flat contracted value expressions.
+- The delayful corpus audit covers 1,691 assignments, of which 964 are generated
+  temporaries, 7 are atom values, 75 are repeated-target drivers, and 700 carry
+  a modeled nonzero nested delay. Emitted value operators are `and` 643,
+  `or` 269, `not` 163, `bufif1-strength` 344, `bufif0-strength` 100, `bufif1` 10,
+  `bufif0` 2, `drive-strength` 5, `mux` 26, `nor` 28, `nand` 26, `caseneq` 17,
+  `caseeq` 11, `xor` 8, `eq` 2, `xnor` 1, `keeper` 5, `nmos` 17, `pmos` 7.
+- Exactly 11 cells contain 14 modeled registers: 8 with an explicit initial
+  value `0` and 6 with implicit `x`. No corpus register uses `1` or `z`; both
+  remain covered by focused tests.
+- Every assignment carries a validated tagged delay tuple. The source audit
+  preserves 35 two-entry and 60 three-entry assignment tuples, 21 two-entry and
+  396 three-entry primitive tuples, and 234 two-entry and 3 three-entry specify
+  tuples, with no omitted component.
+- Delayful and nodelay lowering each report exactly 44 intentional ignores, all
+  for additional control-dependent specify paths after the temporarily selected
+  first source-ordered path. They stay non-failing under `--strict`. The corpus
+  has 181 specify target groups with multiplicity 1:137, 2:33, 3:10, 4:1, which
+  is exactly the 44 groups that produce those ignores.
+- Driver coverage accounts for 63 relevant files with 63 successes, all four
+  contracted strength pairs (`highz1/strong0` 338, `strong1/highz0` 104,
+  `pull1/highz0` 3, `supply1/supply0` 4), 25 repeated-driver paths over 57
+  targets and 132 source occurrences, and 5 source keepers all emitted
+  distinctly.
+- The transistor audit accounts for 9 files and 24 direct value drivers: 17
+  `nmos` and 7 `pmos`. The corpus no longer contains an `rnmos` call; it left
+  with `dlatch_ee_irq`, so `rnmos` support is now covered only by focused tests.
+- Hierarchy flattening covers `half_add` and `full_add`. Generate selection
+  covers the single remaining generate cell, `tffnl`, and both modes produce an
+  identical cell for it.
+
+### Timing graph and decomposition
+
+- Timing-aware lowering retains all 237 source-owned specify paths, 432 scalar
+  controls, and 181 target groups (137 single-path, 44 multiple-path) with full
+  tuples and source provenance in both modes. Hierarchy expansion produces 244
+  constraints, 446 controls, and 188 target groups.
+- The typed functional graph holds 4,264 nodes, 2,573 signals, 1,691
+  assignments, and 6,217 dependencies (4,526 operand, 1,545 drive, 132
+  resolved-net-boundary, 14 state-boundary). Combinational cycles, unreachable
+  controls, additive-rebuild mismatches, nondeterministic reports, ordinary
+  compatibility breaks, and absolute-path leaks are all zero.
+- Decomposed lowering is opt-in behind `--decompose-timing` on `convert` and
+  `convert-file`. It is not reachable from `check`, and it is not the default.
+  `convert-file` accepted the flag without acting on it until it was wired to
+  `lower_file_with_sibling_catalog_and_decomposed_timing`; a CLI regression test
+  now pins its output to the reviewed `ao21` decomposition golden.
+- Decomposition succeeds for 180 of 190 files in both modes, producing 1,684
+  assignments, 6 registers, 212 reconstructed constraints, 816 components, and
+  40 `dN` identity assignments. Ten files fail identically in both modes:
+  - Incompatible placement, where one site is required to carry different values
+    for two constraints: `dmg_cpu_b/cells/buf_if0.sv`,
+    `dmg_cpu_b/cells/not_if0.sv`, `dmg_cpu_b/cells/not_if1.sv`.
+  - Transition-ambiguous placement, where an edge's rise/fall sense admits no
+    single tuple rewrite: `dmg_cpu_b/cells/dlatch.sv`,
+    `dmg_cpu_b/cells/drlatch_ee.sv`, `dmg_cpu_b/cells/nand_latch.sv`,
+    `dmg_cpu_b/cells/nor_latch.sv`, `dmg_cpu_b/cells/tffnl.sv`,
+    `sm83/cells/mux_idu_h.sv`, `sm83/cells/mux_idu_l.sv`.
+  The sharded audit records all ten as `failure unclassified`; no failure class
+  has been diagnosed or fixed yet.
+- The `dmg_dffsr` physical-topology overlay, the `topology-hints/` directory,
+  the three topology modules, and the direct `serde`/`toml` dependencies are all
+  gone. `petgraph` and `proptest` remain.
+
+### Checked output
+
+- The checked `sexpr-cells` tree was written with `--decompose-timing` while the
+  transactional guard was disabled, so it is a mix of two lowering policies: 180
+  cells carry decomposed per-assignment delays, and the 10 decomposition-failing
+  cells retain the first-specify-path approximation. No single command
+  reproduces the tree as checked in. A default conversion into a clean directory
+  differs from it in 27 files, and now that the guard is restored a decomposed
+  corpus conversion writes nothing until the 10 failures are fixed.
+- All 190 mirrored cells are valid generic S-expressions and canonical under
+  `sexpr-fmt --check`. `sexpr-cells/manual/dlatch_ee_irq.cell` is not.
+- 157 of the 190 mirrored cells emit a non-empty `(parameters ...)` section and
+  33 emit an empty one. This section is not described in `CONTRACT.md` and has
+  no reviewed fixture of its own.
+
+### CLI
+
+`lex`, `parse`, `analyze`, `lower`, transactional corpus `convert`,
+`convert-file`, `survey`, and staged `check` are available. Configured analysis,
+catalog-aware lowering, conversion, and analyze/lower checks accept `--nodelay`;
+delayful selection is the default. `convert` and `convert-file` additionally
+accept `--decompose-timing`. Corpus conversion supports documented strict,
+dry-run, overwrite, and normalized relative-path filter policies, validates the
+complete catalog before selected lowering, and reports deterministic processed,
+selected, skipped, warned, intentional-ignore, written, would-write, and failed
+totals. Its refusal to emit partial output is currently disabled; see the build
+and test state above.
 
 ## Milestone Status
 
 - Milestone 0: complete. `CONTRACT.md` freezes value, driver, state, strength,
   hierarchy, keeper, transistor, timing, and diagnostic behavior. Typed IR
   operators and structural validation enforce the expression boundary, and the
-  CLI applies the shared strict diagnostic policy.
-- Milestone 1: complete. Full-corpus lexing reports `processed=206 failed=0`;
+  CLI applies the shared strict diagnostic policy. The later `(parameters ...)`
+  output section is not covered by this freeze.
+- Milestone 1: complete. Full-corpus lexing reports `processed=190 failed=0`;
   deterministic snapshots cover the required syntax families and the typed
   survey inventory attributes every observed capability to sorted source files.
-- Milestone 2: complete. Full-corpus parsing reports `processed=206 failed=0`;
-  typed AST goldens cover all eight required families, an exhaustive visitor
-  accounts for every AST variant and source item, and exact diagnostics cover
-  malformed and truncated constructs at logical source locations.
+- Milestone 2: complete. Full-corpus parsing reports `processed=190 failed=0`;
+  typed AST goldens cover the required families, an exhaustive visitor accounts
+  for every AST variant and source item, and exact diagnostics cover malformed
+  and truncated constructs at logical source locations.
 - Milestone 3: complete. Typed symbol, signal-role, source-ordered driver,
   timing, generate-alternative, and hierarchy analyses are covered by reviewed
-  fixtures. The reference inputs, outputs, and registers match the contract;
-  continuous and primitive nets remain non-state; full-adder connections
-  resolve against child port directions; and analyze checks distinguish
-  supported, deferred, warned, and failed files.
-- Milestone 4: complete. Reviewed goldens cover the required combinational
-  operator families and compound equality/mux expressions; deterministic
-  dependency-first `t0`, `t1`, ... assignments keep every value operation flat.
-  The configured full-corpus audit proves all 206 files are structurally valid
-  and freezes exact operator, assignment, delay, and diagnostic totals.
+  fixtures. Continuous and primitive nets remain non-state, full-adder
+  connections resolve against child port directions, and analyze checks
+  distinguish supported, deferred, warned, and failed files.
+- Milestone 4: complete. Reviewed goldens cover the combinational operator
+  families and compound equality/mux expressions; deterministic dependency-first
+  `t0`, `t1`, ... assignments keep every value operation flat. The configured
+  full-corpus audit proves all 190 files are structurally valid and freezes
+  exact operator, assignment, delay, and diagnostic totals.
 - Milestone 5: complete. Reviewed stateful goldens cover simple, set/reset,
   blocking/nonblocking, nested-priority, and block-body latches. The configured
-  recursive audit finds 27 stateful files with 48 exact modeled registers and
-  48 flat retained equations, including the `dlatch_ee_irq` transistor/keeper
-  topology.
+  recursive audit finds 11 stateful files with 14 exact modeled registers and 14
+  flat retained equations.
 - Milestone 6: complete. Reviewed fixtures cover signal- and literal-valued
   tri-state polarity, open drain, precharge, bidirectional pull-up pads, supply
-  ties, direct primitives, and repeated buses. Exact strength metadata uses
-  only the four contracted ordered pairs. The scope-aware audit accounts for
-  67 relevant files and proves all 67 preserve flat driver dependencies and
-  source order while keeping genuine repeated targets separate without
-  combining mutually exclusive generate alternatives. The audit also accounts
-  for all six keeper drivers, all of which are emitted distinctly.
+  ties, direct primitives, and repeated buses. Exact strength metadata uses only
+  the four contracted ordered pairs. The scope-aware audit accounts for 63
+  relevant files and proves all 63 preserve flat driver dependencies and source
+  order while keeping genuine repeated targets separate.
 - Milestone 7: complete. Timing aliases resolve deterministically without
   dropping resistance sums, real factors, or outer multipliers. Its historical
-  selected-first tuple policy was superseded by Milestone 14, which preserves
-  every selected tuple component. Source-level writes without an explicit delay
-  still use the first source-ordered specify path for their scalar target, with
-  one strict-mode intentional ignore for each used target having additional
-  control-dependent paths. Reviewed timing goldens include
-  explicit precedence, procedural state, ambiguity diagnostics, and the exact
-  reference `q_n`, `q`, and `d` assignments. The configured corpus audit
-  accounts for all 206 files, 266 structural specify paths, 790 selected source
-  targets, 421 preserved outer resistance multiplications, 49 additional-path
-  intentional ignores, zero warnings, and zero M7 deferrals.
+  selected-first tuple policy was superseded by Milestone 14. Source-level
+  writes without an explicit delay still use the first source-ordered specify
+  path for their scalar target, with one strict-mode intentional ignore per used
+  target that has additional control-dependent paths; Milestone 17 step 5 is
+  meant to remove that fallback and has not started.
 - Milestone 8: complete. `GenerateMode::Delayful` is the default and
   `GenerateMode::Nodelay` is explicitly selectable through the configured APIs
-  and CLI. Exact fixtures and a dual-mode 206-file audit prove that `dffr`,
-  `dffr_cc`, `dffr_cc_q`, `dffsr`, and `tffnl` each select one branch with no
-  unselected declarations, state, drivers, timing aliases, diagnostics, or
-  requirements. Both modes lower all 206 files with zero failures.
-- Milestone 9: complete. Catalog-owned typed module definitions and the
-  hierarchy transformer recursively substitutes named, positional, omitted,
-  and default parameter bindings plus named/positional port connections,
-  qualifies child-local names and timing aliases, preserves instance/child
-  driver order, and rejects collisions, unknown modules, and recursion.
-  Reviewed `half_add`/`full_add` fixtures cover all seven actual instances, and
-  the exact dual-mode corpus audit reports 206 successes with no configured M9
-  requirement or hierarchy-only failure.
+  and CLI. After the DFF retirement, `tffnl` is the only remaining generate cell;
+  it selects exactly one branch with no unselected declarations, state, drivers,
+  timing aliases, diagnostics, or requirements, and both modes lower all 190
+  files with zero failures.
+- Milestone 9: complete. The hierarchy transformer recursively substitutes
+  named, positional, omitted, and default parameter bindings plus named and
+  positional port connections, qualifies child-local names and timing aliases,
+  preserves instance and child driver order, and rejects collisions, unknown
+  modules, and recursion. Reviewed `half_add`/`full_add` fixtures cover all
+  seven actual instances.
 - Milestone 10: complete. Validated special keeper instances carry typed target
   connections, a distinct `KeeperDriven` signal role, and a source-ordered
-  keeper driver. Lowering emits exactly `(target (keeper) (delay 0))`, bypasses specify
-  delays, preserves independent neighboring drivers, and never adds the target
-  to registers. Reviewed fixtures cover the five required cells; the exact
-  audit accounts for all six source keepers as distinct emitted drivers.
-- Milestone 11: complete. Direct `nmos`, `pmos`, and `rnmos` value operators
-  preserve primitive identity, source/gate topology and polarity, source order,
-  repeated drivers, and complete selected timing tuples. Compound operands flatten
-  dependency-first into atom-only roots; `rnmos` is never weakened and no
-  transistor is normalized to `bufif*`. Reviewed fixtures cover `dlatch_ee_irq`,
-  `idu_bit0`, `idu_bit123456`, and the IRQ forms. The exact dual-mode audit
-  matches all 25 source calls to 25 emitted roots across the required 10 files,
-  proves no transistor target becomes state merely due to its driver, and
-  reports 206 successful lowerings with no M11 requirement or diagnostic.
-- Milestone 12: complete. The typed conversion API and `convert` CLI perform a
-  complete-catalog, globally preflighted, deterministic conversion with strict,
-  dry-run, overwrite, filter, and dual-generate-mode policies. The serializer
-  shares `sexpr-fmt`'s canonical implementation. Release tests and CI prove the
-  exact 206-path mirror, canonical/idempotent formatting, flat structural IR,
-  byte-identical repeated overwrite conversion, precise unsupported-input
-  diagnostics with no preflight partial writes, and exact reference equality.
-  The authoritative `sexpr-cells` tree contains all 206 generated cells; strict
-  delayful and nodelay corpus gates have zero warnings and zero failures.
+  keeper driver. Lowering emits exactly `(target (keeper) (delay 0))`, bypasses
+  specify delays, preserves independent neighboring drivers, and never adds the
+  target to registers. The exact audit accounts for all 5 remaining source
+  keepers as distinct emitted drivers.
+- Milestone 11: complete for `nmos` and `pmos`, with a coverage caveat. The
+  exact dual-mode audit matches all 24 source calls to 24 emitted roots across
+  9 files and proves no transistor target becomes state merely due to its
+  driver. `rnmos` left the corpus with `dlatch_ee_irq` and is now covered only
+  by focused tests, not by a corpus witness.
+- Milestone 12: complete, with one carry-over. The typed conversion API and
+  `convert` CLI perform a complete-catalog, globally preflighted, deterministic
+  conversion with strict, dry-run, overwrite, filter, and dual-generate-mode
+  policies, the serializer shares `sexpr-fmt`'s canonical implementation, and
+  the no-partial-output guard in `execute_prepared` is back in force with its
+  transactional tests passing. The carry-over is that the checked tree no longer
+  reproduces from a single lowering path; Milestone 17 step 5 resolves that.
 - Milestone 13: complete. Typed `LogicValue` and `Register` IR entries preserve
   selected scalar literal initialization as uniform `(name value)` register
   metadata, default uninitialized modeled state to `x`, survive configured
   generate selection and hierarchy qualification, and reject duplicate selected
   initializers at the second target. Focused tests cover all contracted values;
-  the exact corpus audit proves 42 zero-initialized and 6 unknown-initialized
-  registers, unchanged assignment totals, no initializer diagnostics, canonical
-  regenerated outputs, and the then-current strict ignore totals of
-  1,309/1,299, subsequently reduced by Milestone 14.
+  the corpus now holds 8 zero-initialized and 6 unknown-initialized registers.
 - Milestone 14: complete. Validated `TimingExpr` and exact-arity `DelayTuple`
   types preserve every component of selected explicit, primitive, specify, and
   hierarchy-substituted delays. Serialization emits only `(delay value)`,
   `(delay rise fall)`, or `(delay rise fall turn-off)` on ordinary assignments;
-  missing and generated timing uses canonical `(delay 0)`. The full audit
-  freezes 1,958 emitted tuples with arities 1,223/276/459 and proves zero
-  mismatches across all first-component compatibility projections. Repeated
-  strict conversion is byte-identical and all 206 checked cells remain
-  formatter-canonical. The only remaining diagnostics are 49 intentional
-  ignores for additional specify paths in either generate mode.
-- Milestone 15: complete. Internal timing-aware lowering preserves every
-  specify path and scalar control with full tuple and source provenance, relates
-  them to a deterministic typed functional graph, and separately cuts modeled
-  state and multiply-driven resolved-net boundaries for DAG analysis. Exact
-  additive timing terms, reachability, dominance, shared-prefix/shared-suffix,
-  reconvergence, path-sense, and public-output-split reports are covered by
-  focused fixtures and a dual-mode 206-file audit. Reversed catalog/traversal
-  order is identical, all retained paths reconstruct exactly, and ordinary
-  Milestone 14 output and diagnostics remain byte-identical.
-- Milestone 16: complete. Exact ordered timing terms are factored across
-  existing assignments, typed `dN` edge identities, and raw/public output
-  splits by deterministic exact-cover search. Application is verified from the
-  actual rebuilt graph and is exactly erasable. `serde`/`toml`-validated
-  physical-topology hints cover functional RTL that hides timing regions; the
-  reviewed `dmg_dffsr` overlay preserves four-state fallback behavior,
-  independently reconstructs every rise/fall source constraint, and keeps
-  `q_n` off `q`'s public delay. Reviewed `ao21` and `dffsr` output fixtures are
-  canonical and deterministic, and no arc, timing table, negative delay,
-  subtraction, or selected-first fallback is emitted by decomposed lowering.
+  missing and generated timing uses canonical `(delay 0)`.
+- Milestone 15: complete. Internal timing-aware lowering preserves every specify
+  path and scalar control with full tuple and source provenance, relates them to
+  a deterministic typed functional graph, and separately cuts modeled state and
+  multiply-driven resolved-net boundaries for DAG analysis. All retained paths
+  reconstruct exactly and no timing arc or table is serialized.
+- Milestone 16: complete, with its topology extension removed by Milestone 17.
+  Exact ordered timing terms are factored across existing assignments, typed
+  `dN` edge identities, and raw/public output splits by deterministic
+  exact-cover search. Application is verified from the actual rebuilt graph and
+  is exactly erasable. The `serde`/`toml` physical-topology hints and the
+  `dmg_dffsr` overlay they served are gone with the DFF corpus. The reviewed
+  `ao21` output fixture remains canonical and deterministic, and no arc, timing
+  table, negative delay, subtraction, or selected-first fallback is emitted by
+  decomposed lowering.
+- Milestone 17: in progress. Steps 1 through 3 are done: the DFF family and the
+  topology machinery are retired, the fixtures are rebased on the 190-file
+  corpus, and the bounded sharded decomposition audit covers each file once per
+  mode. Steps 4 and 5 have not started: ten cells still fail decomposition, all
+  recorded as `failure unclassified`, and decomposition is still opt-in behind
+  `--decompose-timing` while the default path keeps its 44 first-path
+  intentional ignores. See [PLAN.md](PLAN.md) for the outstanding work.
 
 ## Review Policy
 

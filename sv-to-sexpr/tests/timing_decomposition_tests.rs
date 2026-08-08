@@ -128,6 +128,47 @@ fn assignments(model: &LoweredDecomposedTimingModel) -> Vec<&sv_to_sexpr::ir::As
         .collect()
 }
 
+#[test]
+fn cli_convert_file_honors_decompose_timing_and_matches_the_reviewed_golden() {
+    let source = repository_root().join("sv-cells/dmg_cpu_b/cells/ao21.sv");
+    let decomposed = convert_file_dry_run(&source, &["--decompose-timing"]);
+    let ordinary = convert_file_dry_run(&source, &[]);
+
+    // Read the golden directly; the update-capable helper would let
+    // `UPDATE_FIXTURES` overwrite it with non-decomposed output.
+    let golden = PathBuf::from(env!("CARGO_MANIFEST_DIR"))
+        .join("tests/fixtures/timing_decomposition/ao21.delayful.cell");
+    let expected = fs::read_to_string(&golden)
+        .unwrap_or_else(|error| panic!("failed to read {}: {error}", golden.display()));
+    assert_eq!(
+        decomposed, expected,
+        "convert-file --decompose-timing must match the reviewed decomposition golden"
+    );
+    assert_ne!(
+        decomposed, ordinary,
+        "--decompose-timing must change convert-file output for ao21"
+    );
+}
+
+fn convert_file_dry_run(source: &Path, extra: &[&str]) -> String {
+    let unused_output = std::env::temp_dir().join("sv-to-sexpr-convert-file-dry-run.cell");
+    let output = std::process::Command::new(env!("CARGO_BIN_EXE_sv-to-sexpr"))
+        .current_dir(repository_root())
+        .arg("convert-file")
+        .arg(source)
+        .arg(&unused_output)
+        .arg("--dry-run")
+        .args(extra)
+        .output()
+        .expect("failed to run the converter binary");
+    assert!(
+        output.status.success(),
+        "convert-file {extra:?} failed: {}",
+        String::from_utf8_lossy(&output.stderr)
+    );
+    String::from_utf8(output.stdout).expect("convert-file must emit UTF-8")
+}
+
 fn parse_repository_source(logical_path: &str) -> sv_to_sexpr::ast::Design {
     let path = repository_root().join(logical_path);
     let input = fs::read_to_string(&path).unwrap();

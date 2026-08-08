@@ -338,9 +338,9 @@ fn execute_prepared(
     report: &mut ConvertReport,
     prepared: Vec<PreparedOutput>,
 ) {
-    // if !report.succeeded() {
-    //     return;
-    // }
+    if !report.succeeded() {
+        return;
+    }
     if options.dry_run {
         report.would_write = prepared.len();
         for output in prepared {

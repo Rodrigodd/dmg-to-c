@@ -6,6 +6,8 @@
 
   (registers)
 
+  (parameters)
+
   (assignments
 
     (y (or a b) (delay T_first T_first_fall))

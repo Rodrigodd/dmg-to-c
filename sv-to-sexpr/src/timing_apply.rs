@@ -1638,6 +1638,7 @@ mod tests {
                 inputs: inputs.iter().map(|value| (*value).to_string()).collect(),
                 outputs: outputs.iter().map(|value| (*value).to_string()).collect(),
                 registers,
+                parameters: Vec::new(),
                 items: assignments.into_iter().map(CellItem::Assignment).collect(),
             },
             timing_aliases: BTreeMap::new(),

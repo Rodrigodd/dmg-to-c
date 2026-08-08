@@ -20,6 +20,24 @@ LoweredModule {
                 initial: Zero,
             },
         ],
+        parameters: [
+            Parameter {
+                name: "L_q",
+                value: 54.0,
+            },
+            Parameter {
+                name: "L_q_n",
+                value: 54.0,
+            },
+            Parameter {
+                name: "L_tclk_out",
+                value: 190.0,
+            },
+            Parameter {
+                name: "L_tclk_n_out",
+                value: 200.0,
+            },
+        ],
         items: [
             Assignment(
                 Assignment {

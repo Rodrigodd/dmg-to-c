@@ -24,6 +24,36 @@ Cell {
         "buf_ena",
     ],
     registers: [],
+    parameters: [
+        Parameter {
+            name: "L_aoi_buf_y",
+            value: 7.0,
+        },
+        Parameter {
+            name: "L_aoi_y_n",
+            value: 40.0,
+        },
+        Parameter {
+            name: "L_zero_y",
+            value: 59.0,
+        },
+        Parameter {
+            name: "L_or_y",
+            value: 51.0,
+        },
+        Parameter {
+            name: "L_buf_a_y",
+            value: 30.0,
+        },
+        Parameter {
+            name: "L_buf_b_y",
+            value: 30.0,
+        },
+        Parameter {
+            name: "L_buf_ena",
+            value: 90.0,
+        },
+    ],
     items: [
         Assignment(
             Assignment {

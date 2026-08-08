@@ -12,3 +12,11 @@ proptest = "1"
 
 [profile.bench]
 debug = true
+
+# The exact-cover search in the decomposition audit runs about twenty times
+# slower unoptimized, which alone exceeds the `.config/nextest.toml` timeout.
+[profile.dev]
+opt-level = 2
+
+[profile.test]
+opt-level = 2

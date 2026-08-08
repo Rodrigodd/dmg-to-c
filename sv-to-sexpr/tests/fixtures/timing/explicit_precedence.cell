@@ -6,6 +6,8 @@
 
   (registers)
 
+  (parameters)
+
   (assignments
 
     (y a (delay T_explicit T_explicit_fall))

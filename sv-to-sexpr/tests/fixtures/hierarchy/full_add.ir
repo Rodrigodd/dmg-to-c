@@ -11,6 +11,16 @@ Cell {
         "cout",
     ],
     registers: [],
+    parameters: [
+        Parameter {
+            name: "L_sum",
+            value: 54.0,
+        },
+        Parameter {
+            name: "L_cout",
+            value: 54.0,
+        },
+    ],
     items: [
         Assignment(
             Assignment {

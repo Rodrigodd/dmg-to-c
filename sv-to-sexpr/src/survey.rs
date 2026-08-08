@@ -9,7 +9,10 @@ use crate::inventory::{
 };
 use crate::ir::LoweredModule;
 use crate::lexer::{Keyword, Operator, Punct, TokenKind, lex_file};
-use crate::lower::{lower_design_with_catalog_and_generate_mode, lower_file_structural};
+use crate::lower::{
+    lower_design_with_catalog_and_generate_mode,
+    lower_design_with_decomposed_timing_and_catalog_and_generate_mode, lower_file_structural,
+};
 use crate::parser::parse_file;
 use std::collections::{BTreeMap, BTreeSet};
 use std::fs;
@@ -352,6 +355,21 @@ pub fn lower_file_with_sibling_catalog_and_generate_mode(
         &target.catalog,
         mode,
     )
+}
+
+/// Opt-in decomposed-timing counterpart of
+/// [`lower_file_with_sibling_catalog_and_generate_mode`].
+pub fn lower_file_with_sibling_catalog_and_decomposed_timing(
+    path: &Path,
+    mode: GenerateMode,
+) -> Result<LoweredModule, Diagnostic> {
+    let target = load_sibling_catalog_target(path)?;
+    lower_design_with_decomposed_timing_and_catalog_and_generate_mode(
+        &target.designs[target.target_index],
+        &target.catalog,
+        mode,
+    )
+    .map(|lowered| lowered.into_lowered())
 }
 
 struct SiblingCatalogTarget {

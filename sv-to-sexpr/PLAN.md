@@ -11,7 +11,10 @@ Primary paths:
 - Output cells: `sexpr-cells/**/*.cell`
 - Current curated corpus: 190 files. The 15 former `dff*.sv` cells are
   intentionally out of scope as of Milestone 17 and will be translated
-  manually in separate work.
+  manually in separate work. `sm83/cells/dlatch_ee_irq.sv` was additionally
+  retired from the converter corpus because it does not decompose; its
+  hand-written translation lives in `sexpr-cells/manual/dlatch_ee_irq.cell`
+  and is not produced, checked, or formatted by the converter.
 
 The converter is complete only when its output preserves the modeled logic,
 state, drivers, and timing according to reviewed fixtures. Parsing a file or
@@ -21,7 +24,7 @@ serializing a syntactically valid S-expression is not sufficient by itself.
 
 ### In Scope
 
-- The SystemVerilog constructs that occur in the retained 191-file curated
+- The SystemVerilog constructs that occur in the retained 190-file curated
   corpus.
 - Scalar combinational and stateful logic.
 - Continuous, procedural, primitive, and selected hierarchical drivers.
@@ -59,12 +62,17 @@ Each converted file contains one cell form:
   (inputs ...)
   (outputs ...)
   (registers (register initial-value) ...)
+  (parameters (parameter value) ...)
   (assignments
     (target expression (delay timing-expression ...))
     ...
   )
 )
 ```
+
+The `(parameters ...)` section is currently emitted by the serializer but is
+not yet part of the frozen contract in [CONTRACT.md](CONTRACT.md); see
+[Future Work](#future-work).
 
 The following rules are part of the contract and must be tested:
 
@@ -995,8 +1003,36 @@ Acceptance conditions:
 Status: in progress after the completed Milestone 16. Retire the 15 DFF-family
 cells that will be translated manually, remove their one-off physical-topology
 machinery, close every former multiple-specify-path approximation in the
-retained 191-cell corpus, and make exact per-assignment timing a bounded release
-gate.
+retained corpus, and make exact per-assignment timing a bounded release gate.
+
+Step progress as audited on 2026-08-08:
+
+- Step 1 (retire DFF corpus and topology machinery): complete. Additionally,
+  `sm83/cells/dlatch_ee_irq.sv` was retired for the same reason, leaving 190
+  curated sources.
+- Step 2 (rebase tests and fixtures): complete. The planned repository reference
+  pair was dropped instead of being switched to `dlatch_ee_irq`, so the plan no
+  longer names a reference pair.
+- Step 3 (bounded sharded decomposition audit): complete. The sharded suite
+  covers each of the 190 files once per mode and records the current outcome
+  per case, within the configured 45-second limit.
+- Step 4 (classify and fix retained decomposition failures): not started. Ten
+  files still fail decomposition in both modes and are recorded in the shard
+  goldens as `failure unclassified`.
+- Step 5 (make decomposition the ordinary lowering path): not started.
+  Decomposition is opt-in behind `--decompose-timing`; the legacy
+  first-source-ordered specify-path selection and its 44 intentional ignores
+  remain the default. The checked `sexpr-cells` tree is a mix: it was written
+  with `--decompose-timing`, so the 180 decomposable cells carry decomposed
+  delays while the 10 failing cells retain the first-path approximation.
+
+The retained decomposition failures fall into two error classes:
+
+- Incompatible placement (one site required to carry different values for two
+  constraints): `buf_if0`, `not_if0`, `not_if1`.
+- Transition-ambiguous placement (an edge whose rise/fall sense cannot be
+  assigned a single tuple rewrite): `dlatch`, `drlatch_ee`, `nand_latch`,
+  `nor_latch`, `tffnl`, `mux_idu_h`, `mux_idu_l`.
 
 Implementation plan:
 
@@ -1030,14 +1066,14 @@ Implementation plan:
    driver, and timing cells where the tested construct still exists. Remove
    DFF-only fixtures under `tests/fixtures/{analysis,ast,generate,stateful,
    timing_decomposition,timing_graph}` and regenerate all aggregate corpus
-   snapshots for exactly 191 sorted paths. Switch the repository reference
-   fixture to `sm83/cells/dlatch_ee_irq`. Do not keep a copied DFF as a hidden
-   corpus fixture merely to preserve a historical golden; focused inline unit
-   syntax may remain only when it tests a generic parser or analyzer invariant.
+   snapshots for exactly 190 sorted paths. The repository no longer designates
+   a single reference pair. Do not keep a copied DFF as a hidden corpus fixture
+   merely to preserve a historical golden; focused inline unit syntax may
+   remain only when it tests a generic parser or analyzer invariant.
 
 3. Replace the monolithic timing-closure audit with bounded independent test
    cases in `tests/timing_decomposition_corpus_tests.rs`. Partition the sorted
-   191-file corpus deterministically into fixed shards for both delayful and
+   190-file corpus deterministically into fixed shards for both delayful and
    nodelay modes. Each retained file is lowered twice, compared byte-for-byte,
    checked for canonical assignment-only output, and independently verified
    against every retained full-tuple timing constraint. A cheap inventory test
@@ -1058,38 +1094,100 @@ Implementation plan:
    solving, negative coefficients, arbitrary subtraction, name heuristics, and
    first-path selection remain prohibited.
 
+   The audit is in place and the ten current failures are listed above, but no
+   failure class has been classified or fixed yet. Every shard golden still
+   records them as `failure unclassified`. Retiring a failing cell to
+   `sexpr-cells/manual/` is a scope decision, not a classification, and each
+   such retirement must be recorded in this plan.
+
 5. Make exact decomposition the ordinary lowering path used by CLI checks,
    `convert-file`, and corpus conversion; remove the legacy first-path warning
-   and intentional-ignore path. Regenerate all 191 checked `sexpr-cells`
-   outputs, manually compare every changed timing placement with its retained
-   SystemVerilog source and the independent reconstruction evidence, then run
-   the complete release gate and update `CONTRACT.md`, `STATUS.md`, and this
-   plan.
+   and intentional-ignore path and the now-redundant `--decompose-timing`
+   opt-in. Regenerate
+   all 190 checked `sexpr-cells` outputs, manually compare every changed timing
+   placement with its retained SystemVerilog source and the independent
+   reconstruction evidence, then run the complete release gate and update
+   `CONTRACT.md`, `STATUS.md`, and this plan.
 
 Acceptance conditions:
 
 - Exactly 15 `sv-cells/**/dff*.sv` files and their 15 generated
   `sexpr-cells/**/dff*.cell` outputs are removed; no in-scope converter test or
-  fixture retains a dead reference to them. Exactly 191 source/output pairs
+  fixture retains a dead reference to them. Exactly 190 source/output pairs
   remain, while TFF and latch cells remain covered. The external `dmg-sim`
-  submodule remains clean and pinned to its existing revision.
+  submodule remains clean and pinned to its existing revision. Files retired
+  beyond the DFF family are named in this plan with their reason.
 - The physical-topology hint files, public variants, provenance roles, tests,
   direct `serde`/`toml` dependencies, and TOML lock packages are absent, and
   the decomposed lowering API has one generic exact-cover strategy.
 - Every former additional-path intentional ignore belonging to a retained cell
-  is gone in delayful and nodelay modes; all 191 files lower in both modes with
-  zero warnings, zero intentional ignores, and zero failures. Removed DFF cases
-  are reported as explicit scope removals, never counted as successful lowers.
+  is gone in delayful and nodelay modes; all 190 files lower in both modes with
+  zero warnings, zero intentional ignores, and zero failures. Removed cases are
+  reported as explicit scope removals, never counted as successful lowers.
 - Every emitted delay placement passes independent full-tuple path
   reconstruction against all retained source constraints.
 - All output remains assignment-only, formatter-canonical, idempotent, and
-  byte-identical across repeated strict conversion.
-- `cargo nextest run --manifest-path sv-to-sexpr/Cargo.toml` completes with no
+  byte-identical across repeated strict conversion. A corpus conversion with
+  any failing cell writes nothing.
+- `cargo test --manifest-path sv-to-sexpr/Cargo.toml` compiles and passes, and
+  `cargo nextest run --manifest-path sv-to-sexpr/Cargo.toml` completes with no
   test exceeding the configured 45-second limit. Formatter tests, formatting,
-  clippy, staged corpus checks, and CI also pass; every changed golden is
-  manually compared with its retained SystemVerilog source and this contract.
+  clippy `--all-targets`, staged corpus checks, and CI also pass; every changed
+  golden is manually compared with its retained SystemVerilog source and this
+  contract.
 - `PLAN.md` and `STATUS.md` record completion only after all preceding checks
   and the DFF/topology retirement are reviewed.
+
+## Future Work
+
+Work that earlier milestones assumed, or that later changes introduced, and
+that is not implemented as of 2026-08-08. Each item is a prerequisite for
+accepting Milestone 17 unless it is explicitly marked otherwise.
+
+### Reinstate CI
+
+The repository has no CI workflow since it was removed in `9e6263b`. The release
+gate that Milestone 12 and Milestone 17 both cite has to run somewhere before
+either can be re-accepted. The gate is `cargo nextest run`, `cargo test`,
+`cargo fmt --check`, and `cargo clippy --all-targets` for both crates, plus the
+four staged corpus checks.
+
+### Contract the emitted `(parameters ...)` section
+
+Lowering records every module parameter as a `(name value)` pair with an `f64`
+value, and the serializer always emits a `(parameters ...)` section: 157 of the
+190 checked cells carry at least one entry and 33 carry an empty section. This
+form is not described in [CONTRACT.md](CONTRACT.md), has no reviewed fixture
+coverage of its own, and has no stated rule for value normalization, duplicate
+names, or hierarchy qualification. Freeze it in the contract, or remove it.
+
+### Close the retained timing decomposition failures
+
+This is Milestone 17 steps 4 and 5, restated as concrete outstanding work:
+
+- Classify and fix the incompatible-placement class (`buf_if0`, `not_if0`,
+  `not_if1`) and the transition-ambiguous-placement class (`dlatch`,
+  `drlatch_ee`, `nand_latch`, `nor_latch`, `tffnl`, `mux_idu_h`, `mux_idu_l`).
+- Replace the default first-source-ordered specify-path selection and its 44
+  intentional ignores with exact decomposition, and drop the
+  `--decompose-timing` opt-in.
+- Regenerate the checked tree from one lowering path. It is currently a mix of
+  180 decomposed cells and 10 cells that retain the first-path approximation,
+  so no single command reproduces it. With the transactional guard restored, a
+  decomposed corpus conversion writes nothing until the ten failures are fixed.
+
+### Decide the status of `sexpr-cells/manual/`
+
+`sexpr-cells/manual/dlatch_ee_irq.cell` is hand-written, is not produced by the
+converter, is not formatter-canonical, and carries no `(parameters ...)`
+section. Decide whether hand-written cells are part of the checked output
+contract at all, and if so which checks apply to them.
+
+### Remove stray working files
+
+`sv-to-sexpr/output.txt`, `sv-to-sexpr/profile.json`, `sv-to-sexpr/slow.txt`,
+and `sv-to-sexpr/snippets.rs` are checked-in artifacts of the decomposition
+performance work. They are not referenced by the build and are stale.
 
 ## Required Test Layout
 
@@ -1115,7 +1213,7 @@ sv-to-sexpr/tests/
 The original full-corpus release baseline was accepted at Milestone 13. The
 revised timing work is done only when Milestone 17 is accepted. In particular:
 
-- All 191 retained files produce deterministic, structurally valid, manually
+- All 190 retained files produce deterministic, structurally valid, manually
   reviewed fixture output for every supported construct family.
 - Register lists contain state only and preserve exact four-state initial
   metadata, using `x` when no selected initializer exists.

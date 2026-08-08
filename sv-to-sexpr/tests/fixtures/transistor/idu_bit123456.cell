@@ -25,6 +25,17 @@
 
   (registers)
 
+  (parameters
+    (L_buf_a_y 30)
+    (L_buf_b_y 30)
+    (L_chain_a_in 68)
+    (L_chain_a_y 59)
+    (L_chain_a_y_n 51)
+    (L_chain_b_in 93)
+    (L_chain_b_y 7)
+    (L_chain_b_y_n 40)
+  )
+
   (assignments
 
     (chain_a_in

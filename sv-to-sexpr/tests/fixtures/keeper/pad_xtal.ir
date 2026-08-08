@@ -10,6 +10,16 @@ Cell {
         "out_pad",
     ],
     registers: [],
+    parameters: [
+        Parameter {
+            name: "L_clk_n",
+            value: 200.0,
+        },
+        Parameter {
+            name: "L_out_pad",
+            value: 0.0,
+        },
+    ],
     items: [
         Assignment(
             Assignment {

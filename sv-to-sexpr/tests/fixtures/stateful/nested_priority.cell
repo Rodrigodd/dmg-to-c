@@ -11,6 +11,8 @@
 
   (registers (q 0))
 
+  (parameters)
+
   (assignments
 
     (t1 (not reset_n) (delay 0))

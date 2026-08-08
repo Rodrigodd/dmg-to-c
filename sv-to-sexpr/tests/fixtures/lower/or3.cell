@@ -6,6 +6,8 @@
 
   (registers)
 
+  (parameters (L_y 15))
+
   (assignments
 
     (y

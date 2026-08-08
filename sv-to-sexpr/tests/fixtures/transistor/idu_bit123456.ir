@@ -23,6 +23,40 @@ Cell {
         "chain_b_in",
     ],
     registers: [],
+    parameters: [
+        Parameter {
+            name: "L_buf_a_y",
+            value: 30.0,
+        },
+        Parameter {
+            name: "L_buf_b_y",
+            value: 30.0,
+        },
+        Parameter {
+            name: "L_chain_a_in",
+            value: 68.0,
+        },
+        Parameter {
+            name: "L_chain_a_y",
+            value: 59.0,
+        },
+        Parameter {
+            name: "L_chain_a_y_n",
+            value: 51.0,
+        },
+        Parameter {
+            name: "L_chain_b_in",
+            value: 93.0,
+        },
+        Parameter {
+            name: "L_chain_b_y",
+            value: 7.0,
+        },
+        Parameter {
+            name: "L_chain_b_y_n",
+            value: 40.0,
+        },
+    ],
     items: [
         Assignment(
             Assignment {

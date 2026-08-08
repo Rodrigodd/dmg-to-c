@@ -6,6 +6,8 @@
 
   (registers)
 
+  (parameters (L_clk_n 200) (L_out_pad 0))
+
   (assignments
 
     (ena_n (not ena) (delay (elmore (wire 130) (pmos 7)) (elmore (wire 130) (nmos 7))))
