@@ -6,11 +6,11 @@ This repository contains a curated library of scalar SystemVerilog cells and
 tools for converting and formatting the repository's SSA-like S-expression cell
 DSL.
 
-- `sv-cells/`: the 206-file curated SystemVerilog input corpus.
-- `sexpr-cells/`: checked-in `.cell` outputs and reference fixtures.
-- `sv-to-sexpr/`: the Rust converter. `PLAN.md` is its authoritative roadmap
-  and acceptance contract; `STATUS.md` records the verified implementation
-  baseline.
+- `sv-cells/`: the curated SystemVerilog input corpus.
+- `sexpr-cells/`: checked-in `.cell` outputs, one per curated source, plus
+  `manual/` for hand-written cells the converter cannot represent exactly.
+- `sv-to-sexpr/`: the Rust converter. `README.md` describes its behavior and
+  `CONTRACT.md` defines the cell format and diagnostics it must honor.
 - `sexpr-fmt/`: the Rust parser/formatter used to validate generated cell files.
 - `dmg-sim/`: simulation-related source and support files; it is separate from
   the converter implementation.
@@ -34,7 +34,7 @@ unsupported SystemVerilog; preserve source locations and return a diagnostic.
 - `sv-to-sexpr/src/survey.rs`: deterministic corpus inventory and staged checks.
 - `sv-to-sexpr/src/cli.rs`: command-line parsing and command dispatch.
 - `sv-to-sexpr/tests/`: corpus, fixture, timing, and CLI integration tests; keep
-  golden inputs and outputs below `tests/fixtures/` as described in `PLAN.md`.
+  golden inputs and outputs below `tests/fixtures/`.
 
 ## Coding conventions
 
@@ -51,17 +51,18 @@ unsupported SystemVerilog; preserve source locations and return a diagnostic.
 - Value expressions in the target IR are flat: an operator may contain only
   atoms. Split compound expressions into deterministic `t0`, `t1`, ...
   assignments in dependency order. Delay expressions may be nested.
-- Preserve every source driver in source order unless the DSL contract in
-  `PLAN.md` explicitly defines a normalization. Registers contain modeled state
-  only, never merely internal or primitive-driven nets.
-- Lower only the first entry of a SystemVerilog delay tuple. Do not sum later
-  rise/fall/turn-off entries.
+- Preserve every source driver in source order unless `CONTRACT.md` explicitly
+  defines a normalization. Registers contain modeled state only, never merely
+  internal or primitive-driven nets.
+- Preserve a SystemVerilog delay tuple's exact arity and every entry. Do not
+  fill, copy, sum, or discard rise/fall/turn-off entries.
 - Add focused unit tests near small units and use first-class integration/golden
   tests for corpus behavior. Manually compare changed golden cells with their
   SystemVerilog sources and the DSL contract.
-- Treat `PLAN.md` as authoritative. Update its milestone progress only after the
-  milestone's acceptance checks pass, and keep `STATUS.md` consistent with the
-  verified state.
+- Treat `CONTRACT.md` as authoritative for the emitted format and diagnostics.
+  Update it before emitting a construct it does not already describe.
+- Prefer regenerable golden fixtures over hard-coded corpus counts in tests;
+  exact totals in assertions churn on every corpus change.
 
 ## Common commands
 
@@ -95,5 +96,4 @@ cargo run --manifest-path sexpr-fmt/Cargo.toml -- --check path/to/file.cell
 
 Before committing converter changes, at minimum run its full tests, formatting
 check, and `cargo clippy --manifest-path sv-to-sexpr/Cargo.toml --all-targets`.
-Also run the strongest applicable staged corpus and formatter checks required by
-the current milestone in `PLAN.md`.
+Also run the staged corpus checks and the formatter's own tests.

@@ -1,7 +1,7 @@
 # Cell DSL and Diagnostic Contract
 
-This document freezes the representation decisions required by Milestone 0 of
-[PLAN.md](PLAN.md). `ir::ValueOperator` and `ir::TimingOperator` are the
+This document defines the cell format the converter emits and the diagnostics
+it may report. `ir::ValueOperator` and `ir::TimingOperator` are the
 machine-readable authorities for operator spellings and arities. A construct
 not described here is unsupported and must produce a source-spanned error.
 
@@ -15,6 +15,7 @@ Each input file produces exactly one form:
   (inputs input_port inout_port_if_read ...)
   (outputs output_port inout_port_if_driven ...)
   (registers (modeled_state initial_value) ...)
+  (parameters (name value) ...)
   (assignments
     (target value-expression (delay timing-expression ...))
     ...
@@ -36,6 +37,11 @@ output ports plus inouts that are driven. `registers` contains only modeled
 state, never a continuous, primitive, hierarchical, or keeper-driven net. Each
 register entry is a `(name initial-value)` pair whose value is exactly one of
 the four atoms `0`, `1`, `x`, or `z`.
+
+`parameters` records each module parameter as a `(name value)` pair in source
+order, with the value normalized to a numeric atom. The section is always
+emitted and is empty when the module declares no parameter. Parameter names are
+reserved and cannot collide with a generated temporary.
 
 ## Value operators
 
@@ -68,9 +74,8 @@ this avoids Boolean rewrites that could change four-state behavior.
 
 Arithmetic, ordering comparisons, and arbitrary function calls are not legal
 value operators. They must be evaluated during parameter elaboration or
-rejected. `keeper`, `nmos`, `pmos`, and `rnmos` are driver forms reserved for
-Milestones 10 and 11, not ordinary Boolean functions. The three strength forms
-are driver forms too. Their last two operands preserve the exact first and
+rejected. `keeper`, `nmos`, `pmos`, and `rnmos` are driver forms, not ordinary
+Boolean functions. The three strength forms are driver forms too. Their last two operands preserve the exact first and
 second strength tokens from the SystemVerilog source; lowering must not reorder
 them by strength kind or driven value. Strength names are atoms from the typed
 `Strength` node, not nested expressions.
@@ -133,8 +138,8 @@ corpus forms include:
 ```
 
 The complete corpus set is `(strong1, highz0)`, `(highz1, strong0)`,
-`(pull1, highz0)`, and `(supply1, supply0)`. Milestone 6 must support those four
-exact corpus pairs/forms and reject any unknown combination. The representation
+`(pull1, highz0)`, and `(supply1, supply0)`. Those four exact pairs/forms are
+supported; any unknown combination is rejected. The representation
 preserves strength metadata but the
 DSL does not define multi-driver strength resolution or analog drive behavior.
 If a cell requires such resolution for fidelity, conversion is blocked with an
@@ -227,21 +232,30 @@ assignment has no explicit delay, specify lookup uses only its scalar target
 symbol; generated value-SSA temporaries retain `(delay 0)`. A single matching
 specify path contributes its complete tuple.
 
-Milestone 14 temporarily preserves the original target-only specify lookup: if
-multiple control-dependent paths target the same symbol, the first path in
-source order supplies the assignment's complete delay tuple. Lowering emits one
-intentional-ignore diagnostic per used target at the second matching path,
-stating that the additional control-dependent path is deferred. Every path and
-every tuple component is still parsed, validated, and retained by analysis;
-tuple components themselves are not intentional ignores.
+Without decomposition, specify lookup is target-only: if multiple
+control-dependent paths target the same symbol, the first path in source order
+supplies the assignment's complete delay tuple, and lowering emits one
+intentional-ignore diagnostic per used target at the second matching path.
+Every path and every tuple component is still parsed, validated, and retained
+by analysis; tuple components themselves are not intentional ignores.
 
-Timing-aware library lowering retains all control-to-target paths as internal
-constraints and relates them to the flat functional IR without changing the
-ordinary Milestone 14 assignment placement. Signal and assignment nodes use
-durable IDs; dependency edges retain operand position and timing sense.
-Reachability, dominance/post-dominance, reconvergence, and public-output split
-classifications are deterministic verification oracles for later
+Timing-aware lowering retains all control-to-target paths as internal
+constraints and relates them to the flat functional IR. Signal and assignment
+nodes use durable IDs; dependency edges retain operand position and timing
+sense. Reachability, dominance/post-dominance, reconvergence, and
+public-output split classifications are deterministic verification oracles for
 assignment-delay decomposition.
+
+Decomposition distributes each retained constraint across the assignments on
+its path so the emitted delays reconstruct it exactly. It may add delay-only
+identity assignments named `d0`, `d1`, ... on individual dependency edges, and
+may split an output into an internal value plus a public identity assignment so
+a derived output does not inherit the output-local delay. Those names skip any
+index already reserved by the cell. A placement's orientation follows the
+modeled path's inversion parity, and a placement may carry more components than
+a constraint it serves; the extra components belong to controls that can drive
+transitions this one cannot. No negative delay, subtraction, or algebraic
+simplification is introduced.
 
 The graph cuts modeled-register update edges only as typed state boundaries.
 It separately recognizes source-declared resolved nets from `inout`, `wire`,
@@ -284,13 +298,12 @@ approximation.
 
 The only intentional ignores currently authorized are: additional
 control-dependent specify paths after the first source-ordered path selected for
-each used scalar target during Milestone 14; comments and formatting; and
-directives/imports proven by analysis to affect neither elaborated values nor
-behavior (the corpus license/timescale and package imports whose referenced
-parameters are resolved). Delay tuple entries, register initial values, and
-strengths are preserved metadata, not intentional ignores. Milestone 17 removes
-the temporary additional-path ignore. Unknown directives/import effects are
-errors.
+each used scalar target, which decomposition eliminates; comments and
+formatting; and directives/imports proven by analysis to affect neither
+elaborated values nor behavior (the corpus license/timescale and package
+imports whose referenced parameters are resolved). Delay tuple entries,
+register initial values, and strengths are preserved metadata, not intentional
+ignores. Unknown directives/import effects are errors.
 
 All diagnostic-capable commands accept `--strict`. Because current stage APIs
 return errors but do not yet produce warnings, accepting the option does not
@@ -300,61 +313,62 @@ warning-producing stages are implemented.
 ## Typed AST classification
 
 This table is exhaustive over the node and variant categories in `src/ast.rs`.
-“Parsed M2” means that the node is retained with a span; it does not claim
-later semantic or lowering support. Milestone 1 inventory must amend this
-contract before any newly discovered corpus category can be emitted.
+Stage names refer to the pipeline: *lex*, *parse*, *analyze*, *lower*, and
+*convert*. “Parsed” means the node is retained with a span; it does not claim
+later semantic or lowering support. A newly discovered corpus category must be
+added here before it can be emitted.
 
 | Typed category and variants | Contract classification |
 | --- | --- |
-| `Design`, `Module` | One scalar module per output cell; parsed M2, checked M3, serialized M12. Extra/absent modules are errors. |
-| `ParamDecl`; `ParamKind::{Parameter, Localparam, Specparam}` | Parsed M2; symbol/constant analysis M3; timing use M7. Unevaluated value-context arithmetic is an error. |
-| `PortDecl`; `Direction::{Input, Output, Inout}` | Parsed M2; read/write port classification M3. Non-scalar port modifiers are errors. |
-| `ItemKind::Import(ImportDecl)` | Parsed M2. A resolved behavior-free corpus package import is intentional-ignore; unresolved names or side effects are errors in M3. |
-| `ItemKind::Decl(Decl)`; `DeclKind::{Logic, Tri, Wire, Parameter, Localparam, Specparam}` | Parsed M2; symbol/role analysis M3; parameter and timing aliases M3/M7. Scalar forms are supported; vector/array modifiers are errors. |
-| `ItemKind::Initial(AssignStmt)` | A selected contracted scalar literal becomes the register's four-state initial metadata in M13 and emits no assignment. Duplicate selected initializers and other initial bodies are errors. |
-| `ItemKind::ProcAssign(AssignStmt)` | Blocking/nonblocking assignment in a supported procedural block is M5. At module scope or in an unsupported context it is an error. |
-| `ItemKind::AlwaysLatch(AlwaysLatch)` | Stateful condition/body analysis M3 and source-ordered next-state lowering M5. |
-| `ItemKind::Always(AlwaysBlock)`; `AlwaysKind::{Plain, Comb, Ff}` | Sensitivity/driver analysis M3; supported scalar procedural lowering M5. Ambiguous state or unsupported combinational procedures are errors. |
-| `Sensitivity::{Any, List}`; `EventControl` with optional edge/expression | Parsed M2; stateful event classification M3; supported procedural lowering M5. Unknown edge names or omitted required event expressions are errors. |
-| `ItemKind::Assign(AssignDecl)` | Continuous scalar driver analysis M3; flat SSA M4; repeated/tri-state drivers M6; symbolic timing M7; complete delay tuples M14. |
-| `ItemKind::Primitive(PrimitiveCall)` | `bufif0`/`bufif1` lower in M6; `nmos`/`pmos`/`rnmos` in M11. Unknown names, omitted required arguments, and wrong arity are errors. |
-| `ItemKind::Instantiation(Instantiation)` | Named/positional hierarchy and overrides flatten in M9; recognized `keeper` instances use M10. Unknown/recursive modules are errors. |
-| `ParamOverride::{Named, Positional}`; `Connection::{Named, Positional}` | Parsed M2, resolved and substituted M9. Omitted positional parameter entries remain explicit; invalid/unknown ports or parameters are errors. |
-| `Strength` | Exact pair metadata lowers with contracted strength driver forms in M6. Known pairs are `strong1/highz0`, `highz1/strong0`, `pull1/highz0`, and `supply1/supply0`; unknown combinations or resolution-dependent behavior are errors. |
-| `Delay` (`Vec<Option<Expr>>`) | M14 preserves every present entry as `DelayTuple::{One, Two, Three}`; absent delay becomes `(delay 0)`; any omitted component is an error under the current contract. |
-| `ItemKind::Specify(SpecifyBlock)`; `SpecifyItem::{Specparam, Path}`; `SpecPath` | Parsed M2, preserved/analyzed M3, alias/path timing lowered M7. Unsupported conditional/path structure is an error. |
-| `ItemKind::Generate(Block)` | Alternatives remain separate in M3; exactly one configured `nodelay` branch is selected in M8. Unresolved generate conditions are errors. |
-| `ItemKind::Block(Block)`, `ItemKind::If(IfStmt)` | Typed nesting M2; procedural priority M5 or generate selection M8 according to context. Unsupported `else`/context is an error, never dropped. |
+| `Design`, `Module` | One scalar module per output cell; parsed, checked in analysis, serialized in conversion. Extra/absent modules are errors. |
+| `ParamDecl`; `ParamKind::{Parameter, Localparam, Specparam}` | Parsed; symbol and constant resolution in analysis; timing use in lowering. Unevaluated value-context arithmetic is an error. |
+| `PortDecl`; `Direction::{Input, Output, Inout}` | Parsed; read/write port classification in analysis. Non-scalar port modifiers are errors. |
+| `ItemKind::Import(ImportDecl)` | Parsed. A resolved behavior-free corpus package import is intentional-ignore; unresolved names or side effects are errors in analysis. |
+| `ItemKind::Decl(Decl)`; `DeclKind::{Logic, Tri, Wire, Parameter, Localparam, Specparam}` | Parsed; symbol and role resolution in analysis; parameter and timing aliases in analysis and lowering. Scalar forms are supported; vector/array modifiers are errors. |
+| `ItemKind::Initial(AssignStmt)` | A selected contracted scalar literal becomes the register's four-state initial metadata in lowering and emits no assignment. Duplicate selected initializers and other initial bodies are errors. |
+| `ItemKind::ProcAssign(AssignStmt)` | Blocking/nonblocking assignment in a supported procedural block is lowered. At module scope or in an unsupported context it is an error. |
+| `ItemKind::AlwaysLatch(AlwaysLatch)` | Stateful condition/body in analysis and source-ordered next-state lowering. |
+| `ItemKind::Always(AlwaysBlock)`; `AlwaysKind::{Plain, Comb, Ff}` | Sensitivity and driver classification in analysis; supported scalar procedural lowering. Ambiguous state or unsupported combinational procedures are errors. |
+| `Sensitivity::{Any, List}`; `EventControl` with optional edge/expression | Parsed; stateful event classification in analysis; supported procedural lowering. Unknown edge names or omitted required event expressions are errors. |
+| `ItemKind::Assign(AssignDecl)` | Continuous scalar driver in analysis; flat SSA; repeated/tri-state drivers; symbolic timing; complete delay tuples in lowering. |
+| `ItemKind::Primitive(PrimitiveCall)` | `bufif0`/`bufif1` lower in; `nmos`/`pmos`/`rnmos` in lowering. Unknown names, omitted required arguments, and wrong arity are errors. |
+| `ItemKind::Instantiation(Instantiation)` | Named/positional hierarchy and overrides flatten in; recognized `keeper` instances use in lowering. Unknown/recursive modules are errors. |
+| `ParamOverride::{Named, Positional}`; `Connection::{Named, Positional}` | Parsed, resolved and substituted in lowering. Omitted positional parameter entries remain explicit; invalid/unknown ports or parameters are errors. |
+| `Strength` | Exact pair metadata lowers with contracted strength driver forms in lowering. Known pairs are `strong1/highz0`, `highz1/strong0`, `pull1/highz0`, and `supply1/supply0`; unknown combinations or resolution-dependent behavior are errors. |
+| `Delay` (`Vec<Option<Expr>>`) | lowering preserves every present entry as `DelayTuple::{One, Two, Three}`; absent delay becomes `(delay 0)`; any omitted component is an error under the current contract. |
+| `ItemKind::Specify(SpecifyBlock)`; `SpecifyItem::{Specparam, Path}`; `SpecPath` | Parsed, preserved/analyzed in analysis, alias/path timing lowered in lowering. Unsupported conditional/path structure is an error. |
+| `ItemKind::Generate(Block)` | Alternatives remain separate in analysis; exactly one configured `nodelay` branch is selected in lowering. Unresolved generate conditions are errors. |
+| `ItemKind::Block(Block)`, `ItemKind::If(IfStmt)` | Typed nesting in parsing; procedural priority in lowering or generate selection in lowering according to context. Unsupported `else`/context is an error, never dropped. |
 | `ItemKind::Empty` | Supported structural no-op from an explicit semicolon; no driver is emitted. |
-| `ExprKind::Path` | Scalar symbol/package path; resolution M3, atom emission in supported value/timing contexts M4-M7. Unknown paths are errors. |
-| `ExprKind::{Integer, Real}`, `ConstKind::{Zero, One, X, Z}` | Parsed M2. Four-state scalar atoms are preserved in legal contexts; real values are timing/parameter-only; ordinary `z` is legal only where high impedance is contracted. |
-| `ExprKind::Group` | Preserves source grouping in M2; lowers according to its contained expression without adding a DSL operator. |
-| `ExprKind::Unary`; `UnaryOp::{Not, BitNot, Plus, Minus}` | Boolean not/bit-not lower flat in M4. Unary plus/minus are M3 constant or M7 timing operations; runtime value use is an error. |
-| `ExprKind::Binary`; `BinaryOp::{BitAnd, BitOr, BitXor, BitNand, BitNor, BitXnor, LogicalAnd, LogicalOr}` | Flat four-state value operators M4; no unsafe Boolean rewriting. |
-| `BinaryOp::{Eq, CaseEq, Neq, CaseNeq}` | Four distinct contracted equality operators lower in M4. |
-| `BinaryOp::{Mul, Div, Add, Sub}` | Constant elaboration M3 or timing arithmetic M7 as applicable. Runtime arithmetic is an error. |
-| `BinaryOp::Greater` | Constant elaboration M3 or the contracted timing `gt` comparison used by the M7 timing clamp. Runtime ordering is an error. |
-| `BinaryOp::Less` | Constant elaboration M3 where applicable. Timing and runtime uses are uncontracted errors. |
-| `ExprKind::Ternary` | Flat value `mux` M4; high-Z normalization M6; nested timing `mux` for the corpus timing clamp in M7. |
-| `ExprKind::Call` | Only contracted timing calls (`tpd_elmore`, `tpd_z`, `R_pmos_ohm`, `R_nmos_ohm`) lower in M7. Arbitrary value/timing calls are errors. |
-| `AssignOp::{Blocking, NonBlocking}` | Retained M2 and used to preserve procedural scheduling/source priority M5; never silently conflated where behavior differs. |
+| `ExprKind::Path` | Scalar symbol/package path; resolution in analysis, atom emission in supported value/timing contexts in lowering-lowering. Unknown paths are errors. |
+| `ExprKind::{Integer, Real}`, `ConstKind::{Zero, One, X, Z}` | Parsed. Four-state scalar atoms are preserved in legal contexts; real values are timing/parameter-only; ordinary `z` is legal only where high impedance is contracted. |
+| `ExprKind::Group` | Preserves source grouping in parsing; lowers according to its contained expression without adding a DSL operator. |
+| `ExprKind::Unary`; `UnaryOp::{Not, BitNot, Plus, Minus}` | Boolean not/bit-not lower flat in lowering. Unary plus/minus are in analysis constant or lowering timing operations; runtime value use is an error. |
+| `ExprKind::Binary`; `BinaryOp::{BitAnd, BitOr, BitXor, BitNand, BitNor, BitXnor, LogicalAnd, LogicalOr}` | Flat four-state value operators; no unsafe Boolean rewriting. |
+| `BinaryOp::{Eq, CaseEq, Neq, CaseNeq}` | Four distinct contracted equality operators lower in lowering. |
+| `BinaryOp::{Mul, Div, Add, Sub}` | Constant elaboration in analysis or timing arithmetic in lowering as applicable. Runtime arithmetic is an error. |
+| `BinaryOp::Greater` | Constant elaboration in analysis or the contracted timing `gt` comparison used by the lowering timing clamp. Runtime ordering is an error. |
+| `BinaryOp::Less` | Constant elaboration in analysis where applicable. Timing and runtime uses are uncontracted errors. |
+| `ExprKind::Ternary` | Flat value `mux`; high-Z normalization; nested timing `mux` for the corpus timing clamp in lowering. |
+| `ExprKind::Call` | Only contracted timing calls (`tpd_elmore`, `tpd_z`, `R_pmos_ohm`, `R_nmos_ohm`) lower in lowering. Arbitrary value/timing calls are errors. |
+| `AssignOp::{Blocking, NonBlocking}` | Retained in parsing and used to preserve procedural scheduling/source priority; never silently conflated where behavior differs. |
 
 ## Known corpus-specific forms
 
 | Corpus form/family | Contract classification |
 | --- | --- |
-| Simple gates, compound scalar logic, equality, and value ternaries | Deterministic flat SSA M4 using `t0`, `t1`, ... in dependency order. |
-| Latches, generated DFF/TFF variants, nested priority `if`, reset/enable logic | State analysis M3, next-state lowering M5, and exact four-state register initialization metadata M13; absent initialization is `x`. |
-| High-Z ternaries, direct `bufif*`, precharge/open-drain, and repeated drivers | Source-ordered driver lowering M6; high-Z ternaries normalize only to polarity-equivalent `bufif0`/`bufif1`. |
-| `(strong1, highz0)`, `(highz1, strong0)`, `(pull1, highz0)`, `(supply1, supply0)` | Exact strength-bearing driver forms M6, with no claim of strength-resolution simulation. |
-| One/two/three-entry tuples; timing aliases and paths; `tpd_elmore`, `tpd_z`; resistance factors including real factors | Symbolic timing expressions M7; exact tuple arity and every component preserved M14; internal functional timing graph M15; assignment-delay decomposition in later milestones. Tuple entries are never summed together. |
-| `(0.2 * T_fall_yN) > T_Z_min ? (0.2 * T_fall_yN) : T_Z_min` in `alu_decoder.sv` | Nested timing `(mux (gt ...) ... ...)` clamp M7; this does not contract general runtime ternaries or less-than comparisons. |
-| `if (nodelay)` generate alternatives | Exactly one M8 branch: delayful/false by default, nodelay/true only by explicit configuration; the unselected branch is not a driver. |
-| Named/positional half-adder and full-adder instances with parameter overrides | Deterministic instance-qualified flattening, substitution, and dependency/source order M9. |
-| `keeper` instances in mux, pad, IDU, and register-bus cells | Direct source-ordered `(held_net (keeper) (delay 0))` driver M10, never a register. |
-| `nmos`, `pmos`, `rnmos` in IRQ priority, IDU, and bus-injection cells | Direct typed transistor drivers M11; polarity and `rnmos` distinction preserved, compound inputs first flattened to SSA atoms. |
-| License/timescale directives, comments, and formatting | Intentional-ignore only after M1/M3 proves no elaboration/behavior effect. Unknown directives are errors. |
+| Simple gates, compound scalar logic, equality, and value ternaries | Deterministic flat SSA in lowering using `t0`, `t1`, ... in dependency order. |
+| Latches, generated DFF/TFF variants, nested priority `if`, reset/enable logic | State analysis, next-state lowering, and exact four-state register initialization metadata; absent initialization is `x`. |
+| High-Z ternaries, direct `bufif*`, precharge/open-drain, and repeated drivers | Source-ordered driver in lowering; high-Z ternaries normalize only to polarity-equivalent `bufif0`/`bufif1`. |
+| `(strong1, highz0)`, `(highz1, strong0)`, `(pull1, highz0)`, `(supply1, supply0)` | Exact strength-bearing driver forms in lowering, with no claim of strength-resolution simulation. |
+| One/two/three-entry tuples; timing aliases and paths; `tpd_elmore`, `tpd_z`; resistance factors including real factors | Symbolic timing expressions; exact tuple arity and every component preserved; internal functional timing graph; assignment-delay decomposition in later milestones. Tuple entries are never summed together. |
+| `(0.2 * T_fall_yN) > T_Z_min ? (0.2 * T_fall_yN) : T_Z_min` in `alu_decoder.sv` | Nested timing `(mux (gt ...) ... ...)` clamp; this does not contract general runtime ternaries or less-than comparisons. |
+| `if (nodelay)` generate alternatives | Exactly one in lowering branch: delayful/false by default, nodelay/true only by explicit configuration; the unselected branch is not a driver. |
+| Named/positional half-adder and full-adder instances with parameter overrides | Deterministic instance-qualified flattening, substitution, and dependency/source order in lowering. |
+| `keeper` instances in mux, pad, IDU, and register-bus cells | Direct source-ordered `(held_net (keeper) (delay 0))` driver in lowering, never a register. |
+| `nmos`, `pmos`, `rnmos` in IRQ priority, IDU, and bus-injection cells | Direct typed transistor drivers; polarity and `rnmos` distinction preserved, compound inputs first flattened to SSA atoms. |
+| License/timescale directives, comments, and formatting | Intentional-ignore only after lexing/analysis proves no elaboration/behavior effect. Unknown directives are errors. |
 | Curated package imports | Intentional-ignore only after referenced parameters resolve; unresolved import effects are errors. |
-| Corpus mirroring, filtering, overwrite/dry-run, formatter validation | Release CLI M12. |
-| Contracted scalar register initial values | Uniform `(name initial-value)` register metadata M13; duplicate selected initializers are errors. |
+| Corpus mirroring, filtering, overwrite/dry-run, formatter validation | Release CLI in conversion. |
+| Contracted scalar register initial values | Uniform `(name initial-value)` register metadata; duplicate selected initializers are errors. |
 | Vectors, arrays, interfaces, classes, assertions, generate loops, other third-party syntax | Global non-goal and blocked/unsupported; reject with a precise diagnostic. |
