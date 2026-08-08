@@ -8,18 +8,18 @@ cases: 11
 success path=sv-cells/dmg_cpu_b/cells/ggnmos.sv assignments=0 registers=0 constraints=0 components=0 dN=0
 success path=sv-cells/dmg_cpu_b/cells/nor8.sv assignments=1 registers=0 constraints=1 components=16 dN=0
 success path=sv-cells/dmg_cpu_b/cells/pad_bidir_pu_latch.sv assignments=12 registers=1 constraints=0 components=0 dN=0
-success path=sv-cells/sm83/cells/and2.sv assignments=1 registers=0 constraints=1 components=4 dN=0
-success path=sv-cells/sm83/cells/decoder2.sv assignments=115 registers=0 constraints=0 components=0 dN=0
-failure unclassified path=sv-cells/sm83/cells/mux_idu_l.sv span=sv-cells/sm83/cells/mux_idu_l.sv:22:4 message="sv-cells/sm83/cells/mux_idu_l.sv:22:4: timing decomposition error: placement ExistingAssignment { node: TimingNodeId(4), assignment_order: 0 } requires incompatible values for constraint p1 control c2 and constraint p0 control c0"
-success path=sv-cells/sm83/cells/nor2_e.sv assignments=1 registers=0 constraints=1 components=4 dN=0
-success path=sv-cells/sm83/cells/not_c.sv assignments=1 registers=0 constraints=1 components=2 dN=0
-success path=sv-cells/sm83/cells/not_pch_x1_alu.sv assignments=2 registers=0 constraints=1 components=2 dN=0
-success path=sv-cells/sm83/cells/oa211_in1_n_in3_n.sv assignments=6 registers=0 constraints=3 components=8 dN=2
-success path=sv-cells/sm83/cells/reg_bus_pch_a_bit6.sv assignments=9 registers=0 constraints=2 components=4 dN=0
-successes: 10
-failures: 1
-assignments: 148
+success path=sv-cells/sm83/cells/and2_alu.sv assignments=1 registers=0 constraints=1 components=4 dN=0
+success path=sv-cells/sm83/cells/decoder3.sv assignments=293 registers=0 constraints=0 components=0 dN=0
+success path=sv-cells/sm83/cells/nand2_a.sv assignments=1 registers=0 constraints=1 components=4 dN=0
+success path=sv-cells/sm83/cells/nor2_f.sv assignments=1 registers=0 constraints=1 components=4 dN=0
+success path=sv-cells/sm83/cells/not_d.sv assignments=1 registers=0 constraints=1 components=2 dN=0
+success path=sv-cells/sm83/cells/not_pch_x2_alu.sv assignments=2 registers=0 constraints=1 components=2 dN=0
+success path=sv-cells/sm83/cells/oa21_reg.sv assignments=3 registers=0 constraints=2 components=6 dN=1
+success path=sv-cells/sm83/cells/reg_bus_pch_a_bit7.sv assignments=9 registers=0 constraints=2 components=4 dN=0
+successes: 11
+failures: 0
+assignments: 324
 registers: 1
 constraints: 10
-components: 40
-dN: 2
+components: 42
+dN: 1

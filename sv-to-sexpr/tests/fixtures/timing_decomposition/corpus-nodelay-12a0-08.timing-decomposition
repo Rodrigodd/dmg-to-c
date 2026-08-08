@@ -5,7 +5,7 @@ rule: sorted-index-modulo-16
 split-residue: 8/12
 split-rule: within-shard-rank-modulo-12
 cases: 1
-success path=sv-cells/sm83/cells/not_pch_dec3_a2.sv assignments=2 registers=0 constraints=1 components=2 dN=0
+success path=sv-cells/sm83/cells/not_pch_dec3_b.sv assignments=2 registers=0 constraints=1 components=2 dN=0
 successes: 1
 failures: 0
 assignments: 2

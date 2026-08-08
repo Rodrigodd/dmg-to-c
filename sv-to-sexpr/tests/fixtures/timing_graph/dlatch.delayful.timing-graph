@@ -1,0 +1,44 @@
+timing-analysis
+node n0 signal d roles=input @sv-cells/dmg_cpu_b/cells/dlatch.sv:7:3
+node n1 signal ena roles=input @sv-cells/dmg_cpu_b/cells/dlatch.sv:7:3
+node n2 signal q roles=output,register @sv-cells/dmg_cpu_b/cells/dlatch.sv:8:3
+node n3 signal q_n roles=output @sv-cells/dmg_cpu_b/cells/dlatch.sv:8:3
+node n4 assignment order=0 target=q function=mux @sv-cells/dmg_cpu_b/cells/dlatch.sv:15:24
+node n5 assignment order=1 target=q_n function=not @sv-cells/dmg_cpu_b/cells/dlatch.sv:16:2
+dependency n1 -> n4 kind=operand operand=0 sense=non-unate event=- @sv-cells/dmg_cpu_b/cells/dlatch.sv:15:24
+dependency n0 -> n4 kind=operand operand=1 sense=positive event=- @sv-cells/dmg_cpu_b/cells/dlatch.sv:15:24
+dependency n2 -> n4 kind=operand operand=2 sense=positive event=- @sv-cells/dmg_cpu_b/cells/dlatch.sv:15:24
+dependency n4 -> n2 kind=state-boundary operand=- sense=positive event=- @sv-cells/dmg_cpu_b/cells/dlatch.sv:15:24
+dependency n2 -> n5 kind=operand operand=0 sense=negative event=- @sv-cells/dmg_cpu_b/cells/dlatch.sv:16:2
+dependency n5 -> n3 kind=drive operand=- sense=positive event=- @sv-cells/dmg_cpu_b/cells/dlatch.sv:16:2
+cut-order n2,n5,n3,n1,n0,n4
+cut-dependency n1 -> n4 kind=operand
+cut-dependency n0 -> n4 kind=operand
+cut-dependency n2 -> n4 kind=operand
+cut-dependency n2 -> n5 kind=operand
+cut-dependency n5 -> n3 kind=drive
+cut-excluded n4 -> n2 kind=state-boundary
+constraint p0 order=0 target=q target@sv-cells/dmg_cpu_b/cells/dlatch.sv:34:11 path@sv-cells/dmg_cpu_b/cells/dlatch.sv:34:3 delay=(delay (+ (+ (elmore (wire 73) (pmos 10)) (elmore (wire 101) (nmos 10))) (elmore (wire L_q) (pmos 35))) (+ (+ (elmore (wire 73) (nmos 10)) (elmore (wire 101) (pmos 10))) (elmore (wire L_q) (nmos 35))))
+  terms[0]=(elmore (wire 73) (pmos 10)) + (elmore (wire 101) (nmos 10)) + (elmore (wire L_q) (pmos 35))
+  terms[1]=(elmore (wire 73) (nmos 10)) + (elmore (wire 101) (pmos 10)) + (elmore (wire L_q) (nmos 35))
+  control c0 order=0 signal=d event=- @sv-cells/dmg_cpu_b/cells/dlatch.sv:34:4
+constraint p1 order=1 target=q target@sv-cells/dmg_cpu_b/cells/dlatch.sv:35:11 path@sv-cells/dmg_cpu_b/cells/dlatch.sv:35:3 delay=(delay (+ (+ (+ (elmore (wire 102) (nmos 12)) (elmore (wire 73) (pmos 10))) (elmore (wire 101) (nmos 10))) (elmore (wire L_q) (pmos 35))) (+ (+ (+ (+ (elmore (wire 102) (nmos 12)) (elmore (wire 58) (pmos 12))) (elmore (wire 73) (nmos 10))) (elmore (wire 101) (pmos 10))) (elmore (wire L_q) (nmos 35))))
+  terms[0]=(elmore (wire 102) (nmos 12)) + (elmore (wire 73) (pmos 10)) + (elmore (wire 101) (nmos 10)) + (elmore (wire L_q) (pmos 35))
+  terms[1]=(elmore (wire 102) (nmos 12)) + (elmore (wire 58) (pmos 12)) + (elmore (wire 73) (nmos 10)) + (elmore (wire 101) (pmos 10)) + (elmore (wire L_q) (nmos 35))
+  control c1 order=0 signal=ena event=- @sv-cells/dmg_cpu_b/cells/dlatch.sv:35:4
+constraint p2 order=2 target=q_n target@sv-cells/dmg_cpu_b/cells/dlatch.sv:37:11 path@sv-cells/dmg_cpu_b/cells/dlatch.sv:37:3 delay=(delay (+ (+ (+ (elmore (wire 73) (nmos 10)) (elmore (wire 101) (pmos 10))) (elmore (wire 127) (nmos 10))) (elmore (wire L_q_n) (pmos 35))) (+ (+ (+ (elmore (wire 73) (pmos 10)) (elmore (wire 101) (nmos 10))) (elmore (wire 127) (pmos 10))) (elmore (wire L_q_n) (nmos 35))))
+  terms[0]=(elmore (wire 73) (nmos 10)) + (elmore (wire 101) (pmos 10)) + (elmore (wire 127) (nmos 10)) + (elmore (wire L_q_n) (pmos 35))
+  terms[1]=(elmore (wire 73) (pmos 10)) + (elmore (wire 101) (nmos 10)) + (elmore (wire 127) (pmos 10)) + (elmore (wire L_q_n) (nmos 35))
+  control c2 order=0 signal=d event=- @sv-cells/dmg_cpu_b/cells/dlatch.sv:37:4
+constraint p3 order=3 target=q_n target@sv-cells/dmg_cpu_b/cells/dlatch.sv:39:11 path@sv-cells/dmg_cpu_b/cells/dlatch.sv:39:3 delay=(delay (+ (+ (+ (+ (+ (elmore (wire 102) (nmos 12)) (elmore (wire 58) (pmos 12))) (elmore (wire 73) (nmos 10))) (elmore (wire 101) (pmos 10))) (elmore (wire 127) (nmos 10))) (elmore (wire L_q_n) (pmos 35))) (+ (+ (+ (+ (elmore (wire 102) (nmos 12)) (elmore (wire 73) (pmos 10))) (elmore (wire 101) (nmos 10))) (elmore (wire 127) (pmos 10))) (elmore (wire L_q_n) (nmos 35))))
+  terms[0]=(elmore (wire 102) (nmos 12)) + (elmore (wire 58) (pmos 12)) + (elmore (wire 73) (nmos 10)) + (elmore (wire 101) (pmos 10)) + (elmore (wire 127) (nmos 10)) + (elmore (wire L_q_n) (pmos 35))
+  terms[1]=(elmore (wire 102) (nmos 12)) + (elmore (wire 73) (pmos 10)) + (elmore (wire 101) (nmos 10)) + (elmore (wire 127) (pmos 10)) + (elmore (wire L_q_n) (nmos 35))
+  control c3 order=0 signal=ena event=- @sv-cells/dmg_cpu_b/cells/dlatch.sv:39:4
+control-group signal=d source=n0 kind=multiple-targets constraints=p0,p2 controls=c0,c2 targets=n2,n3 prefix=n4
+control-group signal=ena source=n1 kind=multiple-targets constraints=p1,p3 controls=c1,c3 targets=n2,n3 prefix=n4
+group target=q kind=multiple constraints=p0,p1 controls=c0,c1 suffix=n4 reconvergent=n4 split=candidate
+  control-report c0 constraint=p0 source=n0 target=n2 slice=n0,n2,n4 dominators=n0,n2,n4 post-dominators=n0,n2,n4 senses=positive
+  control-report c1 constraint=p1 source=n1 target=n2 slice=n1,n2,n4 dominators=n1,n2,n4 post-dominators=n1,n2,n4 senses=non-unate
+group target=q_n kind=multiple constraints=p2,p3 controls=c2,c3 suffix=n2,n4,n5 reconvergent=n4 split=not-required
+  control-report c2 constraint=p2 source=n0 target=n3 slice=n0,n2,n3,n4,n5 dominators=n0,n2,n3,n4,n5 post-dominators=n0,n2,n3,n4,n5 senses=negative
+  control-report c3 constraint=p3 source=n1 target=n3 slice=n1,n2,n3,n4,n5 dominators=n1,n2,n3,n4,n5 post-dominators=n1,n2,n3,n4,n5 senses=non-unate

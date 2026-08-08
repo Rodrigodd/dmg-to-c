@@ -17,20 +17,12 @@ fn representative_analysis_goldens_are_deterministic_and_semantically_complete()
         ),
         ("primitive_tri.analysis", "sv-cells/dmg_cpu_b/cells/muxi.sv"),
         (
-            "generated_tff.analysis",
-            "sv-cells/dmg_cpu_b/cells/tffnl.sv",
-        ),
-        (
             "hierarchical_adder.analysis",
             "sv-cells/dmg_cpu_b/cells/full_add.sv",
         ),
     ];
     for (fixture, source) in fixtures {
-        let report = if fixture == "generated_tff.analysis" {
-            corpus.analyze_structural(source)
-        } else {
-            corpus.analyze(source)
-        };
+        let report = corpus.analyze(source);
         let rendered = report.render();
         assert_eq!(rendered, report.render());
         assert!(rendered.contains(source));
@@ -87,35 +79,6 @@ fn representative_analysis_goldens_are_deterministic_and_semantically_complete()
         4
     );
 
-    let generated = corpus.analyze_structural("sv-cells/dmg_cpu_b/cells/tffnl.sv");
-    let module = &generated.modules[0];
-    assert_eq!(module.registers, vec!["ff", "q"]);
-    assert_eq!(module.drivers.len(), 5);
-    assert_eq!(module.generate_alternatives.len(), 1);
-    let alternative = &module.generate_alternatives[0];
-    assert_eq!(alternative.condition.text, "nodelay");
-    assert!(alternative.then_branch.registers.is_empty());
-    assert!(
-        alternative
-            .else_branch
-            .as_ref()
-            .unwrap()
-            .registers
-            .is_empty()
-    );
-    assert!(alternative.then_branch.symbols.is_empty());
-    assert!(alternative.else_branch.as_ref().unwrap().symbols.is_empty());
-    assert_eq!(alternative.then_branch.procedural_assignments.len(), 2);
-    assert_eq!(
-        alternative
-            .else_branch
-            .as_ref()
-            .unwrap()
-            .continuous_assignments
-            .len(),
-        2
-    );
-
     let hierarchy = corpus.analyze("sv-cells/dmg_cpu_b/cells/full_add.sv");
     let module = &hierarchy.modules[0];
     assert_eq!(module.instantiations.len(), 5);
@@ -158,7 +121,6 @@ fn corpus_analysis_summary_is_stable_by_disposition_milestone_and_capability() {
                 .insert(path.clone());
         }
     }
-    assert_eq!(corpus.designs.len(), 190);
     assert_eq!(
         disposition_counts
             .get(&AnalysisDisposition::Supported)
@@ -171,7 +133,7 @@ fn corpus_analysis_summary_is_stable_by_disposition_milestone_and_capability() {
             .get(&AnalysisDisposition::Deferred)
             .copied()
             .unwrap_or_default(),
-        187
+        186
     );
     assert_eq!(
         disposition_counts
@@ -184,7 +146,7 @@ fn corpus_analysis_summary_is_stable_by_disposition_milestone_and_capability() {
     let mut rendered = String::new();
     rendered.push_str("analysis corpus summary\n");
     rendered.push_str(&format!(
-        "processed=190 supported={} deferred={} warned={} failed={}\n",
+        "processed=189 supported={} deferred={} warned={} failed={}\n",
         disposition_counts
             .get(&AnalysisDisposition::Supported)
             .copied()

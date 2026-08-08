@@ -19,7 +19,7 @@ use sv_to_sexpr::timing_graph::{
     Transition, TransitionEffect,
 };
 
-const TFFNL: &str = "sv-cells/dmg_cpu_b/cells/tffnl.sv";
+const DLATCH: &str = "sv-cells/dmg_cpu_b/cells/dlatch.sv";
 const AO21: &str = "sv-cells/dmg_cpu_b/cells/ao21.sv";
 const HALF_ADD: &str = "sv-cells/dmg_cpu_b/cells/half_add.sv";
 const B2B_WAND: &str = "sv-cells/sm83/cells/b2b_wand_inj_a.sv";
@@ -82,7 +82,7 @@ struct ModeAudit {
 fn complete_timing_graph_corpus_is_exact_owned_deterministic_and_compatible() {
     let root = repository_root();
     let entries = parse_sorted_corpus(&root);
-    assert_eq!(entries.len(), 190);
+    assert_eq!(entries.len(), 189);
     assert!(entries.windows(2).all(|pair| pair[0].0 < pair[1].0));
 
     let sorted_designs = entries
@@ -144,7 +144,7 @@ fn complete_timing_graph_corpus_is_exact_owned_deterministic_and_compatible() {
     assert_or_update_fixture("corpus_summary.timing-graph", &summary);
 
     for (path, fixture) in [
-        (TFFNL, "tffnl.delayful.timing-graph"),
+        (DLATCH, "dlatch.delayful.timing-graph"),
         (AO21, "ao21.delayful.timing-graph"),
         (HALF_ADD, "half_add.delayful.timing-graph"),
     ] {
@@ -574,20 +574,20 @@ fn render_mode_summary(output: &mut String, mode: GenerateMode, audit: &ModeAudi
 
 fn assert_representative_architecture(snapshots: &BTreeMap<(String, String), FileSnapshot>) {
     let delayful = GenerateMode::Delayful.label().to_string();
-    let tffnl = &snapshots[&(delayful.clone(), TFFNL.to_string())].report;
-    assert_eq!(tffnl.constraints().len(), 6);
+    let dlatch = &snapshots[&(delayful.clone(), DLATCH.to_string())].report;
+    assert_eq!(dlatch.constraints().len(), 4);
     assert!(
-        tffnl
+        dlatch
             .control_groups()
             .iter()
-            .filter(|group| matches!(group.control_signal(), "tclk_n" | "d" | "l"))
+            .filter(|group| matches!(group.control_signal(), "d" | "ena"))
             .all(|group| {
                 group.kind() == ControlGroupKind::MultipleTargets
                     && !group.common_prefix().is_empty()
             })
     );
     for target in ["q", "q_n"] {
-        let group = tffnl
+        let group = dlatch
             .target_groups()
             .iter()
             .find(|group| group.group().target() == target)
@@ -596,7 +596,7 @@ fn assert_representative_architecture(snapshots: &BTreeMap<(String, String), Fil
         assert_eq!(group.group().kind(), TargetGroupKind::MultiplePaths);
     }
     assert_eq!(
-        tffnl
+        dlatch
             .target_groups()
             .iter()
             .find(|group| group.group().target() == "q")
@@ -605,7 +605,7 @@ fn assert_representative_architecture(snapshots: &BTreeMap<(String, String), Fil
         PublicOutputSplit::Candidate
     );
     assert_eq!(
-        tffnl
+        dlatch
             .target_groups()
             .iter()
             .find(|group| group.group().target() == "q_n")
@@ -614,7 +614,7 @@ fn assert_representative_architecture(snapshots: &BTreeMap<(String, String), Fil
         PublicOutputSplit::NotRequired
     );
     assert!(
-        tffnl
+        dlatch
             .excluded_state_boundaries()
             .iter()
             .any(|dependency| dependency.edge().kind() == DependencyKind::StateBoundary)

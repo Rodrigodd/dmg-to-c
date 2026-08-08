@@ -9,12 +9,14 @@ Primary paths:
 
 - Input cells: `sv-cells/**/*.sv`
 - Output cells: `sexpr-cells/**/*.cell`
-- Current curated corpus: 190 files. The 15 former `dff*.sv` cells are
+- Current curated corpus: 189 files. The 15 former `dff*.sv` cells are
   intentionally out of scope as of Milestone 17 and will be translated
   manually in separate work. `sm83/cells/dlatch_ee_irq.sv` was additionally
   retired from the converter corpus because it does not decompose; its
   hand-written translation lives in `sexpr-cells/manual/dlatch_ee_irq.cell`
   and is not produced, checked, or formatted by the converter.
+  `dmg_cpu_b/cells/tffnl.sv` was retired for the same reason during Milestone 17
+  step 4; it has no hand translation yet.
 
 The converter is complete only when its output preserves the modeled logic,
 state, drivers, and timing according to reviewed fixtures. Parsing a file or
@@ -24,7 +26,7 @@ serializing a syntactically valid S-expression is not sufficient by itself.
 
 ### In Scope
 
-- The SystemVerilog constructs that occur in the retained 190-file curated
+- The SystemVerilog constructs that occur in the retained 189-file curated
   corpus.
 - Scalar combinational and stateful logic.
 - Continuous, procedural, primitive, and selected hierarchical drivers.
@@ -500,13 +502,14 @@ Acceptance conditions:
 
 ### Milestone 8: Generate Branch Selection
 
-Status: complete as of 2026-07-12. Typed elaboration selects exactly one
-module-level `if (nodelay)` branch before configured analysis and lowering;
-delayful selection is the default and `--nodelay` explicitly selects the true
-branch. Reviewed dual-mode fixtures and an exact 206-file audit cover all five
-generate cells, prove that no unselected declaration, state, driver, timing
-alias, diagnostic, or requirement leaks into output, and leave only the 16
-Milestone 9–11 corpus deferrals in either mode.
+Status: complete as of 2026-07-12, but no longer covered by the corpus. Typed
+elaboration selects exactly one module-level `if (nodelay)` branch before
+configured analysis and lowering; delayful selection is the default and
+`--nodelay` explicitly selects the true branch. The retirements of the DFF
+family and then `tffnl` left the corpus with no `generate` cell, so the audit
+now asserts that the generate set is empty and the elaboration machinery is
+exercised only by focused unit tests. Restoring a corpus witness requires a
+generate cell that also decomposes.
 
 Resolve the conditional generate forms used by the curated corpus.
 
@@ -1008,32 +1011,24 @@ retained corpus, and make exact per-assignment timing a bounded release gate.
 
 Step progress as audited on 2026-08-08:
 
-- Step 1 (retire DFF corpus and topology machinery): complete. Additionally,
-  `sm83/cells/dlatch_ee_irq.sv` was retired for the same reason, leaving 190
-  curated sources.
-- Step 2 (rebase tests and fixtures): complete. The planned repository reference
-  pair was dropped instead of being switched to `dlatch_ee_irq`, so the plan no
-  longer names a reference pair.
-- Step 3 (bounded sharded decomposition audit): complete. The sharded suite
-  covers each of the 190 files once per mode and records the current outcome
-  per case, within the configured 45-second limit.
-- Step 4 (classify and fix retained decomposition failures): not started. Ten
-  files still fail decomposition in both modes and are recorded in the shard
-  goldens as `failure unclassified`.
+- Steps 1-3 (retire the DFF corpus and topology machinery, rebase tests and
+  fixtures, bounded sharded decomposition audit): complete.
+- Step 4 (classify and fix retained decomposition failures): complete. Three
+  defects accounted for all ten failures. Synthetic `dN` identity names now skip
+  reserved indices; mux data operands are positive-unate rather than
+  conditional; and a placement's orientation now follows the modeled path's
+  inversion parity instead of collapsing to an unusable "ambiguous" state, with
+  a placement permitted to be wider than the constraint it serves. Nine cells
+  were fixed. `tffnl` proved unrepresentable and was retired: its RTL models
+  `q_n = !q` while the source timing gives `q` and `q_n` independent chains on
+  opposite clock phases, so one shared edge would have to begin with both
+  `T_rise_not1` and `T_fall_not1`. That is hidden physical topology, the same
+  class as `dmg_dffsr` and `dlatch_ee_irq`.
 - Step 5 (make decomposition the ordinary lowering path): not started.
-  Decomposition is opt-in behind `--decompose-timing`; the legacy
-  first-source-ordered specify-path selection and its 44 intentional ignores
-  remain the default. The checked `sexpr-cells` tree is a mix: it was written
-  with `--decompose-timing`, so the 180 decomposable cells carry decomposed
-  delays while the 10 failing cells retain the first-path approximation.
-
-The retained decomposition failures fall into two error classes:
-
-- Incompatible placement (one site required to carry different values for two
-  constraints): `buf_if0`, `not_if0`, `not_if1`.
-- Transition-ambiguous placement (an edge whose rise/fall sense cannot be
-  assigned a single tuple rewrite): `dlatch`, `drlatch_ee`, `nand_latch`,
-  `nor_latch`, `tffnl`, `mux_idu_h`, `mux_idu_l`.
+  Decomposition now succeeds for all 189 cells in both modes, so the remaining
+  work is to remove the `--decompose-timing` opt-in and the legacy
+  first-source-ordered specify-path selection with its 42 intentional ignores,
+  then regenerate the checked tree from one lowering path.
 
 Implementation plan:
 
@@ -1067,14 +1062,14 @@ Implementation plan:
    driver, and timing cells where the tested construct still exists. Remove
    DFF-only fixtures under `tests/fixtures/{analysis,ast,generate,stateful,
    timing_decomposition,timing_graph}` and regenerate all aggregate corpus
-   snapshots for exactly 190 sorted paths. The repository no longer designates
+   snapshots for exactly 189 sorted paths. The repository no longer designates
    a single reference pair. Do not keep a copied DFF as a hidden corpus fixture
    merely to preserve a historical golden; focused inline unit syntax may
    remain only when it tests a generic parser or analyzer invariant.
 
 3. Replace the monolithic timing-closure audit with bounded independent test
    cases in `tests/timing_decomposition_corpus_tests.rs`. Partition the sorted
-   190-file corpus deterministically into fixed shards for both delayful and
+   189-file corpus deterministically into fixed shards for both delayful and
    nodelay modes. Each retained file is lowered twice, compared byte-for-byte,
    checked for canonical assignment-only output, and independently verified
    against every retained full-tuple timing constraint. A cheap inventory test
@@ -1105,7 +1100,7 @@ Implementation plan:
    `convert-file`, and corpus conversion; remove the legacy first-path warning
    and intentional-ignore path and the now-redundant `--decompose-timing`
    opt-in. Regenerate
-   all 190 checked `sexpr-cells` outputs, manually compare every changed timing
+   all 189 checked `sexpr-cells` outputs, manually compare every changed timing
    placement with its retained SystemVerilog source and the independent
    reconstruction evidence, then run the complete release gate and update
    `CONTRACT.md`, `STATUS.md`, and this plan.
@@ -1114,7 +1109,7 @@ Acceptance conditions:
 
 - Exactly 15 `sv-cells/**/dff*.sv` files and their 15 generated
   `sexpr-cells/**/dff*.cell` outputs are removed; no in-scope converter test or
-  fixture retains a dead reference to them. Exactly 190 source/output pairs
+  fixture retains a dead reference to them. Exactly 189 source/output pairs
   remain, while TFF and latch cells remain covered. The external `dmg-sim`
   submodule remains clean and pinned to its existing revision. Files retired
   beyond the DFF family are named in this plan with their reason.
@@ -1122,7 +1117,7 @@ Acceptance conditions:
   direct `serde`/`toml` dependencies, and TOML lock packages are absent, and
   the decomposed lowering API has one generic exact-cover strategy.
 - Every former additional-path intentional ignore belonging to a retained cell
-  is gone in delayful and nodelay modes; all 190 files lower in both modes with
+  is gone in delayful and nodelay modes; all 189 files lower in both modes with
   zero warnings, zero intentional ignores, and zero failures. Removed cases are
   reported as explicit scope removals, never counted as successful lowers.
 - Every emitted delay placement passes independent full-tuple path
@@ -1161,20 +1156,25 @@ form is not described in [CONTRACT.md](CONTRACT.md), has no reviewed fixture
 coverage of its own, and has no stated rule for value normalization, duplicate
 names, or hierarchy qualification. Freeze it in the contract, or remove it.
 
-### Close the retained timing decomposition failures
+### Make decomposition the ordinary lowering path
 
-This is Milestone 17 steps 4 and 5, restated as concrete outstanding work:
+Milestone 17 step 5. All 189 cells now decompose exactly in both modes, so what
+remains is to retire the `--decompose-timing` opt-in and the legacy
+first-source-ordered specify-path selection with its 42 intentional ignores,
+then regenerate the checked tree from one lowering path. The tree is currently a
+mix: it was written with `--decompose-timing` while the transactional guard was
+disabled, so no single command reproduces it.
 
-- Classify and fix the incompatible-placement class (`buf_if0`, `not_if0`,
-  `not_if1`) and the transition-ambiguous-placement class (`dlatch`,
-  `drlatch_ee`, `nand_latch`, `nor_latch`, `tffnl`, `mux_idu_h`, `mux_idu_l`).
-- Replace the default first-source-ordered specify-path selection and its 44
-  intentional ignores with exact decomposition, and drop the
-  `--decompose-timing` opt-in.
-- Regenerate the checked tree from one lowering path. It is currently a mix of
-  180 decomposed cells and 10 cells that retain the first-path approximation,
-  so no single command reproduces it. With the transactional guard restored, a
-  decomposed corpus conversion writes nothing until the ten failures are fixed.
+### Restore a corpus witness for generate selection
+
+The corpus no longer contains a `generate` cell, so Milestone 8's elaboration is
+covered only by focused unit tests. Either accept that, or bring in a generate
+cell that also decomposes.
+
+### Hand-translate the retired cells
+
+`sexpr-cells/manual/` has `dlatch_ee_irq.cell` but nothing for `tffnl` or the
+DFF family. Each needs its real two-chain topology written out by hand.
 
 ### Decide the status of `sexpr-cells/manual/`
 
@@ -1213,7 +1213,7 @@ sv-to-sexpr/tests/
 The original full-corpus release baseline was accepted at Milestone 13. The
 revised timing work is done only when Milestone 17 is accepted. In particular:
 
-- All 190 retained files produce deterministic, structurally valid, manually
+- All 189 retained files produce deterministic, structurally valid, manually
   reviewed fixture output for every supported construct family.
 - Register lists contain state only and preserve exact four-state initial
   metadata, using `x` when no selected initializer exists.

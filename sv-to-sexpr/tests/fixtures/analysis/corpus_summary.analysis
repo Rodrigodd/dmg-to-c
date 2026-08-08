@@ -1,18 +1,18 @@
 analysis corpus summary
-processed=190 supported=3 deferred=187 warned=0 failed=0
+processed=189 supported=3 deferred=186 warned=0 failed=0
 milestones:
-  M4 files=171
-  M5 files=11
-  M6 files=69
-  M7 files=183
+  M4 files=170
+  M5 files=10
+  M6 files=68
+  M7 files=182
 capabilities:
   driver.high-z | M6 | files=20
   driver.primitive-tristate | M6 | files=46
-  driver.repeated | M6 | files=31
+  driver.repeated | M6 | files=30
   driver.strength | M6 | files=15
-  state.procedural | M5 | files=11
-  timing.alias | M7 | files=183
+  state.procedural | M5 | files=10
+  timing.alias | M7 | files=182
   timing.assignment-delay | M7 | files=37
   timing.primitive-delay | M7 | files=46
-  timing.specify-path | M7 | files=148
-  value.combinational | M4 | files=171
+  timing.specify-path | M7 | files=147
+  value.combinational | M4 | files=170

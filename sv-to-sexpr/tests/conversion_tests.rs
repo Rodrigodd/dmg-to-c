@@ -5,7 +5,6 @@ use std::sync::atomic::{AtomicU64, Ordering};
 
 use sexpr_fmt::format_source_default;
 use sv_to_sexpr::convert::{ConvertDisposition, ConvertOptions, ConvertReport, convert};
-use sv_to_sexpr::elaborate::GenerateMode;
 
 static NEXT_TEMP_TREE: AtomicU64 = AtomicU64::new(0);
 
@@ -301,37 +300,6 @@ fn non_directory_output_root_and_nonregular_target_fail_without_mutation() {
 }
 
 #[test]
-fn nodelay_changes_selected_register_metadata_and_strict_accepts_preserved_tuples() {
-    let tree = TempTree::new("convert-mode-policy");
-    let input = tree.path("input");
-    let tff = repository_root().join("sv-cells/dmg_cpu_b/cells/tffnl.sv");
-    tree.write("input/tffnl.sv", &fs::read_to_string(tff).unwrap());
-
-    let delayful_output = tree.path("delayful");
-    let mut delayful = ConvertOptions::new(&input, &delayful_output);
-    delayful.strict = true;
-    let delayful_report = convert(&delayful);
-    assert!(delayful_report.succeeded());
-    assert_eq!(delayful_report.warned, 0);
-    assert_eq!(delayful_report.intentional_ignored, 2);
-
-    let nodelay_output = tree.path("nodelay");
-    let mut nodelay = ConvertOptions::new(&input, &nodelay_output);
-    nodelay.strict = true;
-    nodelay.generate_mode = GenerateMode::Nodelay;
-    let nodelay_report = convert(&nodelay);
-    assert!(nodelay_report.succeeded());
-    assert_eq!(nodelay_report.warned, 0);
-    assert_eq!(nodelay_report.intentional_ignored, 2);
-
-    let delayful_cell = fs::read_to_string(delayful_output.join("tffnl.cell")).unwrap();
-    let nodelay_cell = fs::read_to_string(nodelay_output.join("tffnl.cell")).unwrap();
-    assert!(delayful_cell.contains("(registers (ff 0) (q 0))"));
-    assert!(nodelay_cell.contains("(registers (ff 0) (q 0))"));
-    assert_eq!(delayful_cell, nodelay_cell);
-}
-
-#[test]
 fn cli_convert_emits_one_exact_summary_and_sorted_diagnostics() {
     let tree = TempTree::new("convert-cli");
     let input = tree.path("input");
@@ -446,11 +414,4 @@ fn run_cli(args: &[&str]) -> Output {
         .args(args)
         .output()
         .unwrap()
-}
-
-fn repository_root() -> PathBuf {
-    PathBuf::from(env!("CARGO_MANIFEST_DIR"))
-        .parent()
-        .unwrap()
-        .to_path_buf()
 }

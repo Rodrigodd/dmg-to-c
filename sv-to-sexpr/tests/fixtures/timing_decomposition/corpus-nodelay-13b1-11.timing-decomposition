@@ -4,12 +4,11 @@ shard: 13b1-11/16
 rule: sorted-index-modulo-16
 split-residue: 11/12
 split-rule: within-shard-rank-modulo-12
-cases: 1
-success path=sv-cells/sm83/cells/xor_idu_l.sv assignments=1 registers=0 constraints=1 components=4 dN=0
-successes: 1
+cases: 0
+successes: 0
 failures: 0
-assignments: 1
+assignments: 0
 registers: 0
-constraints: 1
-components: 4
+constraints: 0
+components: 0
 dN: 0

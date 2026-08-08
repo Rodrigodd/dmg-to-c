@@ -121,28 +121,18 @@ fn stateful_goldens_are_flat_deterministic_and_contract_complete() {
 
 #[test]
 fn fixture_sources_prove_blocking_and_nonblocking_normalize_identically() {
-    for (path, nonblocking) in [
-        (
-            "sv-cells/dmg_cpu_b/cells/tffnl.sv",
-            "q   <= l_buf ? d : ff;",
-        ),
-        (
-            "sv-to-sexpr/tests/fixtures/stateful/nested_priority.sv",
-            "q <= 1;",
-        ),
-    ] {
-        let source = read_repository_file(path);
-        assert!(source.contains(nonblocking));
-        let blocking_source = source.replace("<=", "=");
-        assert_ne!(source, blocking_source);
-        let nonblocking_lowered = lower_file(Path::new(path), &source).unwrap();
-        let blocking_lowered = lower_file(Path::new(path), &blocking_source).unwrap();
-        assert_eq!(nonblocking_lowered.cell, blocking_lowered.cell);
-        assert_eq!(
-            nonblocking_lowered.diagnostics,
-            blocking_lowered.diagnostics
-        );
-    }
+    let path = "sv-to-sexpr/tests/fixtures/stateful/nested_priority.sv";
+    let source = read_repository_file(path);
+    assert!(source.contains("q <= 1;"));
+    let blocking_source = source.replace("<=", "=");
+    assert_ne!(source, blocking_source);
+    let nonblocking_lowered = lower_file(Path::new(path), &source).unwrap();
+    let blocking_lowered = lower_file(Path::new(path), &blocking_source).unwrap();
+    assert_eq!(nonblocking_lowered.cell, blocking_lowered.cell);
+    assert_eq!(
+        nonblocking_lowered.diagnostics,
+        blocking_lowered.diagnostics
+    );
 }
 
 fn assignments(cell: &Cell) -> Vec<&Assignment> {

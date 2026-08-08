@@ -6,12 +6,12 @@ split-residue: 2/4
 split-rule: within-shard-rank-modulo-4
 cases: 3
 success path=sv-cells/dmg_cpu_b/cells/oai21.sv assignments=3 registers=0 constraints=2 components=6 dN=1
-success path=sv-cells/sm83/cells/nand2_od_b_dbus.sv assignments=2 registers=0 constraints=0 components=0 dN=0
-success path=sv-cells/sm83/cells/pch_dec2_c.sv assignments=1 registers=0 constraints=0 components=0 dN=0
+success path=sv-cells/sm83/cells/nand2_spare.sv assignments=1 registers=0 constraints=1 components=4 dN=0
+success path=sv-cells/sm83/cells/reg_a_out.sv assignments=4 registers=0 constraints=0 components=0 dN=0
 successes: 3
 failures: 0
-assignments: 6
+assignments: 8
 registers: 0
-constraints: 2
-components: 6
+constraints: 3
+components: 10
 dN: 1

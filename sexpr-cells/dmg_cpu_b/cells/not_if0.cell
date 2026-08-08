@@ -11,9 +11,25 @@
   (assignments
 
     (t0 (not in) (delay 0))
+    (d0
+      ena_n
+      (delay
+        (+ (elmore (wire 153) (pmos 35)) (elmore (wire 90) (nmos 35)))
+        (elmore (wire 153) (pmos 35))
+        0
+      )
+    )
     (y
-      (bufif0 t0 ena_n)
-      (delay (elmore (wire L_y) (* (pmos W_y_p) 2)) (elmore (wire L_y) (* (nmos 35) 2)))
+      (bufif0 t0 d0)
+      (delay
+        (elmore (wire L_y) (* (pmos W_y_p) 2))
+        (elmore (wire L_y) (* (nmos 35) 2))
+        (+
+          (elmore (wire 153) (nmos 35))
+          (elmore (wire 90) (pmos 35))
+          (elmore (wire L_y) (* (pmos 35) 2))
+        )
+      )
     )
   )
 )

@@ -8,19 +8,19 @@ cases: 12
 success path=sv-cells/dmg_cpu_b/cells/dlatch_ee.sv assignments=8 registers=1 constraints=2 components=12 dN=1
 success path=sv-cells/dmg_cpu_b/cells/nor2.sv assignments=1 registers=0 constraints=1 components=4 dN=0
 success path=sv-cells/dmg_cpu_b/cells/or2.sv assignments=1 registers=0 constraints=1 components=4 dN=0
-success path=sv-cells/dmg_cpu_b/cells/xor.sv assignments=1 registers=0 constraints=1 components=4 dN=0
-success path=sv-cells/sm83/cells/aoi21_b.sv assignments=3 registers=0 constraints=2 components=6 dN=1
-success path=sv-cells/sm83/cells/irq_prio_bit4.sv assignments=21 registers=0 constraints=1 components=2 dN=0
-success path=sv-cells/sm83/cells/nand2_spare.sv assignments=1 registers=0 constraints=1 components=4 dN=0
-success path=sv-cells/sm83/cells/not5_irq.sv assignments=5 registers=0 constraints=5 components=10 dN=0
-success path=sv-cells/sm83/cells/not_pch_dec1.sv assignments=2 registers=0 constraints=1 components=2 dN=0
-success path=sv-cells/sm83/cells/not_x1_p2_dec2.sv assignments=1 registers=0 constraints=1 components=2 dN=0
-success path=sv-cells/sm83/cells/reg_a_out.sv assignments=4 registers=0 constraints=0 components=0 dN=0
-success path=sv-cells/sm83/cells/srlatch_r_n_alt.sv assignments=4 registers=1 constraints=1 components=4 dN=0
+success path=sv-cells/sm83/cells/alu_cgen.sv assignments=52 registers=0 constraints=4 components=48 dN=0
+success path=sv-cells/sm83/cells/aoi331_s3.sv assignments=10 registers=0 constraints=3 components=12 dN=7
+success path=sv-cells/sm83/cells/irq_prio_bit5.sv assignments=23 registers=0 constraints=1 components=2 dN=0
+success path=sv-cells/sm83/cells/nor2_a.sv assignments=1 registers=0 constraints=1 components=4 dN=0
+success path=sv-cells/sm83/cells/not_a.sv assignments=1 registers=0 constraints=1 components=2 dN=0
+success path=sv-cells/sm83/cells/not_pch_dec3_a.sv assignments=2 registers=0 constraints=1 components=2 dN=0
+success path=sv-cells/sm83/cells/not_x1_pch_dec2.sv assignments=2 registers=0 constraints=1 components=2 dN=0
+success path=sv-cells/sm83/cells/reg_bc_out.sv assignments=8 registers=0 constraints=0 components=0 dN=0
+success path=sv-cells/sm83/cells/tie.sv assignments=2 registers=0 constraints=0 components=0 dN=0
 successes: 12
 failures: 0
-assignments: 52
-registers: 2
-constraints: 17
-components: 54
-dN: 2
+assignments: 111
+registers: 1
+constraints: 16
+components: 92
+dN: 8

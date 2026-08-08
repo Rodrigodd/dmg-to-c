@@ -5,16 +5,16 @@ rule: sorted-index-modulo-16
 split-residue: 1/2
 split-rule: within-shard-rank-modulo-2
 cases: 6
-failure unclassified path=sv-cells/dmg_cpu_b/cells/nand_latch.sv span=sv-cells/dmg_cpu_b/cells/nand_latch.sv:24:4 message="sv-cells/dmg_cpu_b/cells/nand_latch.sv:24:4: timing decomposition error: constraint p0 control c0 path f0 component 0 has transition-ambiguous placement DependencyEdge { dependency_order: 0, source: TimingNodeId(1), target: TimingNodeId(12) }"
-success path=sv-cells/dmg_cpu_b/cells/xnor.sv assignments=1 registers=0 constraints=1 components=4 dN=0
-success path=sv-cells/sm83/cells/irq_prio_bit3.sv assignments=23 registers=0 constraints=1 components=2 dN=0
-success path=sv-cells/sm83/cells/not2_reg_pc_we.sv assignments=2 registers=0 constraints=2 components=4 dN=0
-success path=sv-cells/sm83/cells/not_x1_dec2.sv assignments=1 registers=0 constraints=1 components=2 dN=0
-success path=sv-cells/sm83/cells/srlatch_r_n.sv assignments=4 registers=1 constraints=1 components=4 dN=0
-successes: 5
-failures: 1
-assignments: 31
-registers: 1
-constraints: 6
-components: 16
+success path=sv-cells/dmg_cpu_b/cells/nand_latch.sv assignments=10 registers=2 constraints=4 components=8 dN=0
+success path=sv-cells/dmg_cpu_b/cells/xor.sv assignments=1 registers=0 constraints=1 components=4 dN=0
+success path=sv-cells/sm83/cells/irq_prio_bit4.sv assignments=21 registers=0 constraints=1 components=2 dN=0
+success path=sv-cells/sm83/cells/not5_irq.sv assignments=5 registers=0 constraints=5 components=10 dN=0
+success path=sv-cells/sm83/cells/not_x1_p2_dec2.sv assignments=1 registers=0 constraints=1 components=2 dN=0
+success path=sv-cells/sm83/cells/srlatch_r_n_alt.sv assignments=4 registers=1 constraints=1 components=4 dN=0
+successes: 6
+failures: 0
+assignments: 42
+registers: 3
+constraints: 13
+components: 30
 dN: 0

@@ -149,16 +149,30 @@ impl PlacementDelay {
         }
     }
 
-    fn oriented(&self, orientation: PathOrientation) -> Option<Self> {
+    /// Narrows an oriented tuple to a constraint's arity. A control that cannot
+    /// drive a transition states no component for it, so the wider driver tuple
+    /// keeps the components no constraint reaches. Orient before truncating:
+    /// dropping the turn-off first would lose the negative rise/fall swap.
+    fn truncated_to(&self, arity: usize) -> Self {
+        match (self, arity) {
+            (Self::Two { rise, .. }, 1) | (Self::Three { rise, .. }, 1) => Self::One(rise.clone()),
+            (Self::Three { rise, fall, .. }, 2) => Self::Two {
+                rise: rise.clone(),
+                fall: fall.clone(),
+            },
+            _ => self.clone(),
+        }
+    }
+
+    fn oriented(&self, orientation: PathOrientation) -> Self {
         match (self, orientation) {
-            (_, PathOrientation::Positive) | (Self::One(_), PathOrientation::Ambiguous) => {
-                Some(self.clone())
+            (_, PathOrientation::Positive) | (Self::One(_), PathOrientation::Negative) => {
+                self.clone()
             }
-            (Self::One(value), PathOrientation::Negative) => Some(Self::One(value.clone())),
-            (Self::Two { rise, fall }, PathOrientation::Negative) => Some(Self::Two {
+            (Self::Two { rise, fall }, PathOrientation::Negative) => Self::Two {
                 rise: fall.clone(),
                 fall: rise.clone(),
-            }),
+            },
             (
                 Self::Three {
                     rise,
@@ -166,23 +180,11 @@ impl PlacementDelay {
                     turn_off,
                 },
                 PathOrientation::Negative,
-            ) => Some(Self::Three {
+            ) => Self::Three {
                 rise: fall.clone(),
                 fall: rise.clone(),
                 turn_off: turn_off.clone(),
-            }),
-            (Self::Two { rise, fall }, PathOrientation::Ambiguous) if rise == fall => {
-                Some(self.clone())
-            }
-            (
-                Self::Three {
-                    rise,
-                    fall,
-                    turn_off: _,
-                },
-                PathOrientation::Ambiguous,
-            ) if rise == fall => Some(self.clone()),
-            (Self::Two { .. } | Self::Three { .. }, PathOrientation::Ambiguous) => None,
+            },
         }
     }
 }
@@ -511,13 +513,6 @@ pub enum DecompositionErrorKind {
         control_id: TimingControlId,
         count: usize,
     },
-    UnrepresentableSense {
-        constraint_id: TimingConstraintId,
-        control_id: TimingControlId,
-        path_id: DecompositionPathId,
-        component: usize,
-        site: PlacementSite,
-    },
     IncompatibleSiteValues {
         site: PlacementSite,
         first_constraint_id: TimingConstraintId,
@@ -660,16 +655,6 @@ impl fmt::Display for DecompositionError {
                 formatter,
                 "constraint {constraint_id} control {control_id} produced {count} exact placement candidates"
             ),
-            DecompositionErrorKind::UnrepresentableSense {
-                constraint_id,
-                control_id,
-                path_id,
-                component,
-                site,
-            } => write!(
-                formatter,
-                "constraint {constraint_id} control {control_id} path {path_id} component {component} has transition-ambiguous placement {site:?}"
-            ),
             DecompositionErrorKind::IncompatibleSiteValues {
                 site,
                 first_constraint_id,
@@ -804,7 +789,6 @@ impl std::error::Error for DecompositionError {}
 enum PathOrientation {
     Positive,
     Negative,
-    Ambiguous,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -942,7 +926,7 @@ pub fn verify_decomposition(
         let mut cursors = vec![0_usize; constraint.additive_delay().len()];
         for (_, path_site, placement_index, placement) in placements_on_path {
             used_placements[placement_index] = true;
-            if placement.delay.len() != constraint.additive_delay().len() {
+            if placement.delay.len() < constraint.additive_delay().len() {
                 return Err(control_error(
                     graph,
                     path,
@@ -956,19 +940,7 @@ pub fn verify_decomposition(
             let target_delay = placement
                 .delay
                 .oriented(path_site.orientation_to_target)
-                .ok_or_else(|| {
-                    control_error(
-                        graph,
-                        path,
-                        DecompositionErrorKind::UnrepresentableSense {
-                            constraint_id: path.public.constraint_id,
-                            control_id: path.public.control_id,
-                            path_id: path.public.id,
-                            component: 0,
-                            site: placement.site.clone(),
-                        },
-                    )
-                })?;
+                .truncated_to(constraint.additive_delay().len());
             let mut ranges = Vec::with_capacity(target_delay.len());
             for (component, cursor) in cursors.iter_mut().enumerate() {
                 let terms = target_delay
@@ -1283,22 +1255,25 @@ pub fn verify_applied_model(
             if empty_components.is_some() {
                 used_applied_delays.insert(assignment_order);
             }
+            if local_delay.len() < constraint.delay().len() {
+                return Err(DecompositionError::new(
+                    provenance.span().clone(),
+                    DecompositionErrorKind::AppliedPathReconstructionMismatch {
+                        constraint_id: path.public.constraint_id,
+                        control_id: path.public.control_id,
+                        path_id: path.public.id,
+                        component: 0,
+                        detail: format!(
+                            "assignment {assignment_order} has {} components for a {}-component constraint",
+                            local_delay.len(),
+                            constraint.delay().len()
+                        ),
+                    },
+                ));
+            }
             let target_delay = local_delay
                 .oriented(path_site.orientation_to_target)
-                .ok_or_else(|| {
-                    DecompositionError::new(
-                        provenance.span().clone(),
-                        DecompositionErrorKind::AppliedPathReconstructionMismatch {
-                            constraint_id: path.public.constraint_id,
-                            control_id: path.public.control_id,
-                            path_id: path.public.id,
-                            component: 0,
-                            detail: format!(
-                                "assignment {assignment_order} has distinct transition components after a non-unate/conditional suffix"
-                            ),
-                        },
-                    )
-                })?;
+                .truncated_to(constraint.delay().len());
             for (component, terms) in target_delay.components().enumerate() {
                 reconstructed[component].extend_from_slice(terms);
             }
@@ -1785,17 +1760,22 @@ fn compose_suffix_orientation(graph: &TimingGraph, dependency_orders: &[usize]) 
                 edge.sense()
             };
             match (orientation, sense) {
-                (PathOrientation::Ambiguous, _) => PathOrientation::Ambiguous,
-                (_, TimingSense::NonUnate | TimingSense::Conditional) => PathOrientation::Ambiguous,
                 (PathOrientation::Positive, TimingSense::NegativeUnate) => {
                     PathOrientation::Negative
                 }
                 (PathOrientation::Negative, TimingSense::NegativeUnate) => {
                     PathOrientation::Positive
                 }
-                (orientation, TimingSense::PositiveUnate | TimingSense::StateControl) => {
-                    orientation
-                }
+                // A non-unate arc carries no sign of its own. The source states
+                // one tuple for it, so the path's inversion parity is the
+                // correspondence it asserts; exact reconstruction checks it.
+                (
+                    orientation,
+                    TimingSense::PositiveUnate
+                    | TimingSense::StateControl
+                    | TimingSense::NonUnate
+                    | TimingSense::Conditional,
+                ) => orientation,
             }
         })
 }
@@ -1819,24 +1799,7 @@ fn build_candidates(
                 if target_delay.is_zero_contribution() {
                     continue;
                 }
-                let Some(local_delay) = target_delay.oriented(path_site.orientation_to_target)
-                else {
-                    push_unique_blocker(
-                        &mut blockers,
-                        control_error(
-                            graph,
-                            path,
-                            DecompositionErrorKind::UnrepresentableSense {
-                                constraint_id: path.public.constraint_id,
-                                control_id: path.public.control_id,
-                                path_id: path.public.id,
-                                component: 0,
-                                site: path_site.site.clone(),
-                            },
-                        ),
-                    );
-                    continue;
-                };
+                let local_delay = target_delay.oriented(path_site.orientation_to_target);
                 if !physical_values
                     .iter()
                     .any(|(site, delay, _)| site == &path_site.site && delay == &local_delay)
@@ -1864,7 +1827,7 @@ fn build_candidates(
         for (path_index, path_site) in &affected {
             let path = &paths[*path_index];
             let constraint = constraint_for_path(graph, path)?;
-            if delay.len() != constraint.additive_delay().len() {
+            if delay.len() < constraint.additive_delay().len() {
                 push_unique_blocker(
                     &mut blockers,
                     incompatible_site_error(graph, &paths[anchor_path_index], path, site.clone()),
@@ -1872,24 +1835,9 @@ fn build_candidates(
                 compatible = false;
                 break;
             }
-            let Some(target_delay) = delay.oriented(path_site.orientation_to_target) else {
-                push_unique_blocker(
-                    &mut blockers,
-                    control_error(
-                        graph,
-                        path,
-                        DecompositionErrorKind::UnrepresentableSense {
-                            constraint_id: path.public.constraint_id,
-                            control_id: path.public.control_id,
-                            path_id: path.public.id,
-                            component: 0,
-                            site: site.clone(),
-                        },
-                    ),
-                );
-                compatible = false;
-                break;
-            };
+            let target_delay = delay
+                .oriented(path_site.orientation_to_target)
+                .truncated_to(constraint.additive_delay().len());
             let options = matching_tuple_contributions(constraint.additive_delay(), &target_delay)
                 .map_err(|error| symbolic_error(constraint.span().clone(), error))?;
             if options.is_empty() {
@@ -2758,9 +2706,8 @@ fn earliest_blocker(mut blockers: Vec<DecompositionError>) -> DecompositionError
 
 const fn blocker_priority(kind: &DecompositionErrorKind) -> u8 {
     match kind {
-        DecompositionErrorKind::UnrepresentableSense { .. } => 0,
-        DecompositionErrorKind::IncompatibleSiteValues { .. } => 1,
-        _ => 2,
+        DecompositionErrorKind::IncompatibleSiteValues { .. } => 0,
+        _ => 1,
     }
 }
 
@@ -3746,7 +3693,7 @@ mod tests {
     }
 
     #[test]
-    fn non_unate_source_specific_placement_rejects_distinct_transition_values() {
+    fn non_unate_source_specific_placements_keep_distinct_transition_values() {
         let mut graph = TimingGraph::new();
         let a = add_signal(&mut graph, "a", &[TimingSignalRole::Input], 1);
         let b = add_signal(&mut graph, "b", &[TimingSignalRole::Input], 2);
@@ -3764,12 +3711,127 @@ mod tests {
         add_constraint(&mut graph, "b", "y", three("Rb", "Fb", "Zb"), 6);
         let (cut, report) = analyzed(&graph);
 
-        let error = decompose_timing(&graph, &cut, &report).unwrap_err();
+        let decomposition = decompose_timing(&graph, &cut, &report).unwrap();
+        verify_decomposition(&graph, &cut, &report, &decomposition).unwrap();
+    }
+
+    /// A control that cannot drive every transition states a narrower tuple
+    /// than the driver it reaches, so the shared driver keeps its own arity.
+    #[test]
+    fn a_placement_may_be_wider_than_the_constraint_it_serves() {
+        let mut graph = TimingGraph::new();
+        let data = add_signal(&mut graph, "data", &[TimingSignalRole::Input], 1);
+        let ena = add_signal(&mut graph, "ena", &[TimingSignalRole::Input], 2);
+        add_signal(&mut graph, "y", &[TimingSignalRole::Output], 3);
+        add_assignment(
+            &mut graph,
+            0,
+            "y",
+            AssignmentFunction::Operator(ValueOperator::BufIf1),
+            &[
+                (data, 0, TimingSense::PositiveUnate),
+                (ena, 1, TimingSense::Conditional),
+            ],
+            None,
+            4,
+        );
+        add_constraint(&mut graph, "data", "y", two(&["Ry"], &["Fy"]), 5);
+        add_constraint(
+            &mut graph,
+            "ena",
+            "y",
+            DelayTuple::Three {
+                rise: add_terms(&["Pre", "Ry"]),
+                fall: add_terms(&["Pre", "Fy"]),
+                turn_off: add_terms(&["Zy"]),
+            },
+            6,
+        );
+        let (cut, report) = analyzed(&graph);
+
+        let decomposition = decompose_timing(&graph, &cut, &report).unwrap();
+        verify_decomposition(&graph, &cut, &report, &decomposition).unwrap();
+        let output = decomposition
+            .placements()
+            .iter()
+            .find(|placement| matches!(placement.site(), PlacementSite::ExistingAssignment { .. }))
+            .expect("the shared output assignment must carry the common suffix");
+        assert_eq!(
+            output.delay().len(),
+            3,
+            "the output keeps its turn-off component while serving a two-entry control"
+        );
+    }
+
+    #[test]
+    fn verifier_rejects_a_placement_narrower_than_its_constraint() {
+        let mut graph = TimingGraph::new();
+        let a = add_signal(&mut graph, "a", &[TimingSignalRole::Input], 1);
+        add_signal(&mut graph, "y", &[TimingSignalRole::Output], 2);
+        add_assignment(
+            &mut graph,
+            0,
+            "y",
+            AssignmentFunction::DirectAtom,
+            &[(a, 0, TimingSense::PositiveUnate)],
+            None,
+            3,
+        );
+        add_constraint(&mut graph, "a", "y", two(&["R"], &["F"]), 4);
+        let (cut, report) = analyzed(&graph);
+        let accepted = decompose_timing(&graph, &cut, &report).unwrap();
+
+        let mut narrow = accepted;
+        narrow.placements[0].delay = PlacementDelay::One(Vec::new());
+        let error = verify_decomposition(&graph, &cut, &report, &narrow).unwrap_err();
         assert!(matches!(
             error.kind(),
-            DecompositionErrorKind::UnrepresentableSense { component: 0, .. }
+            DecompositionErrorKind::PlacementTupleArity {
+                expected: 2,
+                actual: 1,
+                ..
+            }
         ));
-        assert_eq!(error.span(), &span(5));
+    }
+
+    /// A non-unate arc contributes no sign, so an inverter behind it still
+    /// flips the correspondence. Both constraints share one placement whose
+    /// rise and fall swap for the inverted target.
+    #[test]
+    fn inversion_behind_a_non_unate_arc_orients_a_shared_placement() {
+        let mut graph = TimingGraph::new();
+        let d = add_signal(&mut graph, "d", &[TimingSignalRole::Input], 1);
+        let q = add_signal(&mut graph, "q", &[TimingSignalRole::Output], 2);
+        add_signal(&mut graph, "q_n", &[TimingSignalRole::Output], 3);
+        add_assignment(
+            &mut graph,
+            0,
+            "q",
+            AssignmentFunction::Operator(ValueOperator::Mux),
+            &[(d, 0, TimingSense::NonUnate)],
+            None,
+            4,
+        );
+        add_assignment(
+            &mut graph,
+            1,
+            "q_n",
+            AssignmentFunction::Operator(ValueOperator::Not),
+            &[(q, 0, TimingSense::NegativeUnate)],
+            None,
+            5,
+        );
+        add_constraint(&mut graph, "d", "q", two(&["Rbuf"], &["Fbuf"]), 6);
+        add_constraint(&mut graph, "d", "q_n", two(&["Fbuf"], &["Rbuf"]), 7);
+        let (cut, report) = analyzed(&graph);
+
+        let decomposition = decompose_timing(&graph, &cut, &report).unwrap();
+        verify_decomposition(&graph, &cut, &report, &decomposition).unwrap();
+        assert_eq!(
+            decomposition.placements().len(),
+            1,
+            "the swapped constraints must share one placement, not duplicate it"
+        );
     }
 
     #[test]
@@ -3944,21 +4006,6 @@ mod tests {
         assert!(matches!(
             error.kind(),
             DecompositionErrorKind::CoverageMismatch { .. }
-        ));
-
-        let mut wrong_arity = accepted.clone();
-        wrong_arity.placements[0].delay = PlacementDelay::Two {
-            rise: Vec::new(),
-            fall: Vec::new(),
-        };
-        let error = verify_decomposition(&graph, &cut, &report, &wrong_arity).unwrap_err();
-        assert!(matches!(
-            error.kind(),
-            DecompositionErrorKind::PlacementTupleArity {
-                expected: 1,
-                actual: 2,
-                ..
-            }
         ));
 
         let mut stale = accepted;

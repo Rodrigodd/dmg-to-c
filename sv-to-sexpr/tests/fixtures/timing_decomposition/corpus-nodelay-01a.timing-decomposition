@@ -6,15 +6,15 @@ split-residue: 0/2
 split-rule: within-shard-rank-modulo-2
 cases: 6
 success path=sv-cells/dmg_cpu_b/cells/and3.sv assignments=1 registers=0 constraints=1 components=6 dN=0
-failure unclassified path=sv-cells/dmg_cpu_b/cells/not_if0.sv span=sv-cells/dmg_cpu_b/cells/not_if0.sv:25:4 message="sv-cells/dmg_cpu_b/cells/not_if0.sv:25:4: timing decomposition error: placement ExistingAssignment { node: TimingNodeId(5), assignment_order: 1 } requires incompatible values for constraint p0 control c0 and constraint p1 control c1"
-success path=sv-cells/sm83/cells/and2_and3_reg.sv assignments=2 registers=0 constraints=2 components=10 dN=0
-success path=sv-cells/sm83/cells/nand2_b.sv assignments=1 registers=0 constraints=1 components=4 dN=0
-success path=sv-cells/sm83/cells/not_dbus.sv assignments=1 registers=0 constraints=1 components=2 dN=0
-success path=sv-cells/sm83/cells/oai21.sv assignments=3 registers=0 constraints=2 components=6 dN=1
-successes: 5
-failures: 1
-assignments: 8
+success path=sv-cells/dmg_cpu_b/cells/not_if0.sv assignments=3 registers=0 constraints=2 components=5 dN=1
+success path=sv-cells/sm83/cells/and2_in1_n_tap_in1.sv assignments=2 registers=0 constraints=3 components=6 dN=0
+success path=sv-cells/sm83/cells/nand2_c.sv assignments=1 registers=0 constraints=1 components=4 dN=0
+success path=sv-cells/sm83/cells/not_dec1.sv assignments=1 registers=0 constraints=1 components=2 dN=0
+success path=sv-cells/sm83/cells/or2_a.sv assignments=1 registers=0 constraints=1 components=4 dN=0
+successes: 6
+failures: 0
+assignments: 9
 registers: 0
-constraints: 7
-components: 28
+constraints: 9
+components: 27
 dN: 1

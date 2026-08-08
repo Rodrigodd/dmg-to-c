@@ -5,7 +5,7 @@ rule: sorted-index-modulo-16
 split-residue: 4/12
 split-rule: within-shard-rank-modulo-12
 cases: 1
-success path=sv-cells/sm83/cells/aoi21_a.sv assignments=3 registers=0 constraints=2 components=6 dN=1
+success path=sv-cells/sm83/cells/aoi21_b.sv assignments=3 registers=0 constraints=2 components=6 dN=1
 successes: 1
 failures: 0
 assignments: 3

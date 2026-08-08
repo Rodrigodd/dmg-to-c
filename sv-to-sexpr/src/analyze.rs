@@ -3291,27 +3291,6 @@ mod tests {
     }
 
     #[test]
-    fn generated_tff_branches_remain_distinct() {
-        let report = analyze_path("../sv-cells/dmg_cpu_b/cells/tffnl.sv");
-        let module = &report.modules[0];
-        assert_eq!(module.generate_alternatives.len(), 1);
-        assert_eq!(module.registers, vec!["ff", "q"]);
-
-        let alternative = &module.generate_alternatives[0];
-        assert_eq!(alternative.condition.text, "nodelay");
-        assert!(alternative.then_branch.registers.is_empty());
-        assert!(alternative.then_branch.continuous_assignments.is_empty());
-        assert_eq!(alternative.then_branch.procedural_assignments.len(), 2);
-        assert_eq!(alternative.then_branch.drivers.len(), 2);
-
-        let else_branch = alternative.else_branch.as_ref().unwrap();
-        assert!(else_branch.registers.is_empty());
-        assert_eq!(else_branch.continuous_assignments.len(), 2);
-        assert!(else_branch.procedural_assignments.is_empty());
-        assert_eq!(else_branch.drivers.len(), 2);
-    }
-
-    #[test]
     fn timing_only_references_do_not_classify_inout_ports() {
         let source = r#"
 module timing_only(input logic a, inout logic timing, output logic y);
@@ -3795,10 +3774,6 @@ endmodule
             (
                 analyze_path("../sv-cells/dmg_cpu_b/cells/and2.sv"),
                 TargetMilestone::M7SymbolicTiming,
-            ),
-            (
-                analyze_path("../sv-cells/dmg_cpu_b/cells/tffnl.sv"),
-                TargetMilestone::M8GenerateSelection,
             ),
             (keeper_structural, TargetMilestone::M10Keeper),
         ];

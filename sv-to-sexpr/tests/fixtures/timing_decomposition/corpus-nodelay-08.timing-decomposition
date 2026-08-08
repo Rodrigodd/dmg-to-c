@@ -5,22 +5,22 @@ rule: sorted-index-modulo-16
 split-residue: 0/1
 split-rule: within-shard-rank-modulo-1
 cases: 12
-failure unclassified path=sv-cells/dmg_cpu_b/cells/buf_if0.sv span=sv-cells/dmg_cpu_b/cells/buf_if0.sv:25:4 message="sv-cells/dmg_cpu_b/cells/buf_if0.sv:25:4: timing decomposition error: placement ExistingAssignment { node: TimingNodeId(7), assignment_order: 2 } requires incompatible values for constraint p0 control c0 and constraint p1 control c1"
+success path=sv-cells/dmg_cpu_b/cells/buf_if0.sv assignments=4 registers=0 constraints=2 components=5 dN=1
 success path=sv-cells/dmg_cpu_b/cells/nand7.sv assignments=1 registers=0 constraints=1 components=14 dN=0
 success path=sv-cells/dmg_cpu_b/cells/oa21.sv assignments=3 registers=0 constraints=2 components=6 dN=1
-success path=sv-cells/dmg_cpu_b/cells/tie.sv assignments=2 registers=0 constraints=0 components=0 dN=0
-success path=sv-cells/sm83/cells/ao33_s3_tap_in1_n.sv assignments=10 registers=0 constraints=3 components=12 dN=6
-success path=sv-cells/sm83/cells/irq_prio_bit2.sv assignments=19 registers=0 constraints=0 components=0 dN=0
-success path=sv-cells/sm83/cells/nand2_od_a_dbus.sv assignments=2 registers=0 constraints=0 components=0 dN=0
-success path=sv-cells/sm83/cells/not2_pch_dec1.sv assignments=4 registers=0 constraints=2 components=4 dN=0
-success path=sv-cells/sm83/cells/not_p2_dec3_b.sv assignments=1 registers=0 constraints=1 components=2 dN=0
-success path=sv-cells/sm83/cells/not_reg_we.sv assignments=1 registers=0 constraints=1 components=2 dN=0
-success path=sv-cells/sm83/cells/pch_dec2_b.sv assignments=1 registers=0 constraints=0 components=0 dN=0
-success path=sv-cells/sm83/cells/reg_wz_out.sv assignments=34 registers=0 constraints=2 components=16 dN=0
-successes: 11
-failures: 1
-assignments: 78
-registers: 0
-constraints: 12
-components: 56
-dN: 7
+success path=sv-cells/dmg_cpu_b/cells/xnor.sv assignments=1 registers=0 constraints=1 components=4 dN=0
+success path=sv-cells/sm83/cells/aoi21_a.sv assignments=3 registers=0 constraints=2 components=6 dN=1
+success path=sv-cells/sm83/cells/irq_prio_bit3.sv assignments=23 registers=0 constraints=1 components=2 dN=0
+success path=sv-cells/sm83/cells/nand2_od_b_dbus.sv assignments=2 registers=0 constraints=0 components=0 dN=0
+success path=sv-cells/sm83/cells/not2_reg_pc_we.sv assignments=2 registers=0 constraints=2 components=4 dN=0
+success path=sv-cells/sm83/cells/not_p2_pch_dec3.sv assignments=2 registers=0 constraints=1 components=2 dN=0
+success path=sv-cells/sm83/cells/not_x1_dec2.sv assignments=1 registers=0 constraints=1 components=2 dN=0
+success path=sv-cells/sm83/cells/pch_dec2_c.sv assignments=1 registers=0 constraints=0 components=0 dN=0
+success path=sv-cells/sm83/cells/srlatch_r_n.sv assignments=4 registers=1 constraints=1 components=4 dN=0
+successes: 12
+failures: 0
+assignments: 47
+registers: 1
+constraints: 14
+components: 49
+dN: 3

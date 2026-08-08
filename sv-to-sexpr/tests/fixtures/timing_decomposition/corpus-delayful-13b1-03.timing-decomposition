@@ -5,11 +5,11 @@ rule: sorted-index-modulo-16
 split-residue: 3/12
 split-rule: within-shard-rank-modulo-12
 cases: 1
-success path=sv-cells/sm83/cells/alu_pggen.sv assignments=14 registers=0 constraints=11 components=34 dN=5
+success path=sv-cells/sm83/cells/alu_shifter.sv assignments=51 registers=0 constraints=0 components=0 dN=0
 successes: 1
 failures: 0
-assignments: 14
+assignments: 51
 registers: 0
-constraints: 11
-components: 34
-dN: 5
+constraints: 0
+components: 0
+dN: 0

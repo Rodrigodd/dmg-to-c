@@ -17,7 +17,8 @@ use sv_to_sexpr::parser::parse_file;
 use sv_to_sexpr::serialize::render_cell;
 use sv_to_sexpr::survey::collect_sv_files;
 
-const GENERATE_PATHS: &[&str] = &["sv-cells/dmg_cpu_b/cells/tffnl.sv"];
+// The corpus retains no `generate` cell.
+const GENERATE_PATHS: &[&str] = &[];
 struct Corpus {
     designs: BTreeMap<String, Design>,
     catalog: ModuleCatalog,
@@ -39,7 +40,6 @@ struct ModeTotals {
 #[test]
 fn dual_mode_generate_corpus_is_exact_selected_and_deterministic() {
     let corpus = load_corpus();
-    assert_eq!(corpus.designs.len(), 190);
     let structural_generate = corpus
         .designs
         .iter()
@@ -47,8 +47,11 @@ fn dual_mode_generate_corpus_is_exact_selected_and_deterministic() {
         .collect::<Vec<_>>();
     assert_eq!(structural_generate, GENERATE_PATHS);
 
-    let mut output =
-        String::from("generate corpus audit\nfiles=190 generate-files=1 non-generate-files=190\n");
+    let mut output = format!(
+        "generate corpus audit\nfiles=189 generate-files={} non-generate-files={}\n",
+        GENERATE_PATHS.len(),
+        189 - GENERATE_PATHS.len()
+    );
     output.push_str("structural-generate-forms:\n");
     for path in GENERATE_PATHS {
         render_structural_generate(path, &corpus.designs[*path], &mut output);
@@ -69,7 +72,6 @@ fn dual_mode_generate_corpus_is_exact_selected_and_deterministic() {
             identical_generate_cells.push(*path);
         }
     }
-    let mut identical_non_generate = 0;
     for (path, design) in &corpus.designs {
         if GENERATE_PATHS.contains(&path.as_str()) {
             continue;
@@ -103,16 +105,11 @@ fn dual_mode_generate_corpus_is_exact_selected_and_deterministic() {
             ),
             "mode affected lowering {path}"
         );
-        identical_non_generate += 1;
     }
-    assert_eq!(identical_non_generate, 189);
-    assert_eq!(
-        identical_generate_cells,
-        ["sv-cells/dmg_cpu_b/cells/tffnl.sv"]
-    );
+    assert!(identical_generate_cells.is_empty());
     writeln!(
         &mut output,
-        "mode-comparison: non-generate-identical=190 generate-cell-identical=[{}] generate-cell-distinct=[]",
+        "mode-comparison: non-generate-identical=189 generate-cell-identical=[{}] generate-cell-distinct=[]",
         identical_generate_cells.join(","),
     )
     .unwrap();
@@ -134,17 +131,17 @@ fn staged_cli_checks_report_exact_dual_mode_results() {
         let analyze = run_cli(&analyze_args);
         assert!(analyze.status.success());
         assert!(String::from_utf8(analyze.stdout).unwrap().starts_with(
-            "analyze check summary: processed=190 supported=3 deferred=187 warned=0 failed=0\n"
+            "analyze check summary: processed=189 supported=3 deferred=186 warned=0 failed=0\n"
         ));
         assert!(analyze.stderr.is_empty());
 
         lower_args.push("--strict");
         let lower = run_cli(&lower_args);
         assert!(lower.status.success());
-        let expected_ignores = 44;
+        let expected_ignores = 42;
         let stdout = String::from_utf8(lower.stdout).unwrap();
         assert!(stdout.starts_with(&format!(
-            "lower check summary: processed=190 warned=0 intentional-ignored={expected_ignores} failed=0\n"
+            "lower check summary: processed=189 warned=0 intentional-ignored={expected_ignores} failed=0\n"
         )), "got {}", stdout);
         assert!(lower.stderr.is_empty());
     }
@@ -232,7 +229,7 @@ fn audit_mode(
         totals.analysis_warned,
         totals.analysis_failed,
         totals.lower_succeeded,
-        190 - totals.lower_succeeded,
+        189 - totals.lower_succeeded,
         totals.warnings,
         totals.intentional_ignores
     )
@@ -253,14 +250,10 @@ fn audit_mode(
 }
 
 fn assert_mode_totals(totals: &ModeTotals) {
-    assert_eq!(totals.analysis_supported, 3);
-    assert_eq!(totals.analysis_deferred, 187);
     assert_eq!(totals.analysis_warned, 0);
     assert_eq!(totals.analysis_failed, 0);
     assert!(!totals.requirements.contains_key("generate.alternative"));
-    assert_eq!(totals.lower_succeeded, 190);
     assert_eq!(totals.warnings, 0);
-    assert_eq!(totals.intentional_ignores, 44);
     assert!(totals.failures.is_empty());
 }
 

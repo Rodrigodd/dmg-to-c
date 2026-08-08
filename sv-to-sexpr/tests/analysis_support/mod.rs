@@ -5,7 +5,6 @@ use std::sync::OnceLock;
 
 use sv_to_sexpr::analyze::{
     AnalysisReport, ModuleCatalog, analyze_design_with_catalog_and_generate_mode,
-    analyze_design_with_catalog_structural,
 };
 use sv_to_sexpr::ast::Design;
 use sv_to_sexpr::elaborate::GenerateMode;
@@ -26,14 +25,6 @@ impl CorpusAnalysis {
             .unwrap_or_else(|| panic!("missing parsed corpus design {logical_path}"));
         analyze_design_with_catalog_and_generate_mode(design, &self.catalog, GenerateMode::Delayful)
             .unwrap()
-    }
-
-    pub fn analyze_structural(&self, logical_path: &str) -> AnalysisReport {
-        let design = self
-            .designs
-            .get(logical_path)
-            .unwrap_or_else(|| panic!("missing parsed corpus design {logical_path}"));
-        analyze_design_with_catalog_structural(design, &self.catalog).unwrap()
     }
 }
 

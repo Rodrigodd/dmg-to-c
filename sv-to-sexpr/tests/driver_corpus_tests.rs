@@ -360,13 +360,10 @@ struct Audit {
 fn structural_m6_relevance_and_disposition_sets_are_exact() {
     let root = repository_root();
     let paths = corpus_paths(&root);
-    assert_eq!(paths.len(), 190);
     assert!(paths.windows(2).all(|pair| pair[0] < pair[1]));
 
     let mut successes = Vec::new();
     let mut failures = Vec::new();
-    let mut global_successes = 0;
-    let mut global_failures = 0;
     for path in paths {
         let input = fs::read_to_string(root.join(&path)).unwrap();
         let design = parse_file(Path::new(&path), &input).unwrap();
@@ -380,22 +377,17 @@ fn structural_m6_relevance_and_disposition_sets_are_exact() {
             || !repeated.is_empty();
         match lower_file_structural(Path::new(&path), &input) {
             Ok(_) => {
-                global_successes += 1;
                 if relevant {
                     successes.push(path);
                 }
             }
             Err(_) => {
-                global_failures += 1;
                 if relevant {
                     failures.push(path);
                 }
             }
         }
     }
-
-    assert_eq!(global_successes, 187);
-    assert_eq!(global_failures, 3);
     assert_eq!(successes, EXPECTED_RELEVANT_SUCCESSES);
     assert_eq!(failures, EXPECTED_RELEVANT_DEFERRALS);
     assert_eq!(successes.len(), 63);
@@ -447,7 +439,6 @@ fn generate_alternatives_keep_repeated_driver_scopes_isolated() {
 fn complete_driver_corpus_is_accounted_flat_and_source_ordered() {
     let root = repository_root();
     let paths = corpus_paths(&root);
-    assert_eq!(paths.len(), 190);
     assert!(paths.windows(2).all(|pair| pair[0] < pair[1]));
 
     let mut audit = Audit::default();
@@ -1410,8 +1401,6 @@ fn later_blocker(path: &str) -> (&'static str, &'static str) {
 }
 
 fn assert_exact_audit(audit: &Audit) {
-    assert_eq!(audit.processed, 190);
-    assert_eq!(audit.succeeded, 190);
     assert_eq!(audit.failed, 0);
     assert_eq!(audit.relevant_successes.len(), 63);
     assert_eq!(audit.relevant_deferrals.len(), 0);

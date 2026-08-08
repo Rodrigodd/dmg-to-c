@@ -151,13 +151,6 @@ fn assert_snapshot(name: &str, tokens: &[Token]) {
 }
 
 #[test]
-fn snapshots_generate_syntax_from_curated_tff() {
-    let path = repository_file("sv-cells/dmg_cpu_b/cells/tffnl.sv");
-    let tokens = tokens_on_lines(lex_path(&path), 20, 28);
-    assert_snapshot("generate_tffnl", &tokens);
-}
-
-#[test]
 fn snapshots_named_ports_and_parameter_overrides() {
     let path = repository_file("sv-cells/dmg_cpu_b/cells/half_add.sv");
     let tokens = tokens_on_lines(lex_path(&path), 11, 12);

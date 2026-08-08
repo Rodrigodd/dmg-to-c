@@ -9,18 +9,18 @@ success path=sv-cells/dmg_cpu_b/cells/ao21.sv assignments=3 registers=0 constrai
 success path=sv-cells/dmg_cpu_b/cells/nand2.sv assignments=1 registers=0 constraints=1 components=4 dN=0
 success path=sv-cells/dmg_cpu_b/cells/not_x1.sv assignments=1 registers=0 constraints=1 components=2 dN=0
 success path=sv-cells/dmg_cpu_b/cells/pad_out_diff.sv assignments=2 registers=0 constraints=0 components=0 dN=0
-success path=sv-cells/sm83/cells/and2_irq.sv assignments=1 registers=0 constraints=1 components=4 dN=0
-success path=sv-cells/sm83/cells/idu_bit123456.sv assignments=22 registers=0 constraints=0 components=0 dN=0
-success path=sv-cells/sm83/cells/nand2_d.sv assignments=1 registers=0 constraints=1 components=4 dN=0
-success path=sv-cells/sm83/cells/nor2_spare.sv assignments=1 registers=0 constraints=1 components=4 dN=0
-success path=sv-cells/sm83/cells/not_dec3.sv assignments=1 registers=0 constraints=1 components=2 dN=0
-success path=sv-cells/sm83/cells/not_reg_b_we.sv assignments=1 registers=0 constraints=1 components=2 dN=0
-success path=sv-cells/sm83/cells/or2_b.sv assignments=1 registers=0 constraints=1 components=4 dN=0
-success path=sv-cells/sm83/cells/reg_hl_out.sv assignments=12 registers=0 constraints=0 components=0 dN=0
+success path=sv-cells/sm83/cells/and2_reg.sv assignments=1 registers=0 constraints=1 components=4 dN=0
+success path=sv-cells/sm83/cells/idu_bit7.sv assignments=16 registers=0 constraints=0 components=0 dN=0
+success path=sv-cells/sm83/cells/nand2_in1_n_a.sv assignments=2 registers=0 constraints=2 components=4 dN=0
+success path=sv-cells/sm83/cells/nor3.sv assignments=1 registers=0 constraints=1 components=6 dN=0
+success path=sv-cells/sm83/cells/not_e.sv assignments=1 registers=0 constraints=1 components=2 dN=0
+success path=sv-cells/sm83/cells/not_reg_h_e_we.sv assignments=1 registers=0 constraints=1 components=2 dN=0
+success path=sv-cells/sm83/cells/or2_tap_nor_tap_in1_n_reg.sv assignments=5 registers=0 constraints=5 components=10 dN=2
+success path=sv-cells/sm83/cells/reg_pc_out_bit012.sv assignments=22 registers=0 constraints=0 components=0 dN=0
 successes: 12
 failures: 0
-assignments: 47
+assignments: 56
 registers: 0
-constraints: 10
-components: 32
-dN: 1
+constraints: 15
+components: 40
+dN: 3
