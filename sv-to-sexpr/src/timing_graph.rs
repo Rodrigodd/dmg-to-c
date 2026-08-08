@@ -212,10 +212,12 @@ pub const fn classify_timing_sense(
         | ValueOperator::CaseEq
         | ValueOperator::Neq
         | ValueOperator::CaseNeq => Some(TimingSense::NonUnate),
+        // Only the select is non-unate. With the select held, the output
+        // follows each data operand monotonically.
         ValueOperator::Mux => Some(if operand_index == 0 {
             TimingSense::NonUnate
         } else {
-            TimingSense::Conditional
+            TimingSense::PositiveUnate
         }),
         ValueOperator::BufIf0 | ValueOperator::BufIf1 => Some(if operand_index == 0 {
             TimingSense::PositiveUnate
@@ -3085,8 +3087,8 @@ mod tests {
                 ValueOperator::Mux,
                 vec![
                     (0, TimingSense::NonUnate),
-                    (1, TimingSense::Conditional),
-                    (2, TimingSense::Conditional),
+                    (1, TimingSense::PositiveUnate),
+                    (2, TimingSense::PositiveUnate),
                 ],
             ),
             (

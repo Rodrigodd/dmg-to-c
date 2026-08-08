@@ -43,6 +43,9 @@ unsupported SystemVerilog; preserve source locations and return a diagnostic.
   syntax as raw text or silently discard parsed items.
 - Attach a `Span` to diagnostics and preserve the most specific source location
   available.
+- Do not add superfluous comments. Comment only what the code cannot say
+  itself, such as a non-obvious rationale or a contract decision. Never restate
+  what the next line already does.
 - Prefer deterministic data structures and ordering (`BTreeMap`, sorted paths,
   and source order) because output and golden fixtures must be reproducible.
 - Value expressions in the target IR are flat: an operator may contain only
@@ -72,8 +75,9 @@ cargo run --manifest-path sv-to-sexpr/Cargo.toml -- analyze path/to/cell.sv
 cargo run --manifest-path sv-to-sexpr/Cargo.toml -- lower path/to/cell.sv
 cargo run --manifest-path sv-to-sexpr/Cargo.toml -- convert-file input.sv output.cell --dry-run
 
-# Run converter tests and required lint validation.
-cargo test --manifest-path sv-to-sexpr/Cargo.toml
+# Run converter tests and required lint validation. `cargo nextest run` is the
+# test runner for both crates; it supersedes `cargo test`, so do not run both.
+cargo nextest run --manifest-path sv-to-sexpr/Cargo.toml
 cargo clippy --manifest-path sv-to-sexpr/Cargo.toml --all-targets
 cargo fmt --manifest-path sv-to-sexpr/Cargo.toml -- --check
 
@@ -84,7 +88,7 @@ cargo run --manifest-path sv-to-sexpr/Cargo.toml -- check sv-cells --stage analy
 cargo run --manifest-path sv-to-sexpr/Cargo.toml -- check sv-cells --stage lower
 
 # Build or run the sibling formatter crate.
-cargo test --manifest-path sexpr-fmt/Cargo.toml
+cargo nextest run --manifest-path sexpr-fmt/Cargo.toml
 cargo run --manifest-path sexpr-fmt/Cargo.toml -- path/to/file.cell
 cargo run --manifest-path sexpr-fmt/Cargo.toml -- --check path/to/file.cell
 ```

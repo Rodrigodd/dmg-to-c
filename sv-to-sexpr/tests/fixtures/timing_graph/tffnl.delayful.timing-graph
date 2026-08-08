@@ -34,12 +34,12 @@ dependency n8 -> n17 kind=operand operand=0 sense=positive event=- @sv-cells/dmg
 dependency n6 -> n17 kind=operand operand=1 sense=positive event=- @sv-cells/dmg_cpu_b/cells/tffnl.sv:30:48
 dependency n17 -> n9 kind=drive operand=- sense=positive event=- @sv-cells/dmg_cpu_b/cells/tffnl.sv:30:48
 dependency n6 -> n18 kind=operand operand=0 sense=non-unate event=- @sv-cells/dmg_cpu_b/cells/tffnl.sv:30:48
-dependency n0 -> n18 kind=operand operand=1 sense=conditional event=- @sv-cells/dmg_cpu_b/cells/tffnl.sv:30:48
-dependency n5 -> n18 kind=operand operand=2 sense=conditional event=- @sv-cells/dmg_cpu_b/cells/tffnl.sv:30:48
+dependency n0 -> n18 kind=operand operand=1 sense=positive event=- @sv-cells/dmg_cpu_b/cells/tffnl.sv:30:48
+dependency n5 -> n18 kind=operand operand=2 sense=positive event=- @sv-cells/dmg_cpu_b/cells/tffnl.sv:30:48
 dependency n18 -> n10 kind=drive operand=- sense=positive event=- @sv-cells/dmg_cpu_b/cells/tffnl.sv:30:48
 dependency n9 -> n19 kind=operand operand=0 sense=non-unate event=- @sv-cells/dmg_cpu_b/cells/tffnl.sv:30:41
-dependency n10 -> n19 kind=operand operand=1 sense=conditional event=- @sv-cells/dmg_cpu_b/cells/tffnl.sv:30:41
-dependency n3 -> n19 kind=operand operand=2 sense=conditional event=- @sv-cells/dmg_cpu_b/cells/tffnl.sv:30:41
+dependency n10 -> n19 kind=operand operand=1 sense=positive event=- @sv-cells/dmg_cpu_b/cells/tffnl.sv:30:41
+dependency n3 -> n19 kind=operand operand=2 sense=positive event=- @sv-cells/dmg_cpu_b/cells/tffnl.sv:30:41
 dependency n19 -> n3 kind=state-boundary operand=- sense=positive event=- @sv-cells/dmg_cpu_b/cells/tffnl.sv:30:41
 dependency n7 -> n20 kind=operand operand=0 sense=positive event=- @sv-cells/dmg_cpu_b/cells/tffnl.sv:31:48
 dependency n6 -> n20 kind=operand operand=1 sense=positive event=- @sv-cells/dmg_cpu_b/cells/tffnl.sv:31:48
@@ -47,12 +47,12 @@ dependency n20 -> n11 kind=drive operand=- sense=positive event=- @sv-cells/dmg_
 dependency n3 -> n21 kind=operand operand=0 sense=negative event=- @sv-cells/dmg_cpu_b/cells/tffnl.sv:31:48
 dependency n21 -> n12 kind=drive operand=- sense=positive event=- @sv-cells/dmg_cpu_b/cells/tffnl.sv:31:48
 dependency n6 -> n22 kind=operand operand=0 sense=non-unate event=- @sv-cells/dmg_cpu_b/cells/tffnl.sv:31:48
-dependency n0 -> n22 kind=operand operand=1 sense=conditional event=- @sv-cells/dmg_cpu_b/cells/tffnl.sv:31:48
-dependency n12 -> n22 kind=operand operand=2 sense=conditional event=- @sv-cells/dmg_cpu_b/cells/tffnl.sv:31:48
+dependency n0 -> n22 kind=operand operand=1 sense=positive event=- @sv-cells/dmg_cpu_b/cells/tffnl.sv:31:48
+dependency n12 -> n22 kind=operand operand=2 sense=positive event=- @sv-cells/dmg_cpu_b/cells/tffnl.sv:31:48
 dependency n22 -> n13 kind=drive operand=- sense=positive event=- @sv-cells/dmg_cpu_b/cells/tffnl.sv:31:48
 dependency n11 -> n23 kind=operand operand=0 sense=non-unate event=- @sv-cells/dmg_cpu_b/cells/tffnl.sv:31:41
-dependency n13 -> n23 kind=operand operand=1 sense=conditional event=- @sv-cells/dmg_cpu_b/cells/tffnl.sv:31:41
-dependency n5 -> n23 kind=operand operand=2 sense=conditional event=- @sv-cells/dmg_cpu_b/cells/tffnl.sv:31:41
+dependency n13 -> n23 kind=operand operand=1 sense=positive event=- @sv-cells/dmg_cpu_b/cells/tffnl.sv:31:41
+dependency n5 -> n23 kind=operand operand=2 sense=positive event=- @sv-cells/dmg_cpu_b/cells/tffnl.sv:31:41
 dependency n23 -> n5 kind=state-boundary operand=- sense=positive event=- @sv-cells/dmg_cpu_b/cells/tffnl.sv:31:41
 dependency n3 -> n24 kind=operand operand=0 sense=negative event=- @sv-cells/dmg_cpu_b/cells/tffnl.sv:32:2
 dependency n24 -> n4 kind=drive operand=- sense=positive event=- @sv-cells/dmg_cpu_b/cells/tffnl.sv:32:2
@@ -118,9 +118,9 @@ control-group signal=l source=n1 kind=multiple-targets constraints=p2,p5 control
 control-group signal=tclk_n source=n2 kind=multiple-targets constraints=p0,p3 controls=c0,c3 targets=n3,n4 prefix=n7,n15,n19
 group target=q kind=multiple constraints=p0,p1,p2 controls=c0,c1,c2 suffix=n19 reconvergent=n17,n18,n19,n20,n22,n23 split=candidate
   control-report c0 constraint=p0 source=n2 target=n3 slice=n2,n3,n5,n7,n8,n9,n10,n11,n12,n13,n15,n16,n17,n18,n19,n20,n21,n22,n23 dominators=n2,n3,n7,n15,n19 post-dominators=n2,n3,n7,n15,n19 senses=non-unate
-  control-report c1 constraint=p1 source=n0 target=n3 slice=n0,n3,n5,n10,n12,n13,n18,n19,n21,n22,n23 dominators=n0,n3,n10,n18,n19 post-dominators=n0,n3,n10,n18,n19 senses=conditional
+  control-report c1 constraint=p1 source=n0 target=n3 slice=n0,n3,n5,n10,n12,n13,n18,n19,n21,n22,n23 dominators=n0,n3,n10,n18,n19 post-dominators=n0,n3,n10,n18,n19 senses=positive,negative
   control-report c2 constraint=p2 source=n1 target=n3 slice=n1,n3,n5,n6,n9,n10,n11,n12,n13,n14,n17,n18,n19,n20,n21,n22,n23 dominators=n1,n3,n6,n14,n19 post-dominators=n1,n3,n6,n14,n19 senses=non-unate
 group target=q_n kind=multiple constraints=p3,p4,p5 controls=c3,c4,c5 suffix=n3,n19,n24 reconvergent=n17,n18,n19,n20,n22,n23 split=not-required
   control-report c3 constraint=p3 source=n2 target=n4 slice=n2,n3,n4,n5,n7,n8,n9,n10,n11,n12,n13,n15,n16,n17,n18,n19,n20,n21,n22,n23,n24 dominators=n2,n3,n4,n7,n15,n19,n24 post-dominators=n2,n3,n4,n7,n15,n19,n24 senses=non-unate
-  control-report c4 constraint=p4 source=n0 target=n4 slice=n0,n3,n4,n5,n10,n12,n13,n18,n19,n21,n22,n23,n24 dominators=n0,n3,n4,n10,n18,n19,n24 post-dominators=n0,n3,n4,n10,n18,n19,n24 senses=conditional
+  control-report c4 constraint=p4 source=n0 target=n4 slice=n0,n3,n4,n5,n10,n12,n13,n18,n19,n21,n22,n23,n24 dominators=n0,n3,n4,n10,n18,n19,n24 post-dominators=n0,n3,n4,n10,n18,n19,n24 senses=positive,negative
   control-report c5 constraint=p5 source=n1 target=n4 slice=n1,n3,n4,n5,n6,n9,n10,n11,n12,n13,n14,n17,n18,n19,n20,n21,n22,n23,n24 dominators=n1,n3,n4,n6,n14,n19,n24 post-dominators=n1,n3,n4,n6,n14,n19,n24 senses=non-unate

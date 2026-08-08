@@ -383,13 +383,13 @@ impl<'a> TimingApplicationState<'a> {
                 placement.site(),
                 PlacementSite::DependencyEdge { .. } | PlacementSite::PublicOutputSplit { .. }
             ) {
-                let name = format!("d{next_delay_index}");
-                if let Some(collision_span) = reserved.get(&name) {
-                    return Err(application_error(
-                        collision_span.clone(),
-                        DecompositionErrorKind::ReservedDelayName { name },
-                    ));
-                }
+                let name = loop {
+                    let candidate = format!("d{next_delay_index}");
+                    next_delay_index += 1;
+                    if !reserved.contains_key(&candidate) {
+                        break candidate;
+                    }
+                };
                 if planned_delay_names
                     .insert(placement.site().clone(), name.clone())
                     .is_some()
@@ -404,7 +404,6 @@ impl<'a> TimingApplicationState<'a> {
                     ));
                 }
                 reserved.insert(name, span_for_site(graph, placement.site()));
-                next_delay_index += 1;
             }
         }
 
@@ -1886,14 +1885,14 @@ mod tests {
     }
 
     #[test]
-    fn deterministic_delay_name_collision_reports_the_reserved_span_without_skipping() {
+    fn deterministic_delay_names_skip_reserved_indices() {
         let lowered = lowered(
             &["a", "d0"],
             &["y"],
             Vec::new(),
             vec![Assignment {
                 target: "y".to_string(),
-                expr: Expr::atom("a"),
+                expr: Expr::value(ValueOperator::Or, vec![Expr::atom("a"), Expr::atom("d0")]),
                 delay: tuple("0"),
             }],
         );
@@ -1909,27 +1908,50 @@ mod tests {
             3,
         )];
         let graph = build_functional_timing_graph(&lowered.cell, &metadata, &provenance).unwrap();
-        let dependency = &graph.dependencies()[0];
-        let placement = DelayPlacement::test_only(
-            PlacementSite::DependencyEdge {
-                dependency_order: 0,
-                source: dependency.source(),
-                target: dependency.target(),
-            },
-            placement_delay("T"),
-        );
-        let decomposition = Decomposition::test_only(vec![placement.clone()]);
-        let Err(error) =
+        let placements = (0..2)
+            .map(|order| {
+                let dependency = &graph.dependencies()[order];
+                DelayPlacement::test_only(
+                    PlacementSite::DependencyEdge {
+                        dependency_order: order,
+                        source: dependency.source(),
+                        target: dependency.target(),
+                    },
+                    placement_delay("T"),
+                )
+            })
+            .collect::<Vec<_>>();
+        let decomposition = Decomposition::test_only(placements.clone());
+        let mut state =
             TimingApplicationState::new(&lowered, &metadata, &provenance, &graph, &decomposition)
-        else {
-            panic!("reserved d0 must reject deterministic name preallocation");
-        };
-        assert_eq!(error.span(), &span(7));
+                .unwrap();
+
+        for placement in &placements {
+            insert_edge_delay(&mut state, placement).unwrap();
+        }
+        let values = assignments(&state.items);
+        let identities = values
+            .iter()
+            .filter(|value| value.assignment.target != "y")
+            .map(|value| {
+                (
+                    value.assignment.target.as_str(),
+                    value.assignment.expr.clone(),
+                )
+            })
+            .collect::<Vec<_>>();
         assert_eq!(
-            error.kind(),
-            &DecompositionErrorKind::ReservedDelayName {
-                name: "d0".to_string()
-            }
+            identities,
+            vec![("d1", Expr::atom("a")), ("d2", Expr::atom("d0")),]
+        );
+        assert_eq!(
+            values
+                .iter()
+                .find(|value| value.assignment.target == "y")
+                .unwrap()
+                .assignment
+                .expr,
+            Expr::value(ValueOperator::Or, vec![Expr::atom("d1"), Expr::atom("d2")])
         );
     }
 

@@ -13,10 +13,11 @@ does not decompose.
 
 ### Build and test state
 
-- `cargo test` and `cargo nextest run` pass: 367 tests, 231 library unit tests
-  and 136 integration tests across 28 suites, with no ignored or skipped cases
-  and no test exceeding the configured 45-second limit. `sexpr-fmt` passes its
-  7 unit and 4 integration tests.
+- `cargo nextest run` passes: 367 tests, 231 library unit tests and 136
+  integration tests across 28 suites, with no ignored or skipped cases and no
+  test exceeding the configured 45-second limit. `sexpr-fmt` passes its 11
+  tests. `cargo nextest run` is the runner for both crates and supersedes
+  `cargo test`.
 - `cargo fmt -- --check` and `cargo clippy --all-targets` are clean for both
   crates.
 - The `dev` and `test` profiles build at `opt-level = 2`. The exact-cover search
@@ -96,14 +97,25 @@ This is still the default path for `check`, `convert`, and `convert-file`.
   40 `dN` identity assignments. Ten files fail identically in both modes:
   - Incompatible placement, where one site is required to carry different values
     for two constraints: `dmg_cpu_b/cells/buf_if0.sv`,
-    `dmg_cpu_b/cells/not_if0.sv`, `dmg_cpu_b/cells/not_if1.sv`.
+    `dmg_cpu_b/cells/not_if0.sv`, `dmg_cpu_b/cells/not_if1.sv`,
+    `dmg_cpu_b/cells/dlatch.sv`, `sm83/cells/mux_idu_h.sv`,
+    `sm83/cells/mux_idu_l.sv`.
   - Transition-ambiguous placement, where an edge's rise/fall sense admits no
-    single tuple rewrite: `dmg_cpu_b/cells/dlatch.sv`,
-    `dmg_cpu_b/cells/drlatch_ee.sv`, `dmg_cpu_b/cells/nand_latch.sv`,
-    `dmg_cpu_b/cells/nor_latch.sv`, `dmg_cpu_b/cells/tffnl.sv`,
-    `sm83/cells/mux_idu_h.sv`, `sm83/cells/mux_idu_l.sv`.
-  The sharded audit records all ten as `failure unclassified`; no failure class
-  has been diagnosed or fixed yet.
+    single tuple rewrite: `dmg_cpu_b/cells/drlatch_ee.sv`,
+    `dmg_cpu_b/cells/nand_latch.sv`, `dmg_cpu_b/cells/nor_latch.sv`,
+    `dmg_cpu_b/cells/tffnl.sv`.
+  The sharded audit records all ten as `failure unclassified`.
+- Two of the three defects behind those failures are fixed; the third, per-path
+  orientation inference, is not, so the count remains ten. Synthetic `dN`
+  identity names now skip indices already reserved by the cell, matching
+  `Lowerer::allocate_temporary`; previously a cell with a `d0` port
+  (`mux_idu_h`, `mux_idu_l`) aborted with a since-removed `ReservedDelayName`
+  error. Mux data operands are now positive-unate rather than conditional; only
+  the select is non-unate. The latter moves 46 dependency edges from
+  `conditional` to `positive` and reclassifies the `dlatch` and mux failures
+  into the incompatible-placement class, but changes no emitted cell: the
+  timing graph is built only by timing-aware and decomposed lowering, and all
+  190 ordinary outputs are byte-identical across the change.
 - The `dmg_dffsr` physical-topology overlay, the `topology-hints/` directory,
   the three topology modules, and the direct `serde`/`toml` dependencies are all
   gone. `petgraph` and `proptest` remain.

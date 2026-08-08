@@ -954,7 +954,8 @@ Files, types, and functions:
   `split_public_output`, and exact erasure back to the baseline equations,
   driver provenance, registers, and signal metadata.
 - Add deterministic `d0`, `d1`, ... names for timing-only identity assignments
-  without perturbing logical `t0`, `t1`, ... numbering; reject collisions.
+  without perturbing logical `t0`, `t1`, ... numbering, skipping any index whose
+  name is already reserved by the cell.
 - Extend `src/timing_terms.rs` with exact ordered term containment,
   factor/recompose operations, and structural equality for each tuple
   component. Non-additive subexpressions such as `elmore`, multiplication,
@@ -1129,8 +1130,7 @@ Acceptance conditions:
 - All output remains assignment-only, formatter-canonical, idempotent, and
   byte-identical across repeated strict conversion. A corpus conversion with
   any failing cell writes nothing.
-- `cargo test --manifest-path sv-to-sexpr/Cargo.toml` compiles and passes, and
-  `cargo nextest run --manifest-path sv-to-sexpr/Cargo.toml` completes with no
+- `cargo nextest run --manifest-path sv-to-sexpr/Cargo.toml` passes with no
   test exceeding the configured 45-second limit. Formatter tests, formatting,
   clippy `--all-targets`, staged corpus checks, and CI also pass; every changed
   golden is manually compared with its retained SystemVerilog source and this

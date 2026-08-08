@@ -2,10 +2,10 @@ functional timing graph corpus audit
 mode=delayful
   source-owned files=190 constraints=237 controls=432 target-groups=181 target-groups-single=137 target-groups-multiple=44 tuples=one:0,two:234,three:3
   elaborated constraints=244 foreign-constraints=7 controls=446 target-groups=188 tuples=one:0,two:241,three:3 expanded-only-roots=[sv-cells/dmg_cpu_b/cells/full_add.sv,sv-cells/dmg_cpu_b/cells/half_add.sv]
-  graph nodes=4264 signals=2573 assignments=1691 dependencies=6217 dependency-kinds=drive:1545,operand:4526,resolved-net-boundary:132,state-boundary:14 dependency-senses=conditional:526,negative:312,non-unate:80,positive:5299
+  graph nodes=4264 signals=2573 assignments=1691 dependencies=6217 dependency-kinds=drive:1545,operand:4526,resolved-net-boundary:132,state-boundary:14 dependency-senses=conditional:480,negative:312,non-unate:80,positive:5345
   boundaries state=14 resolved-net=132 state-controls=0 transitions=
   groups constraints=244 controls=446 control-groups=386 control-kinds=multiple-targets:40,single-target:346 target-groups=188 target-kinds=multiple-paths:44,single-path:144
-  classifications path-senses=conditional:55,negative:208,non-unate:94,positive:132 public-splits=candidate:18,not-public:3,not-required:167 prefixes=groups:362,nodes:586 suffixes=groups:188,nodes:200 reconvergence=groups:120,nodes:250
+  classifications path-senses=conditional:3,negative:223,non-unate:94,positive:171 public-splits=candidate:18,not-public:3,not-required:167 prefixes=groups:362,nodes:586 suffixes=groups:188,nodes:200 reconvergence=groups:120,nodes:250
   failures combinational-cycles=0 unreachable-controls=0 additive-rebuild=0 nondeterministic-reports=0 ordinary-compatibility=0 absolute-path-leaks=0
   source-owned-multiple-path-witnesses:
     sv-cells/dmg_cpu_b/cells/ao21.sv:y paths=2 controls=3 signals=[in1,in2,in3] target=multiple-paths suffix-nodes=1 reconvergent-nodes=2 split=not-required control-groups=[in1:single-target/prefix-nodes=3,in2:single-target/prefix-nodes=3,in3:single-target/prefix-nodes=1]
@@ -55,10 +55,10 @@ mode=delayful
 mode=nodelay
   source-owned files=190 constraints=237 controls=432 target-groups=181 target-groups-single=137 target-groups-multiple=44 tuples=one:0,two:234,three:3
   elaborated constraints=244 foreign-constraints=7 controls=446 target-groups=188 tuples=one:0,two:241,three:3 expanded-only-roots=[sv-cells/dmg_cpu_b/cells/full_add.sv,sv-cells/dmg_cpu_b/cells/half_add.sv]
-  graph nodes=4264 signals=2573 assignments=1691 dependencies=6217 dependency-kinds=drive:1545,operand:4526,resolved-net-boundary:132,state-boundary:14 dependency-senses=conditional:526,negative:312,non-unate:80,positive:5299
+  graph nodes=4264 signals=2573 assignments=1691 dependencies=6217 dependency-kinds=drive:1545,operand:4526,resolved-net-boundary:132,state-boundary:14 dependency-senses=conditional:480,negative:312,non-unate:80,positive:5345
   boundaries state=14 resolved-net=132 state-controls=0 transitions=
   groups constraints=244 controls=446 control-groups=386 control-kinds=multiple-targets:40,single-target:346 target-groups=188 target-kinds=multiple-paths:44,single-path:144
-  classifications path-senses=conditional:55,negative:208,non-unate:94,positive:132 public-splits=candidate:18,not-public:3,not-required:167 prefixes=groups:362,nodes:586 suffixes=groups:188,nodes:200 reconvergence=groups:120,nodes:250
+  classifications path-senses=conditional:3,negative:223,non-unate:94,positive:171 public-splits=candidate:18,not-public:3,not-required:167 prefixes=groups:362,nodes:586 suffixes=groups:188,nodes:200 reconvergence=groups:120,nodes:250
   failures combinational-cycles=0 unreachable-controls=0 additive-rebuild=0 nondeterministic-reports=0 ordinary-compatibility=0 absolute-path-leaks=0
   source-owned-multiple-path-witnesses:
     sv-cells/dmg_cpu_b/cells/ao21.sv:y paths=2 controls=3 signals=[in1,in2,in3] target=multiple-paths suffix-nodes=1 reconvergent-nodes=2 split=not-required control-groups=[in1:single-target/prefix-nodes=3,in2:single-target/prefix-nodes=3,in3:single-target/prefix-nodes=1]

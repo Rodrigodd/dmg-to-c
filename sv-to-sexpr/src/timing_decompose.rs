@@ -561,9 +561,6 @@ pub enum DecompositionErrorKind {
     SymbolicTerms {
         detail: String,
     },
-    ReservedDelayName {
-        name: String,
-    },
     PlacementConflict {
         site: PlacementSite,
         detail: String,
@@ -733,12 +730,6 @@ impl fmt::Display for DecompositionError {
             }
             DecompositionErrorKind::SymbolicTerms { detail } => {
                 write!(formatter, "exact symbolic term operation failed: {detail}")
-            }
-            DecompositionErrorKind::ReservedDelayName { name } => {
-                write!(
-                    formatter,
-                    "deterministic timing name `{name}` is already reserved"
-                )
             }
             DecompositionErrorKind::PlacementConflict { site, detail } => {
                 write!(
