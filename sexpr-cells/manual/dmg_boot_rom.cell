@@ -2,23 +2,41 @@
   dmg_boot_rom
 
   (inputs
-    row0_n row1_n row2_n row3_n
-    col0 col1 col2 col3
-    a2 a3 a6 a7
-    a2_n a3_n a6_n a7_n
-    oe oe_n
+    row0_n
+    row1_n
+    row2_n
+    row3_n
+    col0
+    col1
+    col2
+    col3
+    a2
+    a3
+    a6
+    a7
+    a2_n
+    a3_n
+    a6_n
+    a7_n
+    oe
+    oe_n
     bl_pch_n
     wl_pch
     wl_ena_n
   )
 
   (outputs
-    d0 d1 d2 d3 d4 d5 d6 d7
+    d0
+    d1
+    d2
+    d3
+    d4
+    d5
+    d6
+    d7
   )
 
-  (memories
-    (boot_rom 256 8)
-  )
+  (memories (boot_rom 256 8))
 
   (registers
     (bl_data 255)
@@ -28,8 +46,14 @@
   )
 
   (parameters
-    (L_d0 0) (L_d1 0) (L_d2 0) (L_d3 0)
-    (L_d4 0) (L_d5 0) (L_d6 0) (L_d7 0)
+    (L_d0 0)
+    (L_d1 0)
+    (L_d2 0)
+    (L_d3 0)
+    (L_d4 0)
+    (L_d5 0)
+    (L_d6 0)
+    (L_d7 0)
   )
 
   (assignments
@@ -44,7 +68,15 @@
     (wl_a2_valid (not wl_a2_pair) (delay 0))
     (wl_bits_valid (and wl_a3_valid wl_a2_valid) (delay 0))
     (wl_selected (and wl_bits_valid wl_adr_valid) (delay 0))
-    (wl_adr (pack8 a3 a2 0 0) (delay 0))
+    (wl_adr
+      (pack8
+        a3
+        a2
+        0
+        0
+      )
+      (delay 0)
+    )
 
     ;; ------------------------------------------------------------
     ;; Column-mux address
@@ -55,20 +87,48 @@
     (cm_a6_pair (eq a6 a6_n) (delay 0))
     (cm_a6_valid (not cm_a6_pair) (delay 0))
     (cm_bits_valid (and cm_a7_valid cm_a6_valid) (delay 0))
-    (cm_adr (pack8 a7 a6 0 0 0 0 0 0) (delay 0))
+    (cm_adr
+      (pack8
+        a7
+        a6
+        0
+        0
+        0
+        0
+        0
+        0
+      )
+      (delay 0)
+    )
 
     ;; ------------------------------------------------------------
     ;; Row decoder
     ;; ------------------------------------------------------------
 
-    (t11 (pack8 row3_n row2_n row1_n row0_n) (delay 0))
+    (t11
+      (pack8
+        row3_n
+        row2_n
+        row1_n
+        row0_n
+      )
+      (delay 0)
+    )
 
     (t12 (ieq t11 14) (delay 0))
     (t13 (ieq t11 13) (delay 0))
     (t14 (ieq t11 11) (delay 0))
     (t15 (ieq t11 7) (delay 0))
 
-    (row_selected (or t12 t13 t14 t15) (delay 0))
+    (row_selected
+      (or
+        t12
+        t13
+        t14
+        t15
+      )
+      (delay 0)
+    )
     (t16 (imux t15 3 0) (delay 0))
     (t17 (imux t14 2 t16) (delay 0))
     (t18 (imux t13 1 t17) (delay 0))
@@ -78,14 +138,30 @@
     ;; Column decoder
     ;; ------------------------------------------------------------
 
-    (t19 (pack8 col3 col2 col1 col0) (delay 0))
+    (t19
+      (pack8
+        col3
+        col2
+        col1
+        col0
+      )
+      (delay 0)
+    )
 
     (t20 (ieq t19 1) (delay 0))
     (t21 (ieq t19 2) (delay 0))
     (t22 (ieq t19 4) (delay 0))
     (t23 (ieq t19 8) (delay 0))
 
-    (col_selected (or t20 t21 t22 t23) (delay 0))
+    (col_selected
+      (or
+        t20
+        t21
+        t22
+        t23
+      )
+      (delay 0)
+    )
     (t24 (imux t23 48 0) (delay 0))
     (t25 (imux t22 32 t24) (delay 0))
     (t26 (imux t21 16 t25) (delay 0))
@@ -98,7 +174,15 @@
     (t27 (ior cm_adr col_adr) (delay 0))
     (t28 (ior t27 wl_adr) (delay 0))
     (adr (ior t28 row_adr) (delay 0))
-    (adr_valid (and wl_selected cm_bits_valid row_selected col_selected) (delay 0))
+    (adr_valid
+      (and
+        wl_selected
+        cm_bits_valid
+        row_selected
+        col_selected
+      )
+      (delay 0)
+    )
 
     ;; ------------------------------------------------------------
     ;; Word-line latch
@@ -142,35 +226,83 @@
     ;; ------------------------------------------------------------
 
     (t40 (ibit bl_data 0) (delay 0))
-    (d0 (bufif0-zs t40 oe_n) (delay (elmore (wire L_d0) (* (pmos 136) 2)) (elmore (wire L_d0) (* (nmos 100) 2))))
-    (d0 (bufif1-sz t40 oe) (delay (elmore (wire L_d0) (* (pmos 136) 2)) (elmore (wire L_d0) (* (nmos 100) 2))))
+    (d0
+      (bufif0-zs t40 oe_n)
+      (delay (elmore (wire L_d0) (* (pmos 136) 2)) (elmore (wire L_d0) (* (nmos 100) 2)))
+    )
+    (d0
+      (bufif1-sz t40 oe)
+      (delay (elmore (wire L_d0) (* (pmos 136) 2)) (elmore (wire L_d0) (* (nmos 100) 2)))
+    )
 
     (t41 (ibit bl_data 1) (delay 0))
-    (d1 (bufif0-zs t41 oe_n) (delay (elmore (wire L_d1) (* (pmos 136) 2)) (elmore (wire L_d1) (* (nmos 100) 2))))
-    (d1 (bufif1-sz t41 oe) (delay (elmore (wire L_d1) (* (pmos 136) 2)) (elmore (wire L_d1) (* (nmos 100) 2))))
+    (d1
+      (bufif0-zs t41 oe_n)
+      (delay (elmore (wire L_d1) (* (pmos 136) 2)) (elmore (wire L_d1) (* (nmos 100) 2)))
+    )
+    (d1
+      (bufif1-sz t41 oe)
+      (delay (elmore (wire L_d1) (* (pmos 136) 2)) (elmore (wire L_d1) (* (nmos 100) 2)))
+    )
 
     (t42 (ibit bl_data 2) (delay 0))
-    (d2 (bufif0-zs t42 oe_n) (delay (elmore (wire L_d2) (* (pmos 136) 2)) (elmore (wire L_d2) (* (nmos 100) 2))))
-    (d2 (bufif1-sz t42 oe) (delay (elmore (wire L_d2) (* (pmos 136) 2)) (elmore (wire L_d2) (* (nmos 100) 2))))
+    (d2
+      (bufif0-zs t42 oe_n)
+      (delay (elmore (wire L_d2) (* (pmos 136) 2)) (elmore (wire L_d2) (* (nmos 100) 2)))
+    )
+    (d2
+      (bufif1-sz t42 oe)
+      (delay (elmore (wire L_d2) (* (pmos 136) 2)) (elmore (wire L_d2) (* (nmos 100) 2)))
+    )
 
     (t43 (ibit bl_data 3) (delay 0))
-    (d3 (bufif0-zs t43 oe_n) (delay (elmore (wire L_d3) (* (pmos 136) 2)) (elmore (wire L_d3) (* (nmos 100) 2))))
-    (d3 (bufif1-sz t43 oe) (delay (elmore (wire L_d3) (* (pmos 136) 2)) (elmore (wire L_d3) (* (nmos 100) 2))))
+    (d3
+      (bufif0-zs t43 oe_n)
+      (delay (elmore (wire L_d3) (* (pmos 136) 2)) (elmore (wire L_d3) (* (nmos 100) 2)))
+    )
+    (d3
+      (bufif1-sz t43 oe)
+      (delay (elmore (wire L_d3) (* (pmos 136) 2)) (elmore (wire L_d3) (* (nmos 100) 2)))
+    )
 
     (t44 (ibit bl_data 4) (delay 0))
-    (d4 (bufif0-zs t44 oe_n) (delay (elmore (wire L_d4) (* (pmos 136) 2)) (elmore (wire L_d4) (* (nmos 100) 2))))
-    (d4 (bufif1-sz t44 oe) (delay (elmore (wire L_d4) (* (pmos 136) 2)) (elmore (wire L_d4) (* (nmos 100) 2))))
+    (d4
+      (bufif0-zs t44 oe_n)
+      (delay (elmore (wire L_d4) (* (pmos 136) 2)) (elmore (wire L_d4) (* (nmos 100) 2)))
+    )
+    (d4
+      (bufif1-sz t44 oe)
+      (delay (elmore (wire L_d4) (* (pmos 136) 2)) (elmore (wire L_d4) (* (nmos 100) 2)))
+    )
 
     (t45 (ibit bl_data 5) (delay 0))
-    (d5 (bufif0-zs t45 oe_n) (delay (elmore (wire L_d5) (* (pmos 136) 2)) (elmore (wire L_d5) (* (nmos 100) 2))))
-    (d5 (bufif1-sz t45 oe) (delay (elmore (wire L_d5) (* (pmos 136) 2)) (elmore (wire L_d5) (* (nmos 100) 2))))
+    (d5
+      (bufif0-zs t45 oe_n)
+      (delay (elmore (wire L_d5) (* (pmos 136) 2)) (elmore (wire L_d5) (* (nmos 100) 2)))
+    )
+    (d5
+      (bufif1-sz t45 oe)
+      (delay (elmore (wire L_d5) (* (pmos 136) 2)) (elmore (wire L_d5) (* (nmos 100) 2)))
+    )
 
     (t46 (ibit bl_data 6) (delay 0))
-    (d6 (bufif0-zs t46 oe_n) (delay (elmore (wire L_d6) (* (pmos 136) 2)) (elmore (wire L_d6) (* (nmos 100) 2))))
-    (d6 (bufif1-sz t46 oe) (delay (elmore (wire L_d6) (* (pmos 136) 2)) (elmore (wire L_d6) (* (nmos 100) 2))))
+    (d6
+      (bufif0-zs t46 oe_n)
+      (delay (elmore (wire L_d6) (* (pmos 136) 2)) (elmore (wire L_d6) (* (nmos 100) 2)))
+    )
+    (d6
+      (bufif1-sz t46 oe)
+      (delay (elmore (wire L_d6) (* (pmos 136) 2)) (elmore (wire L_d6) (* (nmos 100) 2)))
+    )
 
     (t47 (ibit bl_data 7) (delay 0))
-    (d7 (bufif0-zs t47 oe_n) (delay (elmore (wire L_d7) (* (pmos 136) 2)) (elmore (wire L_d7) (* (nmos 100) 2))))
-    (d7 (bufif1-sz t47 oe) (delay (elmore (wire L_d7) (* (pmos 136) 2)) (elmore (wire L_d7) (* (nmos 100) 2))))
+    (d7
+      (bufif0-zs t47 oe_n)
+      (delay (elmore (wire L_d7) (* (pmos 136) 2)) (elmore (wire L_d7) (* (nmos 100) 2)))
+    )
+    (d7
+      (bufif1-sz t47 oe)
+      (delay (elmore (wire L_d7) (* (pmos 136) 2)) (elmore (wire L_d7) (* (nmos 100) 2)))
+    )
   )
 )

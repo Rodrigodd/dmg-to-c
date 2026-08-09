@@ -2,33 +2,78 @@
   dmg_high_ram
 
   (inputs
-    d0 d1 d2 d3 d4 d5 d6 d7
-    col0 col1 col2 col3
-    a2 a3 a4 a5 a6
-    a2_n a3_n a4_n a5_n a6_n
-    oe oe_n wr bl_pch_n wldrv_pch_n wldrv_ena
+    d0
+    d1
+    d2
+    d3
+    d4
+    d5
+    d6
+    d7
+    col0
+    col1
+    col2
+    col3
+    a2
+    a3
+    a4
+    a5
+    a6
+    a2_n
+    a3_n
+    a4_n
+    a5_n
+    a6_n
+    oe
+    oe_n
+    wr
+    bl_pch_n
+    wldrv_pch_n
+    wldrv_ena
   )
 
-  (outputs d0 d1 d2 d3 d4 d5 d6 d7)
-
-  (memories
-    (high_ram 128 8)
+  (outputs
+    d0
+    d1
+    d2
+    d3
+    d4
+    d5
+    d6
+    d7
   )
 
-  (registers
-    (last_bl_data x)
-    (mem_write_dummy 0)
-  )
+  (memories (high_ram 128 8))
+
+  (registers (last_bl_data x) (mem_write_dummy 0))
 
   (parameters
-    (L_d0 0) (L_d1 0) (L_d2 0) (L_d3 0)
-    (L_d4 0) (L_d5 0) (L_d6 0) (L_d7 0)
+    (L_d0 0)
+    (L_d1 0)
+    (L_d2 0)
+    (L_d3 0)
+    (L_d4 0)
+    (L_d5 0)
+    (L_d6 0)
+    (L_d7 0)
   )
 
   (assignments
 
     ;; Simplified SRAM input and word/column decoders.
-    (din (pack8 d7 d6 d5 d4 d3 d2 d1 d0) (delay 0))
+    (din
+      (pack8
+        d7
+        d6
+        d5
+        d4
+        d3
+        d2
+        d1
+        d0
+      )
+      (delay 0)
+    )
     (wl_a6_pair (eq a6 a6_n) (delay 0))
     (wl_a6_valid (not wl_a6_pair) (delay 0))
     (wl_a5_pair (eq a5 a5_n) (delay 0))
@@ -39,11 +84,39 @@
     (wl_a3_valid (not wl_a3_pair) (delay 0))
     (wl_a2_pair (eq a2 a2_n) (delay 0))
     (wl_a2_valid (not wl_a2_pair) (delay 0))
-    (wl_bits_valid (and wl_a6_valid wl_a5_valid wl_a4_valid wl_a3_valid wl_a2_valid) (delay 0))
-    (wl_value (pack8 a6 a5 a4 a3 a2 0 0) (delay 0))
+    (wl_bits_valid
+      (and
+        wl_a6_valid
+        wl_a5_valid
+        wl_a4_valid
+        wl_a3_valid
+        wl_a2_valid
+      )
+      (delay 0)
+    )
+    (wl_value
+      (pack8
+        a6
+        a5
+        a4
+        a3
+        a2
+        0
+        0
+      )
+      (delay 0)
+    )
     (wl_adr (imux wl_bits_valid wl_value -1) (delay 0))
 
-    (t5 (pack8 col3 col2 col1 col0) (delay 0))
+    (t5
+      (pack8
+        col3
+        col2
+        col1
+        col0
+      )
+      (delay 0)
+    )
     (t6 (ieq t5 1) (delay 0))
     (t7 (ieq t5 2) (delay 0))
     (t8 (ieq t5 4) (delay 0))
@@ -62,8 +135,24 @@
     (bl_write (and wr bl_pch_n) (delay 0))
     (bl_read (and bl_pch_n wldrv_ena) (delay 0))
     (t18 (ineq adr -1) (delay 0))
-    (t19 (and wr bl_pch_n t18 wldrv_ena) (delay 0))
-    (mem_write_dummy (write_mem high_ram adr din t19) (delay 0))
+    (t19
+      (and
+        wr
+        bl_pch_n
+        t18
+        wldrv_ena
+      )
+      (delay 0)
+    )
+    (mem_write_dummy
+      (write_mem
+        high_ram
+        adr
+        din
+        t19
+      )
+      (delay 0)
+    )
     (bl_update (or bl_precharge bl_write bl_read) (delay 0))
     (bl_mem_value (read_mem high_ram adr) (delay 0))
     (bl_read_value (imux t18 bl_mem_value x) (delay 0))
@@ -74,35 +163,83 @@
 
     ;; Both source bufif drivers are retained for every bidirectional pin.
     (t28 (ibit last_bl_data 0) (delay 0))
-    (d0 (bufif0-zs t28 oe_n) (delay (elmore (wire L_d0) (* (pmos 120) 2)) (elmore (wire L_d0) (* (nmos 80) 2))))
-    (d0 (bufif1-sz t28 oe) (delay (elmore (wire L_d0) (* (pmos 120) 2)) (elmore (wire L_d0) (* (nmos 80) 2))))
+    (d0
+      (bufif0-zs t28 oe_n)
+      (delay (elmore (wire L_d0) (* (pmos 120) 2)) (elmore (wire L_d0) (* (nmos 80) 2)))
+    )
+    (d0
+      (bufif1-sz t28 oe)
+      (delay (elmore (wire L_d0) (* (pmos 120) 2)) (elmore (wire L_d0) (* (nmos 80) 2)))
+    )
 
     (t29 (ibit last_bl_data 1) (delay 0))
-    (d1 (bufif0-zs t29 oe_n) (delay (elmore (wire L_d1) (* (pmos 120) 2)) (elmore (wire L_d1) (* (nmos 80) 2))))
-    (d1 (bufif1-sz t29 oe) (delay (elmore (wire L_d1) (* (pmos 120) 2)) (elmore (wire L_d1) (* (nmos 80) 2))))
+    (d1
+      (bufif0-zs t29 oe_n)
+      (delay (elmore (wire L_d1) (* (pmos 120) 2)) (elmore (wire L_d1) (* (nmos 80) 2)))
+    )
+    (d1
+      (bufif1-sz t29 oe)
+      (delay (elmore (wire L_d1) (* (pmos 120) 2)) (elmore (wire L_d1) (* (nmos 80) 2)))
+    )
 
     (t30 (ibit last_bl_data 2) (delay 0))
-    (d2 (bufif0-zs t30 oe_n) (delay (elmore (wire L_d2) (* (pmos 120) 2)) (elmore (wire L_d2) (* (nmos 80) 2))))
-    (d2 (bufif1-sz t30 oe) (delay (elmore (wire L_d2) (* (pmos 120) 2)) (elmore (wire L_d2) (* (nmos 80) 2))))
+    (d2
+      (bufif0-zs t30 oe_n)
+      (delay (elmore (wire L_d2) (* (pmos 120) 2)) (elmore (wire L_d2) (* (nmos 80) 2)))
+    )
+    (d2
+      (bufif1-sz t30 oe)
+      (delay (elmore (wire L_d2) (* (pmos 120) 2)) (elmore (wire L_d2) (* (nmos 80) 2)))
+    )
 
     (t31 (ibit last_bl_data 3) (delay 0))
-    (d3 (bufif0-zs t31 oe_n) (delay (elmore (wire L_d3) (* (pmos 120) 2)) (elmore (wire L_d3) (* (nmos 80) 2))))
-    (d3 (bufif1-sz t31 oe) (delay (elmore (wire L_d3) (* (pmos 120) 2)) (elmore (wire L_d3) (* (nmos 80) 2))))
+    (d3
+      (bufif0-zs t31 oe_n)
+      (delay (elmore (wire L_d3) (* (pmos 120) 2)) (elmore (wire L_d3) (* (nmos 80) 2)))
+    )
+    (d3
+      (bufif1-sz t31 oe)
+      (delay (elmore (wire L_d3) (* (pmos 120) 2)) (elmore (wire L_d3) (* (nmos 80) 2)))
+    )
 
     (t32 (ibit last_bl_data 4) (delay 0))
-    (d4 (bufif0-zs t32 oe_n) (delay (elmore (wire L_d4) (* (pmos 120) 2)) (elmore (wire L_d4) (* (nmos 80) 2))))
-    (d4 (bufif1-sz t32 oe) (delay (elmore (wire L_d4) (* (pmos 120) 2)) (elmore (wire L_d4) (* (nmos 80) 2))))
+    (d4
+      (bufif0-zs t32 oe_n)
+      (delay (elmore (wire L_d4) (* (pmos 120) 2)) (elmore (wire L_d4) (* (nmos 80) 2)))
+    )
+    (d4
+      (bufif1-sz t32 oe)
+      (delay (elmore (wire L_d4) (* (pmos 120) 2)) (elmore (wire L_d4) (* (nmos 80) 2)))
+    )
 
     (t33 (ibit last_bl_data 5) (delay 0))
-    (d5 (bufif0-zs t33 oe_n) (delay (elmore (wire L_d5) (* (pmos 120) 2)) (elmore (wire L_d5) (* (nmos 80) 2))))
-    (d5 (bufif1-sz t33 oe) (delay (elmore (wire L_d5) (* (pmos 120) 2)) (elmore (wire L_d5) (* (nmos 80) 2))))
+    (d5
+      (bufif0-zs t33 oe_n)
+      (delay (elmore (wire L_d5) (* (pmos 120) 2)) (elmore (wire L_d5) (* (nmos 80) 2)))
+    )
+    (d5
+      (bufif1-sz t33 oe)
+      (delay (elmore (wire L_d5) (* (pmos 120) 2)) (elmore (wire L_d5) (* (nmos 80) 2)))
+    )
 
     (t34 (ibit last_bl_data 6) (delay 0))
-    (d6 (bufif0-zs t34 oe_n) (delay (elmore (wire L_d6) (* (pmos 120) 2)) (elmore (wire L_d6) (* (nmos 80) 2))))
-    (d6 (bufif1-sz t34 oe) (delay (elmore (wire L_d6) (* (pmos 120) 2)) (elmore (wire L_d6) (* (nmos 80) 2))))
+    (d6
+      (bufif0-zs t34 oe_n)
+      (delay (elmore (wire L_d6) (* (pmos 120) 2)) (elmore (wire L_d6) (* (nmos 80) 2)))
+    )
+    (d6
+      (bufif1-sz t34 oe)
+      (delay (elmore (wire L_d6) (* (pmos 120) 2)) (elmore (wire L_d6) (* (nmos 80) 2)))
+    )
 
     (t35 (ibit last_bl_data 7) (delay 0))
-    (d7 (bufif0-zs t35 oe_n) (delay (elmore (wire L_d7) (* (pmos 120) 2)) (elmore (wire L_d7) (* (nmos 80) 2))))
-    (d7 (bufif1-sz t35 oe) (delay (elmore (wire L_d7) (* (pmos 120) 2)) (elmore (wire L_d7) (* (nmos 80) 2))))
+    (d7
+      (bufif0-zs t35 oe_n)
+      (delay (elmore (wire L_d7) (* (pmos 120) 2)) (elmore (wire L_d7) (* (nmos 80) 2)))
+    )
+    (d7
+      (bufif1-sz t35 oe)
+      (delay (elmore (wire L_d7) (* (pmos 120) 2)) (elmore (wire L_d7) (* (nmos 80) 2)))
+    )
   )
 )

@@ -27,77 +27,35 @@
     (t4
       (or t0 t3)
       (delay
-        (+
-          (elmore (wire 34) (* (pmos 3) 2))
-          (elmore (wire 34) (nmos 3))
-        )
-        (+
-          (elmore (wire 34) (* (nmos 3) 2))
-          (elmore (wire 34) (pmos 3))
-        )
+        (+ (elmore (wire 34) (* (pmos 3) 2)) (elmore (wire 34) (nmos 3)))
+        (+ (elmore (wire 34) (* (nmos 3) 2)) (elmore (wire 34) (pmos 3)))
       )
     )
 
     (t5
       (not d)
       (delay
-        (+
-          (elmore (wire 34) (* (pmos 3) 2))
-          (elmore (wire 34) (nmos 3))
-        )
-        (+
-          (elmore (wire 34) (* (nmos 3) 2))
-          (elmore (wire 34) (pmos 3))
-        )
+        (+ (elmore (wire 34) (* (pmos 3) 2)) (elmore (wire 34) (nmos 3)))
+        (+ (elmore (wire 34) (* (nmos 3) 2)) (elmore (wire 34) (pmos 3)))
       )
     )
 
-    (q_n
-      (mux t4 t5 q_n)
-      (delay
-        (elmore (wire L_q_n) (pmos 13))
-        (elmore (wire L_q_n) (nmos 6))
-      )
-    )
+    (q_n (mux t4 t5 q_n) (delay (elmore (wire L_q_n) (pmos 13)) (elmore (wire L_q_n) (nmos 6))))
 
-    (q
-      (not q_n)
-      (delay
-        (elmore (wire L_q) (pmos 6))
-        (elmore (wire L_q) (nmos 6))
-      )
-    )
+    (q (not q_n) (delay (elmore (wire L_q) (pmos 6)) (elmore (wire L_q) (nmos 6))))
 
-    (gated_q
-      (bufif0-zs
-        1
-        pch_n
-      )
-      (delay
-        (elmore (wire 19) (pmos 6))
-        (elmore (wire 19) (nmos 6))
-      )
-    )
+    (gated_q (bufif0-zs 1 pch_n) (delay (elmore (wire 19) (pmos 6)) (elmore (wire 19) (nmos 6))))
 
     (t6 (caseneq ena_q_n 1) (delay 0))
     (t7 (and q_n t6) (delay 0))
 
-    (gated_q
-      (rnmos ena_q_n t7)
-      (delay
-        (elmore (wire 19) (pmos 6))
-        (elmore (wire 19) (nmos 6))
-      )
-    )
+    (gated_q (rnmos ena_q_n t7) (delay (elmore (wire 19) (pmos 6)) (elmore (wire 19) (nmos 6))))
 
     (gated_q (keeper) (delay 0))
 
     (gated_q_n
       (not gated_q)
-      (delay
-        (elmore (wire L_gated_q_n) (pmos 6))
-        (elmore (wire L_gated_q_n) (nmos 6))
-      )
+      (delay (elmore (wire L_gated_q_n) (pmos 6)) (elmore (wire L_gated_q_n) (nmos 6)))
     )
   )
 )

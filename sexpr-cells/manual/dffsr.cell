@@ -11,7 +11,13 @@
 
   (registers (ff 0) (q 0))
 
-  (parameters (L_q 54) (L_q_n 54) (L_clk_out 220) (L_clk_n_out 230) (L_r_out 330))
+  (parameters
+    (L_q 54)
+    (L_q_n 54)
+    (L_clk_out 220)
+    (L_clk_n_out 230)
+    (L_r_out 330)
+  )
 
   (assignments
 

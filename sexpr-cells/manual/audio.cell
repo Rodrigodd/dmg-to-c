@@ -2,10 +2,22 @@
   dmg_audio
 
   (inputs
-    ch1_0 ch1_1 ch1_2 ch1_3
-    ch2_0 ch2_1 ch2_2 ch2_3
-    ch3_0 ch3_1 ch3_2 ch3_3
-    ch4_0 ch4_1 ch4_2 ch4_3
+    ch1_0
+    ch1_1
+    ch1_2
+    ch1_3
+    ch2_0
+    ch2_1
+    ch2_2
+    ch2_3
+    ch3_0
+    ch3_1
+    ch3_2
+    ch3_3
+    ch4_0
+    ch4_1
+    ch4_2
+    ch4_3
 
     ena
     ena_n
@@ -37,10 +49,7 @@
     vin
   )
 
-  (outputs
-    rout
-    lout
-  )
+  (outputs rout lout)
 
   (registers)
 
@@ -52,36 +61,100 @@
     ;; Pack buses
     ;; ------------------------------------------------------------
 
-    (t0  (pack8 ch1_0 ch1_1 ch1_2 ch1_3) (delay 60))
-    (t1  (pack8 ch2_0 ch2_1 ch2_2 ch2_3) (delay 60))
-    (t2  (pack8 ch3_0 ch3_1 ch3_2 ch3_3) (delay 60))
-    (t3  (pack8 ch4_0 ch4_1 ch4_2 ch4_3) (delay 60))
+    (t0
+      (pack8
+        ch1_0
+        ch1_1
+        ch1_2
+        ch1_3
+      )
+      (delay 60)
+    )
+    (t1
+      (pack8
+        ch2_0
+        ch2_1
+        ch2_2
+        ch2_3
+      )
+      (delay 60)
+    )
+    (t2
+      (pack8
+        ch3_0
+        ch3_1
+        ch3_2
+        ch3_3
+      )
+      (delay 60)
+    )
+    (t3
+      (pack8
+        ch4_0
+        ch4_1
+        ch4_2
+        ch4_3
+      )
+      (delay 60)
+    )
 
-    (t4  (pack8 rvolume_n0 rvolume_n1 rvolume_n2) (delay 0))
-    (t5  (pack8 lvolume_n0 lvolume_n1 lvolume_n2) (delay 0))
+    (t4 (pack8 rvolume_n0 rvolume_n1 rvolume_n2) (delay 0))
+    (t5 (pack8 lvolume_n0 lvolume_n1 lvolume_n2) (delay 0))
 
     ;; ------------------------------------------------------------
     ;; Enable
     ;; ------------------------------------------------------------
 
-    (t6  (not ena_n) (delay 0))
+    (t6 (not ena_n) (delay 0))
     (ena_dl (and ena t6) (delay 60))
 
     ;; ------------------------------------------------------------
     ;; Right mixer enables
     ;; ------------------------------------------------------------
 
-    (t7  (not ch4_ena_n) (delay 0))
-    (t8  (and rmixer3 t7 ena t6) (delay 60))
+    (t7 (not ch4_ena_n) (delay 0))
+    (t8
+      (and
+        rmixer3
+        t7
+        ena
+        t6
+      )
+      (delay 60)
+    )
 
-    (t9  (not ch3_ena_n) (delay 0))
-    (t10 (and rmixer2 t9 ena t6) (delay 60))
+    (t9 (not ch3_ena_n) (delay 0))
+    (t10
+      (and
+        rmixer2
+        t9
+        ena
+        t6
+      )
+      (delay 60)
+    )
 
     (t11 (not ch2_ena_n) (delay 0))
-    (t12 (and rmixer1 t11 ena t6) (delay 60))
+    (t12
+      (and
+        rmixer1
+        t11
+        ena
+        t6
+      )
+      (delay 60)
+    )
 
     (t13 (not ch1_ena_n) (delay 0))
-    (t14 (and rmixer0 t13 ena t6) (delay 60))
+    (t14
+      (and
+        rmixer0
+        t13
+        ena
+        t6
+      )
+      (delay 60)
+    )
 
     (t15 (and r_vin_ena ena t6) (delay 60))
 
@@ -89,10 +162,42 @@
     ;; Left mixer enables
     ;; ------------------------------------------------------------
 
-    (t16 (and lmixer3 t7 ena t6) (delay 60))
-    (t17 (and lmixer2 t9 ena t6) (delay 60))
-    (t18 (and lmixer1 t11 ena t6) (delay 60))
-    (t19 (and lmixer0 t13 ena t6) (delay 60))
+    (t16
+      (and
+        lmixer3
+        t7
+        ena
+        t6
+      )
+      (delay 60)
+    )
+    (t17
+      (and
+        lmixer2
+        t9
+        ena
+        t6
+      )
+      (delay 60)
+    )
+    (t18
+      (and
+        lmixer1
+        t11
+        ena
+        t6
+      )
+      (delay 60)
+    )
+    (t19
+      (and
+        lmixer0
+        t13
+        ena
+        t6
+      )
+      (delay 60)
+    )
     (t20 (and l_vin_ena ena t6) (delay 60))
 
     ;; ------------------------------------------------------------
