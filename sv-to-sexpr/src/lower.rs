@@ -1380,15 +1380,13 @@ impl<'a> Lowerer<'a> {
             .ok_or_else(|| Diagnostic::new(call.span.clone(), "expected bufif control argument"))?;
         let target = expr_symbol(target)
             .ok_or_else(|| Diagnostic::new(target.span.clone(), "expected bufif target symbol"))?;
-        let mut operands = vec![self.lower_expr(value)?, self.lower_expr(control)?];
+        let operands = vec![self.lower_expr(value)?, self.lower_expr(control)?];
         let operator = match (call.name.as_str(), call.strength.as_ref()) {
             ("bufif0", Some(strength)) => {
-                operands.extend(strength_operands(lower_strength_pair(strength)?));
-                ValueOperator::BufIf0Strength
+                ValueOperator::BufIf0Strength(lower_strength_pair(strength)?)
             }
             ("bufif1", Some(strength)) => {
-                operands.extend(strength_operands(lower_strength_pair(strength)?));
-                ValueOperator::BufIf1Strength
+                ValueOperator::BufIf1Strength(lower_strength_pair(strength)?)
             }
             ("bufif0", None) => ValueOperator::BufIf0,
             ("bufif1", None) => ValueOperator::BufIf1,
@@ -1977,19 +1975,14 @@ fn render_strength_values(values: &[String]) -> String {
     format!("({})", values.join(", "))
 }
 
-fn strength_operands(pair: StrengthPair) -> [Expr; 2] {
-    let (first, second) = pair.atoms();
-    [Expr::atom(first), Expr::atom(second)]
-}
-
 fn apply_strength(expr: Expr, pair: StrengthPair) -> Expr {
     let operator = match &expr {
         Expr::List(items) => match items.first() {
             Some(Expr::Atom(head)) if head == ValueOperator::BufIf0.as_str() => {
-                Some(ValueOperator::BufIf0Strength)
+                Some(ValueOperator::BufIf0Strength(pair))
             }
             Some(Expr::Atom(head)) if head == ValueOperator::BufIf1.as_str() => {
-                Some(ValueOperator::BufIf1Strength)
+                Some(ValueOperator::BufIf1Strength(pair))
             }
             _ => None,
         },
@@ -2000,12 +1993,9 @@ fn apply_strength(expr: Expr, pair: StrengthPair) -> Expr {
             unreachable!()
         };
         items.remove(0);
-        items.extend(strength_operands(pair));
         Expr::value(operator, items)
     } else {
-        let mut operands = vec![expr];
-        operands.extend(strength_operands(pair));
-        Expr::value(ValueOperator::DriveStrength, operands)
+        Expr::value(ValueOperator::DriveStrength(pair), vec![expr])
     }
 }
 
@@ -2636,10 +2626,7 @@ endmodule
                 .collect::<Vec<_>>(),
             vec![
                 ("y".to_string(), "(not in)".to_string()),
-                (
-                    "in".to_string(),
-                    "(bufif0-strength 1 pch_n strong1 highz0)".to_string(),
-                ),
+                ("in".to_string(), "(bufif0-zs 1 pch_n)".to_string(),),
             ]
         );
     }
@@ -2653,14 +2640,8 @@ endmodule
                 .map(|(target, expr, _)| (target, expr))
                 .collect::<Vec<_>>(),
             vec![
-                (
-                    "pad".to_string(),
-                    "(bufif1-strength 0 ndrv highz1 strong0)".to_string(),
-                ),
-                (
-                    "pad".to_string(),
-                    "(bufif0-strength 1 pdrv_n strong1 highz0)".to_string(),
-                ),
+                ("pad".to_string(), "(bufif1-sz 0 ndrv)".to_string(),),
+                ("pad".to_string(), "(bufif0-zs 1 pdrv_n)".to_string(),),
                 ("i_n".to_string(), "(not pad)".to_string()),
             ]
         );
@@ -2683,7 +2664,7 @@ endmodule
                 ("t0", "(and in1 in2)"),
                 ("t1", "(and in3 in4)"),
                 ("t2", "(or t0 t1)"),
-                ("y1", "(bufif1-strength 0 t2 highz1 strong0)"),
+                ("y1", "(bufif1-sz 0 t2)"),
             ]
         );
         let y4_assignments = assignments
@@ -2694,8 +2675,8 @@ endmodule
         assert_eq!(
             y4_assignments,
             vec![
-                "(bufif1-strength 0 t7 highz1 strong0)".to_string(),
-                "(bufif1-strength 0 in9 highz1 strong0)".to_string(),
+                "(bufif1-sz 0 t7)".to_string(),
+                "(bufif1-sz 0 in9)".to_string(),
             ]
         );
     }
@@ -2985,7 +2966,7 @@ endmodule
                 ("t1".to_string(), "(and a b)".to_string(), "0".to_string()),
                 (
                     "y2".to_string(),
-                    "(bufif1-strength t0 t1 strong1 highz0)".to_string(),
+                    "(bufif1-zs t0 t1)".to_string(),
                     "0".to_string(),
                 ),
             ]
@@ -3020,7 +3001,7 @@ endmodule
                 ("t1".to_string(), "(and ena b)".to_string(), "0".to_string()),
                 (
                     "y2".to_string(),
-                    "(bufif0-strength t0 t1 pull1 highz0)".to_string(),
+                    "(bufif0-zp t0 t1)".to_string(),
                     "0".to_string(),
                 ),
             ]
@@ -3158,32 +3139,32 @@ endmodule
                 ("t0".to_string(), "(and a ena)".to_string(), "0".to_string()),
                 (
                     "y0".to_string(),
-                    "(drive-strength t0 strong1 highz0)".to_string(),
+                    "(drive-zs t0)".to_string(),
                     "0".to_string()
                 ),
                 (
                     "y1".to_string(),
-                    "(drive-strength a highz1 strong0)".to_string(),
+                    "(drive-sz a)".to_string(),
                     "0".to_string()
                 ),
                 (
                     "y2".to_string(),
-                    "(drive-strength a pull1 highz0)".to_string(),
+                    "(drive-zp a)".to_string(),
                     "0".to_string()
                 ),
                 (
                     "y3".to_string(),
-                    "(drive-strength 1 supply1 supply0)".to_string(),
+                    "(drive-yy 1)".to_string(),
                     "0".to_string()
                 ),
                 (
                     "y4".to_string(),
-                    "(bufif0-strength a ena strong1 highz0)".to_string(),
+                    "(bufif0-zs a ena)".to_string(),
                     "0".to_string()
                 ),
                 (
                     "y5".to_string(),
-                    "(bufif1-strength a ena highz1 strong0)".to_string(),
+                    "(bufif1-sz a ena)".to_string(),
                     "0".to_string()
                 ),
             ]
@@ -3236,18 +3217,18 @@ endmodule
             vec![
                 (
                     "y".to_string(),
-                    "(bufif0-strength 1 pch_n strong1 highz0)".to_string(),
+                    "(bufif0-zs 1 pch_n)".to_string(),
                     "0".to_string(),
                 ),
                 (
                     "y".to_string(),
-                    "(bufif1-strength 0 a highz1 strong0)".to_string(),
+                    "(bufif1-sz 0 a)".to_string(),
                     "0".to_string(),
                 ),
                 ("t0".to_string(), "(and a b)".to_string(), "0".to_string()),
                 (
                     "y".to_string(),
-                    "(bufif1-strength 0 t0 highz1 strong0)".to_string(),
+                    "(bufif1-sz 0 t0)".to_string(),
                     "0".to_string(),
                 ),
             ]

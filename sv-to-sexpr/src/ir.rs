@@ -90,9 +90,12 @@ pub enum ValueOperator {
     Mux,
     BufIf0,
     BufIf1,
-    DriveStrength,
-    BufIf0Strength,
-    BufIf1Strength,
+    /// Strength-annotated drivers. The pair is part of the operator name rather
+    /// than an operand, so `(bufif0-zs value enable)` carries the same
+    /// information the source `(strong1, highz0)` annotation did.
+    DriveStrength(StrengthPair),
+    BufIf0Strength(StrengthPair),
+    BufIf1Strength(StrengthPair),
     Eq,
     CaseEq,
     Neq,
@@ -132,6 +135,18 @@ impl StrengthPair {
         }
     }
 
+    /// The operator suffix naming this pair, ordered as the strength driving 0
+    /// followed by the strength driving 1. `strong` is `s`, `highz` is `z`,
+    /// `pull` is `p`, and `supply` is `y`.
+    pub const fn suffix(self) -> &'static str {
+        match self {
+            Self::Strong1Highz0 => "zs",
+            Self::Highz1Strong0 => "sz",
+            Self::Pull1Highz0 => "zp",
+            Self::Supply1Supply0 => "yy",
+        }
+    }
+
     pub fn parse(first: &str, second: &str) -> Option<Self> {
         Self::ALL
             .into_iter()
@@ -140,7 +155,7 @@ impl StrengthPair {
 }
 
 impl ValueOperator {
-    pub const ALL: [Self; 21] = [
+    pub const ALL: [Self; 30] = [
         Self::Not,
         Self::And,
         Self::Or,
@@ -151,9 +166,18 @@ impl ValueOperator {
         Self::Mux,
         Self::BufIf0,
         Self::BufIf1,
-        Self::DriveStrength,
-        Self::BufIf0Strength,
-        Self::BufIf1Strength,
+        Self::DriveStrength(StrengthPair::Strong1Highz0),
+        Self::DriveStrength(StrengthPair::Highz1Strong0),
+        Self::DriveStrength(StrengthPair::Pull1Highz0),
+        Self::DriveStrength(StrengthPair::Supply1Supply0),
+        Self::BufIf0Strength(StrengthPair::Strong1Highz0),
+        Self::BufIf0Strength(StrengthPair::Highz1Strong0),
+        Self::BufIf0Strength(StrengthPair::Pull1Highz0),
+        Self::BufIf0Strength(StrengthPair::Supply1Supply0),
+        Self::BufIf1Strength(StrengthPair::Strong1Highz0),
+        Self::BufIf1Strength(StrengthPair::Highz1Strong0),
+        Self::BufIf1Strength(StrengthPair::Pull1Highz0),
+        Self::BufIf1Strength(StrengthPair::Supply1Supply0),
         Self::Eq,
         Self::CaseEq,
         Self::Neq,
@@ -176,9 +200,24 @@ impl ValueOperator {
             Self::Mux => "mux",
             Self::BufIf0 => "bufif0",
             Self::BufIf1 => "bufif1",
-            Self::DriveStrength => "drive-strength",
-            Self::BufIf0Strength => "bufif0-strength",
-            Self::BufIf1Strength => "bufif1-strength",
+            Self::DriveStrength(pair) => match pair {
+                StrengthPair::Strong1Highz0 => "drive-zs",
+                StrengthPair::Highz1Strong0 => "drive-sz",
+                StrengthPair::Pull1Highz0 => "drive-zp",
+                StrengthPair::Supply1Supply0 => "drive-yy",
+            },
+            Self::BufIf0Strength(pair) => match pair {
+                StrengthPair::Strong1Highz0 => "bufif0-zs",
+                StrengthPair::Highz1Strong0 => "bufif0-sz",
+                StrengthPair::Pull1Highz0 => "bufif0-zp",
+                StrengthPair::Supply1Supply0 => "bufif0-yy",
+            },
+            Self::BufIf1Strength(pair) => match pair {
+                StrengthPair::Strong1Highz0 => "bufif1-zs",
+                StrengthPair::Highz1Strong0 => "bufif1-sz",
+                StrengthPair::Pull1Highz0 => "bufif1-zp",
+                StrengthPair::Supply1Supply0 => "bufif1-yy",
+            },
             Self::Eq => "eq",
             Self::CaseEq => "caseeq",
             Self::Neq => "neq",
@@ -202,8 +241,8 @@ impl ValueOperator {
             Self::Keeper => arity == 0,
             Self::And | Self::Or | Self::Xor | Self::Nand | Self::Nor | Self::Xnor => arity >= 2,
             Self::Mux => arity == 3,
-            Self::DriveStrength => arity == 3,
-            Self::BufIf0Strength | Self::BufIf1Strength => arity == 4,
+            Self::DriveStrength(_) => arity == 1,
+            Self::BufIf0Strength(_) | Self::BufIf1Strength(_) => arity == 2,
             Self::BufIf0 | Self::BufIf1 | Self::Eq | Self::CaseEq | Self::Neq | Self::CaseNeq => {
                 arity == 2
             }
@@ -624,34 +663,8 @@ impl Expr {
                         ));
                     }
                 }
-                if matches!(
-                    operator,
-                    ValueOperator::DriveStrength
-                        | ValueOperator::BufIf0Strength
-                        | ValueOperator::BufIf1Strength
-                ) {
-                    let first = operands[operands.len() - 2]
-                        .as_atom()
-                        .expect("validated atom");
-                    let second = operands[operands.len() - 1]
-                        .as_atom()
-                        .expect("validated atom");
-                    if StrengthPair::parse(first, second).is_none() {
-                        return Err(ValidationError::new(
-                            context,
-                            format!("unsupported drive strength pair `({first}, {second})`"),
-                        ));
-                    }
-                }
                 Ok(())
             }
-        }
-    }
-
-    fn as_atom(&self) -> Option<&str> {
-        match self {
-            Self::Atom(atom) => Some(atom),
-            Self::List(_) => None,
         }
     }
 
@@ -738,8 +751,9 @@ mod tests {
                 | ValueOperator::Nand
                 | ValueOperator::Nor
                 | ValueOperator::Xnor => arity >= 2,
-                ValueOperator::Mux | ValueOperator::DriveStrength => arity == 3,
-                ValueOperator::BufIf0Strength | ValueOperator::BufIf1Strength => arity == 4,
+                ValueOperator::Mux => arity == 3,
+                ValueOperator::DriveStrength(_) => arity == 1,
+                ValueOperator::BufIf0Strength(_) | ValueOperator::BufIf1Strength(_) => arity == 2,
                 ValueOperator::BufIf0
                 | ValueOperator::BufIf1
                 | ValueOperator::Eq
@@ -759,19 +773,9 @@ mod tests {
                 );
             }
             let arity = (0..=5).find(|&arity| accepts(arity)).unwrap();
-            let mut operands = (0..arity)
+            let operands = (0..arity)
                 .map(|index| Expr::atom(format!("a{index}")))
                 .collect::<Vec<_>>();
-            if matches!(
-                operator,
-                ValueOperator::DriveStrength
-                    | ValueOperator::BufIf0Strength
-                    | ValueOperator::BufIf1Strength
-            ) {
-                let (first, second) = StrengthPair::Strong1Highz0.atoms();
-                operands[arity - 2] = Expr::atom(first);
-                operands[arity - 1] = Expr::atom(second);
-            }
             Expr::value(operator, operands)
                 .validate_value("test")
                 .unwrap();
@@ -779,48 +783,56 @@ mod tests {
     }
 
     #[test]
-    fn strength_operators_accept_only_exact_source_ordered_pairs() {
-        for operator in [
-            ValueOperator::DriveStrength,
-            ValueOperator::BufIf0Strength,
-            ValueOperator::BufIf1Strength,
+    fn strength_operators_name_their_pair_and_take_no_strength_operands() {
+        // The pair rides in the operator name, so the strength driving 0 comes
+        // first and an unrepresentable pair cannot be constructed at all.
+        for (operator, spelling, arity) in [
+            (
+                ValueOperator::DriveStrength(StrengthPair::Supply1Supply0),
+                "drive-yy",
+                1,
+            ),
+            (
+                ValueOperator::BufIf0Strength(StrengthPair::Strong1Highz0),
+                "bufif0-zs",
+                2,
+            ),
+            (
+                ValueOperator::BufIf0Strength(StrengthPair::Pull1Highz0),
+                "bufif0-zp",
+                2,
+            ),
+            (
+                ValueOperator::BufIf1Strength(StrengthPair::Highz1Strong0),
+                "bufif1-sz",
+                2,
+            ),
+            (
+                ValueOperator::BufIf1Strength(StrengthPair::Strong1Highz0),
+                "bufif1-zs",
+                2,
+            ),
         ] {
-            for pair in StrengthPair::ALL {
-                let (first, second) = pair.atoms();
-                let mut operands = match operator {
-                    ValueOperator::DriveStrength => vec![Expr::atom("value")],
-                    ValueOperator::BufIf0Strength | ValueOperator::BufIf1Strength => {
-                        vec![Expr::atom("value"), Expr::atom("control")]
-                    }
-                    _ => unreachable!(),
-                };
-                operands.extend([Expr::atom(first), Expr::atom(second)]);
-                Expr::value(operator, operands)
-                    .validate_value("test")
-                    .unwrap();
-            }
+            assert_eq!(operator.as_str(), spelling);
+            assert_eq!(ValueOperator::parse(spelling), Some(operator));
+            assert!(operator.accepts_arity(arity));
+            assert!(!operator.accepts_arity(arity + 2));
+            let operands = (0..arity)
+                .map(|index| Expr::atom(format!("a{index}")))
+                .collect::<Vec<_>>();
+            Expr::value(operator, operands)
+                .validate_value("test")
+                .unwrap();
+        }
 
-            for (first, second) in [
-                ("highz0", "strong1"),
-                ("strong1", "strong0"),
-                ("weak1", "highz0"),
-            ] {
-                let mut operands = match operator {
-                    ValueOperator::DriveStrength => vec![Expr::atom("value")],
-                    ValueOperator::BufIf0Strength | ValueOperator::BufIf1Strength => {
-                        vec![Expr::atom("value"), Expr::atom("control")]
-                    }
-                    _ => unreachable!(),
-                };
-                operands.extend([Expr::atom(first), Expr::atom(second)]);
-                let error = Expr::value(operator, operands)
-                    .validate_value("test")
-                    .unwrap_err();
-                assert_eq!(
-                    error.message,
-                    format!("unsupported drive strength pair `({first}, {second})`")
-                );
-            }
+        // The suffix names the 0-strength first, then the 1-strength.
+        for (pair, suffix) in [
+            (StrengthPair::Strong1Highz0, "zs"),
+            (StrengthPair::Highz1Strong0, "sz"),
+            (StrengthPair::Pull1Highz0, "zp"),
+            (StrengthPair::Supply1Supply0, "yy"),
+        ] {
+            assert_eq!(pair.suffix(), suffix);
         }
     }
 

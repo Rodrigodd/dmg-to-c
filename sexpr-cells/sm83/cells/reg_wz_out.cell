@@ -66,12 +66,7 @@
     (t8 (or oai_ena1 oai_ena2 oai_ena3) (delay 0))
     (t9 (and t8 oai31_in_nand_in_aoi_a_in2) (delay 0))
     (oai31_y
-      (bufif1-strength
-        0
-        t9
-        highz1
-        strong0
-      )
+      (bufif1-sz 0 t9)
       (delay
         (elmore (wire L_oai31_y) (* (nmos 8) 2))
         (elmore (wire L_oai31_y) (* (nmos 8) 2))
@@ -81,12 +76,7 @@
     (t10 (or oai_ena1 oai_ena2) (delay 0))
     (t11 (and t10 oai21_in_aoi_b_in2) (delay 0))
     (oai21_y
-      (bufif1-strength
-        0
-        t11
-        highz1
-        strong0
-      )
+      (bufif1-sz 0 t11)
       (delay
         (elmore (wire L_oai21_y) (* (nmos 8) 2))
         (elmore (wire L_oai21_y) (* (nmos 8) 2))
@@ -95,12 +85,7 @@
     )
     (t12 (and nand_ena oai31_in_nand_in_aoi_a_in2) (delay 0))
     (nand_y
-      (bufif1-strength
-        0
-        t12
-        highz1
-        strong0
-      )
+      (bufif1-sz 0 t12)
       (delay
         (elmore (wire L_nand_y) (* (nmos 8) 2))
         (elmore (wire L_nand_y) (* (nmos 8) 2))
@@ -108,12 +93,7 @@
       )
     )
     (aoi_a_y
-      (bufif0-strength
-        1
-        pch_n
-        strong1
-        highz0
-      )
+      (bufif0-zs 1 pch_n)
       (delay
         (elmore (wire 93) (pmos 8))
         (elmore (wire 93) (* (nmos 8) 2))
@@ -125,12 +105,7 @@
     (t15 (and aoi_ena3 aoi_a_in3_muxi_a_d1) (delay 0))
     (t16 (or t13 t14 t15) (delay 0))
     (aoi_a_y
-      (bufif1-strength
-        0
-        t16
-        highz1
-        strong0
-      )
+      (bufif1-sz 0 t16)
       (delay
         (elmore (wire 93) (pmos 8))
         (elmore (wire 93) (* (nmos 8) 2))
@@ -143,12 +118,7 @@
       (delay (elmore (wire L_aoi_a_y_n) (pmos 12)) (elmore (wire L_aoi_a_y_n) (nmos 6)))
     )
     (aoi_b_y
-      (bufif0-strength
-        1
-        pch_n
-        strong1
-        highz0
-      )
+      (bufif0-zs 1 pch_n)
       (delay
         (elmore (wire L_aoi_b_y) (pmos 6))
         (elmore (wire L_aoi_b_y) (* (nmos 8) 2))
@@ -160,12 +130,7 @@
     (t19 (and aoi_ena3 aoi_b_in3_muxi_b_d1) (delay 0))
     (t20 (or t17 t18 t19) (delay 0))
     (aoi_b_y
-      (bufif1-strength
-        0
-        t20
-        highz1
-        strong0
-      )
+      (bufif1-sz 0 t20)
       (delay
         (elmore (wire L_aoi_b_y) (pmos 6))
         (elmore (wire L_aoi_b_y) (* (nmos 8) 2))

@@ -8,5 +8,5 @@ assignments:
     value: op(and; atom(in1), atom(in2))
     delay: tuple(atom(0))
   1: y
-    value: op(bufif1-strength; atom(0), atom(t0), strength(highz1, strong0))
+    value: op(bufif1-sz; atom(0), atom(t0))
     delay: tuple(op(elmore; op(wire; atom(L_y)), op(*; op(nmos; atom(12)), atom(2))), op(elmore; op(wire; atom(L_y)), op(*; op(nmos; atom(12)), atom(2))), op(elmore; op(wire; atom(L_y)), op(*; op(nmos; atom(12)), atom(2))))

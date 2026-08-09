@@ -1,2 +1,0 @@
-diagnostics:
-  intentional-ignore | sv-cells/sm83/cells/dlatch_ee_irq.sv:46:3 | additional control-dependent specify path for target `gated_q_n` is intentionally ignored because delay-tuple lowering temporarily selects the first source-ordered path for the target

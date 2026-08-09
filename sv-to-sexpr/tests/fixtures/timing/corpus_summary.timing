@@ -1,5 +1,5 @@
 timing corpus audit
-corpus-files=189
+corpus-files=187
 source-tuples:
   assignment arity0=0 arity1=0 arity2=35 arity3=60 other=0 omitted-first=0 omitted-later=0 later-entries=155
   primitive arity0=0 arity1=0 arity2=21 arity3=396 other=0 omitted-first=0 omitted-later=0 later-entries=813
@@ -27,17 +27,17 @@ source-specify:
   target-multiplicity=1:137,2:33,3:8,4:1
   first-source-paths=179 witnesses=[sv-cells/dmg_cpu_b/cells/and2.sv:20:3:y,sv-cells/dmg_cpu_b/cells/and3.sv:20:3:y,sv-cells/dmg_cpu_b/cells/and4.sv:20:3:y,sv-cells/dmg_cpu_b/cells/ao21.sv:21:3:y,sv-cells/dmg_cpu_b/cells/ao22.sv:20:3:y,sv-cells/dmg_cpu_b/cells/ao222.sv:20:3:y]
 lowering:
-  succeeded=189 failed=0
-  assignments=1680 temps=958 source-targets=722
-  source-dispositions explicit=512 explicit-nonzero=512 explicit-with-specify=0 specify=186 specify-nonzero=186 zero=24
-  emitted zero=982 nonzero=698 nested=698
+  succeeded=187 failed=0
+  assignments=1678 temps=958 source-targets=720
+  source-dispositions explicit=512 explicit-nonzero=512 explicit-with-specify=0 specify=186 specify-nonzero=186 zero=22
+  emitted zero=980 nonzero=698 nested=698
   outer-resistance-multiplications expected=1133 emitted=1133
   warnings=0 specify-ignores=42 later-ignores=0
 emitted-tuples:
-  arity1=982 arity2=242 arity3=456 total=1680
+  arity1=980 arity2=242 arity3=456 total=1678
   noncanonical-one-entry=0
 first-component-compatibility:
-  comparisons=1680 explicit=512 specify=186 forced-zero=5 missing-zero=19 generated-zero=958 mismatches=0
+  comparisons=1678 explicit=512 specify=186 forced-zero=5 missing-zero=17 generated-zero=958 mismatches=0
   outer-resistance-multiplications=387
 first-component-timing-operators:
   +=192

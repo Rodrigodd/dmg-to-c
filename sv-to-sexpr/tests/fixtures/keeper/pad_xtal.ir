@@ -102,19 +102,13 @@ Cell {
                 expr: List(
                     [
                         Atom(
-                            "bufif0-strength",
+                            "bufif0-zs",
                         ),
                         Atom(
                             "1",
                         ),
                         Atom(
                             "ena",
-                        ),
-                        Atom(
-                            "strong1",
-                        ),
-                        Atom(
-                            "highz0",
                         ),
                     ],
                 ),
@@ -186,19 +180,13 @@ Cell {
                 expr: List(
                     [
                         Atom(
-                            "bufif0-strength",
+                            "bufif0-zs",
                         ),
                         Atom(
                             "in_pad",
                         ),
                         Atom(
                             "ena_n",
-                        ),
-                        Atom(
-                            "strong1",
-                        ),
-                        Atom(
-                            "highz0",
                         ),
                     ],
                 ),
@@ -270,19 +258,13 @@ Cell {
                 expr: List(
                     [
                         Atom(
-                            "bufif1-strength",
+                            "bufif1-sz",
                         ),
                         Atom(
                             "in_pad",
                         ),
                         Atom(
                             "ena",
-                        ),
-                        Atom(
-                            "highz1",
-                        ),
-                        Atom(
-                            "strong0",
                         ),
                     ],
                 ),

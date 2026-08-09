@@ -9,18 +9,18 @@ success path=sv-cells/dmg_cpu_b/cells/and2.sv assignments=1 registers=0 constrai
 success path=sv-cells/dmg_cpu_b/cells/half_add.sv assignments=2 registers=0 constraints=2 components=8 dN=0
 success path=sv-cells/dmg_cpu_b/cells/nor_latch.sv assignments=8 registers=2 constraints=4 components=8 dN=2
 success path=sv-cells/dmg_cpu_b/cells/pad_in.sv assignments=1 registers=0 constraints=0 components=0 dN=0
-success path=sv-cells/sm83/cells/and2_and3_reg.sv assignments=2 registers=0 constraints=2 components=10 dN=0
-success path=sv-cells/sm83/cells/dlatch_ee_q_n.sv assignments=7 registers=1 constraints=1 components=6 dN=0
-success path=sv-cells/sm83/cells/nand2_b.sv assignments=1 registers=0 constraints=1 components=4 dN=0
-success path=sv-cells/sm83/cells/nor2_in2_n.sv assignments=2 registers=0 constraints=2 components=4 dN=0
-success path=sv-cells/sm83/cells/not_dbus.sv assignments=1 registers=0 constraints=1 components=2 dN=0
-success path=sv-cells/sm83/cells/not_reg.sv assignments=1 registers=0 constraints=1 components=2 dN=0
-success path=sv-cells/sm83/cells/oai21.sv assignments=3 registers=0 constraints=2 components=6 dN=1
-success path=sv-cells/sm83/cells/reg_bus_pch_b.sv assignments=2 registers=0 constraints=0 components=0 dN=0
+success path=sv-cells/sm83/cells/and2_irq.sv assignments=1 registers=0 constraints=1 components=4 dN=0
+success path=sv-cells/sm83/cells/idu_bit123456.sv assignments=22 registers=0 constraints=0 components=0 dN=0
+success path=sv-cells/sm83/cells/nand2_d.sv assignments=1 registers=0 constraints=1 components=4 dN=0
+success path=sv-cells/sm83/cells/nor2_spare.sv assignments=1 registers=0 constraints=1 components=4 dN=0
+success path=sv-cells/sm83/cells/not_dec3.sv assignments=1 registers=0 constraints=1 components=2 dN=0
+success path=sv-cells/sm83/cells/not_reg_b_we.sv assignments=1 registers=0 constraints=1 components=2 dN=0
+success path=sv-cells/sm83/cells/or2_b.sv assignments=1 registers=0 constraints=1 components=4 dN=0
+success path=sv-cells/sm83/cells/reg_hl_out.sv assignments=12 registers=0 constraints=0 components=0 dN=0
 successes: 12
 failures: 0
-assignments: 31
-registers: 3
-constraints: 17
-components: 54
-dN: 3
+assignments: 52
+registers: 2
+constraints: 13
+components: 40
+dN: 2

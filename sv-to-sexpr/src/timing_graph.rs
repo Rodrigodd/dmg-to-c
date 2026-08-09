@@ -224,18 +224,20 @@ pub const fn classify_timing_sense(
         } else {
             TimingSense::Conditional
         }),
-        ValueOperator::DriveStrength => {
+        ValueOperator::DriveStrength(_) => {
             if operand_index == 0 {
                 Some(TimingSense::PositiveUnate)
             } else {
                 None
             }
         }
-        ValueOperator::BufIf0Strength | ValueOperator::BufIf1Strength => match operand_index {
-            0 => Some(TimingSense::PositiveUnate),
-            1 => Some(TimingSense::Conditional),
-            _ => None,
-        },
+        ValueOperator::BufIf0Strength(_) | ValueOperator::BufIf1Strength(_) => {
+            match operand_index {
+                0 => Some(TimingSense::PositiveUnate),
+                1 => Some(TimingSense::Conditional),
+                _ => None,
+            }
+        }
         ValueOperator::Keeper => None,
         ValueOperator::Nmos | ValueOperator::Pmos | ValueOperator::Rnmos => {
             Some(if operand_index == 0 {
@@ -2559,7 +2561,7 @@ fn normalized_path(path: &std::path::Path) -> String {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::ir::{Assignment, LogicValue, Register, TimingExpr};
+    use crate::ir::{Assignment, LogicValue, Register, StrengthPair, TimingExpr};
 
     fn span(line: usize) -> Span {
         Span::new("graph.sv", line, 1)
@@ -3045,7 +3047,7 @@ mod tests {
 
     #[test]
     fn all_contracted_operators_have_exact_functional_operand_sense() {
-        let cases = [
+        let mut cases = vec![
             (ValueOperator::Not, vec![(0, TimingSense::NegativeUnate)]),
             (
                 ValueOperator::And,
@@ -3106,24 +3108,6 @@ mod tests {
                 ],
             ),
             (
-                ValueOperator::DriveStrength,
-                vec![(0, TimingSense::PositiveUnate)],
-            ),
-            (
-                ValueOperator::BufIf0Strength,
-                vec![
-                    (0, TimingSense::PositiveUnate),
-                    (1, TimingSense::Conditional),
-                ],
-            ),
-            (
-                ValueOperator::BufIf1Strength,
-                vec![
-                    (0, TimingSense::PositiveUnate),
-                    (1, TimingSense::Conditional),
-                ],
-            ),
-            (
                 ValueOperator::Eq,
                 vec![(0, TimingSense::NonUnate), (1, TimingSense::NonUnate)],
             ),
@@ -3162,19 +3146,31 @@ mod tests {
                 ],
             ),
         ];
+        for pair in StrengthPair::ALL {
+            cases.push((
+                ValueOperator::DriveStrength(pair),
+                vec![(0, TimingSense::PositiveUnate)],
+            ));
+            for operator in [
+                ValueOperator::BufIf0Strength(pair),
+                ValueOperator::BufIf1Strength(pair),
+            ] {
+                cases.push((
+                    operator,
+                    vec![
+                        (0, TimingSense::PositiveUnate),
+                        (1, TimingSense::Conditional),
+                    ],
+                ));
+            }
+        }
         assert_eq!(cases.len(), ValueOperator::ALL.len());
 
         for (operator, expected) in cases {
             let operand_names = match operator {
                 ValueOperator::Not => vec!["a"],
                 ValueOperator::Mux => vec!["a", "b", "c"],
-                ValueOperator::DriveStrength => vec!["a", "strong1", "highz0"],
-                ValueOperator::BufIf0Strength => {
-                    vec!["a", "b", "strong1", "highz0"]
-                }
-                ValueOperator::BufIf1Strength => {
-                    vec!["a", "b", "highz1", "strong0"]
-                }
+                ValueOperator::DriveStrength(_) => vec!["a"],
                 ValueOperator::Keeper => Vec::new(),
                 _ => vec!["a", "b"],
             };
@@ -3209,8 +3205,8 @@ mod tests {
                     operator,
                     ValueOperator::BufIf0
                         | ValueOperator::BufIf1
-                        | ValueOperator::BufIf0Strength
-                        | ValueOperator::BufIf1Strength
+                        | ValueOperator::BufIf0Strength(_)
+                        | ValueOperator::BufIf1Strength(_)
                         | ValueOperator::Nmos
                         | ValueOperator::Pmos
                         | ValueOperator::Rnmos

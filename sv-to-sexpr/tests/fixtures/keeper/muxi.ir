@@ -98,7 +98,7 @@ Cell {
                 expr: List(
                     [
                         Atom(
-                            "bufif0-strength",
+                            "bufif0-zs",
                         ),
                         Atom(
                             "d0",
@@ -106,12 +106,6 @@ Cell {
                         Atom(
                             "sel",
                         ),
-                        Atom(
-                            "strong1",
-                        ),
-                        Atom(
-                            "highz0",
-                        ),
                     ],
                 ),
                 delay: Two {
@@ -182,7 +176,7 @@ Cell {
                 expr: List(
                     [
                         Atom(
-                            "bufif1-strength",
+                            "bufif1-sz",
                         ),
                         Atom(
                             "d0",
@@ -190,12 +184,6 @@ Cell {
                         Atom(
                             "sel_n",
                         ),
-                        Atom(
-                            "highz1",
-                        ),
-                        Atom(
-                            "strong0",
-                        ),
                     ],
                 ),
                 delay: Two {
@@ -266,7 +254,7 @@ Cell {
                 expr: List(
                     [
                         Atom(
-                            "bufif0-strength",
+                            "bufif0-zs",
                         ),
                         Atom(
                             "d1",
@@ -274,12 +262,6 @@ Cell {
                         Atom(
                             "sel_n",
                         ),
-                        Atom(
-                            "strong1",
-                        ),
-                        Atom(
-                            "highz0",
-                        ),
                     ],
                 ),
                 delay: Two {
@@ -350,19 +332,13 @@ Cell {
                 expr: List(
                     [
                         Atom(
-                            "bufif1-strength",
+                            "bufif1-sz",
                         ),
                         Atom(
                             "d1",
                         ),
                         Atom(
                             "sel",
-                        ),
-                        Atom(
-                            "highz1",
-                        ),
-                        Atom(
-                            "strong0",
                         ),
                     ],
                 ),

@@ -1070,14 +1070,17 @@ fn audit_construct(
             control,
             strength,
         } => (*operator, drive, Some(control), *strength),
-        M6ConstructKind::ContinuousStrength { value, strength } => {
-            (ValueOperator::DriveStrength, value, None, Some(*strength))
-        }
+        M6ConstructKind::ContinuousStrength { value, strength } => (
+            ValueOperator::DriveStrength(*strength),
+            value,
+            None,
+            Some(*strength),
+        ),
     };
     let expected_operator = match (base_operator, strength) {
-        (ValueOperator::BufIf0, Some(_)) => ValueOperator::BufIf0Strength,
-        (ValueOperator::BufIf1, Some(_)) => ValueOperator::BufIf1Strength,
-        (ValueOperator::DriveStrength, Some(_)) => ValueOperator::DriveStrength,
+        (ValueOperator::BufIf0, Some(pair)) => ValueOperator::BufIf0Strength(pair),
+        (ValueOperator::BufIf1, Some(pair)) => ValueOperator::BufIf1Strength(pair),
+        (ValueOperator::DriveStrength(pair), Some(_)) => ValueOperator::DriveStrength(pair),
         (operator, None) => operator,
         _ => unreachable!("contracted M6 source operator"),
     };
@@ -1085,8 +1088,9 @@ fn audit_construct(
         invariants.polarity_form_mismatches += 1;
         return;
     }
+    // The strength pair rides in the operator name, so it adds no operands.
     let ordinary_count = if control.is_some() { 2 } else { 1 };
-    if operands.len() != ordinary_count + usize::from(strength.is_some()) * 2 {
+    if operands.len() != ordinary_count {
         invariants.polarity_form_mismatches += 1;
         return;
     }
@@ -1343,9 +1347,9 @@ fn count_emitted_forms(assignments: &[&Assignment]) -> EmittedForms {
         match operator {
             ValueOperator::BufIf0 => forms.bufif0 += 1,
             ValueOperator::BufIf1 => forms.bufif1 += 1,
-            ValueOperator::DriveStrength => forms.drive_strength += 1,
-            ValueOperator::BufIf0Strength => forms.bufif0_strength += 1,
-            ValueOperator::BufIf1Strength => forms.bufif1_strength += 1,
+            ValueOperator::DriveStrength(_) => forms.drive_strength += 1,
+            ValueOperator::BufIf0Strength(_) => forms.bufif0_strength += 1,
+            ValueOperator::BufIf1Strength(_) => forms.bufif1_strength += 1,
             _ => {}
         }
     }
@@ -1363,19 +1367,13 @@ impl EmittedForms {
 }
 
 fn strength_pair(expr: &Expr) -> Option<StrengthPair> {
-    let (operator, operands) = operation(expr)?;
-    if !matches!(
-        operator,
-        ValueOperator::DriveStrength
-            | ValueOperator::BufIf0Strength
-            | ValueOperator::BufIf1Strength
-    ) {
-        return None;
+    let (operator, _) = operation(expr)?;
+    match operator {
+        ValueOperator::DriveStrength(pair)
+        | ValueOperator::BufIf0Strength(pair)
+        | ValueOperator::BufIf1Strength(pair) => Some(pair),
+        _ => None,
     }
-    let [.., Expr::Atom(first), Expr::Atom(second)] = operands else {
-        return None;
-    };
-    StrengthPair::parse(first, second)
 }
 
 fn temp_index(name: &str) -> Option<usize> {
@@ -1703,19 +1701,19 @@ fn render_summary(audit: &Audit) -> String {
     writeln!(&mut output, "  bufif1={}", audit.emitted_forms.bufif1).unwrap();
     writeln!(
         &mut output,
-        "  drive-strength={}",
+        "  drive-<pair>={}",
         audit.emitted_forms.drive_strength
     )
     .unwrap();
     writeln!(
         &mut output,
-        "  bufif0-strength={}",
+        "  bufif0-<pair>={}",
         audit.emitted_forms.bufif0_strength
     )
     .unwrap();
     writeln!(
         &mut output,
-        "  bufif1-strength={}",
+        "  bufif1-<pair>={}",
         audit.emitted_forms.bufif1_strength
     )
     .unwrap();
@@ -1782,7 +1780,7 @@ fn render_summary(audit: &Audit) -> String {
     for file in &audit.relevant_successes {
         writeln!(
             &mut output,
-            "  {} source[hiz0={},hiz1={},bufif0={},bufif1={},continuous-strength={},primitive-strength={},repeated-targets={}] emitted[bufif0={},bufif1={},drive-strength={},bufif0-strength={},bufif1-strength={}]",
+            "  {} source[hiz0={},hiz1={},bufif0={},bufif1={},continuous-strength={},primitive-strength={},repeated-targets={}] emitted[bufif0={},bufif1={},drive-<pair>={},bufif0-<pair>={},bufif1-<pair>={}]",
             file.path,
             file.inventory.high_z_bufif0,
             file.inventory.high_z_bufif1,

@@ -1,5 +1,5 @@
 stateful corpus audit
-corpus-files=189
+corpus-files=187
 stateful-files=10
 stateful-lowering: succeeded=10 deferred=0
 recursive-analysis:

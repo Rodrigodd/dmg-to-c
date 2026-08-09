@@ -4,8 +4,7 @@ use std::path::{Path, PathBuf};
 
 use sv_to_sexpr::diagnostic::Diagnostic;
 use sv_to_sexpr::ir::{
-    CellItem, DelayTuple, Expr, LoweredModule, StrengthPair, TimingExpr, TimingOperator,
-    ValueOperator,
+    CellItem, DelayTuple, Expr, LoweredModule, TimingExpr, TimingOperator, ValueOperator,
 };
 use sv_to_sexpr::lower::lower_file;
 
@@ -115,25 +114,9 @@ fn render_value(expr: &Expr) -> String {
                 panic!("validated value operator head must be an atom");
             };
             let operator = ValueOperator::parse(head).expect("validated value operator");
-            let strength = matches!(
-                operator,
-                ValueOperator::DriveStrength
-                    | ValueOperator::BufIf0Strength
-                    | ValueOperator::BufIf1Strength
-            );
-            let ordinary_len = operands.len() - usize::from(strength) * 2;
-            let mut rendered = operands[..ordinary_len]
-                .iter()
-                .map(render_value_atom)
-                .collect::<Vec<_>>();
-            if strength {
-                let first = value_atom(&operands[ordinary_len]);
-                let second = value_atom(&operands[ordinary_len + 1]);
-                let pair = StrengthPair::parse(first, second)
-                    .expect("validated strength operator must use a contracted pair");
-                let (first, second) = pair.atoms();
-                rendered.push(format!("strength({first}, {second})"));
-            }
+            // The strength pair is part of the operator name, so it renders
+            // with the head rather than as trailing operands.
+            let rendered = operands.iter().map(render_value_atom).collect::<Vec<_>>();
             format!("op({}; {})", operator.as_str(), rendered.join(", "))
         }
     }

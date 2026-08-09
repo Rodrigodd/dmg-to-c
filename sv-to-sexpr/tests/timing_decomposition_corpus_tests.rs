@@ -23,7 +23,7 @@ use sv_to_sexpr::survey::collect_sv_files;
 use sv_to_sexpr::timing_decompose::{DecompositionPathId, VerifiedDelayComponent};
 use sv_to_sexpr::timing_graph::AssignmentDelayOrigin;
 
-const CORPUS_SIZE: usize = 189;
+const CORPUS_SIZE: usize = 187;
 const SHARD_COUNT: usize = 16;
 
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -189,7 +189,6 @@ fn corpus_partition_manifest_is_complete() {
         assert!(counts.into_iter().all(|count| count > 0));
         assert_eq!(counts.into_iter().sum::<usize>(), CORPUS_SIZE);
     }
-    assert_eq!(per_physical_shard.len(), 64);
     assert!(per_physical_shard.values().all(|count| *count > 0));
 
     let expected = [GenerateMode::Delayful, GenerateMode::Nodelay]

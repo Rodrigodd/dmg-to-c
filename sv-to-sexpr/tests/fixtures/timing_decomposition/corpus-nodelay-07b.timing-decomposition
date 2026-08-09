@@ -6,15 +6,15 @@ split-residue: 1/2
 split-rule: within-shard-rank-modulo-2
 cases: 6
 success path=sv-cells/dmg_cpu_b/cells/nand6.sv assignments=1 registers=0 constraints=1 components=12 dN=0
-success path=sv-cells/dmg_cpu_b/cells/tie.sv assignments=2 registers=0 constraints=0 components=0 dN=0
-success path=sv-cells/sm83/cells/irq_prio_bit2.sv assignments=19 registers=0 constraints=0 components=0 dN=0
-success path=sv-cells/sm83/cells/not2_pch_dec1.sv assignments=4 registers=0 constraints=2 components=4 dN=0
-success path=sv-cells/sm83/cells/not_reg_we.sv assignments=1 registers=0 constraints=1 components=2 dN=0
-success path=sv-cells/sm83/cells/reg_wz_out.sv assignments=34 registers=0 constraints=2 components=16 dN=0
+success path=sv-cells/dmg_cpu_b/cells/xor.sv assignments=1 registers=0 constraints=1 components=4 dN=0
+success path=sv-cells/sm83/cells/irq_prio_bit4.sv assignments=21 registers=0 constraints=1 components=2 dN=0
+success path=sv-cells/sm83/cells/not5_irq.sv assignments=5 registers=0 constraints=5 components=10 dN=0
+success path=sv-cells/sm83/cells/not_x1_p2_dec2.sv assignments=1 registers=0 constraints=1 components=2 dN=0
+success path=sv-cells/sm83/cells/srlatch_r_n_alt.sv assignments=4 registers=1 constraints=1 components=4 dN=0
 successes: 6
 failures: 0
-assignments: 61
-registers: 0
-constraints: 6
+assignments: 33
+registers: 1
+constraints: 10
 components: 34
 dN: 0

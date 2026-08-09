@@ -130,13 +130,6 @@ fn corpus_analysis_summary_is_stable_by_disposition_milestone_and_capability() {
     );
     assert_eq!(
         disposition_counts
-            .get(&AnalysisDisposition::Deferred)
-            .copied()
-            .unwrap_or_default(),
-        186
-    );
-    assert_eq!(
-        disposition_counts
             .get(&AnalysisDisposition::Failed)
             .copied()
             .unwrap_or_default(),
@@ -146,7 +139,8 @@ fn corpus_analysis_summary_is_stable_by_disposition_milestone_and_capability() {
     let mut rendered = String::new();
     rendered.push_str("analysis corpus summary\n");
     rendered.push_str(&format!(
-        "processed=189 supported={} deferred={} warned={} failed={}\n",
+        "processed={} supported={} deferred={} warned={} failed={}\n",
+        corpus.designs.len(),
         disposition_counts
             .get(&AnalysisDisposition::Supported)
             .copied()

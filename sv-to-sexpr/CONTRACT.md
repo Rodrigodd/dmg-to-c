@@ -60,9 +60,9 @@ this avoids Boolean rewrites that could change four-state behavior.
 | `mux` | 3 | `(mux select when_true when_false)` |
 | `bufif0` | 2 | `(bufif0 value enable)` |
 | `bufif1` | 2 | `(bufif1 value enable)` |
-| `drive-strength` | 3 | `(drive-strength value first_strength second_strength)` |
-| `bufif0-strength` | 4 | `(bufif0-strength value enable first_strength second_strength)` |
-| `bufif1-strength` | 4 | `(bufif1-strength value enable first_strength second_strength)` |
+| `drive-<pair>` | 1 | `(drive-yy value)` |
+| `bufif0-<pair>` | 2 | `(bufif0-zs value enable)` |
+| `bufif1-<pair>` | 2 | `(bufif1-sz value enable)` |
 | `eq` (`==`) | 2 | `(eq a b)` |
 | `caseeq` (`===`) | 2 | `(caseeq a b)` |
 | `neq` (`!=`) | 2 | `(neq a b)` |
@@ -124,23 +124,35 @@ than a lossy transistor normalization, so direct corpus transistor forms do not
 produce a generic fidelity warning. Any demonstrated information loss must
 still block conversion instead of being silently approximated.
 
-Source strength is never silently erased. A strength-qualified continuous
-assignment uses `(drive-strength value first_strength second_strength)`. A
-strength-qualified tri-state primitive uses `bufif0-strength` or
-`bufif1-strength`, preserving the exact pair as the last two operands. Thus the
-corpus forms include:
+Source strength is never silently erased. It is carried by the operator name
+rather than by operands: a strength-qualified continuous assignment uses
+`drive-<pair>`, and a strength-qualified tri-state primitive uses
+`bufif0-<pair>` or `bufif1-<pair>`.
+
+The `<pair>` suffix is two letters naming the strength driving 0 followed by
+the strength driving 1, with `strong` as `s`, `highz` as `z`, `pull` as `p`,
+and `supply` as `y`. The four contracted pairs are therefore:
+
+| Source pair | Suffix |
+| --- | --- |
+| `(strong1, highz0)` | `zs` |
+| `(highz1, strong0)` | `sz` |
+| `(pull1, highz0)` | `zp` |
+| `(supply1, supply0)` | `yy` |
+
+Thus the corpus forms include:
 
 ```scheme
-(pad (bufif0-strength 1 pdrv_n strong1 highz0) (delay T_rise T_fall T_z))
-(pad (bufif1-strength 0 ndrv highz1 strong0) (delay T_rise T_fall T_z))
-(pad (bufif0-strength 1 ena_n_pu pull1 highz0) (delay T_rise T_fall T_z))
-(vdd (drive-strength 1 supply1 supply0) (delay 0))
+(pad (bufif0-zs 1 pdrv_n) (delay T_rise T_fall T_z))
+(pad (bufif1-sz 0 ndrv) (delay T_rise T_fall T_z))
+(pad (bufif0-zp 1 ena_n_pu) (delay T_rise T_fall T_z))
+(vdd (drive-yy 1) (delay 0))
 ```
 
-The complete corpus set is `(strong1, highz0)`, `(highz1, strong0)`,
-`(pull1, highz0)`, and `(supply1, supply0)`. Those four exact pairs/forms are
-supported; any unknown combination is rejected. The representation
-preserves strength metadata but the
+Only those four pairs are supported; any unknown combination is rejected at the
+strength span. Because the pair is part of the operator, a lowered driver
+cannot carry an arbitrary strength atom that merely satisfies the arity. The
+representation preserves strength metadata but the
 DSL does not define multi-driver strength resolution or analog drive behavior.
 If a cell requires such resolution for fidelity, conversion is blocked with an
 error; a functional-only conversion is not silently substituted. If future

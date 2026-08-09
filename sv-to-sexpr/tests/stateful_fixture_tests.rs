@@ -401,7 +401,7 @@ fn assert_case_semantics(case: &FixtureCase, assignments: &[&Assignment]) {
                 vec![("y".into(), "(and a b)".into(), "(delay 0)".into())]
             )
         }
-        "initialized_latch" | "block_latch" => {}
+        "block_latch" => {}
         other => panic!("unreviewed stateful fixture case {other}"),
     }
 }

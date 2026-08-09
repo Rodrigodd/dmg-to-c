@@ -14,5 +14,5 @@ assignments:
     value: op(and; atom(ena2), atom(t0))
     delay: tuple(atom(0))
   3: y2
-    value: op(bufif0-strength; atom(in0), atom(t1), strength(strong1, highz0))
+    value: op(bufif0-zs; atom(in0), atom(t1))
     delay: tuple(atom(0))

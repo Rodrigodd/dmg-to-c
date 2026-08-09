@@ -46,10 +46,7 @@ const CASES: &[FixtureCase] = &[
         outputs: &["y"],
         source_targets: &["y"],
         temporary_indices: &[0],
-        expected_values: &[
-            ("t0", "(and in1 in2)"),
-            ("y", "(bufif1-strength 0 t0 highz1 strong0)"),
-        ],
+        expected_values: &[("t0", "(and in1 in2)"), ("y", "(bufif1-sz 0 t0)")],
         expected_intentional_ignores: 0,
     },
     FixtureCase {
@@ -59,7 +56,7 @@ const CASES: &[FixtureCase] = &[
         outputs: &["y"],
         source_targets: &["y"],
         temporary_indices: &[],
-        expected_values: &[("y", "(bufif0-strength 1 pch_n strong1 highz0)")],
+        expected_values: &[("y", "(bufif0-zs 1 pch_n)")],
         expected_intentional_ignores: 0,
     },
     FixtureCase {
@@ -70,9 +67,9 @@ const CASES: &[FixtureCase] = &[
         source_targets: &["pad", "pad", "pad", "i_n"],
         temporary_indices: &[],
         expected_values: &[
-            ("pad", "(bufif1-strength 0 ndrv highz1 strong0)"),
-            ("pad", "(bufif0-strength 1 pdrv_n strong1 highz0)"),
-            ("pad", "(bufif0-strength 1 ena_n_pu pull1 highz0)"),
+            ("pad", "(bufif1-sz 0 ndrv)"),
+            ("pad", "(bufif0-zs 1 pdrv_n)"),
+            ("pad", "(bufif0-zp 1 ena_n_pu)"),
             ("i_n", "(not pad)"),
         ],
         expected_intentional_ignores: 0,
@@ -91,27 +88,27 @@ const CASES: &[FixtureCase] = &[
             ("t0", "(and in1 in2)"),
             ("t1", "(and in3 in4)"),
             ("t2", "(or t0 t1)"),
-            ("y1", "(bufif1-strength 0 t2 highz1 strong0)"),
+            ("y1", "(bufif1-sz 0 t2)"),
             ("t3", "(and in5 in6)"),
             ("t4", "(and in7 in6)"),
             ("t5", "(or t3 t4)"),
-            ("y2", "(bufif1-strength 0 t5 highz1 strong0)"),
+            ("y2", "(bufif1-sz 0 t5)"),
             ("t6", "(and in5 in8)"),
-            ("y3", "(bufif1-strength 0 t6 highz1 strong0)"),
+            ("y3", "(bufif1-sz 0 t6)"),
             ("t7", "(and in7 in8)"),
-            ("y4", "(bufif1-strength 0 t7 highz1 strong0)"),
-            ("y4", "(bufif1-strength 0 in9 highz1 strong0)"),
+            ("y4", "(bufif1-sz 0 t7)"),
+            ("y4", "(bufif1-sz 0 in9)"),
             ("t8", "(and in11 in12)"),
             ("t9", "(and in13 in14)"),
             ("t10", "(or t8 t9)"),
             ("t11", "(and in10 t10)"),
-            ("y5", "(bufif1-strength 0 t11 highz1 strong0)"),
+            ("y5", "(bufif1-sz 0 t11)"),
             ("t12", "(and in10 in18)"),
-            ("y5", "(bufif1-strength 0 t12 highz1 strong0)"),
+            ("y5", "(bufif1-sz 0 t12)"),
             ("t13", "(and in10 in15 in16)"),
             ("t14", "(and in10 in13 in17)"),
             ("t15", "(or t13 t14)"),
-            ("y6", "(bufif1-strength 0 t15 highz1 strong0)"),
+            ("y6", "(bufif1-sz 0 t15)"),
         ],
         expected_intentional_ignores: 0,
     },
@@ -122,10 +119,7 @@ const CASES: &[FixtureCase] = &[
         outputs: &["gnd", "vdd"],
         source_targets: &["gnd", "vdd"],
         temporary_indices: &[],
-        expected_values: &[
-            ("gnd", "(drive-strength 0 supply1 supply0)"),
-            ("vdd", "(drive-strength 1 supply1 supply0)"),
-        ],
+        expected_values: &[("gnd", "(drive-yy 0)"), ("vdd", "(drive-yy 1)")],
         expected_intentional_ignores: 0,
     },
     FixtureCase {
@@ -139,7 +133,7 @@ const CASES: &[FixtureCase] = &[
             ("y0", "(bufif0 in0 ena0)"),
             ("y1", "(bufif1 in1 ena1)"),
             ("t1", "(and ena2 t0)"),
-            ("y2", "(bufif0-strength in0 t1 strong1 highz0)"),
+            ("y2", "(bufif0-zs in0 t1)"),
         ],
         expected_intentional_ignores: 0,
     },
@@ -257,9 +251,9 @@ fn driver_goldens_are_typed_flat_deterministic_and_source_complete() {
     }
 
     for operator in [
-        ValueOperator::DriveStrength,
-        ValueOperator::BufIf0Strength,
-        ValueOperator::BufIf1Strength,
+        ValueOperator::DriveStrength(StrengthPair::Supply1Supply0),
+        ValueOperator::BufIf0Strength(StrengthPair::Strong1Highz0),
+        ValueOperator::BufIf1Strength(StrengthPair::Highz1Strong0),
         ValueOperator::BufIf0,
         ValueOperator::BufIf1,
     ] {
@@ -395,20 +389,12 @@ fn assert_flat_strength_and_dependency_contract(
             if !covered_operators.contains(&operator) {
                 covered_operators.push(operator);
             }
-            if matches!(
-                operator,
-                ValueOperator::DriveStrength
-                    | ValueOperator::BufIf0Strength
-                    | ValueOperator::BufIf1Strength
-            ) {
-                let [.., Expr::Atom(first), Expr::Atom(second)] = operands else {
-                    panic!("validated strength operands must end in atoms");
-                };
-                let pair =
-                    StrengthPair::parse(first, second).expect("validated contracted strength pair");
-                if !covered_strengths.contains(&pair) {
-                    covered_strengths.push(pair);
-                }
+            if let ValueOperator::DriveStrength(pair)
+            | ValueOperator::BufIf0Strength(pair)
+            | ValueOperator::BufIf1Strength(pair) = operator
+                && !covered_strengths.contains(&pair)
+            {
+                covered_strengths.push(pair);
             }
             for operand in operands {
                 let Expr::Atom(atom) = operand else {

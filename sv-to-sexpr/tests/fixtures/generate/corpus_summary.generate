@@ -1,12 +1,12 @@
 generate corpus audit
-files=189 generate-files=0 non-generate-files=189
+files=187 generate-files=0 non-generate-files=187
 structural-generate-forms:
 configured-mode delayful:
-  totals analysis-supported=3 analysis-deferred=186 analysis-warned=0 analysis-failed=0 lower-succeeded=189 lower-failed=0 warnings=0 intentional-ignores=42
-  requirements=driver.high-z:20,driver.primitive-tristate:46,driver.repeated:30,driver.strength:15,state.procedural:10,timing.alias:182,timing.assignment-delay:37,timing.primitive-delay:46,timing.specify-path:147,value.combinational:170
+  totals analysis-supported=3 analysis-deferred=184 analysis-warned=0 analysis-failed=0 lower-succeeded=187 lower-failed=0 warnings=0 intentional-ignores=42
+  requirements=driver.high-z:20,driver.primitive-tristate:46,driver.repeated:30,driver.strength:15,state.procedural:10,timing.alias:182,timing.assignment-delay:37,timing.primitive-delay:46,timing.specify-path:147,value.combinational:168
   lower-failures=[]
 configured-mode nodelay:
-  totals analysis-supported=3 analysis-deferred=186 analysis-warned=0 analysis-failed=0 lower-succeeded=189 lower-failed=0 warnings=0 intentional-ignores=42
-  requirements=driver.high-z:20,driver.primitive-tristate:46,driver.repeated:30,driver.strength:15,state.procedural:10,timing.alias:182,timing.assignment-delay:37,timing.primitive-delay:46,timing.specify-path:147,value.combinational:170
+  totals analysis-supported=3 analysis-deferred=184 analysis-warned=0 analysis-failed=0 lower-succeeded=187 lower-failed=0 warnings=0 intentional-ignores=42
+  requirements=driver.high-z:20,driver.primitive-tristate:46,driver.repeated:30,driver.strength:15,state.procedural:10,timing.alias:182,timing.assignment-delay:37,timing.primitive-delay:46,timing.specify-path:147,value.combinational:168
   lower-failures=[]
-mode-comparison: non-generate-identical=189 generate-cell-identical=[] generate-cell-distinct=[]
+mode-comparison: non-generate-identical=187 generate-cell-identical=[] generate-cell-distinct=[]

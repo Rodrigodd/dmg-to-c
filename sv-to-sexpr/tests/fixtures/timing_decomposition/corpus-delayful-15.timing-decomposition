@@ -8,18 +8,18 @@ cases: 11
 success path=sv-cells/dmg_cpu_b/cells/ggnmos.sv assignments=0 registers=0 constraints=0 components=0 dN=0
 success path=sv-cells/dmg_cpu_b/cells/nor8.sv assignments=1 registers=0 constraints=1 components=16 dN=0
 success path=sv-cells/dmg_cpu_b/cells/pad_bidir_pu_latch.sv assignments=12 registers=1 constraints=0 components=0 dN=0
-success path=sv-cells/sm83/cells/and2_alu.sv assignments=1 registers=0 constraints=1 components=4 dN=0
-success path=sv-cells/sm83/cells/decoder3.sv assignments=293 registers=0 constraints=0 components=0 dN=0
-success path=sv-cells/sm83/cells/nand2_a.sv assignments=1 registers=0 constraints=1 components=4 dN=0
-success path=sv-cells/sm83/cells/nor2_f.sv assignments=1 registers=0 constraints=1 components=4 dN=0
-success path=sv-cells/sm83/cells/not_d.sv assignments=1 registers=0 constraints=1 components=2 dN=0
-success path=sv-cells/sm83/cells/not_pch_x2_alu.sv assignments=2 registers=0 constraints=1 components=2 dN=0
-success path=sv-cells/sm83/cells/oa21_reg.sv assignments=3 registers=0 constraints=2 components=6 dN=1
-success path=sv-cells/sm83/cells/reg_bus_pch_a_bit7.sv assignments=9 registers=0 constraints=2 components=4 dN=0
+success path=sv-cells/sm83/cells/and2_in1_n_tap_in1.sv assignments=2 registers=0 constraints=3 components=6 dN=0
+success path=sv-cells/sm83/cells/idu_bit0.sv assignments=26 registers=0 constraints=1 components=4 dN=0
+success path=sv-cells/sm83/cells/nand2_c.sv assignments=1 registers=0 constraints=1 components=4 dN=0
+success path=sv-cells/sm83/cells/nor2_pch_in1_dec3.sv assignments=2 registers=0 constraints=1 components=4 dN=0
+success path=sv-cells/sm83/cells/not_dec1.sv assignments=1 registers=0 constraints=1 components=2 dN=0
+success path=sv-cells/sm83/cells/not_reg_a_we.sv assignments=1 registers=0 constraints=1 components=2 dN=0
+success path=sv-cells/sm83/cells/or2_a.sv assignments=1 registers=0 constraints=1 components=4 dN=0
+success path=sv-cells/sm83/cells/reg_de_out.sv assignments=10 registers=0 constraints=0 components=0 dN=0
 successes: 11
 failures: 0
-assignments: 324
+assignments: 57
 registers: 1
 constraints: 10
 components: 42
-dN: 1
+dN: 0

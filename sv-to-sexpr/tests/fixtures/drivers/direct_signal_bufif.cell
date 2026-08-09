@@ -20,14 +20,6 @@
     (y0 (bufif0 in0 ena0) (delay 0))
     (y1 (bufif1 in1 ena1) (delay 0))
     (t1 (and ena2 t0) (delay 0))
-    (y2
-      (bufif0-strength
-        in0
-        t1
-        strong1
-        highz0
-      )
-      (delay 0)
-    )
+    (y2 (bufif0-zs in0 t1) (delay 0))
   )
 )
