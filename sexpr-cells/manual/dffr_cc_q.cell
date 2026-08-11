@@ -30,7 +30,7 @@
     (t11 (not r_n) (delay 0))
     (t12 (or t8 t10 t11) (delay 0))
     (t13 (and and1 r_n) (delay 0))
-    (mux2 (dff-posedge clk t13) (delay 0))
+    (mux2 (mux t12 t13 mux2) (delay 0))
     (mux1_buf mux1 (delay (elmore (wire 44) (* (pmos 8) 1.5)) (elmore (wire 44) (* (nmos 8) 1.5))))
     (mux2_buf mux2 (delay (elmore (wire 59) (pmos 8)) (elmore (wire 59) (nmos 8))))
     (and1

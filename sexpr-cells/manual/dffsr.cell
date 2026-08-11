@@ -33,14 +33,7 @@
     (t11 (or ff t10) (delay 0))
     (t12 (and t11 r_n_buf) (delay 0))
     (q
-      (dff-posedge-set-reset
-        clk_buf
-        t12
-        s_n_buf
-        r_n_buf
-        1
-        0
-      )
+      (mux t9 t12 q)
       (delay
         (+
           (+

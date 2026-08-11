@@ -32,14 +32,14 @@
     (t11 (and t9 t10) (delay 0))
     (t12 (or t8 t11) (delay 0))
     (t13 (not ff1) (delay 0))
-    (ff2 (dff-posedge clk t13) (delay 0))
+    (ff2 (mux t12 t13 ff2) (delay 0))
     (t14 (and ff2 clk) (delay 0))
     (t15 (not ff2) (delay 0))
     (t16 (not clk_n) (delay 0))
     (t17 (and t15 t16) (delay 0))
     (t18 (or t14 t17) (delay 0))
     (q_n
-      (dff-posedge clk ff2)
+      (mux t18 ff2 q_n)
       (delay
         (+
           (+ (elmore (wire 55) (* (pmos 3) 2)) (elmore (wire 23) (* (nmos 3) 2)))

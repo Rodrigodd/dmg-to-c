@@ -30,7 +30,7 @@
     (t10 (and t8 t9) (delay 0))
     (t11 (or t7 t10) (delay 0))
     (q
-      (dff-posedge clk ff)
+      (mux t11 ff q)
       (delay
         (+ (elmore (wire 41) (* (nmos 3) 2)) (elmore (wire L_q) (pmos 8)))
         (+ (elmore (wire 41) (* (pmos 3) 2)) (elmore (wire L_q) (nmos 5)))
