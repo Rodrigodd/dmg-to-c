@@ -27,8 +27,14 @@
       ; random delay, just to avoid glitches
       (delay (elmore (wire 57) (* (pmos 3) 2)) (elmore (wire 57) (* (nmos 3) 2)))
     )
-    (reg (mux t6 t7 reg) (delay (elmore (wire 110) (pmos 10)) (elmore (wire 110) (* (nmos 10) 2))))
+    (reg (mux t6 t7 reg) (delay (elmore (wire 110) (* (nmos 10) 2)) (elmore (wire 110) (pmos 10))))
     (q reg (delay (elmore (wire L_q) (pmos 35)) (elmore (wire L_q) (nmos 35))))
-    (q_n (not reg) (delay (elmore (wire L_q_n) (pmos 35)) (elmore (wire L_q_n) (nmos 35))))
+    (q_n
+      (not reg)
+      (delay
+        (+ (elmore (wire 129) (nmos 10)) (elmore (wire L_q_n) (pmos 35)))
+        (+ (elmore (wire 129) (pmos 10)) (elmore (wire L_q_n) (nmos 35)))
+      )
+    )
   )
 )
