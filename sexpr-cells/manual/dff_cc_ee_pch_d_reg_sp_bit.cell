@@ -23,14 +23,22 @@
     (t3 (not ena_n) (delay 0))
     (t4 (and t1 t2 t3) (delay 0))
     (t5 (or t0 t4) (delay 0))
-    (ff1 (mux t5 d ff1) (delay 0))
+    (ff1
+      (mux t5 d ff1)
+      ; random delay, just to avoid glitches
+      (delay (elmore (wire 57) (* (pmos 3) 2)) (elmore (wire 57) (* (nmos 3) 2)))
+    )
     (t6 (and ff1 clk) (delay 0))
     (t7 (not ff1) (delay 0))
     (t8 (not clk_n) (delay 0))
     (t9 (and t7 t8) (delay 0))
     (t10 (or t6 t9) (delay 0))
     (t11 (not ff1) (delay 0))
-    (ff2 (mux t10 t11 ff2) (delay 0))
+    (ff2
+      (mux t10 t11 ff2)
+      ; random delay, just to avoid glitches
+      (delay (elmore (wire 57) (* (pmos 3) 2)) (elmore (wire 57) (* (nmos 3) 2)))
+    )
     (t12 (and ff2 clk) (delay 0))
     (t13 (not ff2) (delay 0))
     (t14 (not clk_n) (delay 0))
