@@ -59,24 +59,6 @@
         )
       )
     )
-    (q
-      (not q_n)
-      (delay
-        (+
-          (+
-            (+ (elmore (wire 55) (* (nmos 3) 2)) (elmore (wire 23) (* (pmos 3) 2)))
-            (elmore (wire L_q_n) (nmos 6))
-          )
-          (elmore (wire L_q) (pmos 13))
-        )
-        (+
-          (+
-            (+ (elmore (wire 55) (* (pmos 3) 2)) (elmore (wire 23) (* (nmos 3) 2)))
-            (elmore (wire L_q_n) (pmos 13))
-          )
-          (elmore (wire L_q) (nmos 6))
-        )
-      )
-    )
+    (q (not q_n) (delay (elmore (wire L_q) (pmos 13)) (elmore (wire L_q) (nmos 6))))
   )
 )

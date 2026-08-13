@@ -63,31 +63,7 @@
         )
       )
     )
-    (q
-      (not q_n)
-      (delay
-        (+
-          (+
-            (+
-              (+ (elmore (wire 71) (pmos 15)) (elmore (wire 114) (* (nmos 3) 2)))
-              (elmore (wire 73) (* (pmos 3) 2))
-            )
-            (elmore (wire L_q_n) (nmos 5))
-          )
-          (elmore (wire L_q) (pmos 10))
-        )
-        (+
-          (+
-            (+
-              (+ (elmore (wire 71) (nmos 5)) (elmore (wire 114) (* (pmos 3) 2)))
-              (elmore (wire 73) (* (nmos 3) 2))
-            )
-            (elmore (wire L_q_n) (pmos 10))
-          )
-          (elmore (wire L_q) (nmos 5))
-        )
-      )
-    )
+    (q (not q_n) (delay (elmore (wire L_q) (pmos 10)) (elmore (wire L_q) (nmos 5))))
     (d
       (bufif-zs 1 pch_n)
       (delay

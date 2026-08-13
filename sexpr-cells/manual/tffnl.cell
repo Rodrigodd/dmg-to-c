@@ -59,23 +59,8 @@
     (q_n
       (not q)
       (delay
-        (+
-          (+
-            (+ (elmore (wire L_tclk_out) (nmos 35)) (elmore (wire 78) (pmos 8)))
-            (elmore (wire 110) (nmos 8))
-          )
-          (elmore (wire L_q_n) (pmos 35))
-        )
-        (+
-          (+
-            (+
-              (+ (elmore (wire L_tclk_out) (nmos 35)) (elmore (wire L_tclk_n_out) (pmos 35)))
-              (elmore (wire 78) (nmos 8))
-            )
-            (elmore (wire 110) (pmos 8))
-          )
-          (elmore (wire L_q_n) (nmos 35))
-        )
+        (+ (elmore (wire 110) (nmos 8)) (elmore (wire L_q_n) (pmos 35)))
+        (+ (elmore (wire 110) (pmos 8)) (elmore (wire L_q_n) (nmos 35)))
       )
     )
   )
