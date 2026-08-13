@@ -51,7 +51,11 @@
     (t3 (or tclk_n_buf l_buf) (delay 0))
     (t4 (not q) (delay 0))
     (t5 (mux l_buf d t4) (delay 0))
-    (ff (mux t3 t5 ff) (delay 0))
+    (ff
+      (mux t3 t5 ff)
+      ; random delay, just to avoid glitches
+      (delay (elmore (wire 57) (* (pmos 3) 2)) (elmore (wire 57) (* (nmos 3) 2)))
+    )
     (q_n
       (not q)
       (delay
