@@ -1,64 +1,64 @@
 timing corpus audit
-corpus-files=187
+corpus-files=185
 source-tuples:
   assignment arity0=0 arity1=0 arity2=35 arity3=60 other=0 omitted-first=0 omitted-later=0 later-entries=155
   primitive arity0=0 arity1=0 arity2=21 arity3=396 other=0 omitted-first=0 omitted-later=0 later-entries=813
-  specify arity0=0 arity1=0 arity2=228 arity3=3 other=0 omitted-first=0 omitted-later=0 later-entries=234
+  specify arity0=0 arity1=0 arity2=220 arity3=3 other=0 omitted-first=0 omitted-later=0 later-entries=226
 source-timing-forms:
-  aliases=1538
-  tpd-elmore-arities=2:1138
+  aliases=1514
+  tpd-elmore-arities=2:1114
   tpd-z-arities=1:58,2:331
   tpd-z-first-present=1:104,2:285
-  resistance-pmos=450
-  resistance-nmos=801
-  outer-resistance-integer-mul=489
+  resistance-pmos=438
+  resistance-nmos=789
+  outer-resistance-integer-mul=488
   outer-resistance-real-mul=0
   resistance-sums=47
   direct-real-resistance=2
   real-unit-factors=46
-  timing-adds=490
+  timing-adds=448
   timing-gt=14
   timing-mux=14
   real-device-values=[10.8,11.0,12.5,13.5,14.5,15.0,16.5,3.0,4.5,5.0,8.0,9.0]
 source-specify:
-  paths=231
-  scalar-controls=426
-  target-groups=179
-  target-multiplicity=1:137,2:33,3:8,4:1
-  first-source-paths=179 witnesses=[sv-cells/dmg_cpu_b/cells/and2.sv:20:3:y,sv-cells/dmg_cpu_b/cells/and3.sv:20:3:y,sv-cells/dmg_cpu_b/cells/and4.sv:20:3:y,sv-cells/dmg_cpu_b/cells/ao21.sv:21:3:y,sv-cells/dmg_cpu_b/cells/ao22.sv:20:3:y,sv-cells/dmg_cpu_b/cells/ao222.sv:20:3:y]
+  paths=223
+  scalar-controls=414
+  target-groups=175
+  target-multiplicity=1:137,2:29,3:8,4:1
+  first-source-paths=175 witnesses=[sv-cells/dmg_cpu_b/cells/and2.sv:20:3:y,sv-cells/dmg_cpu_b/cells/and3.sv:20:3:y,sv-cells/dmg_cpu_b/cells/and4.sv:20:3:y,sv-cells/dmg_cpu_b/cells/ao21.sv:21:3:y,sv-cells/dmg_cpu_b/cells/ao22.sv:20:3:y,sv-cells/dmg_cpu_b/cells/ao222.sv:20:3:y]
 lowering:
-  succeeded=187 failed=0
-  assignments=1678 temps=958 source-targets=720
-  source-dispositions explicit=512 explicit-nonzero=512 explicit-with-specify=0 specify=186 specify-nonzero=186 zero=22
-  emitted zero=980 nonzero=698 nested=698
-  outer-resistance-multiplications expected=1133 emitted=1133
-  warnings=0 specify-ignores=42 later-ignores=0
+  succeeded=185 failed=0
+  assignments=1667 temps=951 source-targets=716
+  source-dispositions explicit=512 explicit-nonzero=512 explicit-with-specify=0 specify=182 specify-nonzero=182 zero=22
+  emitted zero=973 nonzero=694 nested=694
+  outer-resistance-multiplications expected=1131 emitted=1131
+  warnings=0 specify-ignores=38 later-ignores=0
 emitted-tuples:
-  arity1=980 arity2=242 arity3=456 total=1678
+  arity1=973 arity2=238 arity3=456 total=1667
   noncanonical-one-entry=0
 first-component-compatibility:
-  comparisons=1678 explicit=512 specify=186 forced-zero=5 missing-zero=17 generated-zero=958 mismatches=0
-  outer-resistance-multiplications=387
+  comparisons=1667 explicit=512 specify=182 forced-zero=5 missing-zero=17 generated-zero=951 mismatches=0
+  outer-resistance-multiplications=386
 first-component-timing-operators:
-  +=192
+  +=182
   -=0
-  *=389
+  *=388
   /=0
-  elmore=793
-  wire=793
-  pmos=407
-  nmos=469
+  elmore=779
+  wire=779
+  pmos=399
+  nmos=463
   gt=0
   mux=0
 emitted-timing-operators:
-  +=541
+  +=521
   -=0
-  *=1163
+  *=1161
   /=0
-  elmore=2082
-  wire=2082
-  pmos=725
-  nmos=1668
+  elmore=2054
+  wire=2054
+  pmos=711
+  nmos=1654
   gt=14
   mux=14
 invariants:

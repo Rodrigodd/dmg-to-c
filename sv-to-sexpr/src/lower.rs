@@ -2596,27 +2596,6 @@ endmodule
     }
 
     #[test]
-    fn lowers_simple_latch_and_continuous_output() {
-        let lowered = lower_path("../sv-cells/dmg_cpu_b/cells/dlatch.sv");
-        assert_eq!(registers(&lowered), vec![("q", LogicValue::Zero)]);
-        assert_eq!(
-            assignment_strings(&lowered),
-            vec![
-                (
-                    "q".to_string(),
-                    "(mux ena d q)".to_string(),
-                    "(+ (+ (elmore (wire 73) (pmos 10)) (elmore (wire 101) (nmos 10))) (elmore (wire L_q) (pmos 35)))".to_string(),
-                ),
-                (
-                    "q_n".to_string(),
-                    "(not q)".to_string(),
-                    "(+ (+ (+ (elmore (wire 73) (nmos 10)) (elmore (wire 101) (pmos 10))) (elmore (wire 127) (nmos 10))) (elmore (wire L_q_n) (pmos 35)))".to_string(),
-                ),
-            ]
-        );
-    }
-
-    #[test]
     fn lowers_tri_state_assign_and_precharge_cell() {
         let lowered = lower_path("../sv-cells/sm83/cells/not_pch_x2_alu.sv");
         assert_eq!(

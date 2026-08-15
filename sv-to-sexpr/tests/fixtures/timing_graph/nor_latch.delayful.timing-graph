@@ -1,0 +1,76 @@
+timing-analysis
+node n0 signal r roles=input @sv-cells/dmg_cpu_b/cells/nor_latch.sv:7:3
+node n1 signal s roles=input @sv-cells/dmg_cpu_b/cells/nor_latch.sv:7:3
+node n2 signal q roles=output,register @sv-cells/dmg_cpu_b/cells/nor_latch.sv:8:3
+node n3 signal q_n roles=output,register @sv-cells/dmg_cpu_b/cells/nor_latch.sv:8:3
+node n4 signal t0 roles=internal,temporary @sv-cells/dmg_cpu_b/cells/nor_latch.sv:14:9
+node n5 signal t1 roles=internal,temporary @sv-cells/dmg_cpu_b/cells/nor_latch.sv:14:9
+node n6 signal t2 roles=internal,temporary @sv-cells/dmg_cpu_b/cells/nor_latch.sv:15:9
+node n7 signal t3 roles=internal,temporary @sv-cells/dmg_cpu_b/cells/nor_latch.sv:15:9
+node n8 assignment order=0 target=t0 function=or @sv-cells/dmg_cpu_b/cells/nor_latch.sv:14:9
+node n9 assignment order=1 target=t1 function=not @sv-cells/dmg_cpu_b/cells/nor_latch.sv:14:9
+node n10 assignment order=2 target=q function=mux @sv-cells/dmg_cpu_b/cells/nor_latch.sv:14:3
+node n11 assignment order=3 target=t2 function=or @sv-cells/dmg_cpu_b/cells/nor_latch.sv:15:9
+node n12 assignment order=4 target=t3 function=not @sv-cells/dmg_cpu_b/cells/nor_latch.sv:15:9
+node n13 assignment order=5 target=q_n function=mux @sv-cells/dmg_cpu_b/cells/nor_latch.sv:15:3
+dependency n1 -> n8 kind=operand operand=0 sense=positive event=- @sv-cells/dmg_cpu_b/cells/nor_latch.sv:14:9
+dependency n0 -> n8 kind=operand operand=1 sense=positive event=- @sv-cells/dmg_cpu_b/cells/nor_latch.sv:14:9
+dependency n8 -> n4 kind=drive operand=- sense=positive event=- @sv-cells/dmg_cpu_b/cells/nor_latch.sv:14:9
+dependency n0 -> n9 kind=operand operand=0 sense=negative event=- @sv-cells/dmg_cpu_b/cells/nor_latch.sv:14:9
+dependency n9 -> n5 kind=drive operand=- sense=positive event=- @sv-cells/dmg_cpu_b/cells/nor_latch.sv:14:9
+dependency n4 -> n10 kind=operand operand=0 sense=non-unate event=- @sv-cells/dmg_cpu_b/cells/nor_latch.sv:14:3
+dependency n5 -> n10 kind=operand operand=1 sense=positive event=- @sv-cells/dmg_cpu_b/cells/nor_latch.sv:14:3
+dependency n2 -> n10 kind=operand operand=2 sense=positive event=- @sv-cells/dmg_cpu_b/cells/nor_latch.sv:14:3
+dependency n10 -> n2 kind=state-boundary operand=- sense=positive event=- @sv-cells/dmg_cpu_b/cells/nor_latch.sv:14:3
+dependency n1 -> n11 kind=operand operand=0 sense=positive event=- @sv-cells/dmg_cpu_b/cells/nor_latch.sv:15:9
+dependency n0 -> n11 kind=operand operand=1 sense=positive event=- @sv-cells/dmg_cpu_b/cells/nor_latch.sv:15:9
+dependency n11 -> n6 kind=drive operand=- sense=positive event=- @sv-cells/dmg_cpu_b/cells/nor_latch.sv:15:9
+dependency n1 -> n12 kind=operand operand=0 sense=negative event=- @sv-cells/dmg_cpu_b/cells/nor_latch.sv:15:9
+dependency n12 -> n7 kind=drive operand=- sense=positive event=- @sv-cells/dmg_cpu_b/cells/nor_latch.sv:15:9
+dependency n6 -> n13 kind=operand operand=0 sense=non-unate event=- @sv-cells/dmg_cpu_b/cells/nor_latch.sv:15:3
+dependency n7 -> n13 kind=operand operand=1 sense=positive event=- @sv-cells/dmg_cpu_b/cells/nor_latch.sv:15:3
+dependency n3 -> n13 kind=operand operand=2 sense=positive event=- @sv-cells/dmg_cpu_b/cells/nor_latch.sv:15:3
+dependency n13 -> n3 kind=state-boundary operand=- sense=positive event=- @sv-cells/dmg_cpu_b/cells/nor_latch.sv:15:3
+cut-order n3,n2,n1,n12,n7,n0,n11,n6,n13,n9,n5,n8,n4,n10
+cut-dependency n1 -> n8 kind=operand
+cut-dependency n0 -> n8 kind=operand
+cut-dependency n8 -> n4 kind=drive
+cut-dependency n0 -> n9 kind=operand
+cut-dependency n9 -> n5 kind=drive
+cut-dependency n4 -> n10 kind=operand
+cut-dependency n5 -> n10 kind=operand
+cut-dependency n2 -> n10 kind=operand
+cut-dependency n1 -> n11 kind=operand
+cut-dependency n0 -> n11 kind=operand
+cut-dependency n11 -> n6 kind=drive
+cut-dependency n1 -> n12 kind=operand
+cut-dependency n12 -> n7 kind=drive
+cut-dependency n6 -> n13 kind=operand
+cut-dependency n7 -> n13 kind=operand
+cut-dependency n3 -> n13 kind=operand
+cut-excluded n10 -> n2 kind=state-boundary
+cut-excluded n13 -> n3 kind=state-boundary
+constraint p0 order=0 target=q target@sv-cells/dmg_cpu_b/cells/nor_latch.sv:24:9 path@sv-cells/dmg_cpu_b/cells/nor_latch.sv:24:3 delay=(delay (+ (elmore (wire L_q_n) (nmos 35)) (elmore (wire L_q) (pmos 35))) (+ (elmore (wire L_q_n) (pmos 35)) (elmore (wire L_q) (nmos 35))))
+  terms[0]=(elmore (wire L_q_n) (nmos 35)) + (elmore (wire L_q) (pmos 35))
+  terms[1]=(elmore (wire L_q_n) (pmos 35)) + (elmore (wire L_q) (nmos 35))
+  control c0 order=0 signal=s event=- @sv-cells/dmg_cpu_b/cells/nor_latch.sv:24:4
+constraint p1 order=1 target=q target@sv-cells/dmg_cpu_b/cells/nor_latch.sv:25:9 path@sv-cells/dmg_cpu_b/cells/nor_latch.sv:25:3 delay=(delay (elmore (wire L_q) (pmos 35)) (elmore (wire L_q) (nmos 35)))
+  terms[0]=(elmore (wire L_q) (pmos 35))
+  terms[1]=(elmore (wire L_q) (nmos 35))
+  control c1 order=0 signal=r event=- @sv-cells/dmg_cpu_b/cells/nor_latch.sv:25:4
+constraint p2 order=2 target=q_n target@sv-cells/dmg_cpu_b/cells/nor_latch.sv:26:9 path@sv-cells/dmg_cpu_b/cells/nor_latch.sv:26:3 delay=(delay (elmore (wire L_q_n) (pmos 35)) (elmore (wire L_q_n) (nmos 35)))
+  terms[0]=(elmore (wire L_q_n) (pmos 35))
+  terms[1]=(elmore (wire L_q_n) (nmos 35))
+  control c2 order=0 signal=s event=- @sv-cells/dmg_cpu_b/cells/nor_latch.sv:26:4
+constraint p3 order=3 target=q_n target@sv-cells/dmg_cpu_b/cells/nor_latch.sv:27:9 path@sv-cells/dmg_cpu_b/cells/nor_latch.sv:27:3 delay=(delay (+ (elmore (wire L_q) (nmos 35)) (elmore (wire L_q_n) (pmos 35))) (+ (elmore (wire L_q) (pmos 35)) (elmore (wire L_q_n) (nmos 35))))
+  terms[0]=(elmore (wire L_q) (nmos 35)) + (elmore (wire L_q_n) (pmos 35))
+  terms[1]=(elmore (wire L_q) (pmos 35)) + (elmore (wire L_q_n) (nmos 35))
+  control c3 order=0 signal=r event=- @sv-cells/dmg_cpu_b/cells/nor_latch.sv:27:4
+control-group signal=r source=n0 kind=multiple-targets constraints=p1,p3 controls=c1,c3 targets=n2,n3 prefix=
+control-group signal=s source=n1 kind=multiple-targets constraints=p0,p2 controls=c0,c2 targets=n2,n3 prefix=
+group target=q kind=multiple constraints=p0,p1 controls=c0,c1 suffix=n10 reconvergent=n8,n10 split=candidate
+  control-report c0 constraint=p0 source=n1 target=n2 slice=n1,n2,n4,n8,n10 dominators=n1,n2,n4,n8,n10 post-dominators=n1,n2,n4,n8,n10 senses=non-unate
+  control-report c1 constraint=p1 source=n0 target=n2 slice=n0,n2,n4,n5,n8,n9,n10 dominators=n0,n2,n10 post-dominators=n0,n2,n10 senses=negative,non-unate
+group target=q_n kind=multiple constraints=p2,p3 controls=c2,c3 suffix=n13 reconvergent=n11,n13 split=candidate
+  control-report c2 constraint=p2 source=n1 target=n3 slice=n1,n3,n6,n7,n11,n12,n13 dominators=n1,n3,n13 post-dominators=n1,n3,n13 senses=negative,non-unate
+  control-report c3 constraint=p3 source=n0 target=n3 slice=n0,n3,n6,n11,n13 dominators=n0,n3,n6,n11,n13 post-dominators=n0,n3,n6,n11,n13 senses=non-unate

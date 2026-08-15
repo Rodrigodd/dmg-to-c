@@ -4,17 +4,16 @@ shard: 09b/16
 rule: sorted-index-modulo-16
 split-residue: 1/2
 split-rule: within-shard-rank-modulo-2
-cases: 6
-success path=sv-cells/dmg_cpu_b/cells/nand_latch.sv assignments=10 registers=2 constraints=4 components=8 dN=0
-success path=sv-cells/sm83/cells/alu_decoder.sv assignments=132 registers=0 constraints=0 components=0 dN=0
-success path=sv-cells/sm83/cells/irq_prio_bit6.sv assignments=23 registers=0 constraints=2 components=4 dN=0
-success path=sv-cells/sm83/cells/not_alu_a.sv assignments=1 registers=0 constraints=1 components=2 dN=0
-success path=sv-cells/sm83/cells/not_x2_dec2.sv assignments=1 registers=0 constraints=1 components=2 dN=0
-success path=sv-cells/sm83/cells/xor_idu_h.sv assignments=1 registers=0 constraints=1 components=4 dN=0
-successes: 6
+cases: 5
+success path=sv-cells/dmg_cpu_b/cells/nor3.sv assignments=1 registers=0 constraints=1 components=6 dN=0
+success path=sv-cells/sm83/cells/alu_shifter.sv assignments=51 registers=0 constraints=0 components=0 dN=0
+success path=sv-cells/sm83/cells/mux_idu_h.sv assignments=2 registers=0 constraints=2 components=6 dN=1
+success path=sv-cells/sm83/cells/not_b.sv assignments=1 registers=0 constraints=1 components=2 dN=0
+success path=sv-cells/sm83/cells/oa21.sv assignments=3 registers=0 constraints=2 components=6 dN=1
+successes: 5
 failures: 0
-assignments: 168
-registers: 2
-constraints: 9
+assignments: 58
+registers: 0
+constraints: 6
 components: 20
-dN: 0
+dN: 2

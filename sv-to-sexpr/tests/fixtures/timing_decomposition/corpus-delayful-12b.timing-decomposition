@@ -5,15 +5,15 @@ rule: sorted-index-modulo-16
 split-residue: 1/2
 split-rule: within-shard-rank-modulo-2
 cases: 5
-success path=sv-cells/dmg_cpu_b/cells/nor4.sv assignments=1 registers=0 constraints=1 components=8 dN=0
-success path=sv-cells/sm83/cells/and2.sv assignments=1 registers=0 constraints=1 components=4 dN=0
-success path=sv-cells/sm83/cells/mux_idu_l.sv assignments=2 registers=0 constraints=2 components=6 dN=1
-success path=sv-cells/sm83/cells/not_c.sv assignments=1 registers=0 constraints=1 components=2 dN=0
-success path=sv-cells/sm83/cells/oa211_in1_n_in3_n.sv assignments=6 registers=0 constraints=3 components=8 dN=2
+success path=sv-cells/dmg_cpu_b/cells/nor6.sv assignments=1 registers=0 constraints=1 components=12 dN=0
+success path=sv-cells/sm83/cells/and2_and3_reg.sv assignments=2 registers=0 constraints=2 components=10 dN=0
+success path=sv-cells/sm83/cells/nand2_b.sv assignments=1 registers=0 constraints=1 components=4 dN=0
+success path=sv-cells/sm83/cells/not_dbus.sv assignments=1 registers=0 constraints=1 components=2 dN=0
+success path=sv-cells/sm83/cells/oai21.sv assignments=3 registers=0 constraints=2 components=6 dN=1
 successes: 5
 failures: 0
-assignments: 11
+assignments: 8
 registers: 0
-constraints: 8
-components: 28
-dN: 3
+constraints: 7
+components: 34
+dN: 1

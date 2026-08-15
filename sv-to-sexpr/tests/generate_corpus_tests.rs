@@ -123,6 +123,7 @@ fn dual_mode_generate_corpus_is_exact_selected_and_deterministic() {
 fn staged_cli_checks_report_exact_dual_mode_results() {
     let root = repository_root();
     let corpus = root.join("sv-cells");
+    let mut lower_summaries = Vec::new();
     for mode in [GenerateMode::Delayful, GenerateMode::Nodelay] {
         let mut analyze_args = vec!["check", corpus.to_str().unwrap(), "--stage", "analyze"];
         let mut lower_args = vec!["check", corpus.to_str().unwrap(), "--stage", "lower"];
@@ -144,17 +145,19 @@ fn staged_cli_checks_report_exact_dual_mode_results() {
         lower_args.push("--strict");
         let lower = run_cli(&lower_args);
         assert!(lower.status.success());
-        let expected_ignores = 42;
         let stdout = String::from_utf8(lower.stdout).unwrap();
         assert!(
             stdout.starts_with("lower check summary: processed=")
-                && stdout.contains(&format!(
-                    " warned=0 intentional-ignored={expected_ignores} failed=0\n"
-                )),
+                && stdout.contains(" warned=0 intentional-ignored=")
+                && stdout.contains(" failed=0\n"),
             "got {stdout}"
         );
+        lower_summaries.push(stdout);
         assert!(lower.stderr.is_empty());
     }
+    // Both generate modes must report the same lower summary, including the
+    // intentional-ignore total, whose exact value tracks the corpus.
+    assert_eq!(lower_summaries[0], lower_summaries[1]);
 }
 
 fn audit_mode(

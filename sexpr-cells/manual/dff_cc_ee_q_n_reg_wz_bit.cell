@@ -22,7 +22,11 @@
     (t3 (not ena_n) (delay 0))
     (t4 (and t1 t2 t3) (delay 0))
     (t5 (or t0 t4) (delay 0))
-    (ff (mux t5 d ff) (delay 0))
+    (ff
+      (mux t5 d ff)
+      ; random delay, just to avoid glitches
+      (delay (elmore (wire 57) (* (pmos 3) 2)) (elmore (wire 57) (* (nmos 3) 2)))
+    )
     (t6 (and ff clk) (delay 0))
     (t7 (not ff) (delay 0))
     (t8 (not clk_n) (delay 0))
@@ -30,7 +34,7 @@
     (t10 (or t6 t9) (delay 0))
     (t11 (not ff) (delay 0))
     (q_n
-      (dff-posedge clk t11)
+      (mux t10 t11 q_n)
       (delay
         (+
           (+ (elmore (wire 23) (* (pmos 3) 2)) (elmore (wire 35) (nmos 4)))

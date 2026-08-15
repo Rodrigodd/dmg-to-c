@@ -19,7 +19,7 @@ use sv_to_sexpr::timing_graph::{
     Transition, TransitionEffect,
 };
 
-const DLATCH: &str = "sv-cells/dmg_cpu_b/cells/dlatch.sv";
+const NOR_LATCH: &str = "sv-cells/dmg_cpu_b/cells/nor_latch.sv";
 const AO21: &str = "sv-cells/dmg_cpu_b/cells/ao21.sv";
 const HALF_ADD: &str = "sv-cells/dmg_cpu_b/cells/half_add.sv";
 const B2B_WAND: &str = "sv-cells/sm83/cells/b2b_wand_inj_a.sv";
@@ -143,7 +143,7 @@ fn complete_timing_graph_corpus_is_exact_owned_deterministic_and_compatible() {
     assert_or_update_fixture("corpus_summary.timing-graph", &summary);
 
     for (path, fixture) in [
-        (DLATCH, "dlatch.delayful.timing-graph"),
+        (NOR_LATCH, "nor_latch.delayful.timing-graph"),
         (AO21, "ao21.delayful.timing-graph"),
         (HALF_ADD, "half_add.delayful.timing-graph"),
     ] {
@@ -573,20 +573,19 @@ fn render_mode_summary(output: &mut String, mode: GenerateMode, audit: &ModeAudi
 
 fn assert_representative_architecture(snapshots: &BTreeMap<(String, String), FileSnapshot>) {
     let delayful = GenerateMode::Delayful.label().to_string();
-    let dlatch = &snapshots[&(delayful.clone(), DLATCH.to_string())].report;
-    assert_eq!(dlatch.constraints().len(), 4);
+    let nor_latch = &snapshots[&(delayful.clone(), NOR_LATCH.to_string())].report;
+    assert_eq!(nor_latch.constraints().len(), 4);
+    // Both controls drive both outputs. Unlike a buffered latch they reach the
+    // cross-coupled pair directly, so there is no shared prefix node.
     assert!(
-        dlatch
+        nor_latch
             .control_groups()
             .iter()
-            .filter(|group| matches!(group.control_signal(), "d" | "ena"))
-            .all(|group| {
-                group.kind() == ControlGroupKind::MultipleTargets
-                    && !group.common_prefix().is_empty()
-            })
+            .filter(|group| matches!(group.control_signal(), "r" | "s"))
+            .all(|group| group.kind() == ControlGroupKind::MultipleTargets)
     );
     for target in ["q", "q_n"] {
-        let group = dlatch
+        let group = nor_latch
             .target_groups()
             .iter()
             .find(|group| group.group().target() == target)
@@ -595,7 +594,7 @@ fn assert_representative_architecture(snapshots: &BTreeMap<(String, String), Fil
         assert_eq!(group.group().kind(), TargetGroupKind::MultiplePaths);
     }
     assert_eq!(
-        dlatch
+        nor_latch
             .target_groups()
             .iter()
             .find(|group| group.group().target() == "q")
@@ -604,16 +603,16 @@ fn assert_representative_architecture(snapshots: &BTreeMap<(String, String), Fil
         PublicOutputSplit::Candidate
     );
     assert_eq!(
-        dlatch
+        nor_latch
             .target_groups()
             .iter()
             .find(|group| group.group().target() == "q_n")
             .unwrap()
             .public_output_split(),
-        PublicOutputSplit::NotRequired
+        PublicOutputSplit::Candidate
     );
     assert!(
-        dlatch
+        nor_latch
             .excluded_state_boundaries()
             .iter()
             .any(|dependency| dependency.edge().kind() == DependencyKind::StateBoundary)

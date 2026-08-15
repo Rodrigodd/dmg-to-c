@@ -24,14 +24,6 @@ struct FixtureCase {
 
 const CASES: &[FixtureCase] = &[
     FixtureCase {
-        name: "simple_latch",
-        source: "sv-cells/dmg_cpu_b/cells/dlatch.sv",
-        registers: &["q"],
-        state_target_order: &["q"],
-        temporary_indices: &[],
-        initials: &[("q", 13, 2)],
-    },
-    FixtureCase {
         name: "set_reset_latch",
         source: "sv-cells/sm83/cells/srlatch_r_n.sv",
         registers: &["q"],
@@ -357,19 +349,6 @@ fn is_zero_delay(delay: &DelayTuple) -> bool {
 fn assert_case_semantics(case: &FixtureCase, assignments: &[&Assignment]) {
     let triplets = assignment_triplets(assignments);
     match case.name {
-        "simple_latch" => {
-            assert_eq!(assignments.len(), 2);
-            assert_eq!(
-                triplets[0],
-                (
-                    "q".into(),
-                    "(mux ena d q)".into(),
-                    "(delay (+ (+ (elmore (wire 73) (pmos 10)) (elmore (wire 101) (nmos 10))) (elmore (wire L_q) (pmos 35))) (+ (+ (elmore (wire 73) (nmos 10)) (elmore (wire 101) (pmos 10))) (elmore (wire L_q) (nmos 35))))".into(),
-                )
-            );
-            assert_eq!(assignments[1].target, "q_n");
-            assert_eq!(render_expr(&assignments[1].expr), "(not q)");
-        }
         "set_reset_latch" => assert_eq!(
             triplets,
             vec![

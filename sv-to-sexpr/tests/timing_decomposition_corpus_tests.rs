@@ -23,7 +23,7 @@ use sv_to_sexpr::survey::collect_sv_files;
 use sv_to_sexpr::timing_decompose::{DecompositionPathId, VerifiedDelayComponent};
 use sv_to_sexpr::timing_graph::AssignmentDelayOrigin;
 
-const CORPUS_SIZE: usize = 187;
+const CORPUS_SIZE: usize = 185;
 const SHARD_COUNT: usize = 16;
 
 #[derive(Debug, Clone, PartialEq, Eq)]

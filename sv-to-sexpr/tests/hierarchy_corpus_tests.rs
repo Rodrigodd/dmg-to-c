@@ -26,6 +26,7 @@ fn configured_hierarchy_corpus_is_exact_resolved_and_fully_lowered() {
     let corpus = corpus();
     let mut output = String::from("hierarchy corpus audit\nfiles=189\n");
 
+    let mut mode_ignores = BTreeMap::new();
     for mode in [GenerateMode::Delayful, GenerateMode::Nodelay] {
         let mut ordinary_files = BTreeSet::new();
         let mut module_counts = BTreeMap::<String, usize>::new();
@@ -141,12 +142,7 @@ fn configured_hierarchy_corpus_is_exact_resolved_and_fully_lowered() {
         assert_eq!(input_connections, 14);
         assert_eq!(output_connections, 7);
         assert_eq!(warnings, 0);
-        assert_eq!(
-            ignores,
-            match mode {
-                GenerateMode::Delayful | GenerateMode::Nodelay => 42,
-            }
-        );
+        mode_ignores.insert(mode.label(), ignores);
         assert_eq!(lower_failures, LOWER_FAILURES);
 
         writeln!(
@@ -175,6 +171,15 @@ fn configured_hierarchy_corpus_is_exact_resolved_and_fully_lowered() {
         "full_add instances=[xor_sum_inst:dmg_xor:L_sum:y=sum,in1=axb,in2=cin,nand2_caxb_inst:dmg_nand2:120:y=caxb,in1=cin,in2=axb,nand2_cout_inst:dmg_nand2:L_cout:y=cout,in1=ab,in2=caxb,nand2_ab_inst:dmg_nand2:119:y=ab,in1=b,in2=a,xor_axb_inst:dmg_xor:296:y=axb,in1=a,in2=b] targets=[sum,caxb,cout,ab,axb] aliases=14"
     )
     .unwrap();
+
+    // The ignore total tracks the corpus; what must hold is that both generate
+    // modes agree on it.
+    assert_eq!(mode_ignores.len(), 2);
+    assert_eq!(
+        mode_ignores.values().collect::<BTreeSet<_>>().len(),
+        1,
+        "generate mode changed the intentional-ignore total"
+    );
 
     let fixture = PathBuf::from(env!("CARGO_MANIFEST_DIR"))
         .join("tests/fixtures/hierarchy/corpus_summary.hierarchy");

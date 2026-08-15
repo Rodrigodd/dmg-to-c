@@ -4,7 +4,7 @@
 
   (outputs q q_n)
 
-  (registers (ff 0) (qi_n 1))
+  (registers (ff 0) (q 0))
 
   (parameters
     (L_q 54)
@@ -15,40 +15,53 @@
 
   (assignments
 
-    ; not1 and not2: the two clock phases driving the latch pair.
-    (tclk_a
-      (not tclk_n)
-      (delay (elmore (wire L_tclk_out) (pmos 35)) (elmore (wire L_tclk_out) (nmos 35)))
+    (l_buf l (delay 0))
+    (tclk_n_buf tclk_n (delay 0))
+    (t0 (not tclk_n_buf) (delay 0))
+    (t1 (or t0 l_buf) (delay 0))
+    (t2 (mux l_buf d ff) (delay 0))
+    (q
+      (mux t1 t2 q)
+      (delay
+        (+
+          (+
+            (+
+              (+ (elmore (wire L_tclk_out) (pmos 35)) (elmore (wire 78) (nmos 8)))
+              (elmore (wire 36) (* (pmos 8) 2))
+            )
+            (elmore (wire 143) (* (nmos 8) 2))
+          )
+          (elmore (wire L_q) (pmos 35))
+        )
+        (+
+          (+
+            (+
+              (+
+                (+ (elmore (wire L_tclk_out) (pmos 35)) (elmore (wire L_tclk_n_out) (nmos 35)))
+                (elmore (wire 78) (pmos 8))
+              )
+              (elmore (wire 36) (nmos 8))
+            )
+            (elmore (wire 143) (* (pmos 8) 2))
+          )
+          (elmore (wire L_q) (nmos 35))
+        )
+      )
     )
-    (tclk_b
-      (not tclk_a)
-      (delay (elmore (wire L_tclk_n_out) (pmos 35)) (elmore (wire L_tclk_n_out) (nmos 35)))
+    (t3 (or tclk_n_buf l_buf) (delay 0))
+    (t4 (not q) (delay 0))
+    (t5 (mux l_buf d t4) (delay 0))
+    (ff
+      (mux t3 t5 ff)
+      ; random delay, just to avoid glitches
+      (delay (elmore (wire 57) (* (pmos 3) 2)) (elmore (wire 57) (* (nmos 3) 2)))
     )
-
-    ; Slave latch, transparent while !tclk_n or l, storing !(l ? d : ff).
-    ; The nor stage rides the l and ff edges so that d reaches the aoi stage
-    ; directly, as the source specify describes.
-    (l_nor l (delay (elmore (wire 36) (* (pmos 8) 2)) (elmore (wire 36) (nmos 8))))
-    (ff_nor ff (delay (elmore (wire 36) (* (pmos 8) 2)) (elmore (wire 36) (nmos 8))))
-    (q_en (or tclk_a l) (delay 0))
-    (q_d (mux l_nor d ff_nor) (delay 0))
-    (q_dn (not q_d) (delay 0))
-    (qi_n
-      (mux q_en q_dn qi_n)
-      (delay (elmore (wire 143) (* (pmos 8) 2)) (elmore (wire 143) (* (nmos 8) 2)))
+    (q_n
+      (not q)
+      (delay
+        (+ (elmore (wire 110) (nmos 8)) (elmore (wire L_q_n) (pmos 35)))
+        (+ (elmore (wire 110) (pmos 8)) (elmore (wire L_q_n) (nmos 35)))
+      )
     )
-
-    ; Master latch, transparent on the opposite phase, storing l ? d : !q.
-    (ff_en (or tclk_b l) (delay 0))
-    (ff_d (mux l d qi_n) (delay 0))
-    (ff (mux ff_en ff_d ff) (delay (elmore (wire 78) (pmos 8)) (elmore (wire 78) (nmos 8))))
-
-    ; q takes the output driver alone.
-    (q (not qi_n) (delay (elmore (wire L_q) (pmos 35)) (elmore (wire L_q) (nmos 35))))
-
-    ; q_n branches off the same state through the mux and not3 stages.
-    (qn_mux qi_n (delay (elmore (wire 78) (pmos 8)) (elmore (wire 78) (nmos 8))))
-    (qn_not3 (not qn_mux) (delay (elmore (wire 110) (pmos 8)) (elmore (wire 110) (nmos 8))))
-    (q_n (not qn_not3) (delay (elmore (wire L_q_n) (pmos 35)) (elmore (wire L_q_n) (nmos 35))))
   )
 )

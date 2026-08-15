@@ -37,7 +37,6 @@ fn parse_repository_file(relative: &str) -> sv_to_sexpr::ast::Design {
 fn corpus_family_ast_goldens_are_stable() {
     for (name, source) in [
         ("simple_gate", "sv-cells/dmg_cpu_b/cells/and2.sv"),
-        ("latch", "sv-cells/dmg_cpu_b/cells/dlatch.sv"),
         (
             "tri_state_strength",
             "sv-cells/dmg_cpu_b/cells/pad_bidir_pu.sv",

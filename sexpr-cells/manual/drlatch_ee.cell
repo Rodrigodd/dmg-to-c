@@ -1,0 +1,40 @@
+(cell
+  dmg_drlatch_ee
+  (inputs
+    d
+    r_n
+    ena
+    ena_n
+  )
+
+  (outputs q q_n)
+
+  (registers (reg 0))
+
+  (parameters (L_q 54) (L_q_n 54))
+
+  (assignments
+
+    (t0 (not d) (delay 0))
+    (t1 (and t0 ena) (delay 0))
+    (t2 (not ena_n) (delay 0))
+    (t3 (and d t2) (delay 0))
+    (t4 (or t1 t3) (delay (elmore (wire 66) (pmos 10)) (elmore (wire 66) (nmos 10))))
+    (t5 (not r_n) (delay 0))
+    (t6 (or t4 t5) (delay 0))
+    (t7
+      (and d r_n)
+      ; random delay, just to avoid glitches
+      (delay (elmore (wire 57) (* (pmos 3) 2)) (elmore (wire 57) (* (nmos 3) 2)))
+    )
+    (reg (mux t6 t7 reg) (delay (elmore (wire 110) (* (nmos 10) 2)) (elmore (wire 110) (pmos 10))))
+    (q reg (delay (elmore (wire L_q) (pmos 35)) (elmore (wire L_q) (nmos 35))))
+    (q_n
+      (not reg)
+      (delay
+        (+ (elmore (wire 129) (nmos 10)) (elmore (wire L_q_n) (pmos 35)))
+        (+ (elmore (wire 129) (pmos 10)) (elmore (wire L_q_n) (nmos 35)))
+      )
+    )
+  )
+)

@@ -1,6 +1,6 @@
 driver corpus audit
-corpus-files=187 relevant-files=63 relevant-successes=63 relevant-later-deferrals=0
-global-lowering: succeeded=187 failed=0
+corpus-files=185 relevant-files=63 relevant-successes=63 relevant-later-deferrals=0
+global-lowering: succeeded=185 failed=0
 keeper-drivers: source=5 emitted=5 deferred=0
 source-forms:
   high-z-bufif0=2

@@ -5,11 +5,11 @@ rule: sorted-index-modulo-16
 split-residue: 0/12
 split-rule: within-shard-rank-modulo-12
 cases: 1
-success path=sv-cells/dmg_cpu_b/cells/dlatch.sv assignments=4 registers=1 constraints=4 components=8 dN=2
+success path=sv-cells/dmg_cpu_b/cells/dlatch_ee.sv assignments=8 registers=1 constraints=2 components=12 dN=1
 successes: 1
 failures: 0
-assignments: 4
+assignments: 8
 registers: 1
-constraints: 4
-components: 8
-dN: 2
+constraints: 2
+components: 12
+dN: 1

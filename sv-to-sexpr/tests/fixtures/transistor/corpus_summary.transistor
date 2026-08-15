@@ -2,8 +2,8 @@ transistor corpus audit
 files=189
 source files=9 calls=24 nmos=17 pmos=7
 source-file-set=[sv-cells/sm83/cells/idu_bit0.sv,sv-cells/sm83/cells/idu_bit123456.sv,sv-cells/sm83/cells/irq_prio_bit0.sv,sv-cells/sm83/cells/irq_prio_bit1.sv,sv-cells/sm83/cells/irq_prio_bit2.sv,sv-cells/sm83/cells/irq_prio_bit3.sv,sv-cells/sm83/cells/irq_prio_bit4.sv,sv-cells/sm83/cells/irq_prio_bit5.sv,sv-cells/sm83/cells/irq_prio_bit6.sv]
-mode=delayful succeeded=187 failed=0 warnings=0 intentional-ignores=42 assignments=1678 temps=958 register-cells=10 registers=12
-mode=nodelay succeeded=187 failed=0 warnings=0 intentional-ignores=42 assignments=1678 temps=958 register-cells=10 registers=12
+mode=delayful succeeded=185 failed=0 warnings=0 intentional-ignores=38 assignments=1667 temps=951 register-cells=8 registers=10
+mode=nodelay succeeded=185 failed=0 warnings=0 intentional-ignores=38 assignments=1667 temps=951 register-cells=8 registers=10
 calls:
   sv-cells/sm83/cells/idu_bit0.sv | nmos | source-order=5 | span=37:2 | drain=aoi_buf_y | source=aoi_y | gate=(and aoi_buf_ena ((caseneq aoi_y 1))) | delay0=T_Z_aoi_buf_y | strength=none | assignment-index=9 | emitted=(nmos aoi_y t3) | emitted-delay=(delay (elmore (wire L_aoi_buf_y) (nmos 17)) (elmore (wire L_aoi_buf_y) (nmos 17)) (elmore (wire L_aoi_buf_y) (nmos 17)))
   sv-cells/sm83/cells/idu_bit123456.sv | nmos | source-order=1 | span=29:2 | drain=chain_a_y | source=chain_a_in | gate=(and chain_a_ena ((caseneq chain_a_in 1))) | delay0=T_Z_chain_a_y | strength=none | assignment-index=3 | emitted=(nmos chain_a_in t1) | emitted-delay=(delay (elmore (wire L_chain_a_y) (nmos 17)) (elmore (wire L_chain_a_y) (nmos 17)) (elmore (wire L_chain_a_y) (nmos 17)))

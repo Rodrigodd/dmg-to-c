@@ -1,27 +1,27 @@
 stateful corpus audit
-corpus-files=187
-stateful-files=10
-stateful-lowering: succeeded=10 deferred=0
+corpus-files=185
+stateful-files=8
+stateful-lowering: succeeded=8 deferred=0
 recursive-analysis:
-  modeled-registers=12
-  state-assignments=12
+  modeled-registers=10
+  state-assignments=10
   combinational-procedural-nonregisters=0
 source-state-syntax:
-  blocking=12
+  blocking=10
   nonblocking=0
 successful-topology:
-  modeled-registers=12
-  state-assignments=12
-  retained-muxes=12
+  modeled-registers=10
+  state-assignments=10
+  retained-muxes=10
   direct-state-assignments=0
-  explicit-register-initializers=6
-  initial-zero=6
+  explicit-register-initializers=4
+  initial-zero=4
   initial-one=0
   initial-x=6
   initial-z=0
   delay-tuple-intentional-ignores=0
-  specify-intentional-ignores=8
-  modeled-state-delays=11
+  specify-intentional-ignores=4
+  modeled-state-delays=9
 invariant-failures:
   invalid_cells=0
   nested_state_values=0
@@ -35,10 +35,8 @@ invariant-failures:
   nondeterministic_results=0
   absolute_path_leaks=0
 successful-stateful-files:
-  sv-cells/dmg_cpu_b/cells/dlatch.sv | registers=[q=0] | state-targets=[q]
   sv-cells/dmg_cpu_b/cells/dlatch_ee.sv | registers=[q=0] | state-targets=[q]
   sv-cells/dmg_cpu_b/cells/dlatch_ee_q.sv | registers=[q=0] | state-targets=[q]
-  sv-cells/dmg_cpu_b/cells/drlatch_ee.sv | registers=[q=0] | state-targets=[q]
   sv-cells/dmg_cpu_b/cells/nand_latch.sv | registers=[q=x,q_n=x] | state-targets=[q,q_n]
   sv-cells/dmg_cpu_b/cells/nor_latch.sv | registers=[q=x,q_n=x] | state-targets=[q,q_n]
   sv-cells/dmg_cpu_b/cells/pad_bidir_pu_latch.sv | registers=[ff=0] | state-targets=[ff]
@@ -46,7 +44,6 @@ successful-stateful-files:
   sv-cells/sm83/cells/srlatch_r_n.sv | registers=[q=x] | state-targets=[q]
   sv-cells/sm83/cells/srlatch_r_n_alt.sv | registers=[q=x] | state-targets=[q]
 successful-flat-latch-files:
-  sv-cells/dmg_cpu_b/cells/dlatch.sv
   sv-cells/dmg_cpu_b/cells/dlatch_ee.sv
   sv-cells/dmg_cpu_b/cells/dlatch_ee_q.sv
   sv-cells/sm83/cells/dlatch_ee_q_n.sv

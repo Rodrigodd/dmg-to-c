@@ -5,11 +5,11 @@ rule: sorted-index-modulo-16
 split-residue: 3/12
 split-rule: within-shard-rank-modulo-12
 cases: 1
-success path=sv-cells/sm83/cells/and2_alu.sv assignments=1 registers=0 constraints=1 components=4 dN=0
+success path=sv-cells/sm83/cells/and2_in1_n_tap_in1.sv assignments=2 registers=0 constraints=3 components=6 dN=0
 successes: 1
 failures: 0
-assignments: 1
+assignments: 2
 registers: 0
-constraints: 1
-components: 4
+constraints: 3
+components: 6
 dN: 0

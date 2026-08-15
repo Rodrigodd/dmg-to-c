@@ -5,16 +5,16 @@ rule: sorted-index-modulo-16
 split-residue: 1/2
 split-rule: within-shard-rank-modulo-2
 cases: 6
-success path=sv-cells/dmg_cpu_b/cells/nand6.sv assignments=1 registers=0 constraints=1 components=12 dN=0
-success path=sv-cells/dmg_cpu_b/cells/xor.sv assignments=1 registers=0 constraints=1 components=4 dN=0
-success path=sv-cells/sm83/cells/irq_prio_bit4.sv assignments=21 registers=0 constraints=1 components=2 dN=0
-success path=sv-cells/sm83/cells/not5_irq.sv assignments=5 registers=0 constraints=5 components=10 dN=0
-success path=sv-cells/sm83/cells/not_x1_p2_dec2.sv assignments=1 registers=0 constraints=1 components=2 dN=0
-success path=sv-cells/sm83/cells/srlatch_r_n_alt.sv assignments=4 registers=1 constraints=1 components=4 dN=0
+success path=sv-cells/dmg_cpu_b/cells/nand_latch.sv assignments=10 registers=2 constraints=4 components=8 dN=0
+success path=sv-cells/sm83/cells/alu_decoder.sv assignments=132 registers=0 constraints=0 components=0 dN=0
+success path=sv-cells/sm83/cells/irq_prio_bit6.sv assignments=23 registers=0 constraints=2 components=4 dN=0
+success path=sv-cells/sm83/cells/not_alu_a.sv assignments=1 registers=0 constraints=1 components=2 dN=0
+success path=sv-cells/sm83/cells/not_x2_dec2.sv assignments=1 registers=0 constraints=1 components=2 dN=0
+success path=sv-cells/sm83/cells/xor_idu_h.sv assignments=1 registers=0 constraints=1 components=4 dN=0
 successes: 6
 failures: 0
-assignments: 33
-registers: 1
-constraints: 10
-components: 34
+assignments: 168
+registers: 2
+constraints: 9
+components: 20
 dN: 0

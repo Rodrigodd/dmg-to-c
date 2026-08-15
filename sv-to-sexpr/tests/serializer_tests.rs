@@ -31,7 +31,7 @@ fn sibling_formatter_cli_check_agrees_with_api_on_representative_files() {
     for relative in [
         "sv-to-sexpr/tests/fixtures/drivers/signal_high_z.cell",
         "sv-to-sexpr/tests/fixtures/lower/alu_cgen.cell",
-        "sv-to-sexpr/tests/fixtures/stateful/simple_latch.cell",
+        "sv-to-sexpr/tests/fixtures/stateful/block_latch.cell",
     ] {
         let path = root.join(relative);
         let source = fs::read_to_string(&path).unwrap();

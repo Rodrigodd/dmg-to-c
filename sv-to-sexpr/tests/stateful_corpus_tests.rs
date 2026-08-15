@@ -23,10 +23,8 @@ use sv_to_sexpr::serialize::render_cell;
 use sv_to_sexpr::survey::collect_sv_files;
 
 const STATEFUL_PATHS: &[&str] = &[
-    "sv-cells/dmg_cpu_b/cells/dlatch.sv",
     "sv-cells/dmg_cpu_b/cells/dlatch_ee.sv",
     "sv-cells/dmg_cpu_b/cells/dlatch_ee_q.sv",
-    "sv-cells/dmg_cpu_b/cells/drlatch_ee.sv",
     "sv-cells/dmg_cpu_b/cells/nand_latch.sv",
     "sv-cells/dmg_cpu_b/cells/nor_latch.sv",
     "sv-cells/dmg_cpu_b/cells/pad_bidir_pu_latch.sv",
@@ -36,10 +34,8 @@ const STATEFUL_PATHS: &[&str] = &[
 ];
 
 const SUCCESSFUL_STATEFUL_PATHS: &[&str] = &[
-    "sv-cells/dmg_cpu_b/cells/dlatch.sv",
     "sv-cells/dmg_cpu_b/cells/dlatch_ee.sv",
     "sv-cells/dmg_cpu_b/cells/dlatch_ee_q.sv",
-    "sv-cells/dmg_cpu_b/cells/drlatch_ee.sv",
     "sv-cells/dmg_cpu_b/cells/nand_latch.sv",
     "sv-cells/dmg_cpu_b/cells/nor_latch.sv",
     "sv-cells/dmg_cpu_b/cells/pad_bidir_pu_latch.sv",
@@ -49,7 +45,6 @@ const SUCCESSFUL_STATEFUL_PATHS: &[&str] = &[
 ];
 
 const SUCCESSFUL_FLAT_LATCH_PATHS: &[&str] = &[
-    "sv-cells/dmg_cpu_b/cells/dlatch.sv",
     "sv-cells/dmg_cpu_b/cells/dlatch_ee.sv",
     "sv-cells/dmg_cpu_b/cells/dlatch_ee_q.sv",
     "sv-cells/sm83/cells/dlatch_ee_q_n.sv",
@@ -66,12 +61,6 @@ struct ExpectedSuccess {
 
 const EXPECTED_SUCCESSES: &[ExpectedSuccess] = &[
     ExpectedSuccess {
-        path: "sv-cells/dmg_cpu_b/cells/dlatch.sv",
-        registers: &["q"],
-        state_targets: &["q"],
-        initial: LogicValue::Zero,
-    },
-    ExpectedSuccess {
         path: "sv-cells/dmg_cpu_b/cells/dlatch_ee.sv",
         registers: &["q"],
         state_targets: &["q"],
@@ -79,12 +68,6 @@ const EXPECTED_SUCCESSES: &[ExpectedSuccess] = &[
     },
     ExpectedSuccess {
         path: "sv-cells/dmg_cpu_b/cells/dlatch_ee_q.sv",
-        registers: &["q"],
-        state_targets: &["q"],
-        initial: LogicValue::Zero,
-    },
-    ExpectedSuccess {
-        path: "sv-cells/dmg_cpu_b/cells/drlatch_ee.sv",
         registers: &["q"],
         state_targets: &["q"],
         initial: LogicValue::Zero,
